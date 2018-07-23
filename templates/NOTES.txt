@@ -1,0 +1,13 @@
+Once the LoadBalancer IP for the portal and API are available, they can be
+found with the following commands:
+
+kubectl --namespace {{ .Release.Namespace }} get services jarvice-mc-portal-lb -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+kubectl --namespace {{ .Release.Namespace }} get services jarvice-api-lb -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+
+Then use https://$PORTAL_IP/ to initialize or log into JARVICE.
+
+To get all of the kubernetes objects created in the "{{ .Release.Namespace }}"
+namespace:
+
+kubectl --namespace {{ .Release.Namespace }} get all
+

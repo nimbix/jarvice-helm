@@ -1,0 +1,95 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: jarvice-api
+spec:
+  replicas: {{ .Values.jarvice_api.replicaCount }}
+  selector:
+    matchLabels:
+      deployment: jarvice-api
+  template:
+    metadata:
+      labels:
+        deployment: jarvice-api
+        app: {{ template "jarvice.name" . }}
+        chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+        release: {{ .Release.Name }}
+        heritage: {{ .Release.Service }}
+#      annotations:
+#        container.apparmor.security.beta.kubernetes.io/jarvice-api: unconfined
+    spec:
+#      serviceAccountName: {{ .Values.jarvice.kubernetes.serviceAccount }}
+#      hostNetwork: true
+#      terminationGracePeriodSeconds: 0
+      nodeSelector:
+        beta.kubernetes.io/arch: "amd64"
+      imagePullSecrets:
+      - name: jarvice-docker
+      containers:
+      - name: jarvice-api
+        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-api:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}{{ .Values.jarvice.JARVICE_IMAGES_TAG_DEV }}
+        imagePullPolicy: Always
+        ports:
+          - name: https
+            containerPort: 7443
+          - name: http
+            containerPort: 7080
+        env:
+          - name: JARVICE_API_HTTPS
+            value: "enable"
+          - name: JARVICE_API_HTTPS_PORT
+            value: "7443"
+          - name: JARVICE_API_HTTP
+            value: "enable"
+          - name: JARVICE_API_HTTP_PORT
+            value: "7080"
+          - name: JARVICE_DAL_URL
+            value: "https://jarvice-dal:8443"
+          - name: JARVICE_SCHED_URL
+            value: "https://jarvice-scheduler:9443"
+          - name: JARVICE_SYSTEM_NAMESPACE
+            value: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+          - name: JARVICE_SYSTEM_REGISTRY
+            value: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}
+          - name: JARVICE_SYSTEM_REPO_BASE
+            value: {{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}
+          - name: JARVICE_IMAGES_TAG
+            value: {{ .Values.jarvice.JARVICE_IMAGES_TAG }}
+          - name: JARVICE_LOCAL_REGISTRY
+            value: {{ .Values.jarvice.JARVICE_LOCAL_REGISTRY }}
+          - name: JARVICE_LOCAL_REPO_BASE
+            value: {{ .Values.jarvice.JARVICE_LOCAL_REPO_BASE }}
+{{- if .Values.jarvice_api.env }}
+{{ toYaml .Values.jarvice_api.env | indent 10 }}
+{{- end }}
+        resources:
+{{- if .Values.jarvice_api.resources }}
+{{ toYaml .Values.jarvice_api.resources | indent 10 }}
+{{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: jarvice-api
+  labels:
+    app: {{ template "jarvice.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 7443
+    targetPort: 7443
+    name: https
+  - protocol: TCP
+    port: 7080
+    targetPort: 7080
+    name: http
+  selector:
+    deployment: jarvice-api
+---

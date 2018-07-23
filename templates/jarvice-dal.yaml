@@ -1,0 +1,90 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: jarvice-dal
+spec:
+  replicas: {{ .Values.jarvice_dal.replicaCount }}
+  selector:
+    matchLabels:
+      deployment: jarvice-dal
+  template:
+    metadata:
+      labels:
+        deployment: jarvice-dal
+        app: {{ template "jarvice.name" . }}
+        chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+        release: {{ .Release.Name }}
+        heritage: {{ .Release.Service }}
+      annotations:
+        container.apparmor.security.beta.kubernetes.io/jarvice-dal: unconfined
+    spec:
+      serviceAccountName: {{ .Values.jarvice.kubernetes.serviceAccount }}
+#      hostNetwork: true
+#      terminationGracePeriodSeconds: 0
+      nodeSelector:
+        beta.kubernetes.io/arch: "amd64"
+      imagePullSecrets:
+      - name: jarvice-docker
+      containers:
+      - name: jarvice-dal
+        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-dal:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}
+        imagePullPolicy: Always
+        ports:
+          - name: https
+            containerPort: 8443
+          - name: http
+            containerPort: 8000
+        env:
+          - name: JARVICE_DAL_HTTPS
+            value: "enable"
+          - name: JARVICE_DAL_HTTPS_PORT
+            value: "8443"
+          - name: JARVICE_DAL_HTTP
+            value: "enable"
+          - name: JARVICE_DAL_HTTP_PORT
+            value: "8000"
+          - name: JARVICE_BLOCK_CONF
+            value: ";"
+          - name: JARVICE_SCHED_URL
+            value: "https://jarvice-scheduler:9443"
+          - name: JARVICE_NODE_ENV
+            value: "production"
+{{- if .Values.jarvice_dal.env }}
+{{ toYaml .Values.jarvice_dal.env | indent 10 }}
+{{- end }}
+        resources:
+{{- if .Values.jarvice_dal.resources }}
+{{ toYaml .Values.jarvice_dal.resources | indent 10 }}
+{{- end }}
+        securityContext:
+          allowPrivilegeEscalation: true
+          capabilities:
+            add:
+            - SYS_ADMIN
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: jarvice-dal
+  labels:
+    app: {{ template "jarvice.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 8443
+    targetPort: 8443
+    name: https
+  - protocol: TCP
+    port: 8000
+    targetPort: 8000
+    name: http
+  selector:
+    deployment: jarvice-dal
+---

@@ -1,0 +1,81 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: jarvice-scheduler
+spec:
+  replicas: {{ .Values.jarvice_scheduler.replicaCount }}
+  selector:
+    matchLabels:
+      deployment: jarvice-scheduler
+  template:
+    metadata:
+      labels:
+        deployment: jarvice-scheduler
+        app: {{ template "jarvice.name" . }}
+        chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+        release: {{ .Release.Name }}
+        heritage: {{ .Release.Service }}
+#      annotations:
+#        container.apparmor.security.beta.kubernetes.io/jarvice-scheduler: unconfined
+    spec:
+      serviceAccountName: {{ .Values.jarvice.kubernetes.serviceAccount }}
+#      hostNetwork: true
+#      terminationGracePeriodSeconds: 0
+      nodeSelector:
+        beta.kubernetes.io/arch: "amd64"
+      imagePullSecrets:
+      - name: jarvice-docker
+      containers:
+      - name: jarvice-scheduler
+        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-scheduler:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}{{ .Values.jarvice.JARVICE_IMAGES_TAG_DEV }}
+        imagePullPolicy: Always
+        ports:
+          - name: https
+            containerPort: 9443
+        env:
+          - name: JARVICE_DAL_URL
+            value: "https://jarvice-dal:8443"
+          - name: JARVICE_LICENSE_LIC
+            value: {{ .Values.jarvice.JARVICE_LICENSE_LIC }}
+          - name: JARVICE_SYSTEM_NAMESPACE
+            value: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+          - name: JARVICE_SYSTEM_REGISTRY
+            value: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}
+          - name: JARVICE_SYSTEM_REPO_BASE
+            value: {{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}
+          - name: JARVICE_IMAGES_TAG
+            value: {{ .Values.jarvice.JARVICE_IMAGES_TAG }}
+          - name: JARVICE_LOCAL_REGISTRY
+            value: {{ .Values.jarvice.JARVICE_LOCAL_REGISTRY }}
+          - name: JARVICE_LOCAL_REPO_BASE
+            value: {{ .Values.jarvice.JARVICE_LOCAL_REPO_BASE }}
+{{- if .Values.jarvice_scheduler.env }}
+{{ toYaml .Values.jarvice_scheduler.env | indent 10 }}
+{{- end }}
+        resources:
+{{- if .Values.jarvice_scheduler.resources }}
+{{ toYaml .Values.jarvice_scheduler.resources | indent 10 }}
+{{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: jarvice-scheduler
+  labels:
+    app: {{ template "jarvice.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 9443
+    targetPort: 9443
+    name: https
+  selector:
+    deployment: jarvice-scheduler
+---

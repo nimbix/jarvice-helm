@@ -1,0 +1,85 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: jarvice-mc-portal
+spec:
+  replicas: {{ .Values.jarvice_mc_portal.replicaCount }}
+  selector:
+    matchLabels:
+      deployment: jarvice-mc-portal
+  template:
+    metadata:
+      labels:
+        deployment: jarvice-mc-portal
+        app: {{ template "jarvice.name" . }}
+        chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+        release: {{ .Release.Name }}
+        heritage: {{ .Release.Service }}
+#      annotations:
+#        container.apparmor.security.beta.kubernetes.io/jarvice-mc-portal: unconfined
+    spec:
+#      serviceAccountName: {{ .Values.jarvice.kubernetes.serviceAccount }}
+#      hostNetwork: true
+#      terminationGracePeriodSeconds: 0
+      nodeSelector:
+        beta.kubernetes.io/arch: "amd64"
+      imagePullSecrets:
+      - name: jarvice-docker
+      containers:
+      - name: jarvice-mc-portal
+        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-mc-portal:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}
+        imagePullPolicy: Always
+        ports:
+          - name: https
+            containerPort: 443
+          - name: http
+            containerPort: 80
+        env:
+          - name: JARVICE_MC_PORTAL_HTTPS
+            value: "enable"
+          - name: JARVICE_MC_PORTAL_HTTPS_PORT
+            value: "443"
+          - name: JARVICE_MC_PORTAL_HTTP
+            value: "enable"
+          - name: JARVICE_MC_PORTAL_HTTP_PORT
+            value: "80"
+          - name: JARVICE_MC_PORTAL_HTTP_REDIRECT_PORT
+            value: "443"
+          - name: JARVICE_DAL_URL
+            value: "https://jarvice-dal:8443"
+          - name: JARVICE_API_URL
+            value: "https://jarvice-api:7443"
+{{- if .Values.jarvice_mc_portal.env }}
+{{ toYaml .Values.jarvice_mc_portal.env | indent 10 }}
+{{- end }}
+        resources:
+{{- if .Values.jarvice_mc_portal.resources }}
+{{ toYaml .Values.jarvice_mc_portal.resources | indent 10 }}
+{{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: jarvice-mc-portal
+  labels:
+    app: {{ template "jarvice.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 443
+    targetPort: 443
+    name: https
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+    name: http
+  selector:
+    deployment: jarvice-mc-portal
+---

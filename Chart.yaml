@@ -1,0 +1,24 @@
+apiVersion: v1
+
+version: 0.1
+deprecated: false
+
+name: jarvice
+appVersion: "2.0.18"
+description: JARVICE cloud platform
+home: http://www.nimbix.net/
+maintainers:
+    - name: Nimbix, Inc.
+      email: support@nimbix.net
+      url: http://www.nimbix.net/
+keywords:
+    - JARVICE
+    - HPC
+    - cloud
+#icon:
+sources:
+   - https://github.com/nimbix/jarvice-helm
+
+engine: gotpl
+#kubeVersion: ">=1.11.0"
+tillerVersion: ">=2.9"

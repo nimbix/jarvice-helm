@@ -1,0 +1,266 @@
+jarvice:
+  # Set JARVICE_SYSTEM_NAMESPACE if not using the JARVICE default k8s namespace
+  # JARVICE_SYSTEM_NAMESPACE: jarvice-system
+  JARVICE_LICENSE_LIC:
+  JARVICE_SYSTEM_REGISTRY: quay.io
+  JARVICE_SYSTEM_REPO_BASE: nimbix
+  JARVICE_IMAGES_TAG: jarvice-testing
+  JARVICE_IMAGES_TAG_DEV: -k8s
+  JARVICE_LOCAL_REGISTRY: jarvice-registry:5000
+  JARVICE_LOCAL_REPO_BASE: jarvice
+  imagePullSecret:
+    username:
+    password:
+  # Set the k8s serviceAccount if previously created, then set the create
+  # options to false.
+  kubernetes:
+    serviceAccount: jarvice-system-sa
+    createServiceAccount: true
+    createServiceAccountCRB: true
+
+# Database server previously set up?  Set enabled to false.
+# Then, set JARVICE_DB_HOST et al below in the jarvice_dal env.
+jarvice_db:
+  enabled: true
+  replicaCount: 1
+  image: mysql:5
+  persistence:
+    enabled: false
+    storageClass: "jarvice-db"
+    # storageClass: "-"
+    accessMode: ReadWriteOnce
+    size: 8Gi
+  env:
+    - name: MYSQL_ROOT_PASSWORD
+      value: "Pass1234"
+    - name: MYSQL_DATABASE
+      value: "nimbix"
+
+# Docker registry server previously set up?  Set enabled to false.
+# Then set JARVICE_LOCAL_REGISTRY as seen above in the jarvice: stanza.
+jarvice_registry:
+  enabled: true
+  # external must be set to true to enable direct access from outside cluster.
+  external: false
+  replicaCount: 1
+  image: registry:2
+  persistence:
+    enabled: false
+    storageClass: "jarvice-registry"
+    # storageClass: "-"
+    accessMode: ReadWriteOnce
+    size: 10Gi
+  env:
+    - name: REGISTRY_HTTP_ADDR
+      value: 0.0.0.0:5000
+    - name: REGISTRY_HTTP_TLS_CERTIFICATE
+      value: /etc/ssl/docker/tls.crt
+    - name: REGISTRY_HTTP_TLS_KEY
+      value: /etc/ssl/docker/tls.key
+  data:
+    tls.crt: |
+      -----BEGIN CERTIFICATE-----
+      MIIDpTCCAo2gAwIBAgIJAL243I/6MhAPMA0GCSqGSIb3DQEBCwUAMGkxCzAJBgNV
+      BAYTAlVTMQ4wDAYDVQQIDAVUZXhhczEPMA0GA1UEBwwGRGFsbGFzMQ8wDQYDVQQK
+      DAZOaW1iaXgxDzANBgNVBAsMBlBPUlRBTDEXMBUGA1UEAwwOSkFSVklDRS1QT1JU
+      QUwwHhcNMTcwMzIyMDYxNjU4WhcNMTcwNDIxMDYxNjU4WjBpMQswCQYDVQQGEwJV
+      UzEOMAwGA1UECAwFVGV4YXMxDzANBgNVBAcMBkRhbGxhczEPMA0GA1UECgwGTmlt
+      Yml4MQ8wDQYDVQQLDAZQT1JUQUwxFzAVBgNVBAMMDkpBUlZJQ0UtUE9SVEFMMIIB
+      IjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwodSLyiI6uDYYbvn4pnRFcSI
+      ghpQ53ezTeq23qL5f4dhTZOgR9GvcefuK1vwFxPb3bYPvn8m85Pg4vR3533F3tKV
+      ERDPa7yidFefuFuSFm2PKeZJ1zTWRnDwuLKJuqtPt9OkYmvcA+SoxxPwEAkHGMDQ
+      laHKsSgFa/khmNZ/OPVYJYGJ9E+nJjspoHdGauEaoRw3mXPYL+n5am5LBjEaHjRv
+      J66S4TKE0m6kAhu1uvZDJF5CIwJIZQ3yo9cZaP1eTVaC3r9y/uyihTDtVUrZMJG7
+      cUi26Ho4cKaRUx87EOlrrs+G/5RIOx+KpoiznaQqc7hNXf8rJH7cqvoUbeULgwID
+      AQABo1AwTjAdBgNVHQ4EFgQUXxnFQMmadPSMa0oaR+Jy6qt5LZgwHwYDVR0jBBgw
+      FoAUXxnFQMmadPSMa0oaR+Jy6qt5LZgwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0B
+      AQsFAAOCAQEAoICYXpTUGtpiZW/VyhIz5nhzvz/ttqwXCmJ/afG7mOzjvVG45vb+
+      owCKM8iNSuad8uygmbz/HnYOq+W5BJlYA/0Fvrx4OXiwyV1IhqErg1PjEbqTRHo/
+      9IBK91ng62DqJBrj8NFvUqbofhTcHo7pSVKZlkuUB+cuVUPH6HRHqbtu/GYAnyUG
+      xGY+Jk/4vWzJil2+DCT2JG8xKpllwhNpgWahZT8pAVBMa79zXQMj8JsdW7T1YWpg
+      ZEU4n6EhkaOjENd8aHVLmzCU7Z1zmcPRL6/4E2tPKVIEhkmd8x3hteN77pS3ZHdZ
+      1+F4fuWkwQw0vJAI9MvxbOn6I3d8en1nJA==
+      -----END CERTIFICATE-----
+    tls.key: |
+      -----BEGIN PRIVATE KEY-----
+      MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDCh1IvKIjq4Nhh
+      u+fimdEVxIiCGlDnd7NN6rbeovl/h2FNk6BH0a9x5+4rW/AXE9vdtg++fybzk+Di
+      9HfnfcXe0pUREM9rvKJ0V5+4W5IWbY8p5knXNNZGcPC4som6q0+306Ria9wD5KjH
+      E/AQCQcYwNCVocqxKAVr+SGY1n849VglgYn0T6cmOymgd0Zq4RqhHDeZc9gv6flq
+      bksGMRoeNG8nrpLhMoTSbqQCG7W69kMkXkIjAkhlDfKj1xlo/V5NVoLev3L+7KKF
+      MO1VStkwkbtxSLboejhwppFTHzsQ6Wuuz4b/lEg7H4qmiLOdpCpzuE1d/yskftyq
+      +hRt5QuDAgMBAAECggEAErb0GCddLMOe7aAnSeykaeSzgVjIycwBSxC2sSqauEMt
+      AEqgk+g/acT3a+J3cbDuaSEX2Krg83QZoZwFYRb/j1VRFAg6/FF0i57WdeURY+j8
+      afqGxhaGOtaowgwjJftPOw84dGOOEi3Qcv6fDNvhe+co6gxbtLl19BJOwiZ4rOD6
+      jFRncSvYxrR5+6aqhV4IOFgxhYwXFehlf0kU3OqM6cIvTDI8nhqrZadtyqL3eiWx
+      2UsGBGNRdXydURcXMMm9jUhF8SkTSiXlclGD+If5pEP1+CqhD/Pn3MmIHy4hBAcS
+      Gl/5+dB9oqybrSPfJpSR7Ga+yq7rQl/8CVGrHqAc+QKBgQD1kncbWJUsvU+B/WBd
+      tLbEpb3jk0qCrH1UQKqZpunaC+pAJe1/y/WzFnxqz1EqRdM1mVQPMSggZkvEdgI/
+      6e4Rz9TAkKcMjxiuJZE09xyaJ2b4JRw7OMXgav/XSy8OdBLfBFDxUFfdCibY7bpz
+      +pnZqfPJIKPshNhXWTCcmG3idQKBgQDKyfpnPGGupKMHfq7gwImGfKFzLUcR81ix
+      W1uAFKI/cynxW0Lt9U/sPA4Ep+YwyYCaB2k8wP5W5jDfDm3UQ3UyoBuDJndkZcqh
+      5pa8OSc3Bv2aZ8zF9zUFcttFMCpPMyVQOyidU4lC6B7OUQC/HGnAhybt/gcopUjL
+      BaDY+/KHFwKBgFc9Sxbp50TXlBFH5B4l/u/pOYZJYyT9BiESQAkJ5PXTWcqkLrVB
+      ze1rRZPkRp9P4vKdn+Etw2WPMcd/bNkrz6mAPcKTIOUzSL9FFUrNptmUud3ZwSfA
+      yXsqR+1CBluKHNIhhGfV9QDPhHF4Ms7U7icHW1XORK3Xm8ucIcrf09mpAoGBAJhH
+      NabiO8QGU3okUjPpwRvhaOdxf6XmI5sDLGGwnOmilENusYK5LKwLqMcsQXovRkfj
+      +s2paxRcRSSq1CSKB27dtes1LoCQw6nx2w06qczzjeqtuaKK8SDHUArTkWHp2UI3
+      OldxzGgWoFNzlmjscCkoFD6w/DU0cMYr0s4927A/AoGAAb16SNEPFBmXzAxfQ1dd
+      YtkjDqhjr0rPBPmPjXdzNzNFrhPOeGktA7iyhec52wqvXzMVAC6CV0p7XGdiNuI7
+      szrFxPpObl3oyzaeT7/vWKsLoJK1wLbzJSDOWpSoLbiLUhuJFxlnsgO31ScpOXLN
+      P6mgO0ziUxnWqWCcPC7y85M=
+      -----END PRIVATE KEY-----
+
+jarvice_dal:
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 1
+      memory: 16Gi
+  env:
+    - name: JARVICE_SITE_DBHOST
+      value: "jarvice-db"
+    - name: JARVICE_SITE_DBUSER
+      value: "root"
+    - name: JARVICE_SITE_DBPASSWD
+      value: "Pass1234"
+    - name: JARVICE_ROOT_USER_PASSWD
+      value: "Pass1234"
+    - name: JARVICE_ROOT_USER_EMAIL
+      value: "root@localhost"
+    - name: JARVICE_ROOT_USER_REGISTRY_VERIFY
+      value: "False"
+    #- name: JARVICE_ROOT_USER_VAULT
+    #  value: "default-BLOCK-1GB"
+    #- name: JARVICE_ROOT_USER_VAULT_SIZE
+    #  value: "1"
+    #- name: JARVICE_CFG_NETWORK
+    #  value:
+
+jarvice_scheduler:
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 1
+      memory: 4Gi
+  env:
+    - name: JARVICE_USE_LXCFS
+      value: "yes"
+    - name: JARVICE_K8S_ADMIN_CONF
+      value: ""
+    - name: JARVICE_SCHED_PASS_INTERVAL
+      value: "5"
+    - name: JARVICE_MAIL_CONF
+      value: |
+        [mail]
+        from: JARVICE Job Status <DoNotReply@localhost>
+        admins: root@localhost
+        [smtp]
+        server: localhost:25
+        ;username: DoNotReply@localhost
+        ;password: Pass1234
+
+# JARVICE_PULL_NODE_SELECTOR can be set to select which nodes the docker pull
+# process will run on
+jarvice_api:
+  replicaCount: 2
+  resources:
+    limits:
+      cpu: 250m
+      memory: 512Mi
+  env:
+    - name: JARVICE_PULL_NODE_SELECTOR
+      value:
+#    - name: JARVICE_LOCAL_REGISTRY
+#      value: jarvice-registry
+#    - name: JARVICE_LOCAL_REPO_BASE
+#      value: nimbix
+
+jarvice_mc_portal:
+  replicaCount: 2
+  resources:
+    limits:
+      cpu: 250m
+      memory: 2Gi
+  env:
+    - name: JARVICE_MC_PORTAL_CRT
+      value: |
+        -----BEGIN CERTIFICATE-----
+        MIIDpTCCAo2gAwIBAgIJAL243I/6MhAPMA0GCSqGSIb3DQEBCwUAMGkxCzAJBgNV
+        BAYTAlVTMQ4wDAYDVQQIDAVUZXhhczEPMA0GA1UEBwwGRGFsbGFzMQ8wDQYDVQQK
+        DAZOaW1iaXgxDzANBgNVBAsMBlBPUlRBTDEXMBUGA1UEAwwOSkFSVklDRS1QT1JU
+        QUwwHhcNMTcwMzIyMDYxNjU4WhcNMTcwNDIxMDYxNjU4WjBpMQswCQYDVQQGEwJV
+        UzEOMAwGA1UECAwFVGV4YXMxDzANBgNVBAcMBkRhbGxhczEPMA0GA1UECgwGTmlt
+        Yml4MQ8wDQYDVQQLDAZQT1JUQUwxFzAVBgNVBAMMDkpBUlZJQ0UtUE9SVEFMMIIB
+        IjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwodSLyiI6uDYYbvn4pnRFcSI
+        ghpQ53ezTeq23qL5f4dhTZOgR9GvcefuK1vwFxPb3bYPvn8m85Pg4vR3533F3tKV
+        ERDPa7yidFefuFuSFm2PKeZJ1zTWRnDwuLKJuqtPt9OkYmvcA+SoxxPwEAkHGMDQ
+        laHKsSgFa/khmNZ/OPVYJYGJ9E+nJjspoHdGauEaoRw3mXPYL+n5am5LBjEaHjRv
+        J66S4TKE0m6kAhu1uvZDJF5CIwJIZQ3yo9cZaP1eTVaC3r9y/uyihTDtVUrZMJG7
+        cUi26Ho4cKaRUx87EOlrrs+G/5RIOx+KpoiznaQqc7hNXf8rJH7cqvoUbeULgwID
+        AQABo1AwTjAdBgNVHQ4EFgQUXxnFQMmadPSMa0oaR+Jy6qt5LZgwHwYDVR0jBBgw
+        FoAUXxnFQMmadPSMa0oaR+Jy6qt5LZgwDAYDVR0TBAUwAwEB/zANBgkqhkiG9w0B
+        AQsFAAOCAQEAoICYXpTUGtpiZW/VyhIz5nhzvz/ttqwXCmJ/afG7mOzjvVG45vb+
+        owCKM8iNSuad8uygmbz/HnYOq+W5BJlYA/0Fvrx4OXiwyV1IhqErg1PjEbqTRHo/
+        9IBK91ng62DqJBrj8NFvUqbofhTcHo7pSVKZlkuUB+cuVUPH6HRHqbtu/GYAnyUG
+        xGY+Jk/4vWzJil2+DCT2JG8xKpllwhNpgWahZT8pAVBMa79zXQMj8JsdW7T1YWpg
+        ZEU4n6EhkaOjENd8aHVLmzCU7Z1zmcPRL6/4E2tPKVIEhkmd8x3hteN77pS3ZHdZ
+        1+F4fuWkwQw0vJAI9MvxbOn6I3d8en1nJA==
+        -----END CERTIFICATE-----
+    - name: JARVICE_MC_PORTAL_KEY
+      value: |
+        -----BEGIN PRIVATE KEY-----
+        MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDCh1IvKIjq4Nhh
+        u+fimdEVxIiCGlDnd7NN6rbeovl/h2FNk6BH0a9x5+4rW/AXE9vdtg++fybzk+Di
+        9HfnfcXe0pUREM9rvKJ0V5+4W5IWbY8p5knXNNZGcPC4som6q0+306Ria9wD5KjH
+        E/AQCQcYwNCVocqxKAVr+SGY1n849VglgYn0T6cmOymgd0Zq4RqhHDeZc9gv6flq
+        bksGMRoeNG8nrpLhMoTSbqQCG7W69kMkXkIjAkhlDfKj1xlo/V5NVoLev3L+7KKF
+        MO1VStkwkbtxSLboejhwppFTHzsQ6Wuuz4b/lEg7H4qmiLOdpCpzuE1d/yskftyq
+        +hRt5QuDAgMBAAECggEAErb0GCddLMOe7aAnSeykaeSzgVjIycwBSxC2sSqauEMt
+        AEqgk+g/acT3a+J3cbDuaSEX2Krg83QZoZwFYRb/j1VRFAg6/FF0i57WdeURY+j8
+        afqGxhaGOtaowgwjJftPOw84dGOOEi3Qcv6fDNvhe+co6gxbtLl19BJOwiZ4rOD6
+        jFRncSvYxrR5+6aqhV4IOFgxhYwXFehlf0kU3OqM6cIvTDI8nhqrZadtyqL3eiWx
+        2UsGBGNRdXydURcXMMm9jUhF8SkTSiXlclGD+If5pEP1+CqhD/Pn3MmIHy4hBAcS
+        Gl/5+dB9oqybrSPfJpSR7Ga+yq7rQl/8CVGrHqAc+QKBgQD1kncbWJUsvU+B/WBd
+        tLbEpb3jk0qCrH1UQKqZpunaC+pAJe1/y/WzFnxqz1EqRdM1mVQPMSggZkvEdgI/
+        6e4Rz9TAkKcMjxiuJZE09xyaJ2b4JRw7OMXgav/XSy8OdBLfBFDxUFfdCibY7bpz
+        +pnZqfPJIKPshNhXWTCcmG3idQKBgQDKyfpnPGGupKMHfq7gwImGfKFzLUcR81ix
+        W1uAFKI/cynxW0Lt9U/sPA4Ep+YwyYCaB2k8wP5W5jDfDm3UQ3UyoBuDJndkZcqh
+        5pa8OSc3Bv2aZ8zF9zUFcttFMCpPMyVQOyidU4lC6B7OUQC/HGnAhybt/gcopUjL
+        BaDY+/KHFwKBgFc9Sxbp50TXlBFH5B4l/u/pOYZJYyT9BiESQAkJ5PXTWcqkLrVB
+        ze1rRZPkRp9P4vKdn+Etw2WPMcd/bNkrz6mAPcKTIOUzSL9FFUrNptmUud3ZwSfA
+        yXsqR+1CBluKHNIhhGfV9QDPhHF4Ms7U7icHW1XORK3Xm8ucIcrf09mpAoGBAJhH
+        NabiO8QGU3okUjPpwRvhaOdxf6XmI5sDLGGwnOmilENusYK5LKwLqMcsQXovRkfj
+        +s2paxRcRSSq1CSKB27dtes1LoCQw6nx2w06qczzjeqtuaKK8SDHUArTkWHp2UI3
+        OldxzGgWoFNzlmjscCkoFD6w/DU0cMYr0s4927A/AoGAAb16SNEPFBmXzAxfQ1dd
+        YtkjDqhjr0rPBPmPjXdzNzNFrhPOeGktA7iyhec52wqvXzMVAC6CV0p7XGdiNuI7
+        szrFxPpObl3oyzaeT7/vWKsLoJK1wLbzJSDOWpSoLbiLUhuJFxlnsgO31ScpOXLN
+        P6mgO0ziUxnWqWCcPC7y85M=
+        -----END PRIVATE KEY-----
+    - name: JARVICE_USER_DEFAULT_ENABLED
+      value: "True"
+    - name: JARVICE_USER_DEFAULT_DEVELOPER
+      value: "True"
+    #- name: JARVICE_PORTAL_MEMCACHED_LOCATIONS
+    #  value: ""
+    #- name: JARVICE_PORTAL_APP_OWNERS
+    #  value: ""
+    #- name: JARVICE_PORTAL_MAIL_FROM
+    #  value: ""
+    #- name: JARVICE_PORTAL_MAIL_SUBJECT
+    #  value: ""
+    #- name: JARVICE_PORTAL_MAIL_SERVER
+    #  value: ""
+    #- name: JARVICE_PORTAL_MAIL_USERNAME
+    #  value: ""
+    #- name: JARVICE_PORTAL_MAIL_PASSWORD
+    #  value: ""
+    #- name: JARVICE_PORTAL_MAIL_ADMINS
+    #  value: ""
+    #- name: JARVICE_PORTAL_MAIL_DBHOST
+    #  value: ""
+    #- name: JARVICE_PORTAL_MAIL_DBUSER
+    #  value: ""
+    #- name: JARVICE_PORTAL_MAIL_DBPASSWD
+    #  value: ""
+
