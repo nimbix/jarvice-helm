@@ -123,8 +123,8 @@ jarvice_dal:
       memory: 16Gi
   hostNetwork: false
 #  nodeSelector:
-#    jarvice.io/jarvice-system=1
-#    jarvice.io/jarvice-dal=1
+#    jarvice.io/jarvice-system: 1
+#    jarvice.io/jarvice-dal: 1
   env:
     - name: JARVICE_SITE_DBHOST
       value: "jarvice-db"
@@ -152,8 +152,8 @@ jarvice_scheduler:
       cpu: 1
       memory: 4Gi
 #  nodeSelector:
-#    jarvice.io/jarvice-system=1
-#    jarvice.io/jarvice-scheduler=1
+#    jarvice.io/jarvice-system: 1
+#    jarvice.io/jarvice-scheduler: 1
   env:
     - name: JARVICE_USE_LXCFS
       value: "yes"
@@ -180,8 +180,8 @@ jarvice_api:
       cpu: 250m
       memory: 512Mi
 #  nodeSelector:
-#    jarvice.io/jarvice-system=1
-#    jarvice.io/jarvice-api=1
+#    jarvice.io/jarvice-system: 1
+#    jarvice.io/jarvice-api: 1
   env:
     - name: JARVICE_PULL_NODE_SELECTOR
       value:
@@ -197,8 +197,8 @@ jarvice_mc_portal:
       cpu: 250m
       memory: 2Gi
 #  nodeSelector:
-#    jarvice.io/jarvice-system=1
-#    jarvice.io/jarvice-mc-portal=1
+#    jarvice.io/jarvice-system: 1
+#    jarvice.io/jarvice-mc-portal: 1
   env:
     - name: JARVICE_MC_PORTAL_CRT
       value: |
