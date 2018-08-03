@@ -121,6 +121,7 @@ jarvice_dal:
     limits:
       cpu: 1
       memory: 16Gi
+  hostNetwork: false
 #  nodeSelector:
 #    jarvice.io/jarvice-system=1
 #    jarvice.io/jarvice-dal=1

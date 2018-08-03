@@ -21,7 +21,9 @@ spec:
         container.apparmor.security.beta.kubernetes.io/jarvice-dal: unconfined
     spec:
       serviceAccountName: {{ .Values.jarvice.kubernetes.serviceAccount }}
-#      hostNetwork: true
+{{- if eq true Values.jarvice_dal.hostNetwork }}
+      hostNetwork: true
+{{- end }}
 #      terminationGracePeriodSeconds: 0
       nodeSelector:
         beta.kubernetes.io/arch: "{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}"
