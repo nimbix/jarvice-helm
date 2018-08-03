@@ -24,12 +24,15 @@ spec:
 #      hostNetwork: true
 #      terminationGracePeriodSeconds: 0
       nodeSelector:
-        beta.kubernetes.io/arch: "amd64"
+        beta.kubernetes.io/arch: "{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}"
+{{- if .Values.jarvice_scheduler.nodeSelector }}
+{{ toYaml .Values.jarvice_scheduler.nodeSelector | indent 8 }}
+{{- end }}
       imagePullSecrets:
       - name: jarvice-docker
       containers:
       - name: jarvice-scheduler
-        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-scheduler:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}{{ .Values.jarvice.JARVICE_IMAGES_TAG_DEV }}
+        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-scheduler:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}-{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}{{ .Values.jarvice.JARVICE_IMAGES_TAG_DEV }}
         imagePullPolicy: Always
         ports:
           - name: https
@@ -39,6 +42,8 @@ spec:
             value: "https://jarvice-dal:8443"
           - name: JARVICE_LICENSE_LIC
             value: {{ .Values.jarvice.JARVICE_LICENSE_LIC }}
+          - name: JARVICE_JOBS_NAMESPACE
+            value: {{ .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
           - name: JARVICE_SYSTEM_NAMESPACE
             value: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
           - name: JARVICE_SYSTEM_REGISTRY

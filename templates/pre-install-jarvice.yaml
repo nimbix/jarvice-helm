@@ -1,4 +1,71 @@
 ---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
+  labels:
+    app: {{ template "jarvice.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    heritage: "{{ .Release.Service }}"
+  annotations:
+    "helm.sh/hook": pre-install
+---
+{{- if eq true .Values.jarvice.kubernetes.createClusterRole -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: {{ .Values.jarvice.kubernetes.clusterRole }}
+  labels:
+    app: {{ template "jarvice.name" . }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+    heritage: "{{ .Release.Service }}"
+  annotations:
+    "helm.sh/hook": pre-install
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["create", "delete", "deletecollection", "get", "list", "patch", "update", "watch"]
+- apiGroups: [""]
+  resources: ["pods/log"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["pods/status"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["create", "delete", "deletecollection", "get", "list", "patch", "update", "watch"]
+- apiGroups: [""]
+  resources: ["endpoints"]
+  verbs: ["create", "delete", "deletecollection", "get", "list", "patch", "update", "watch"]
+- apiGroups: [""]
+  resources: ["persistentvolumeclaims"]
+  verbs: ["create", "delete", "deletecollection", "get", "list", "patch", "update", "watch"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["create", "delete", "deletecollection", "get", "list", "patch", "update", "watch"]
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["create", "delete", "deletecollection", "get", "list", "patch", "update", "watch"]
+- apiGroups: [""]
+  resources: ["services/proxy"]
+  verbs: ["create", "delete", "deletecollection", "get", "list", "patch", "update", "watch"]
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["create", "delete", "deletecollection", "get", "list", "patch", "update", "watch"]
+- apiGroups: ["extensions"]
+  resources: ["ingresses"]
+  verbs: ["create", "delete", "deletecollection", "get", "list", "patch", "update", "watch"]
+- apiGroups: ["extensions"]
+  resources: ["networkpolicies"]
+  verbs: ["create", "delete", "deletecollection", "get", "list", "patch", "update", "watch"]
+- apiGroups: ["networking.k8s.io"]
+  resources: ["networkpolicies"]
+  verbs: ["create", "delete", "deletecollection", "get", "list", "patch", "update", "watch"]
+---
+{{- end }}
 {{- if eq true .Values.jarvice.kubernetes.createServiceAccount -}}
 apiVersion: v1
 kind: ServiceAccount
@@ -30,7 +97,8 @@ metadata:
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: cluster-admin
+  #name: cluster-admin
+  name: {{ .Values.jarvice.kubernetes.clusterRole }}
 subjects:
 - kind: ServiceAccount
   name: {{ .Values.jarvice.kubernetes.serviceAccount }}

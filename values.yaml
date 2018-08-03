@@ -1,9 +1,11 @@
 jarvice:
+  JARVICE_LICENSE_LIC:
+  JARVICE_JOBS_NAMESPACE: jarvice-jobs
   # Set JARVICE_SYSTEM_NAMESPACE if not using the JARVICE default k8s namespace
   # JARVICE_SYSTEM_NAMESPACE: jarvice-system
-  JARVICE_LICENSE_LIC:
   JARVICE_SYSTEM_REGISTRY: quay.io
   JARVICE_SYSTEM_REPO_BASE: nimbix
+  JARVICE_SYSTEM_ARCH: amd64
   JARVICE_IMAGES_TAG: jarvice-testing
   JARVICE_IMAGES_TAG_DEV: -k8s
   JARVICE_LOCAL_REGISTRY: jarvice-registry:5000
@@ -14,6 +16,8 @@ jarvice:
   # Set the k8s serviceAccount if previously created, then set the create
   # options to false.
   kubernetes:
+    clusterRole: jarvice-system-cr
+    createClusterRole: true
     serviceAccount: jarvice-system-sa
     createServiceAccount: true
     createServiceAccountCRB: true
@@ -117,6 +121,9 @@ jarvice_dal:
     limits:
       cpu: 1
       memory: 16Gi
+#  nodeSelector:
+#    jarvice.io/jarvice-system=1
+#    jarvice.io/jarvice-dal=1
   env:
     - name: JARVICE_SITE_DBHOST
       value: "jarvice-db"
@@ -143,6 +150,9 @@ jarvice_scheduler:
     limits:
       cpu: 1
       memory: 4Gi
+#  nodeSelector:
+#    jarvice.io/jarvice-system=1
+#    jarvice.io/jarvice-scheduler=1
   env:
     - name: JARVICE_USE_LXCFS
       value: "yes"
@@ -168,6 +178,9 @@ jarvice_api:
     limits:
       cpu: 250m
       memory: 512Mi
+#  nodeSelector:
+#    jarvice.io/jarvice-system=1
+#    jarvice.io/jarvice-api=1
   env:
     - name: JARVICE_PULL_NODE_SELECTOR
       value:
@@ -182,6 +195,9 @@ jarvice_mc_portal:
     limits:
       cpu: 250m
       memory: 2Gi
+#  nodeSelector:
+#    jarvice.io/jarvice-system=1
+#    jarvice.io/jarvice-mc-portal=1
   env:
     - name: JARVICE_MC_PORTAL_CRT
       value: |

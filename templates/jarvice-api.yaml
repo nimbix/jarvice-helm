@@ -24,12 +24,15 @@ spec:
 #      hostNetwork: true
 #      terminationGracePeriodSeconds: 0
       nodeSelector:
-        beta.kubernetes.io/arch: "amd64"
+        beta.kubernetes.io/arch: "{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}"
+{{- if .Values.jarvice_api.nodeSelector }}
+{{ toYaml .Values.jarvice_api.nodeSelector | indent 8 }}
+{{- end }}
       imagePullSecrets:
       - name: jarvice-docker
       containers:
       - name: jarvice-api
-        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-api:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}{{ .Values.jarvice.JARVICE_IMAGES_TAG_DEV }}
+        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-api:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}-{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}{{ .Values.jarvice.JARVICE_IMAGES_TAG_DEV }}
         imagePullPolicy: Always
         ports:
           - name: https

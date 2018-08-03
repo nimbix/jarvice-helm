@@ -4,7 +4,7 @@ version: 0.1
 deprecated: false
 
 name: jarvice
-appVersion: "2.0.18"
+appVersion: "3.0.1"
 description: JARVICE cloud platform
 home: http://www.nimbix.net/
 maintainers:
