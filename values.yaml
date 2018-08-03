@@ -17,7 +17,7 @@ jarvice:
   # options to false.
   kubernetes:
     clusterRole: jarvice-system-cr
-    createClusterRole: true
+    createClusterRole: false
     serviceAccount: jarvice-system-sa
     createServiceAccount: true
     createServiceAccountCRB: true
