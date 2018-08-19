@@ -1,0 +1,13 @@
+{
+  "clrNimbixLite": "#3a87ad",
+  "clrNimbixMed": "#0c8db6",
+  "clrNimbixDark": "#003366",
+  "clrNimbixDarker": "#002050",
+  "clrNimbixDarkGreen": "#006633",
+  "clrNimbixErr": "#EE0000",
+  "clrNimbixDarkTrans": "rgba(0, 51, 102, 0.5)",
+  "clrNimbixGray": "#EEEEEE",
+  "clrNimbixDarkGray": "#888888",
+  "clrNimbixBlueGray": "#ddddee",
+  "clrNimbixDarkRed": "#802020"
+}
