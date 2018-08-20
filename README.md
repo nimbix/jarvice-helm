@@ -326,7 +326,7 @@ it's own configuration reference.
 
 ## JARVICE Post Installation
 
-# Optionally, customize the JARVICE portal with a new "skin" and/or SSL certificate/key pair
+### Optionally, customize the JARVICE portal with a new "skin" and/or SSL certificate/key pair
 
 - Copy the `jarvice-mc-portal-skin` directory to `jarvice-mc-portal-skin-override`.
 - Update the image files and/or JSON settings of the color palette in the
@@ -371,7 +371,7 @@ $ kubectl --namespace jarvice-system set env \
     deployment/jarvice-mc-portal JARVICE_PODS_RELOAD=$(date +%s)
 ```
 
-# View status of the installed kubernetes objects
+### View status of the installed kubernetes objects
 
 To get the status for all of the kubernetes objects created in the
 "jarvice-system" namespace:
@@ -380,7 +380,7 @@ To get the status for all of the kubernetes objects created in the
 $ kubectl --namespace jarvice-system get all
 ```
 
-# Retreive IP addresses for accessing JARVICE
+### Retreive IP addresses for accessing JARVICE
 
 The LoadBalancer IP addresses for the MC portal and the API endpoint can be
 found with the following commands:
