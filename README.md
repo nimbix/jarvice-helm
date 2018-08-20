@@ -257,7 +257,7 @@ $ helm upgrade --reuse-values \
 
 ### Non-JARVICE specific services (jarvice-db, jarvice-registry)
 
-- MySQL database (jarvice-db)
+#### MySQL database (jarvice-db)
 
 If there is an already existing MySQL installation that you wish to use with
 JARVICE, it will be necessary to create an `override.yaml` file (shown above)
@@ -280,7 +280,7 @@ to disable it in the JARVICE helm chart.  This can be done either in an
 
 Note that the MySQL installation will require a database named 'nimbix'.
 
-- Docker registry (jarvice-registry)
+#### Docker registry (jarvice-registry)
 
 As with the database, you may already have or wish to use a docker registry
 outside of the control of the JARVICE helm chart.  If doing so, it will
