@@ -1,0 +1,677 @@
+﻿THIS NIMBIX CUSTOMER AGREEMENT ( " AGREEMENT " ) IS A BINDING AGREEMENT 
+BETWEEN NIMBIX, Inc.( " NIMBIX " ) AND YOU AND, IF APPLICABLE, THE COMPANY OR 
+OTHER LEGAL ENTITY YOU REPRESENT (COLLECTIVELY, " YOU " ). THIS AGREEMENT 
+INCORPORATES BY REFERENCE THE PRIVACY POLICY POSTED ON WWW.NIMBIX.NET ( " 
+PRIVACY POLICY " ). 
+UPON USING THE NIMBIX CLOUD ( " Nimbix Cloud " ), USING NIMBIX APPLICATIONS ( 
+" NIMBIX APPLICATIONS " ), OR CREATING A NIMBIX APPLICATION ENVIRONMENT ( " 
+NAE " ) ON THE NIMBIX WEBSITE YOU AGREE TO BE BOUND BY THE TERMS AND 
+CONDITIONS OF THIS AGREEMENT. IF YOU ARE ENTERING INTO THIS AGREEMENT ON 
+BEHALF OF A COMPANY OR OTHER LEGAL ENTITY, YOU REPRESENT THAT 
+YOU HAVE THE LEGAL AUTHORITY TO BIND THE LEGAL ENTITY TO THIS AGREEMENT, IN 
+WHICH CASE " YOU " SHALL MEAN SUCH ENTITY. 
+IF YOU DO NOT HAVE SUCH AUTHORITY, OR IF YOU DO NOT AGREE WITH THE TERMS AND 
+CONDITIONS OF THIS AGREEMENT, YOU MUST NOT USE THE SERVICES. 
+1. The Services 
+The services covered by this Agreement include services that NIMBIX (referred 
+to herein as " we " or " us " ) that we make available for a fee (the " 
+Services " ). 
+1.2. Services. Services include all web services and any related support 
+services that we make available to you for a fee on the NIMBIX website, 
+except those web services for which we specifically provide a separate 
+customer agreement. Our Services include, but are not limited to: 
+* Nimbix Cloud 
+* Nimbix Applications 
+* Nimbix Application Environments 
+* Nimbix Cloud Storage 
+* Nimbix PushToCompute 
+2. Modifications to this Agreement 
+You agree that we may modify this Agreement or any policy or other terms 
+referenced in this Agreement (collectively, " Additional Policies " ) at any 
+time by posting a revised version of the Agreement or such Additional Policy 
+on the NIMBIX Website or our " Terms " page accessible at 
+http://www.nimbix.net/terms-conditions 
+
+By continuing to use or receive the Services after the effective date of any 
+revisions to this Agreement or any Additional Policies, you agree to be bound 
+by the revised Agreement or any revised Additional Policies. It is your 
+responsibility to check the NIMBIX Website and the Developer page regularly 
+for changes to this Agreement or the Additional Policies, as applicable. 
+3. Term, Termination and Suspension 
+3.1. Term. The term of this Agreement ( " Term " ) will commence, and you may 
+begin using the Services, once you agree to the terms and conditions of this 
+Agreement after completing the registration process for your NIMBIX Cloud 
+account. The Agreement will remain in effect until terminated by you or us in 
+accordance with this Section 3. 
+3.2. Termination by You for Convenience. You may terminate this Agreement for 
+any reason or no reason at all, at your convenience, by (i) providing us 
+written notice of termination in accordance with Section 15 and (ii) closing 
+your account for any Service for which we provide an account closing 
+mechanism. 
+3.3. Termination or Suspension by Us Other Than for Cause. 
+3.3.1. Services. We may suspend your right and license to use any or all 
+Services (and any associated Nimbix Applications) or terminate this Agreement 
+in its entirety (and, accordingly, cease providing all Services to you), for 
+any reason or for no reason, at our discretion at any time in accordance with 
+the notice provisions set forth in Section 15 below. 
+3.4. Termination or Suspension by Us for Cause. We may suspend your right and 
+license to use any individual Service or any set of Services, or terminate 
+this Agreement in its entirety (and, accordingly, your right to use all 
+Services), for cause effective as set forth below: 
+3.4.1. Immediately upon our notice to you in accordance with the notice 
+provisions set forth in Section 15 below if: (i) you attempt a denial of 
+service attack on any of the Services; (ii) you seek to hack or break any 
+security mechanism on any of the Services or we otherwise determine that your 
+use of the Services or the Nimbix Cloud poses a security or service risk to 
+us, to any user of services offered by us, to any third party sellers on any 
+of our websites, or to any of our or their respective customers or may 
+subject us or any third party to liability, damages or danger; (iii) you 
+otherwise use the Services in a way that disrupts or threatens the Services; 
+(iv) you are in default of your payment obligations hereunder and there is an 
+unusual spike or increase in your use of the Services; (v) we determine, in 
+our sole discretion, there is evidence of fraud with respect to your account; 
+(vi) you use any of the NIMBIX Content (as defined in Section 6.1) other than 
+as expressly permitted herein; (vii) we receive notice or we otherwise 
+determine, in our sole discretion, that you may be using NIMBIX Services for 
+any illegal purpose or in a way that violates the law or violates, infringes, 
+or misappropriates the rights of any third party; (viii) we determine, in our 
+sole discretion, that our provision of any of the Services to you is 
+prohibited by applicable law, or has become impractical or unfeasible for any 
+legal or regulatory reason; or (ix) subject to applicable law, upon your 
+liquidation, commencement of dissolution proceedings, disposal of your 
+assets, failure to continue your business, assignment for the benefit of 
+creditors, or if you become the subject of a voluntary or involuntary 
+bankruptcy or similar proceeding. 
+3.4.2. Fifteen (15) days following our provision of notice to you in 
+accordance with the notice provisions set forth in Section 15 below if you 
+are in default of any payment obligation with respect to any of the Services 
+or if any payment mechanism you have provided to us is invalid or charges are 
+refused for such payment mechanism, and you fail to cure such payment 
+obligation default or correct such payment mechanism problem within such 15 
+day period. 
+3.4.3. Five (5) days following our provision of notice to you in accordance 
+with the notice provisions set forth in Section 15 below if you breach any 
+other provision of this Agreement and fail, as determined by us, in our sole 
+discretion, to cure such breach within such 5 day period. 
+3.5. Effect of Suspension or Termination. 
+3.5.1. Suspension. Upon our suspension of your use of any Services, in whole 
+or in part, for any reason, (i) fees will continue to accrue for any Services 
+that are still in use by you, notwithstanding the suspension (ii) you remain 
+liable for all fees, charges and any other obligations you have incurred 
+through the date of suspension with respect to the Services; and (iii) all of 
+your rights with respect to the applicable Services shall be terminated 
+during the period of the suspension. 
+3.5.2. Termination. Upon termination of this Agreement for any reason: (i) 
+you remain liable for all fees, charges and any other obligations you have 
+incurred through the date of termination with respect to the Services; (ii) 
+all of your rights under this Agreement shall immediately terminate; and 
+(iii) you shall immediately return, or if instructed by us, destroy all 
+NIMBIX Confidential Information (as defined in Section 9 below) and any 
+Nimbix Applications then in your possession. 
+3.6. Survival. In the event this Agreement is terminated for any reason, 
+Sections 3.5, 3.6, 3.7, 3.8, 4.2, 6, 8 (with respect to payments that are 
+accrued but unpaid at the time of termination), and 9 through 16 will survive 
+any such termination. 
+3.7. Data Preservation in the Event of Suspension or Termination. 
+3.7.1. In the Event of Suspension Other Than for Cause. In the event of a 
+suspension by us of your access to any Service for any reason other than a 
+for cause suspension under Section 3.4.1, during the period of suspension, 
+(i) we will not take any action to intentionally erase any of your data 
+stored on the Services and (ii) applicable Service data storage charges will 
+continue to accrue. 
+3.7.2. In the Event of Termination Other Than for Cause. In the event of any 
+termination by us of any Service or any set of Services, or termination of 
+this Agreement in its entirety, other than a for cause termination under 
+Section 3.4.1, (i) we will not take any action to intentionally erase any of 
+your data stored on the Services for a period of thirty (30) days after the 
+effective date of termination; and (ii) your post termination retrieval of 
+data stored on the Services will be conditioned on your payment of Service 
+data storage charges for the period following termination, payment in full of 
+any other amounts due us, and your compliance with terms and conditions we 
+may establish with respect to such data retrieval. 
+3.7.3. In the Event of Other Suspension or Termination. Except as provided in 
+Sections 3.7.1 and 3.7.2 above, we shall have no obligation to continue to 
+store your data during any period of suspension or termination or to permit 
+you to retrieve the same. 
+3.8. Post-Termination Assistance. Following the suspension or termination of 
+your right to use the Services by us or by you for any reason other than a 
+for cause termination (i.e., a termination under Section 3.2 or under Section 
+3.3), you shall be entitled to take advantage of any post-termination 
+assistance we may generally make available with respect to the Services, such 
+as data retrieval arrangements we may elect to make available. We may also 
+endeavor to provide you unique post-suspension or post-termination 
+assistance, but we shall be under no obligation to do so. Your right to take 
+advantage of any such assistance, whether generally made available with 
+respect to the Services or made available uniquely to you, shall be 
+conditioned upon your acceptance of and compliance with any fees and terms we 
+specify for such assistance. 
+4. Authorization and License to Use the Services 
+Subject to your acceptance of and compliance with this Agreement and with the 
+payment requirements for the Services that are set forth on the applicable 
+Service detail page on the NIMBIX Website (as such payment terms may be 
+updated from time to time), we hereby grant you a limited, non-exclusive, 
+non-transferable, non-sublicenseable right and license, in and under our 
+intellectual property rights, to access and use the Services, solely in 
+accordance with the terms and conditions of this Agreement. 
+4.1. Permitted Uses Generally. 
+4.1.1. You may enable access and use of Your Content by your end users in 
+accordance with the terms of this Agreement. " Your Content " means any 
+Application, data or other content that you may (a) provide to us pursuant to 
+this Agreement, (b) make available to any end users in conjunction with the 
+Services, or (c) develop, or use in connection with the Services. Your 
+Content includes, but is not limited to, software, data, and content that you 
+or your end users upload to ours systems as a part of an Application. You are 
+responsible for all terms and conditions applicable to Your Content. 
+4.1.2. You may make network calls or requests to the Services at any time 
+that the Services are available, provided that, unless otherwise set forth 
+herein. 
+4.2. Restricted Uses Generally. 
+4.2.1. You may not interfere or attempt to interfere in any manner with the 
+functionality or proper working of the Services. 
+
+4.2.2. You may not compile or use the Nimbix Applications or any other 
+information obtained through the Services for the purpose of direct 
+marketing, spamming, unsolicited contacting of sellers or customers, or other 
+impermissible advertising, marketing or other activities, including, without 
+limitation, any activities that violate anti-spamming regulations. 
+4.2.3. You may not remove, obscure, or alter any notice of any Mark, or other 
+intellectual property or proprietary right designation appearing on or 
+contained within the Services or on any Nimbix Applications. 
+4.2.4. Subject to the terms and conditions of this Agreement, you may 
+generally publicize your use of the Services; however, you may not issue any 
+press release with respect to the Services or this Agreement without our 
+prior written consent. 
+4.2.5 Use of the Nimbix Cloud for digital cryptocurrency mining, including 
+Bitcoin, Litecoin, Ethereum, or any active or inactive cryptocurrency is 
+strictly prohibited without prior identity verification and prepayment for 
+services. Failure to comply with identify verification and prepayment will 
+result in immediate account suspension. You agree to pay for all accrued fees 
+for services prior to account suspension.
+4.3. Accounts. Unless otherwise stated, you may only create one account per 
+email address. NIMBIX accounts are associated with one email address, which 
+is used to access the service. Account Identifiers (i) identify your account 
+and (ii) allow you to make requests to NIMBIX. The Account Identifier is 
+immutable and will always uniquely identify your NIMBIX account. You should 
+contact us immediately if you believe a third party may be using your 
+account. You are responsible for maintaining up-to-date and accurate 
+information (including contact information) for your NIMBIX account. We are 
+not responsible for any unauthorized access to, alteration of, or the 
+deletion, destruction, damage, loss or failure to store any of, Your Content 
+(as defined in Section 10.2), your Applications, or other data which you 
+submit or use in connection with your account or the Services. 
+4.4. Monitoring Your Use of the Nimbix Services. You agree to provide 
+information and/or other materials related to your Applications as reasonably 
+requested by us to verify your compliance with this Agreement. You further 
+acknowledge and agree that, with respect to: 
+4.4.1. Online Applications, we may crawl or otherwise monitor the external 
+interfaces of your Application for the purpose of verifying your compliance 
+with this Agreement. You may not seek to block or otherwise interfere with 
+such crawling or monitoring (and we may use technical means to overcome any 
+methods used on your Application to block or interfere with our crawling or 
+monitoring). 
+4.4.2. Client-Side Applications, you agree to furnish a copy of your 
+Application upon request for the purpose of verifying your compliance with 
+this Agreement. 
+5. Acceptable Use Policy and Service Terms 
+You may only use the Services in accordance with applicable Service Terms. 
+6. License to Use the Nimbix Applications 
+6.1. Nimbix Applications. We may make available to you, for your 
+installation, copying and/or use in connection with the Services, from time 
+to time, a variety of software, data and other content and printed and 
+electronic documentation (all such materials except those specifically made 
+available by us under separate license terms, the " Nimbix Applications " ). 
+Subject to your acceptance of this Agreement, ongoing compliance with its 
+terms and conditions with respect to the subject Service, and payment if and 
+as required for your right to use the subject Service, we hereby grant to 
+you, without the right to sublicense, a limited, non-exclusive, non-
+transferable license during the Term, under our intellectual property or 
+proprietary rights in the Nimbix Applications, only to install, copy and use 
+the Nimbix Applications solely in connection with and as necessary for your 
+use of such Services and solely to the extent in compliance with all the 
+terms and conditions of this Agreement. The Nimbix Applications may include, 
+without limitation: 
+* Proprietary applications; 
+* Developer tools; 
+* Specifications describing the operational and functional capabilities, use 
+limitations, technical and engineering requirements, and testing and 
+performance criteria relevant to the proper use of a Service; 
+* Text materials made available as part of the Service ( " Text Materials " 
+); and 
+* Other forms of digital content, data, text, images, logos, user interface 
+designs and other creative designs, audio and video (with the Text Materials, 
+collectively, " NIMBIX Content " ). 
+Except as may be expressly authorized under this Agreement: 
+* You may not, and may not attempt to, modify, alter, tamper with, repair, or 
+otherwise create derivative works of any software included in or accessed via 
+the Nimbix Applications. 
+* You may not, and may not attempt to, reverse engineer, disassemble, or 
+decompile the Nimbix Applications or the Services or apply any other process 
+or procedure to derive the source code of any software included in or 
+accessed via the Nimbix Applications. If certain applications provided by 
+Nimbix are protected under the GNU General Public License, Nimbix will so 
+indicated and use of such applications and its associated source code will be 
+governed by the applicable GNU license terms and conditions. 
+6.2. Restrictions with Respect to Use of Marks. Your use of any trademarks, 
+service marks, service or trade names, logos, and other designations of 
+NIMBIX and its affiliates or licensors, hereinafter " Marks " , shall 
+strictly comply with the following provisions. You may use the Marks in 
+conjunction with the display of the NIMBIX Content and for the purpose of 
+indicating that your Application was created using the Services. You may use 
+the Marks only in the form in which we make them available to you and not in 
+any manner that disparages Nimbix, its affiliates or its licensors, or that 
+otherwise dilutes any Mark. Other than your limited right to use the Marks as 
+provided in this Agreement, we and our licensors retain all right, title, and 
+interest in and to the Marks. You will not at any time now or in the future 
+challenge or assist others to challenge the validity of the Marks, or attempt 
+to register confusingly similar trademarks, trade names, service marks or 
+logos. You agree to follow our the Trademark Use Guidelines posted on the 
+Nimbix Services Trademark Guidelines page (the " Trademark Guidelines " ) as 
+those guidelines may change from time to time. The Trademark Guidelines are 
+incorporated herein by reference. You must immediately discontinue use of any 
+Mark as specified by us at any time in writing. We may modify any Marks 
+provided to you at any time, and upon notice, you will use only the modified 
+Marks and not the old Marks. Other than as specified in this Agreement, you 
+may not use any trademark, service mark, trade name or other business 
+identifier of Nimbix or its affiliates unless you obtain Nimbix's or its 
+affiliates' prior written consent. The foregoing prohibition includes the use 
+of " Nimbix, " any other trademark of NIMBIX, Nimbix or its affiliates, or 
+variations or misspellings of any of them, in the name of an Application or 
+in a URL to the left of the top-level domain name (e.g., " .com " , " .net " 
+, " co.uk " , etc.)-for example, a URL such as " Nimbix.mydomain.com " or " 
+Nimbixauctions.net " are expressly prohibited. Any use you make of the Marks 
+shall inure to our benefit and you hereby irrevocably assign to us all right, 
+title and interest in the same. In addition, you agree not to misrepresent or 
+embellish the relationship between us and you, for example by implying that 
+we support, sponsor, endorse, or contribute money to you or your business 
+endeavors. 
+
+6.3. Nonexclusive Rights. The rights granted by Nimbix in this Agreement with 
+respect to the Nimbix Applications, the Marks and the Services are 
+nonexclusive, and Nimbix reserves the right to: (i) itself act as a developer 
+of products or services related to any of the products that you may develop 
+in connection with the Nimbix Applications or via your use of the Services; 
+and (ii) appoint third parties as developers or systems integrators who may 
+offer products or services which compete with Nimbix or your Application. 
+7. Downtime and Service Suspensions; Security 
+7.1. Downtime and Service Suspensions. In addition to our rights to terminate 
+or suspend Services to you as described in Section 3 above, you acknowledge 
+that: (i) your access to and use of the Services may be suspended for the 
+duration of any unanticipated or unscheduled downtime or unavailability of 
+any portion or all of the Services for any reason, including as a result of 
+power outages, system failures or other interruptions; and (ii) we shall also 
+be entitled, without any liability to you, to suspend access to any portion 
+or all of the Services at any time, on a Service-wide basis: (a) for 
+scheduled downtime to permit us to conduct maintenance or make modifications 
+to any Service; (b) in the event of a denial of service attack or other 
+attack on the Service or other event that we determine, in our sole 
+discretion, may create a risk to the applicable Service, to you or to any of 
+our other customers if the Service were not suspended; or (c) in the event 
+that we determine that any Service is prohibited by law or we otherwise 
+determine that it is necessary or prudent to do so for legal or regulatory 
+reasons (collectively, " Service Suspensions " ). Without limitation to 
+Section 11.5, we shall have no liability whatsoever for any damage, 
+liabilities, losses (including any loss of data or profits) or any other 
+consequences that you may incur as a result of any Service Suspension. To the 
+extent we are able, we will endeavor to provide you email notice of any 
+Service Suspension in accordance with the notice provisions set forth in 
+Section 15 below and to post updates on the NIMBIX Websites regarding 
+resumption of Services following any such suspension, but shall have no 
+liability for the manner in which we may do so or if we fail to do so. 
+
+7.2. Security. We strive to keep Your Content secure, but cannot guarantee 
+that we will be successful at doing so, given the nature of the Internet. 
+Accordingly, without limitation to Section 4.3 above and Section 11.5 below, 
+you acknowledge that you bear sole responsibility for adequate security, 
+protection and backup of Your Content and Applications. We strongly encourage 
+you, where available and appropriate, to (a) use encryption technology to 
+protect Your Content from unauthorized access, (b) routinely archive Your 
+Content, and (c) keep your Applications or any software that you use or run 
+with our Services current with the latest security patches or updates. We 
+will have no liability to you for any unauthorized access or use, corruption, 
+deletion, destruction or loss of any of Your Content or Applications. 
+8. Fees 
+8.1. Service Fees. In consideration of your use of any of the Services, you 
+agree to pay applicable fees for Services in the amounts set forth on the 
+respective Service detail pages on the Nimbix Portal. You are responsible for 
+any fees assessed by Nimbix for transactions that you submit. Fees for any 
+new Service will be effective upon posting by us on the NIMBIX Website for 
+the applicable Service. We may increase or add new fees for any existing 
+Service or Service feature by giving you 30 days advance notice. Such notice 
+will be posted on the NIMBIX Website on the Service detail page for the 
+affected Service. You agree that you are responsible for checking the NIMBIX 
+Website each month to confirm whether there are any new fees and their 
+effective date(s). All fees payable by you are exclusive of applicable taxes 
+and duties, including, without limitation, VAT and applicable sales tax. You 
+will provide such information to us as reasonably required to determine 
+whether we are obligated to collect VAT from you, including without 
+limitation your VAT identification number. 
+8.2. Payment. We may specify the manner in which you will pay any fees, and 
+any such payment shall be subject to our general accounts receivable policies 
+from time to time in effect. All amounts payable by you under this Agreement 
+will be made without setoff or counterclaim and without deduction or 
+withholding. If any deduction or withholding is required by applicable law, 
+you shall notify us and shall pay such additional amounts to us as necessary 
+to ensure that the net amount that we receive, after such deduction and 
+withholding, equals the amount we would have received if no such deduction or 
+withholding had been required. Additionally, you shall provide us with 
+documentation that the withholding and deducted amounts have been paid to the 
+relevant taxing authority. 
+9. Confidentiality 
+9.1. Use and Disclosure. You shall not disclose NIMBIX Confidential 
+Information during the Term or at any time during the three (3) year period 
+following the end of the Term. As used in this Agreement, " NIMBIX 
+Confidential Information " means all nonpublic information disclosed by us, 
+our business partners or our or their respective agents or contractors that 
+is designated as confidential or that, given the nature of the information or 
+circumstances surrounding its disclosure, reasonably should be understood to 
+be confidential. NIMBIX Confidential Information includes, without 
+limitation, (i) nonpublic information relating to our or our business 
+partners' technology, customers, business plans, promotional and marketing 
+activities, finances and other business affairs (including, but not limited 
+to, any information about or involving one of our so-called beta tests or a 
+beta test product that you obtain as a result of your participation in such 
+beta test), (ii) third-party information that we are obligated to keep 
+confidential, and (iii) the nature, content and existence of any discussions 
+or negotiations between you and us. Confidential Information does not include 
+any information described in Section 9.2 or any information that you are 
+required to disclose by law. 
+9.2. Excluded Information. Notwithstanding any other provision in this 
+Agreement, you shall not have any confidentiality obligation to us under 
+Section 9.1 above, with respect to any information provided or made available 
+by us hereunder, and we shall not have any confidentiality or non-use 
+obligation to you hereunder with respect to any information, software 
+application, data or content provided or made available by you hereunder 
+that: (i) is or becomes publicly available without breach of this Agreement; 
+(ii) can be shown by documentation to have been known to the receiving party 
+at the time of its receipt from the disclosing party; (iii) is received from 
+a third party who did not acquire or disclose the same by a wrongful or 
+tortious act; or (iv) can be shown by documentation to have been 
+independently developed by the receiving party. 
+9.3. Conflict with Separate Non-Disclosure Agreement. If you and we are 
+parties to a separate non-disclosure agreement ( " NDA " ) and there is a 
+conflict between the terms of the NDA and the terms of this Section 9, the 
+terms of the NDA shall control. 
+10. Intellectual Property 
+10.1. Our Services and Nimbix Applications. Other than the limited use and 
+access rights and licenses expressly set forth in this Agreement, we reserve 
+all right, title and interest (including all intellectual property and 
+proprietary rights) in and to: (i) the Services; (ii) the Nimbix 
+Applications; (iii) any other technology and software that we provide or use 
+to provide the Services and the Nimbix Applications. You do not, by virtue of 
+this Agreement or otherwise, acquire any ownership interest or rights in the 
+Services, the Nimbix Applications, or other technology and software 
+(including third party technology and software), except for the limited use 
+and access rights described in this Agreement. 
+10.2. Your Applications, Data and Content. Other than the rights and 
+interests expressly set forth in this Agreement, and excluding Nimbix 
+Applications and works derived from Nimbix Applications, you reserve all 
+right, title and interest (including all intellectual property and 
+proprietary rights) in and to: (i) content and data you may send to us or use 
+as part of your use of any Services, which are designed by us to permit you 
+to send content or data to us ( " Your Content " ); and (ii) your 
+Applications. 
+
+10.3. Feedback. In the event you elect, in connection with any of the 
+Services, to communicate to us suggestions for improvements to the Services 
+and Nimbix Applications (collectively, " Feedback " ), we shall own all 
+right, title, and interest in and to the same, even if you have designated 
+the Feedback as confidential, and we shall be entitled to use the Feedback 
+without restriction. You hereby irrevocably assign all right, title and 
+interest in and to the Feedback to us and agree to provide us such assistance 
+as we may require to document, perfect, and maintain our rights to the 
+Feedback. 
+10.4. Non-Assertion. During and after the term of the Agreement, with respect 
+to any of the Services that you elect to use, you will not assert, nor will 
+you authorize, assist, or encourage any third party to assert, against us or 
+any of our customers, end users, vendors, business partners (including third 
+party sellers on websites operated by or on behalf of us), licensors, 
+sublicensees or transferees, any patent infringement or other intellectual 
+property infringement claim with respect to such Services. 
+11. Representations and Warranties; Disclaimers; Limitations of Liability 
+11.1. Use of the Services. You represent and warrant that you will not use 
+the Services, Nimbix Applications and/or your Application and Your Content: 
+(i) in a manner that infringes, violates or misappropriates any rights of us 
+or any third party; (ii) to engage in spamming or other impermissible 
+advertising, marketing or other activities, including, without limitation, 
+any activities that violate anti-spamming regulations, including, without 
+limitation, the CAN SPAM Act of 2003; (iii) in any manner that constitutes or 
+facilitates the illegal export of any controlled or otherwise restricted 
+items, including, without limitation, software, algorithms or other data that 
+is subject to export controls; and/or (iv) in a way that is otherwise illegal 
+or promotes illegal activities, including, without limitation, in a manner 
+that might be libelous or defamatory or otherwise malicious or harmful to any 
+person or entity, or discriminatory based on race, sex, religion, 
+nationality, disability, sexual orientation, or age. 
+11.2. Applications and Content. You represent and warrant: (i) that you are 
+solely responsible for the development, operation, and maintenance of your 
+Application and for Your Content, including without limitation, the accuracy, 
+security, appropriateness and completeness of Your Content and all product-
+related materials and descriptions; (ii) that you have the necessary rights 
+and licenses, consents, permissions, waivers and releases to use and display 
+your Application and Your Content; (iii) that neither your Application nor 
+Your Content (a) violates, misappropriates or infringes any rights of us or 
+any third party, (b) constitutes defamation, invasion of privacy or 
+publicity, or otherwise violates any rights of any third party, or (c) is 
+designed for use in any illegal activity or promotes illegal activities, 
+including, without limitation, in a manner that might be libelous or 
+defamatory or otherwise malicious, illegal or harmful to any person or 
+entity, or discriminatory based on race, sex, religion, nationality, 
+disability, sexual orientation, or age; (iv) that neither your Application 
+nor Your Content contains any Harmful Components; and (v) to the extent to 
+which you use any of the Marks, that you will conduct your business in a 
+professional manner and in a way that reflects favorably on the goodwill and 
+reputation of Nimbix. 
+11.3. Public Software and Feedback. You represent and warrant that you will 
+not use, and will not authorize any third party to use, any Public Software 
+in connection with the Services in any manner that requires, pursuant to the 
+license applicable to such Public Software, that any Nimbix Applications or 
+Services be (a) disclosed or distributed in source code form, (b) made 
+available free of charge to recipients, or (c) modifiable without restriction 
+by recipients. With respect to any Feedback, you represent and warrant that 
+such Feedback, in whole or in part, contributed by or through you, (i) 
+contains no third party software or any software that may be considered 
+Public Software and (ii) does not violate, misappropriate or infringe any 
+intellectual property rights of any third party. " Public Software " means 
+any software, documentation or other material that contains, or is derived 
+(in whole or in part) from, any software, documentation or other material 
+that is distributed as free software, open source software (e.g., Linux) or 
+similar licensing or distribution models, including, but not limited to 
+software, documentation or other material licensed or distributed under any 
+of the following licenses or distribution models, or licenses or distribution 
+models similar to any of the following: (i) GNU's General Public License 
+(GPL), Lesser/Library GPL (LGPL), or Free Documentation License, (ii) The 
+Artistic License (e.g., PERL), (iii) the Mozilla Public License, (iv) the 
+Netscape Public License, (v) the Sun Community Source License (SCSL), (vi) 
+the Sun Industry Standards License (SISL), (vii) the BSD License and (viii) 
+the Apache License. 
+11.4. Authorization and Account Information. You represent and warrant that: 
+(i) the information you provide in connection with your registration for the 
+Services is accurate and complete; (ii) if you are registering for the 
+Services as an individual, that you are at least 18 years of age and have the 
+legal capacity to enter into this Agreement; and (iii) if you are registering 
+for the Services as an entity or organization, (a) you are duly authorized to 
+do business in the country or countries where you operate, (b) the individual 
+clicking " Accept " on this Agreement and completing the registration for the 
+Services meets the requirements of subsection (ii) above and is an authorized 
+representative of your entity, and (c) your employees, officers, 
+representatives and other agents accessing the Services are duly authorized 
+to access the Services and to legally bind you to this Agreement and all 
+transactions conducted under your account. 
+11.5. Disclaimers. NIMBIX APPLICATIONS, THE MARKS, THE SERVICES AND ALL 
+TECHNOLOGY, SOFTWARE, FUNCTIONS, CONTENT, IMAGES, MATERIALS AND OTHER DATA OR 
+INFORMATION PROVIDED BY US OR OUR LICENSORS IN CONNECTION THEREWITH 
+(COLLECTIVELY THE " SERVICE OFFERINGS " ) ARE PROVIDED " AS IS " . WE AND OUR 
+LICENSORS MAKE NO REPRESENTATIONS OR WARRANTIES OF ANY KIND, WHETHER EXPRESS, 
+IMPLIED, STATUTORY OR OTHERWISE WITH RESPECT TO THE SERVICE OFFERINGS. EXCEPT 
+TO THE EXTENT PROHIBITED BY APPLICABLE LAW, WE AND OUR LICENSORS DISCLAIM ALL 
+WARRANTIES, INCLUDING, WITHOUT LIMITATION, ANY IMPLIED WARRANTIES OF 
+MERCHANTABILITY, SATISFACTORY QUALITY, FITNESS FOR A PARTICULAR PURPOSE, NON-
+INFRINGEMENT, QUIET ENJOYMENT, AND ANY WARRANTIES ARISING OUT OF ANY COURSE 
+OF DEALING OR USAGE OF TRADE. WE AND OUR LICENSORS DO NOT WARRANT THAT THE 
+SERVICE OFFERINGS WILL FUNCTION AS DESCRIBED, WILL BE UNINTERRUPTED OR ERROR 
+FREE, OR FREE OF HARMFUL COMPONENTS, OR THAT THE DATA YOU STORE WITHIN THE 
+SERVICE OFFERINGS WILL BE SECURE OR NOT OTHERWISE LOST OR DAMAGED. WE AND OUR 
+LICENSORS SHALL NOT BE RESPONSIBLE FOR ANY SERVICE INTERRUPTIONS, INCLUDING, 
+WITHOUT LIMITATION, POWER OUTAGES, SYSTEM FAILURES OR OTHER INTERRUPTIONS, 
+INCLUDING THOSE THAT AFFECT THE RECEIPT, PROCESSING, ACCEPTANCE, COMPLETION 
+OR SETTLEMENT OF ANY PAYMENT SERVICES. NO ADVICE OR INFORMATION OBTAINED BY 
+YOU FROM US OR FROM ANY THIRD PARTY OR THROUGH THE SERVICES SHALL CREATE ANY 
+WARRANTY NOT EXPRESSLY STATED IN THIS AGREEMENT. 
+11.6. Your Applications are Your Responsibility. In addition to the 
+foregoing, we specifically disclaim all liability, and you shall be solely 
+responsible for the development, operation, and maintenance of your 
+Application (including any Bundled Application) and for all materials that 
+appear on or within your Application and you agree that you shall, without 
+limitation, be solely responsible for: 
+11.6.1. The technical operation of your Application and all related 
+equipment; 
+11.6.2. The accuracy and appropriateness of any materials posted on or within 
+your Application (including, among other things, any product-related 
+materials); 
+11.6.3. ensuring that any materials posted on your site or within your 
+Application are not illegal and do not promote illegal activities, including 
+without limitation any activities that might be libelous or defamatory or 
+otherwise malicious, illegal or harmful to any person or entity, or 
+discriminatory based on race, sex, religion, nationality, disability, sexual 
+orientation, or age; 
+11.6.4. ensuring that your Application accurately and adequately discloses, 
+either through a privacy policy or otherwise, how you collect, use, store, 
+and disclose data collected from visitors, including, where applicable, that 
+third parties (including advertisers) may serve content and/or advertisements 
+and collect information directly from visitors and may place or recognize 
+cookies on visitors' browsers; 
+11.6.5. any of your users' or customers' claims relating to your Application 
+or any Services utilized in connection with your Application; and 
+11.6.6. your election to utilize sample code and libraries that may be made 
+available on the NIMBIX Website, many of which may be provided by third 
+parties and many of which we have not tested or screened in any way. 
+11.7. Links. The NIMBIX Website and/or the Services may contain links to 
+websites that are not under our control ( " Third Party Sites " ). We are not 
+responsible for the contents or functionality of any Third Party Sites or any 
+website that can be accessed via links on any Third Party Site. We provide 
+these links to you as a convenience and the inclusion of any such links does 
+not constitute or imply our endorsement or validation of any Third Party 
+Site. 
+11.8. Limitations of Liability. NEITHER WE NOR ANY OF OUR LICENSORS SHALL BE 
+LIABLE TO YOU FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL OR 
+EXEMPLARY DAMAGES, INCLUDING, BUT NOT LIMITED TO, DAMAGES FOR LOSS OF 
+PROFITS, GOODWILL, USE, DATA OR OTHER LOSSES (EVEN IF WE HAVE BEEN ADVISED OF 
+THE POSSIBILITY OF SUCH DAMAGES) IN CONNECTION WITH THIS AGREEMENT, 
+INCLUDING, WITHOUT LIMITATION, ANY SUCH DAMAGES RESULTING FROM: (i) THE USE 
+OR THE INABILITY TO USE THE SERVICES; (ii) THE COST OF PROCUREMENT OF 
+SUBSTITUTE GOODS AND SERVICES; OR (iii) UNAUTHORIZED ACCESS TO OR ALTERATION 
+OF YOUR CONTENT. IN ANY CASE, OUR AGGREGATE LIABILITY UNDER THIS AGREEMENT 
+SHALL BE LIMITED TO THE AMOUNT ACTUALLY PAID BY YOU TO US HEREUNDER FOR THE 
+SERVICES. SOME JURISDICTIONS DO NOT ALLOW THE EXCLUSION OF CERTAIN WARRANTIES 
+OR THE LIMITATION OR EXCLUSION OF LIABILITY FOR INCIDENTAL OR CONSEQUENTIAL 
+DAMAGES. ACCORDINGLY, SOME OR ALL OF THE ABOVE EXCLUSIONS OR LIMITATIONS MAY 
+NOT APPLY TO YOU, AND YOU MAY HAVE ADDITIONAL RIGHTS. 
+
+12. Indemnification 
+12.1. General. You agree to indemnify, defend and hold us, our affiliates and 
+licensors, each of our and their business partners (including third party 
+sellers on websites operated by or on behalf of us) and each of our and their 
+respective employees, officers, directors and representatives, harmless from 
+and against any and all claims, losses, damages, liabilities, judgments, 
+penalties, fines, costs and expenses (including reasonable attorneys fees), 
+arising out of or in connection with any claim arising out of (i) your use of 
+the Services and/or Nimbix Applications in a manner not authorized by this 
+Agreement, and/or in violation of the applicable restrictions, and/or 
+applicable law, (ii) your Application, Your Content, or the combination of 
+either with other applications, content or processes, including but not 
+limited to any claim involving infringement or misappropriation of third-
+party rights and/or the use, development, design, manufacture, production, 
+advertising, promotion and/or marketing of your Application and/or Your 
+Content, (iii) your violation of any term or condition of this Agreement or 
+any applicable Additional Policies, including without limitation, your 
+representations and warranties, or (iv) you or your employees' or personnel's 
+negligence or willful misconduct. 
+12.2. Notification. We agree to promptly notify you of any claim subject to 
+indemnification; provided that our failure to promptly notify you shall not 
+affect your obligations hereunder except to the extent that our failure to 
+promptly notify you delays or prejudices your ability to defend the claim. At 
+our option, you will have the right to defend against any such claim with 
+counsel of your own choosing (subject to our written consent) and to settle 
+such claim as you deem appropriate, provided that you shall not enter into 
+any settlement without our prior written consent and provided that we may, at 
+any time, elect to take over control of the defense and settlement of the 
+claim. 
+13. Import and Export Compliance and Restrictions. You shall, in connection 
+with your use of the Services or the Nimbix Applications, comply with all 
+applicable import, export and re-export control and regulations of any 
+country, including the U.S. Export Administration Regulations, the U.S. 
+International Traffic in Arms Regulations, Council Regulation (EC) No 
+428/2009 on the control of exports of dual-use items and technology, and 
+country-specific economic sanctions programs or embargoes adopted against 
+countries or individuals under any applicable national or international 
+legislation, including any measures implemented by the U.S. Office of Foreign 
+Assets Control. 
+14. Disputes 
+
+14.1. Notwithstanding anything to the contrary, we may seek injunctive or 
+other relief in any state, federal, or national court of competent 
+jurisdiction for any actual or alleged infringement of Nimbix's or any third 
+party's intellectual property and/or proprietary rights. Any dispute relating 
+in any way to your visit to the NIMBIX Website or to products or services 
+sold or distributed by NIMBIX or its affiliates in which the aggregate total 
+claim for relief sought on behalf of one or more parties exceeds $7,500 shall 
+be adjudicated in any state or federal court in Harris County, Texas, and you 
+consent to exclusive jurisdiction and venue in such courts. You further 
+acknowledge that our rights in the Nimbix Applications are of a special, 
+unique, extraordinary character, giving them peculiar value, the loss of 
+which cannot be readily estimated and may not be adequately compensated for 
+in monetary damages. 
+14.2. Governing Law. By using the Services, you agree that the regulations of 
+the State of Texas, without regard to principles of conflicts, will govern 
+this Agreement and any dispute of any sort that might arise between you and 
+us. The parties expressly exclude application of the United Nations 
+Convention for the International Sale of Goods to this Agreement. 
+15. Except as otherwise set forth herein, notices made by us to you under 
+this Agreement that affect our customers generally (e.g., notices of amended 
+Agreements, updated fees, etc.) will be posted on the NIMBIX Website. Notices 
+made by us under this Agreement for you or your account specifically (e.g., 
+notices of breach and/or suspension) will be provided to you via the email 
+address provided to us in your registration for the Services or in any 
+updated email address you provide to us in accordance with standard account 
+information update procedures we may provide from time to time. It is your 
+responsibility to keep your email address current and you will be deemed to 
+have received any email sent to any such email address, upon our sending of 
+the email, whether or not you actually receive the email. 
+15.1. For notices made by you to us under this Agreement and for questions 
+regarding this Agreement or the Services, you may contact Nimbix as follows: 
+tos@Nimbix.net 
+16. Miscellaneous Provisions 
+16.1. Third Party Activities. If you authorize, assist, encourage or 
+facilitate another person or entity to take any action related to the subject 
+matter of this Agreement, you shall be deemed to have taken the action 
+yourself. 
+16.2. Severability. If any portion of this Agreement is held by a court of 
+competent jurisdiction to be invalid or unenforceable, the remaining portions 
+of this Agreement will remain in full force and effect, and any invalid or 
+unenforceable portions shall be construed in a manner that most closely 
+reflects the effect and intent of the original language. If such construction 
+is not possible, the provision will be severed from this Agreement, and the 
+rest of the Agreement shall remain in full force and effect. 
+16.3. Waivers. The failure by us to enforce any provision of this Agreement 
+shall in no way be construed to be a present or future waiver of such 
+provision nor in any way affect our right to enforce such provision 
+thereafter. All waivers by us must be in writing to be effective. 
+16.4. Successors and Assigns. This Agreement will be binding upon, and inure 
+to the benefit of the parties and their respective successors and assigns.
+16.5. Entire Agreement. This Agreement incorporates by reference all policies 
+and guidelines posted on the NIMBIX Website, including all Additional 
+Policies, and constitutes the entire agreement between you and us regarding 
+the subject matter hereof and supersedes any and all prior or contemporaneous 
+representation, understanding, agreement, or communication between you and 
+us, whether written or oral, regarding such subject matter. 
+16.6. No Endorsement. You understand and acknowledge that we are not 
+certifying nor endorsing, and have no obligation to certify or endorse, any 
+of your Applications or Your Content. 
+16.7. Relationship. Nothing in this Agreement is intended to or does create 
+any type of joint venture, creditor-debtor, escrow, partnership or any 
+employer/employee or fiduciary or franchise relationship between you and us.
+
+See more at: http://www.nimbix.net/terms-conditions
+ 
+You must agree to the terms and conditions before you can sign up
+ 
