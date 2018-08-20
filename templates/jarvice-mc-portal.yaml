@@ -26,6 +26,10 @@ spec:
           configMap:
             name: {{ .Values.jarvice_mc_portal.skin.configMap }}
             optional: true
+        - name: jarvice-ssl
+          configMap:
+            name: {{ .Values.jarvice_mc_portal.ssl.configMap }}
+            optional: true
       containers:
       - name: jarvice-mc-portal
         image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-mc-portal:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}-{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}
@@ -107,6 +111,9 @@ spec:
         volumeMounts:
         - name: jarvice-skin
           mountPath: /etc/jarvice/skin
+          readOnly: true
+        - name: jarvice-ssl
+          mountPath: /etc/jarvice/ssl
           readOnly: true
         resources:
 {{- if .Values.jarvice_mc_portal.resources }}

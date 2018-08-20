@@ -186,6 +186,10 @@ jarvice_mc_portal:
 #    jarvice.io/jarvice-mc-portal: 1
   skin:
     configMap: jarvice-mc-portal-skin
+  # jarvice_mc_portal.ssl.configMap takes precedence over envornment settings
+  # for JARVICE_MC_PORTAL_CRT and JARVICE_MC_PORTAL_KEY
+  ssl:
+    configMap: jarvice-mc-portal-ssl
   env:
     JARVICE_MC_PORTAL_CRT: |
         -----BEGIN CERTIFICATE-----

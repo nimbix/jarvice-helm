@@ -326,24 +326,47 @@ it's own configuration reference.
 
 ## JARVICE Post Installation
 
-* Optionally, customize JARVICE with a new "skin"
+* Optionally, customize the JARVICE portal with a new "skin" and/or SSL certificate/key pair
 
-To update the JARVICE portal logos and colors with a custom "skin":
+- Copy the `jarvice-mc-portal-skin` directory to `jarvice-mc-portal-skin-override`.
+- Update the image files and/or JSON settings of the color palette in the
+  `jarvice-mc-portal-skin-override directory`.
+- Create a kubernetes ConfigMap from the `jarvice-mc-portal-skin-override`
+  directory.
 
-- Copy the skin-default directory to skin-override.
-- Update skin-override image files and/or JSON settings of the color palette.
-- Create a kubernetes ConfigMap from the skin-override directory.
+- Copy the `jarvice-mc-portal-ssl` directory to `jarvice-mc-portal-ssl-override`.
+- Update the certificate and key files in the `jarvice-mc-portal-ssl-override`
+  directory.
+- Create a kubernetes ConfigMap from the `jarvice-mc-portal-ssl-override`
+  directory.
+
 - Update the portal deployment environment to force a rolling update of the
-  pods with the new skin.
+  pods with the new skin and/or SSL certificate and key.
 
-Example step-by-step "skin" procedure:
+Example step-by-step customization procedure for the JARVICE portal:
 
+Skin configuration:
 ```bash
-$ cp -a jarvice-helm/skin-default jarvice-helm/skin-override
-<update files in jarvice-helm/skin-override>
+$ cp -a jarvice-helm/jarvice-mc-portal-skin \
+    jarvice-helm/jarvice-mc-portal-skin-override
+<update files in jarvice-helm/jarvice-mc-portal-skin-override>
 $ kubectl --namespace jarvice-system \
     create configmap jarvice-mc-portal-skin \
-    --from-file=jarvice-helm/skin-override
+    --from-file=jarvice-helm/jarvice-mc-portal-skin-override
+```
+
+Certificate configuration:
+```bash
+$ cp -a jarvice-helm/jarvice-mc-portal-ssl \
+    jarvice-helm/jarvice-mc-portal-ssl-override
+<update files in jarvice-helm/jarvice-mc-portal-ssl-override>
+$ kubectl --namespace jarvice-system \
+    create configmap jarvice-mc-portal-ssl \
+    --from-file=jarvice-helm/jarvice-mc-portal-ssl-override
+```
+
+Reload pods:
+```bash
 $ kubectl --namespace jarvice-system set env \
     deployment/jarvice-mc-portal JARVICE_PODS_RELOAD=$(date +%s)
 ```
