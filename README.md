@@ -19,7 +19,7 @@ account with a cluster-admin role binding.  The `tiller-sa.yaml` file can be
 used for this.  Modify as necessary for your cluster and issue the following
 commands:
 
-```console
+```bash
 $ kubectl --namespace kube-system create -f jarvice-helm/extra/tiller-sa.yaml
 $ helm init --upgrade --service-account tiller
 ```
@@ -42,7 +42,7 @@ it will be necessary to configure MetalLB specifically for your cluster.
 Please execute the following to get more details on MetalLB configuration and
 installation:
 
-```console
+```bash
 $ helm inspect stable/metallb
 ```
 
@@ -84,7 +84,7 @@ the cluster.
 
 To quickly install the dashboard, issue the following command:
 
-```console
+```bash
 $ helm install --namespace kube-system \
     --name kubernetes-dashboard stable/kubernetes-dashboard
 ```
@@ -92,7 +92,7 @@ $ helm install --namespace kube-system \
 Please execute the following to get more details on dashboard configuration and
 installation:
 
-```console
+```bash
 $ helm inspect stable/kubernetes-dashboard
 ```
 
@@ -102,21 +102,21 @@ cluster components.  The `kubernetes-dashboard-crb.yaml` file can be
 used for this.  Modify as necessary for your cluster and issue the following
 commands:
 
-```console
+```bash
 $ kubectl --namespace kube-system create -f jarvice-helm/extra/kubernetes-dashboard-crb.yaml
 ```
 
 In order to access the dashboard from outside of the cluster, it will be
 necessary to expose the deployment.  Here is an example:
 
-```console
+```bash
 $ kubectl --namespace kube-system expose deployment kubernetes-dashboard \
     --type=LoadBalancer --name kubernetes-dashboard-lb
 ```
 
 The login token for the dashboard can be retrieved via kubectl:
 
-```console
+```bash
 $ secret=$(kubectl --namespace kube-system get secret -o name | \
     grep 'kubernetes-dashboard-token-')
 $ kubectl --namespace kube-system describe $secret | grep '^token:' | awk '{print $2}'
@@ -131,7 +131,7 @@ $ kubectl --namespace kube-system describe $secret | grep '^token:' | awk '{prin
 It is first necessary to clone this git repository to a client machine that
 has access to the kubernetes cluster and has helm installed.
 
-```console
+```bash
 $ git clone https://github.com/nimbix/jarvice-helm.git
 ```
 
@@ -139,7 +139,7 @@ $ git clone https://github.com/nimbix/jarvice-helm.git
 
 Once cloned, JARVICE can be quickly installed via the following helm command:
 
-```console
+```bash
 $ helm install \
     --set jarvice.imagePullSecret.username="<jarvice_quay_io_user>" \
     --set jarvice.imagePullSecret.password="<jarvice_quay_io_pass>" \
@@ -179,7 +179,7 @@ https://kubernetes.io/docs/concepts/storage/persistent-volumes/
 Expanding upon the previous quick installation command, the following command
 could then be used to install JARVICE with persistence enabled:
 
-```console
+```bash
 $ helm install \
     --set jarvice.imagePullSecret.username="<jarvice_quay_io_user>" \
     --set jarvice.imagePullSecret.password="<jarvice_quay_io_pass>" \
@@ -229,7 +229,7 @@ The easiest way to configure all of the JARVICE options is to copy the default
 `values.yaml` file to `override.yaml`.  It can then be modified and used as
 a part of the helm installation command:
 
-```console
+```bash
 $ cp jarvice-helm/values.yaml jarvice-helm/override.yaml
 $ helm install --values jarvice-helm/override.yaml \
     --name jarvice --namespace jarvice-system ./jarvice-helm
@@ -243,14 +243,14 @@ replicas/pods for one of the JARVICE services.  The following example
 command could be used to update the number of replicas/pods for the
 JARVICE DAL deployment:
 
-```console
+```bash
 $ helm upgrade --reuse-values \
     --set jarvice_dal.replicaCount=3 jarvice ./jarvice-helm
 ```
 
 This could also be done from an `override.yaml` file:
 
-```console
+```bash
 $ helm upgrade --reuse-values \
     --values jarvice-helm/override.yaml jarvice ./jarvice-helm
 ```
@@ -268,7 +268,7 @@ If there is not an existing MySQL installation, but wish to maintain the
 database in kubernetes and outside of the JARVICE helm chart, execute the
 following to get more details on using helm to perform the installation:
 
-```console
+```bash
 $ helm inspect stable/mysql
 ```
 
@@ -310,7 +310,7 @@ https://docs.docker.com/registry/insecure/
 There is also a docker-registry specific helm chart available for deployment.
 Use the helm inspect command for details:
 
-```console
+```bash
 $ helm inspect stable/docker-registry
 ```
 
