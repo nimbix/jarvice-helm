@@ -6,7 +6,7 @@ This is the Helm chart for installation of JARVICE into a kubernetes cluster.
 
 ## Installation Prerequisites
 
-* Helm (with Tiller) package manager for kubernetes (https://helm.sh/):
+### Helm (with Tiller) package manager for kubernetes (https://helm.sh/):
 
 The installation requires that the helm command line be installed on a client
 machine and that Tiller is installed/initialized in the target kubernetes
@@ -24,14 +24,14 @@ $ kubectl --namespace kube-system create -f jarvice-helm/extra/tiller-sa.yaml
 $ helm init --upgrade --service-account tiller
 ```
 
-* Kubernetes network plugin:
+### Kubernetes network plugin:
 
 As of this writing, weave is the only known plugin to work out-of-the-box
 on multiple architectures (amd64, ppc64le, arm64).  As such, it is recommended
 that kubernetes installations use the weave plugin if intending to run jobs in
 a multiarch environment.
 
-* Kubernetes load balancer:
+### Kubernetes load balancer:
 
 A load balancer is required for making the JARVICE services and apps externally
 available/accessible from outside of the kubernetes cluster.  Currently,
@@ -46,7 +46,7 @@ installation:
 $ helm inspect stable/metallb
 ```
 
-* Kubernetes device plugins:
+### Kubernetes device plugins:
 
 If the cluster nodes have NVIDIA GPU devices installed, it will be necessary
 to install the device plugin in order for JARVICE to make use of them.  Please
@@ -58,7 +58,7 @@ to install the device plugin in order for JARVICE to make use of them.  Please
 see the following link for plugin installation details:
 https://github.com/nimbix/k8s-rdma-device-plugin
 
-* Kubernetes persistent volumes (for non-demo installation):
+### Kubernetes persistent volumes (for non-demo installation):
 
 For those sites that do not wish to separately install/maintain a MySQL
 database and docker registry, this helm chart provides installations for them
@@ -76,7 +76,7 @@ https://kubernetes.io/docs/concepts/storage/persistent-volumes/
 
 ## Installation Recommendations
 
-* kubernetes-dashboard:
+### kubernetes-dashboard:
 
 While not required, to ease the monitoring of JARVICE in the kubernetes
 cluster, it is recommended that the kubernetes-dashboard is installed into
@@ -126,7 +126,7 @@ $ kubectl --namespace kube-system describe $secret | grep '^token:' | awk '{prin
 
 ## JARVICE Quick Installation (Demo without persistence)
 
-* Code repository of the JARVICE helm chart
+### Code repository of the JARVICE helm chart
 
 It is first necessary to clone this git repository to a client machine that
 has access to the kubernetes cluster and has helm installed.
@@ -135,7 +135,7 @@ has access to the kubernetes cluster and has helm installed.
 $ git clone https://github.com/nimbix/jarvice-helm.git
 ```
 
-* Quick install command with helm
+### Quick install command with helm
 
 Once cloned, JARVICE can be quickly installed via the following helm command:
 
@@ -151,7 +151,7 @@ $ helm install \
 
 ## JARVICE Standard Installation
 
-* Persistent volumes
+### Persistent volumes
 
 As mentioned in the installation requirements above, the JARVICE database
 (jarvice-db) and the JARVICE application registry (jarvice-registry) services
@@ -209,7 +209,7 @@ match the persistent volume storage classes that you wish to use:
 - `jarvice.jarvice_db.persistence.storageClass`
 - `jarvice.jarvice_registry.persistence.storageClass`
 
-* Selecting external, load balancer IP addresses
+### Selecting external, load balancer IP addresses
 
 By default, the load balancer installed for the target kubernetes cluster will
 likely select random IP addresses from the IP range it was configured to use.
@@ -223,7 +223,7 @@ to the JARVICE services, here are the settings to use:
 - `jarvice_mc_portal.loadBalancerIP`
 - `jarvice_api.loadBalancerIP`
 
-* Site specific configuration
+### Site specific configuration
 
 The easiest way to configure all of the JARVICE options is to copy the default
 `values.yaml` file to `override.yaml`.  It can then be modified and used as
@@ -235,7 +235,7 @@ $ helm install --values jarvice-helm/override.yaml \
     --name jarvice --namespace jarvice-system ./jarvice-helm
 ```
 
-* Updating configuration (or upgrading to newer JARVICE chart version)
+### Updating configuration (or upgrading to newer JARVICE chart version)
 
 The helm upgrade command can be used to tweak JARVICE after the initial
 installation.  e.g. If it is necessary to increase the number of
@@ -255,7 +255,7 @@ $ helm upgrade --reuse-values \
     --values jarvice-helm/override.yaml jarvice ./jarvice-helm
 ```
 
-* Non-JARVICE specific services (jarvice-db, jarvice-registry)
+### Non-JARVICE specific services (jarvice-db, jarvice-registry)
 
 - MySQL database (jarvice-db)
 
