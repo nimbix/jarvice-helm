@@ -1,0 +1,72 @@
+{{- if .Values.jarvice_memcached.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: jarvice-memcached
+  annotations:
+    "helm.sh/hook": pre-install
+spec:
+  serviceName: jarvice-memcached
+  replicas: {{ .Values.jarvice_memcached.replicaCount }}
+  selector:
+    matchLabels:
+      deployment: jarvice-memcached
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-memcached
+        deployment: jarvice-memcached
+    spec:
+      nodeSelector:
+        beta.kubernetes.io/arch: "amd64"
+      containers:
+      - name: jarvice-memcached
+        image: {{ .Values.jarvice_memcached.image }}
+        imagePullPolicy: Always
+        command:
+        - memcached
+        - -m {{ .Values.jarvice_memcached.maxItemMemory  }}
+        {{- if .Values.jarvice_memcached.extendedOptions }}
+        - -o
+        - {{ .Values.jarvice_memcached.extendedOptions }}
+        {{- end }}
+        {{- if .Values.jarvice_memcached.verbosity }}
+        - -{{ .Values.jarvice_memcached.verbosity }}
+        {{- end }}
+        ports:
+          - name: jarvice-memcach
+            containerPort: 11211
+        readinessProbe:
+          tcpSocket:
+            port: jarvice-memcach
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+        livenessProbe:
+          tcpSocket:
+            port: jarvice-memcach
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+        resources:
+{{ toYaml .Values.jarvice_dal.resources | indent 10 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-memcached
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-memcached
+  annotations:
+    "helm.sh/hook": pre-install
+spec:
+  clusterIP: None
+  ports:
+  - protocol: TCP
+    port: 11211
+    targetPort: 11211
+    name: jarvice-memcach
+  selector:
+    deployment: jarvice-memcached
+---
+{{- end }}

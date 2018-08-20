@@ -1,3 +1,4 @@
+{{- if .Values.jarvice_mc_portal.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -22,11 +23,11 @@ spec:
       imagePullSecrets:
       - name: jarvice-docker
       volumes:
-        - name: jarvice-skin
+        - name: jarvice-mc-portal-skin
           configMap:
             name: {{ .Values.jarvice_mc_portal.skin.configMap }}
             optional: true
-        - name: jarvice-ssl
+        - name: jarvice-mc-portal-ssl
           configMap:
             name: {{ .Values.jarvice_mc_portal.ssl.configMap }}
             optional: true
@@ -109,11 +110,11 @@ spec:
           - name: JARVICE_PORTAL_MAIL_DBPASSWD
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_DBPASSWD }}"
         volumeMounts:
-        - name: jarvice-skin
-          mountPath: /etc/jarvice/skin
+        - name: jarvice-mc-portal-skin
+          mountPath: /etc/jarvice/jarvice-mc-portal-skin
           readOnly: true
-        - name: jarvice-ssl
-          mountPath: /etc/jarvice/ssl
+        - name: jarvice-mc-portal-ssl
+          mountPath: /etc/jarvice/jarvice-mc-portal-ssl
           readOnly: true
         resources:
 {{- if .Values.jarvice_mc_portal.resources }}
@@ -163,3 +164,4 @@ spec:
   selector:
     deployment: jarvice-mc-portal
 ---
+{{- end }}

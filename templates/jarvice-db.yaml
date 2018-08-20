@@ -56,6 +56,16 @@ spec:
         ports:
           - name: "jarvice-db"
             containerPort: 3306
+        readinessProbe:
+          tcpSocket:
+            port: jarvice-db
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+        livenessProbe:
+          tcpSocket:
+            port: jarvice-db
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
         env:
           - name: MYSQL_ROOT_PASSWORD
             value: "{{ .Values.jarvice_db.env.MYSQL_ROOT_PASSWORD }}"

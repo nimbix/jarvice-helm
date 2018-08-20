@@ -24,7 +24,7 @@ jarvice:
     createServiceAccountCRB: true
 
 # Database server previously set up?  Set enabled to false.
-# Then, set JARVICE_DB_HOST et al below in the jarvice_dal env.
+# Then, set JARVICE_DB_HOST et al below in jarvice_dal env.
 jarvice_db:
   enabled: true
   replicaCount: 1
@@ -38,6 +38,21 @@ jarvice_db:
   env:
     MYSQL_ROOT_PASSWORD: Pass1234
     MYSQL_DATABASE: nimbix
+
+# replicaCount change requires JARVICE_PORTAL_MEMCACHED_LOCATIONS update below.
+# Memcached server previously set up?  Set enabled to false.
+# Then, set JARVICE_PORTAL_MEMCACHED_LOCATIONS below in jarvice_mc_portal env.
+jarvice_memcached:
+  enabled: true
+  replicaCount: 3
+  image: memcached:1.5
+  maxItemMemory: 64
+  verbosity: v
+  extendedOptions: modern
+  resources:
+    limits:
+      cpu: 50m
+      memory: 64Mi
 
 # Want to run the docker registry in JARVICE namespace?  Set enabled to true.
 # Then set JARVICE_LOCAL_REGISTRY to jarvice-registry:5000 as seen above
@@ -117,6 +132,7 @@ jarvice_registry:
         -----END PRIVATE KEY-----
 
 jarvice_dal:
+  enabled: true
   replicaCount: 2
   resources:
     limits:
@@ -139,6 +155,7 @@ jarvice_dal:
     JARVICE_CFG_NETWORK:
 
 jarvice_scheduler:
+  enabled: true
   replicaCount: 1
   resources:
     limits:
@@ -161,6 +178,7 @@ jarvice_scheduler:
         ;password: Pass1234
 
 jarvice_api:
+  enabled: true
   replicaCount: 2
   loadBalancerIP:
   resources:
@@ -175,6 +193,7 @@ jarvice_api:
     JARVICE_PULL_NODE_SELECTOR:
 
 jarvice_mc_portal:
+  enabled: true
   replicaCount: 2
   loadBalancerIP:
   resources:
@@ -245,7 +264,7 @@ jarvice_mc_portal:
         -----END PRIVATE KEY-----
     JARVICE_USER_DEFAULT_ENABLED: True
     JARVICE_USER_DEFAULT_DEVELOPER: True
-    JARVICE_PORTAL_MEMCACHED_LOCATIONS:
+    JARVICE_PORTAL_MEMCACHED_LOCATIONS: jarvice-memcached-0.jarvice-memcached:11211,jarvice-memcached-1.jarvice-memcached:11211,jarvice-memcached-2.jarvice-memcached:11211
     JARVICE_PORTAL_APP_OWNERS:
     JARVICE_PORTAL_MAIL_FROM:
     JARVICE_PORTAL_MAIL_SUBJECT:

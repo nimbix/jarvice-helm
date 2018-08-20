@@ -1,3 +1,4 @@
+{{- if .Values.jarvice_scheduler.enabled }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -96,3 +97,4 @@ spec:
   selector:
     deployment: jarvice-scheduler
 ---
+{{- end }}
