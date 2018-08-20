@@ -1,8 +1,6 @@
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: {{ .Release.Namespace }}
   name: jarvice-api
 spec:
   replicas: {{ .Values.jarvice_api.replicaCount }}
@@ -12,17 +10,10 @@ spec:
   template:
     metadata:
       labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-api
         deployment: jarvice-api
-        app: {{ template "jarvice.name" . }}
-        chart: {{ .Chart.Name }}-{{ .Chart.Version }}
-        release: {{ .Release.Name }}
-        heritage: {{ .Release.Service }}
-#      annotations:
-#        container.apparmor.security.beta.kubernetes.io/jarvice-api: unconfined
     spec:
-#      serviceAccountName: {{ .Values.jarvice.kubernetes.serviceAccount }}
-#      hostNetwork: true
-#      terminationGracePeriodSeconds: 0
       nodeSelector:
         beta.kubernetes.io/arch: "{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}"
 {{- if .Values.jarvice_api.nodeSelector }}
@@ -39,6 +30,30 @@ spec:
             containerPort: 7443
           - name: http
             containerPort: 7080
+        readinessProbe:
+          exec:
+            command:
+            - /usr/bin/curl
+            - -k
+            - -s
+            - https://jarvice-dal:8443/status
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+        livenessProbe:
+          exec:
+            command: 
+            - /usr/bin/curl
+            - -k
+            - -s
+            - https://jarvice-dal:8443/status
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
         env:
           - name: JARVICE_API_HTTPS
             value: "enable"
@@ -64,24 +79,18 @@ spec:
             value: {{ .Values.jarvice.JARVICE_LOCAL_REGISTRY }}
           - name: JARVICE_LOCAL_REPO_BASE
             value: {{ .Values.jarvice.JARVICE_LOCAL_REPO_BASE }}
-{{- if .Values.jarvice_api.env }}
-{{ toYaml .Values.jarvice_api.env | indent 10 }}
-{{- end }}
+          - name: JARVICE_PULL_NODE_SELECTOR
+            value: {{ .Values.jarvice_api.env.JARVICE_PULL_NODE_SELECTOR }}
         resources:
-{{- if .Values.jarvice_api.resources }}
 {{ toYaml .Values.jarvice_api.resources | indent 10 }}
-{{- end }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: {{ .Release.Namespace }}
   name: jarvice-api
   labels:
-    app: {{ template "jarvice.name" . }}
-    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-api
 spec:
   type: ClusterIP
   ports:
@@ -91,6 +100,28 @@ spec:
     name: https
   - protocol: TCP
     port: 7080
+    targetPort: 7080
+    name: http
+  selector:
+    deployment: jarvice-api
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-api-lb
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-api
+spec:
+  type: LoadBalancer
+  loadBalancerIP: {{ .Values.jarvice_api.loadBalancerIP }}
+  ports:
+  - protocol: TCP
+    port: 443
+    targetPort: 7443
+    name: https
+  - protocol: TCP
+    port: 80
     targetPort: 7080
     name: http
   selector:

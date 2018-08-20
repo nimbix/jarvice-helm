@@ -20,9 +20,16 @@ used for this.  Modify as necessary for your cluster and issue the following
 commands:
 
 ```console
-$ kubectl -n kube-system create -f jarvice-helm/extra/tiller-sa.yaml
+$ kubectl --namespace kube-system create -f jarvice-helm/extra/tiller-sa.yaml
 $ helm init --upgrade --service-account tiller
 ```
+
+* Kubernetes network plugin:
+
+As of this writing, weave is the only known plugin to work out-of-the-box
+on multiple architectures (amd64, ppc64le, arm64).  As such, it is recommended
+that kubernetes installations use the weave plugin if intending to run jobs in
+a multiarch environment.
 
 * Kubernetes load balancer:
 
@@ -38,6 +45,18 @@ installation:
 ```console
 $ helm inspect stable/metallb
 ```
+
+* Kubernetes device plugins:
+
+If the cluster nodes have NVIDIA GPU devices installed, it will be necessary
+to install the device plugin in order for JARVICE to make use of them.  Please
+see the following link for plugin installation details:
+https://github.com/NVIDIA/k8s-device-plugin
+
+If the cluster nodes have RDMA capable devices installed, it will be necessary
+to install the device plugin in order for JARVICE to make use of them.  Please
+see the following link for plugin installation details:
+https://github.com/nimbix/k8s-rdma-device-plugin
 
 * Kubernetes persistent volumes (for non-demo installation):
 
@@ -59,7 +78,7 @@ https://kubernetes.io/docs/concepts/storage/persistent-volumes/
 
 * kubernetes-dashboard:
 
-While not required, to ease in the monitoring of JARVICE in the kubernetes
+While not required, to ease the monitoring of JARVICE in the kubernetes
 cluster, it is recommended that the kubernetes-dashboard is installed into
 the cluster.
 
@@ -84,23 +103,23 @@ used for this.  Modify as necessary for your cluster and issue the following
 commands:
 
 ```console
-$ kubectl -n kube-system create -f jarvice-helm/extra/kubernetes-dashboard-crb.yaml
+$ kubectl --namespace kube-system create -f jarvice-helm/extra/kubernetes-dashboard-crb.yaml
 ```
 
 In order to access the dashboard from outside of the cluster, it will be
 necessary to expose the deployment.  Here is an example:
 
 ```console
-$ kubectl -n kube-system expose deployment kubernetes-dashboard \
+$ kubectl --namespace kube-system expose deployment kubernetes-dashboard \
     --type=LoadBalancer --name kubernetes-dashboard-lb
 ```
 
 The login token for the dashboard can be retrieved via kubectl:
 
 ```console
-$ secret=$(kubectl -n kube-system get secret -o name | \
+$ secret=$(kubectl --namespace kube-system get secret -o name | \
     grep 'kubernetes-dashboard-token-')
-$ kubectl -n kube-system describe $secret | grep '^token:' | awk '{print $2}'
+$ kubectl --namespace kube-system describe $secret | grep '^token:' | awk '{print $2}'
 ```
 
 ------------------------------------------------------------------------------
@@ -165,15 +184,23 @@ $ helm install \
     --set jarvice.imagePullSecret.username="<jarvice_quay_io_user>" \
     --set jarvice.imagePullSecret.password="<jarvice_quay_io_pass>" \
     --set jarvice.JARVICE_LICENSE_LIC="<jarvice_license_key>" \
-    --set jarvice.jarvice_db.persistence.enabled=true \
-    --set jarvice.jarvice_db.persistence.size=10Gi \
-    --set jarvice.jarvice_registry.persistence.enabled=true \
-    --set jarvice.jarvice_registry.persistence.size=1000Gi \
+    --set jarvice_db.enabled=true \
+    --set jarvice_db.persistence.enabled=true \
+    --set jarvice_db.persistence.size=10Gi \
+    --set jarvice_registry.enabled=true \
+    --set jarvice_registry.persistence.enabled=true \
+    --set jarvice_registry.persistence.size=1000Gi \
+    --set jarvice.JARVICE_LOCAL_REGISTRY=jarvice-registry:5000 \
     --name jarvice --namespace jarvice-system ./jarvice-helm
 ```
 
-By default, persistence is disabled, so note that the persistence settings are
-required to enable use of persistent volumes by the JARVICE helm chart.
+By default, the standard install already has `jarvice_db.enabled=true` and
+`jarvice_registry.enabled=false`.  Also, `jarvice.JARVICE_LOCAL_REGISTRY`
+defaults to `docker.io`.
+
+Also by default, persistence is disabled for jarvice-db and jarvice-registry,
+so note that the persistence settings are required to enable use of
+persistent volumes by the JARVICE helm chart.
 
 If kubernetes persistent volumes were created which do no match the default
 storage classes, it will be necessary to also `--set` the following values to
@@ -182,11 +209,25 @@ match the persistent volume storage classes that you wish to use:
 - `jarvice.jarvice_db.persistence.storageClass`
 - `jarvice.jarvice_registry.persistence.storageClass`
 
+* Selecting external, load balancer IP addresses
+
+By default, the load balancer installed for the target kubernetes cluster will
+likely select random IP addresses from the IP range it was configured to use.
+If specific IP addresses are desired from that range for external access to
+JARVICE (e.g. to provide a consistent DNS name or the like), it will be
+necessary to also `--set` the proper values to get the desired IP addresses.
+(Contact the kubernetes cluster administrator to determine which IP addresses
+are available.)  To direct the load balancer to allocate specific IP addresses
+to the JARVICE services, here are the settings to use:
+
+- `jarvice_mc_portal.loadBalancerIP`
+- `jarvice_api.loadBalancerIP`
+
 * Site specific configuration
 
-The easiest way to configure all of the JARVICE options is to copy
-the default `values.yaml` file to `override.yaml`.  It can then be modified and
-used as a part of the helm installation command:
+The easiest way to configure all of the JARVICE options is to copy the default
+`values.yaml` file to `override.yaml`.  It can then be modified and used as
+a part of the helm installation command:
 
 ```console
 $ cp jarvice-helm/values.yaml jarvice-helm/override.yaml
@@ -197,13 +238,14 @@ $ helm install --values jarvice-helm/override.yaml \
 * Updating configuration (or upgrading to newer JARVICE chart version)
 
 The helm upgrade command can be used to tweak JARVICE after the initial
-installation.  For example, if it is warranted to increase the number of
-replicas/pods for one of the JARVICE services.  The following command
-could be used to update that number for the JARVICE DAL service:
+installation.  e.g. If it is necessary to increase the number of
+replicas/pods for one of the JARVICE services.  The following example
+command could be used to update the number of replicas/pods for the
+JARVICE DAL deployment:
 
 ```console
 $ helm upgrade --reuse-values \
-    --set jarvice_dal.replicaCount=2 jarvice ./jarvice-helm
+    --set jarvice_dal.replicaCount=3 jarvice ./jarvice-helm
 ```
 
 This could also be done from an `override.yaml` file:
@@ -243,7 +285,17 @@ Note that the MySQL installation will require a database named 'nimbix'.
 As with the database, you may already have or wish to use a docker registry
 outside of the control of the JARVICE helm chart.  If doing so, it will
 be necessary to set the `JARVICE_LOCAL_REGISTRY` from the `values.yaml` to
-point to the hostname/IP of the docker registry.
+point to the hostname/IP of the docker registry.  (Currently, the default
+registry setting points to `docker.io`)
+
+To use the registry provided with this helm chart, use the following setting:
+
+When using a registry provided withe the JARVICE helm chart, it will be
+necessary to enable it in the JARVICE helm chart.  This can be done either in
+an `override.yaml` file or via the command line with:
+
+`--set jarvice_registry.enabled=true`
+`--set jarvice.JARVICE_LOCAL_REGISTRY=jarvice-registry:5000`
 
 The registry can be exposed for access from outside the cluster via:
 
@@ -255,14 +307,7 @@ docker registry.  Please see the docker documention for more information:
 
 https://docs.docker.com/registry/insecure/
 
-
-When using a registry outside of the JARVICE helm chart, it will be necessary
-to disable it in the JARVICE helm chart.  This can be done either in an
-`override.yaml` file or via the command line with:
-
-`--set jarvice_registry.enabled=false`
-
-There is also a docker-registry specific helm chart if you wish to use that.
+There is also a docker-registry specific helm chart available for deployment.
 Use the helm inspect command for details:
 
 ```console
@@ -276,6 +321,55 @@ $ helm inspect stable/docker-registry
 More information on the specific JARVICE configuration options can be found
 in the commments found in the `values.yaml` file.  Please refer to that as
 it's own configuration reference.
+
+------------------------------------------------------------------------------
+
+## JARVICE Post Installation
+
+* Optionally, customize JARVICE with a new "skin"
+
+To update the JARVICE portal logos and colors with a custom "skin":
+
+- Copy the skin-default directory to skin-override.
+- Update skin-override image files and/or JSON settings of the color palette.
+- Create a kubernetes ConfigMap from the skin-override directory.
+- Update the portal deployment environment to force a rolling update of the
+  pods with the new skin.
+
+Example step-by-step "skin" procedure:
+
+```bash
+$ cp -a jarvice-helm/skin-default jarvice-helm/skin-override
+<update files in jarvice-helm/skin-override>
+$ kubectl --namespace jarvice-system \
+    create configmap jarvice-mc-portal-skin \
+    --from-file=jarvice-helm/skin-override
+$ kubectl --namespace jarvice-system set env \
+    deployment/jarvice-mc-portal JARVICE_SKIN_UPDATE=$(date +%s)
+```
+
+* View status of the installed kubernetes objects
+
+To get the status for all of the kubernetes objects created in the
+"jarvice-system" namespace:
+
+```bash
+$ kubectl --namespace jarvice-system get all
+```
+
+* Retreive IP addresses for accessing JARVICE
+
+The LoadBalancer IP addresses for the MC portal and the API endpoint can be
+found with the following commands:
+
+```bash
+$ PORTAL_IP=$(kubectl --namespace jarvice-system get services \
+    jarvice-mc-portal-lb -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+$ API_IP=$(kubectl --namespace jarvice-system get services \
+    jarvice-api-lb -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+```
+
+Then use https://`$PORTAL_IP`/ to initialize and/or log into JARVICE.
 
 ------------------------------------------------------------------------------
 

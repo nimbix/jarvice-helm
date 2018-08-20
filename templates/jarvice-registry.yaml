@@ -1,0 +1,134 @@
+{{- if .Values.jarvice_registry.enabled }}
+{{- if .Values.jarvice_registry.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jarvice-registry-pvc
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-registry
+  annotations:
+    "helm.sh/hook": pre-install
+spec:
+  accessModes:
+    - {{ .Values.jarvice_registry.persistence.accessMode }}
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: {{ .Values.jarvice_registry.persistence.size }}
+{{- if .Values.jarvice_registry.persistence.storageClass }}
+{{- if (eq "-" .Values.jarvice_registry.persistence.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: "{{ .Values.jarvice_registry.persistence.storageClass }}"
+{{- end }}
+{{- end }}
+---
+{{- end }}
+{{- if .Values.jarvice_registry.tls.createConfigMap }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.jarvice_registry.tls.configMap }}
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-registry
+  annotations:
+    "helm.sh/hook": pre-install
+data:
+{{ toYaml .Values.jarvice_registry.tls.data | indent 2 }}
+---
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jarvice-registry
+  annotations:
+    "helm.sh/hook": pre-install
+spec:
+  replicas: {{ .Values.jarvice_registry.replicaCount }}
+  selector:
+    matchLabels:
+      deployment: jarvice-registry
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-registry
+        deployment: jarvice-registry
+    spec:
+      nodeSelector:
+        beta.kubernetes.io/arch: "amd64"
+      volumes:
+        - name: registry-tls-cert
+          configMap:
+            name: {{ .Values.jarvice_registry.tls.configMap }}
+            optional: true
+{{- if .Values.jarvice_registry.persistence.enabled }}
+        - name: registry-data-vol
+          persistentVolumeClaim:
+            claimName: jarvice-registry-pvc
+{{- end }}
+      containers:
+      - name: jarvice-registry
+        image: {{ .Values.jarvice_registry.image }}
+        imagePullPolicy: Always
+        ports:
+          - name: "registry"
+            containerPort: 5000
+        env:
+          - name: REGISTRY_HTTP_ADDR
+            value: "{{ .Values.jarvice_registry.env.REGISTRY_HTTP_ADDR }}"
+          - name: REGISTRY_HTTP_TLS_CERTIFICATE
+            value: "{{ .Values.jarvice_registry.env.REGISTRY_HTTP_TLS_CERTIFICATE }}"
+          - name: REGISTRY_HTTP_TLS_KEY
+            value: "{{ .Values.jarvice_registry.env.REGISTRY_HTTP_TLS_KEY }}"
+        volumeMounts:
+        - name: registry-tls-cert
+          mountPath: /etc/ssl/docker
+          readOnly: true
+{{- if .Values.jarvice_registry.persistence.enabled }}
+        - name: registry-data-vol
+          mountPath: /var/lib/registry
+{{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-registry
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-registry
+  annotations:
+    "helm.sh/hook": pre-install
+spec:
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 5000
+    targetPort: 5000
+    name: registry
+  selector:
+    deployment: jarvice-registry
+---
+{{- if .Values.jarvice_registry.external }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "jarvice.name" . }}-registry-lb
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-registry
+spec:
+  type: LoadBalancer
+  loadBalancerIP: {{ .Values.jarvice_registry.loadBalancerIP }}
+  ports:
+  - protocol: TCP
+    port: 5000
+    targetPort: 5000
+    name: registry
+  selector:
+    deployment: {{ template "jarvice.name" . }}-registry
+---
+{{- end }}
+{{- end }}

@@ -1,8 +1,6 @@
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: {{ .Release.Namespace }}
   name: jarvice-mc-portal
 spec:
   replicas: {{ .Values.jarvice_mc_portal.replicaCount }}
@@ -12,17 +10,10 @@ spec:
   template:
     metadata:
       labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-mc-portal
         deployment: jarvice-mc-portal
-        app: {{ template "jarvice.name" . }}
-        chart: {{ .Chart.Name }}-{{ .Chart.Version }}
-        release: {{ .Release.Name }}
-        heritage: {{ .Release.Service }}
-#      annotations:
-#        container.apparmor.security.beta.kubernetes.io/jarvice-mc-portal: unconfined
     spec:
-#      serviceAccountName: {{ .Values.jarvice.kubernetes.serviceAccount }}
-#      hostNetwork: true
-#      terminationGracePeriodSeconds: 0
       nodeSelector:
         beta.kubernetes.io/arch: "{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}"
 {{- if .Values.jarvice_mc_portal.nodeSelector }}
@@ -30,6 +21,11 @@ spec:
 {{- end }}
       imagePullSecrets:
       - name: jarvice-docker
+      volumes:
+        - name: jarvice-skin
+          configMap:
+            name: {{ .Values.jarvice_mc_portal.skin.configMap }}
+            optional: true
       containers:
       - name: jarvice-mc-portal
         image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-mc-portal:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}-{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}
@@ -39,6 +35,30 @@ spec:
             containerPort: 443
           - name: http
             containerPort: 80
+        readinessProbe:
+          exec:
+            command:
+            - /usr/bin/curl
+            - -k
+            - -s
+            - https://jarvice-dal:8443/status
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+        livenessProbe:
+          exec:
+            command:
+            - /usr/bin/curl
+            - -k
+            - -s
+            - https://jarvice-dal:8443/status
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
         env:
           - name: JARVICE_MC_PORTAL_HTTPS
             value: "enable"
@@ -54,9 +74,40 @@ spec:
             value: "https://jarvice-dal:8443"
           - name: JARVICE_API_URL
             value: "https://jarvice-api:7443"
-{{- if .Values.jarvice_mc_portal.env }}
-{{ toYaml .Values.jarvice_mc_portal.env | indent 10 }}
-{{- end }}
+          - name: JARVICE_MC_PORTAL_CRT
+            value: {{ toYaml .Values.jarvice_mc_portal.env.JARVICE_MC_PORTAL_CRT | indent 12 }}
+          - name: JARVICE_MC_PORTAL_KEY
+            value: {{ toYaml .Values.jarvice_mc_portal.env.JARVICE_MC_PORTAL_KEY | indent 12 }}
+          - name: JARVICE_USER_DEFAULT_ENABLED
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_USER_DEFAULT_ENABLED }}"
+          - name: JARVICE_USER_DEFAULT_DEVELOPER
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_USER_DEFAULT_DEVELOPER }}"
+          - name: JARVICE_PORTAL_MEMCACHED_LOCATIONS
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MEMCACHED_LOCATIONS }}"
+          - name: JARVICE_PORTAL_APP_OWNERS
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_APP_OWNERS }}"
+          - name: JARVICE_PORTAL_MAIL_FROM
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_FROM }}"
+          - name: JARVICE_PORTAL_MAIL_SUBJECT
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_SUBJECT }}"
+          - name: JARVICE_PORTAL_MAIL_SERVER
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_SERVER }}"
+          - name: JARVICE_PORTAL_MAIL_USERNAME
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_USERNAME }}"
+          - name: JARVICE_PORTAL_MAIL_PASSWORD
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_PASSWORD }}"
+          - name: JARVICE_PORTAL_MAIL_ADMINS
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_ADMINS }}"
+          - name: JARVICE_PORTAL_MAIL_DBHOST
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_DBHOST }}"
+          - name: JARVICE_PORTAL_MAIL_DBUSER
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_DBUSER }}"
+          - name: JARVICE_PORTAL_MAIL_DBPASSWD
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_DBPASSWD }}"
+        volumeMounts:
+        - name: jarvice-skin
+          mountPath: /etc/jarvice/skin
+          readOnly: true
         resources:
 {{- if .Values.jarvice_mc_portal.resources }}
 {{ toYaml .Values.jarvice_mc_portal.resources | indent 10 }}
@@ -65,15 +116,34 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: {{ .Release.Namespace }}
   name: jarvice-mc-portal
   labels:
-    app: {{ template "jarvice.name" . }}
-    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-mc-portal
 spec:
   type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 443
+    targetPort: 443
+    name: https
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+    name: http
+  selector:
+    deployment: jarvice-mc-portal
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-mc-portal-lb
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-mc-portal
+spec:
+  type: LoadBalancer
+  loadBalancerIP: {{ .Values.jarvice_mc_portal.loadBalancerIP }}
   ports:
   - protocol: TCP
     port: 443

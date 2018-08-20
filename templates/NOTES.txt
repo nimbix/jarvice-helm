@@ -1,13 +1,58 @@
-Once the LoadBalancer IP for the portal and API are available, they can be
+*******************************************************************************
+************* It may take a few minutes for JARVICE to fully load *************
+*******************************************************************************
+
+* Optionally, customize JARVICE with a new "skin"
+
+To update the JARVICE portal logos and colors with a custom "skin":
+
+- Copy the skin-default directory to skin-override.
+- Update skin-override image files and/or JSON settings of the color palette.
+- Create a kubernetes ConfigMap from the skin-override directory.
+- Update the portal deployment environment to force a rolling update of the
+  pods with the new skin.
+
+Example step-by-step "skin" procedure:
+
+$ cp -a jarvice-helm/skin-default jarvice-helm/skin-override
+<update files in jarvice-helm/skin-override>
+$ kubectl --namespace {{ .Release.Namespace }} \
+    create configmap {{ .Values.jarvice_mc_portal.skin.configMap }} \
+    --from-file=jarvice-helm/skin-override
+$ kubectl --namespace {{ .Release.Namespace }} set env \
+    deployment/jarvice-mc-portal JARVICE_SKIN_UPDATE=$(date +%s)
+
+-------------------------------------------------------------------------------
+
+* View status of the installed kubernetes objects
+
+To get the status for all of the kubernetes objects created in the
+"{{ .Release.Namespace }}" namespace:
+
+$ kubectl --namespace {{ .Release.Namespace }} get all
+
+-------------------------------------------------------------------------------
+
+* Retreive IP addresses for accessing JARVICE
+
+The LoadBalancer IP addresses for the MC portal and the API endpoint can be
 found with the following commands:
 
-kubectl --namespace {{ .Release.Namespace }} get services jarvice-mc-portal-lb -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
-kubectl --namespace {{ .Release.Namespace }} get services jarvice-api-lb -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+$ PORTAL_IP=$(kubectl --namespace {{ .Release.Namespace }} get services \
+    jarvice-mc-portal-lb -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+$ API_IP=$(kubectl --namespace {{ .Release.Namespace }} get services \
+    jarvice-api-lb -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+{{- if .Values.jarvice_registry.enabled }}
+{{- if .Values.jarvice_registry.external }}
 
-Then use https://$PORTAL_IP/ to initialize or log into JARVICE.
+The registry IP address can be found with:
 
-To get all of the kubernetes objects created in the "{{ .Release.Namespace }}"
-namespace:
+$ REGISTRY_IP=$(kubectl --namespace {{ .Release.Namespace }} get services \
+    jarvice-registry-lb -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+{{- end }}
+{{- end }}
 
-kubectl --namespace {{ .Release.Namespace }} get all
+Then use https://$PORTAL_IP/ to initialize and/or log into JARVICE.
+
+-------------------------------------------------------------------------------
 

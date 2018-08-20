@@ -15,10 +15,10 @@ keywords:
     - JARVICE
     - HPC
     - cloud
-#icon:
+icon: https://github.com/nimbix/jarvice-helm/raw/master/skin-default/favicon.png
 sources:
    - https://github.com/nimbix/jarvice-helm
 
 engine: gotpl
-#kubeVersion: ">=1.11.0"
+#kubeVersion: ">=1.10"
 tillerVersion: ">=2.9"

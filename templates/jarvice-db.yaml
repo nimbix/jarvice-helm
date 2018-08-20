@@ -1,0 +1,93 @@
+{{- if .Values.jarvice_db.enabled }}
+{{- if .Values.jarvice_db.persistence.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jarvice-db-pvc
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-db
+  annotations:
+    "helm.sh/hook": pre-install
+spec:
+  volumes:
+    - name: jarvice-db-pvc
+      persistentVolumeClaim:
+        claimName: jarvice-db-pv
+  accessModes:
+    - {{ .Values.jarvice_db.persistence.accessMode }}
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: {{ .Values.jarvice_db.persistence.size }}
+{{- if .Values.jarvice_db.persistence.storageClass }}
+{{- if (eq "-" .Values.jarvice_db.persistence.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: "{{ .Values.jarvice_db.persistence.storageClass }}"
+{{- end }}
+{{- end }}
+---
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jarvice-db
+  annotations:
+    "helm.sh/hook": pre-install
+spec:
+  replicas: {{ .Values.jarvice_db.replicaCount }}
+  selector:
+    matchLabels:
+      deployment: jarvice-db
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-db
+        deployment: jarvice-db
+    spec:
+      nodeSelector:
+        beta.kubernetes.io/arch: "amd64"
+      containers:
+      - name: jarvice-db
+        image: {{ .Values.jarvice_db.image }}
+        imagePullPolicy: Always
+        ports:
+          - name: "jarvice-db"
+            containerPort: 3306
+        env:
+          - name: MYSQL_ROOT_PASSWORD
+            value: "{{ .Values.jarvice_db.env.MYSQL_ROOT_PASSWORD }}"
+          - name: MYSQL_DATABASE
+            value: "{{ .Values.jarvice_db.env.MYSQL_DATABASE }}"
+{{- if .Values.jarvice_db.persistence.enabled }}
+        volumeMounts:
+        - mountPath: /var/lib/mysql
+          name: db-data-vol
+      volumes:
+        - name: db-data-vol
+          persistentVolumeClaim:
+            claimName: jarvice-db-pvc
+{{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-db
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-db
+  annotations:
+    "helm.sh/hook": pre-install
+spec:
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 3306
+    targetPort: 3306
+    name: jarvice-db
+  selector:
+    deployment: jarvice-db
+---
+{{- end }}

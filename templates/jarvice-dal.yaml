@@ -1,8 +1,6 @@
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: {{ .Release.Namespace }}
   name: jarvice-dal
 spec:
   replicas: {{ .Values.jarvice_dal.replicaCount }}
@@ -12,19 +10,16 @@ spec:
   template:
     metadata:
       labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-dal
         deployment: jarvice-dal
-        app: {{ template "jarvice.name" . }}
-        chart: {{ .Chart.Name }}-{{ .Chart.Version }}
-        release: {{ .Release.Name }}
-        heritage: {{ .Release.Service }}
       annotations:
         container.apparmor.security.beta.kubernetes.io/jarvice-dal: unconfined
     spec:
       serviceAccountName: {{ .Values.jarvice.kubernetes.serviceAccount }}
-{{- if eq true Values.jarvice_dal.hostNetwork }}
+{{- if .Values.jarvice_dal.hostNetwork }}
       hostNetwork: true
 {{- end }}
-#      terminationGracePeriodSeconds: 0
       nodeSelector:
         beta.kubernetes.io/arch: "{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}"
 {{- if .Values.jarvice_dal.nodeSelector }}
@@ -41,6 +36,26 @@ spec:
             containerPort: 8443
           - name: http
             containerPort: 8000
+        readinessProbe:
+          httpGet:
+            scheme: HTTPS
+            port: https
+            path: /status
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            scheme: HTTPS
+            port: https
+            path: /status
+          initialDelaySeconds: 10
+          periodSeconds: 20
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 2
         env:
           - name: JARVICE_DAL_HTTPS
             value: "enable"
@@ -56,13 +71,28 @@ spec:
             value: "https://jarvice-scheduler:9443"
           - name: JARVICE_NODE_ENV
             value: "production"
-{{- if .Values.jarvice_dal.env }}
-{{ toYaml .Values.jarvice_dal.env | indent 10 }}
-{{- end }}
+          - name: JARVICE_SITE_DBHOST
+            value: "{{ .Values.jarvice_dal.env.JARVICE_SITE_DBHOST }}"
+          - name: JARVICE_SITE_DBUSER
+            value: "{{ .Values.jarvice_dal.env.JARVICE_SITE_DBUSER }}"
+          - name: JARVICE_SITE_DBPASSWD
+            value: "{{ .Values.jarvice_dal.env.JARVICE_SITE_DBPASSWD }}"
+          - name: JARVICE_ROOT_USER_CREATE
+            value: "{{ .Values.jarvice_dal.env.JARVICE_ROOT_USER_CREATE }}"
+          - name: JARVICE_ROOT_USER_PASSWD
+            value: "{{ .Values.jarvice_dal.env.JARVICE_ROOT_USER_PASSWD }}"
+          - name: JARVICE_ROOT_USER_EMAIL
+            value: "{{ .Values.jarvice_dal.env.JARVICE_ROOT_USER_EMAIL }}"
+          - name: JARVICE_USER_REGISTRY_VERIFY
+            value: "{{ .Values.jarvice_dal.env.JARVICE_USER_REGISTRY_VERIFY }}"
+          - name: JARVICE_ROOT_USER_VAULT
+            value: "{{ .Values.jarvice_dal.env.JARVICE_ROOT_USER_VAULT }}"
+          - name: JARVICE_ROOT_USER_VAULT_SIZE
+            value: "{{ .Values.jarvice_dal.env.JARVICE_ROOT_USER_VAULT_SIZE }}"
+          - name: JARVICE_CFG_NETWORK
+            value: {{ .Values.jarvice_dal.env.JARVICE_CFG_NETWORK }}
         resources:
-{{- if .Values.jarvice_dal.resources }}
 {{ toYaml .Values.jarvice_dal.resources | indent 10 }}
-{{- end }}
         securityContext:
           allowPrivilegeEscalation: true
           capabilities:
@@ -72,13 +102,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: {{ .Release.Namespace }}
   name: jarvice-dal
   labels:
-    app: {{ template "jarvice.name" . }}
-    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-dal
 spec:
   type: ClusterIP
   ports:

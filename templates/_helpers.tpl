@@ -31,3 +31,20 @@ Create chart name and version as used by the chart label.
 {{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
+{{/*
+Create app name and version as used by the app label.
+*/}}
+{{- define "jarvice.app" -}}
+{{- printf "%s-%s" .Chart.Name .Chart.AppVersion | replace "+" "_" | trunc 63 | trimSuffix "-" -}}
+{{- end -}}
+
+{{/*
+Create release labels for metadata.
+*/}}
+{{- define "jarvice.release_labels" }}
+heritage: {{ .Release.Service }}
+release: {{ .Release.Name }}
+chart: {{ template "jarvice.chart" . }}
+app: {{ template "jarvice.name" . }}
+jarvice: {{ template "jarvice.app" . }}
+{{- end }}

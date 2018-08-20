@@ -1,8 +1,6 @@
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: {{ .Release.Namespace }}
   name: jarvice-scheduler
 spec:
   replicas: {{ .Values.jarvice_scheduler.replicaCount }}
@@ -12,17 +10,11 @@ spec:
   template:
     metadata:
       labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-scheduler
         deployment: jarvice-scheduler
-        app: {{ template "jarvice.name" . }}
-        chart: {{ .Chart.Name }}-{{ .Chart.Version }}
-        release: {{ .Release.Name }}
-        heritage: {{ .Release.Service }}
-#      annotations:
-#        container.apparmor.security.beta.kubernetes.io/jarvice-scheduler: unconfined
     spec:
       serviceAccountName: {{ .Values.jarvice.kubernetes.serviceAccount }}
-#      hostNetwork: true
-#      terminationGracePeriodSeconds: 0
       nodeSelector:
         beta.kubernetes.io/arch: "{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}"
 {{- if .Values.jarvice_scheduler.nodeSelector }}
@@ -37,6 +29,24 @@ spec:
         ports:
           - name: https
             containerPort: 9443
+        readinessProbe:
+          tcpSocket:
+            scheme: HTTPS
+            port: https
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+        livenessProbe:
+          tcpSocket:
+            scheme: HTTPS
+            port: https
+          initialDelaySeconds: 20
+          periodSeconds: 20
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
         env:
           - name: JARVICE_DAL_URL
             value: "https://jarvice-dal:8443"
@@ -56,9 +66,14 @@ spec:
             value: {{ .Values.jarvice.JARVICE_LOCAL_REGISTRY }}
           - name: JARVICE_LOCAL_REPO_BASE
             value: {{ .Values.jarvice.JARVICE_LOCAL_REPO_BASE }}
-{{- if .Values.jarvice_scheduler.env }}
-{{ toYaml .Values.jarvice_scheduler.env | indent 10 }}
-{{- end }}
+          - name: JARVICE_USE_LXCFS
+            value: "{{ .Values.jarvice_scheduler.env.JARVICE_USE_LXCFS }}"
+          - name: JARVICE_K8S_ADMIN_CONF
+            value: "{{ .Values.jarvice_scheduler.env.JARVICE_K8S_ADMIN_CONF }}"
+          - name: JARVICE_SCHED_PASS_INTERVAL
+            value: "{{ .Values.jarvice_scheduler.env.JARVICE_SCHED_PASS_INTERVAL }}"
+          - name: JARVICE_MAIL_CONF
+            value: {{ toYaml .Values.jarvice_scheduler.env.JARVICE_MAIL_CONF | indent 12 }}
         resources:
 {{- if .Values.jarvice_scheduler.resources }}
 {{ toYaml .Values.jarvice_scheduler.resources | indent 10 }}
@@ -67,13 +82,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: {{ .Release.Namespace }}
   name: jarvice-scheduler
   labels:
-    app: {{ template "jarvice.name" . }}
-    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
-    release: {{ .Release.Name }}
-    heritage: {{ .Release.Service }}
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-scheduler
 spec:
   type: ClusterIP
   ports:
