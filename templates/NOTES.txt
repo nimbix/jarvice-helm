@@ -20,7 +20,7 @@ $ kubectl --namespace {{ .Release.Namespace }} \
     create configmap {{ .Values.jarvice_mc_portal.skin.configMap }} \
     --from-file=jarvice-helm/skin-override
 $ kubectl --namespace {{ .Release.Namespace }} set env \
-    deployment/jarvice-mc-portal JARVICE_SKIN_UPDATE=$(date +%s)
+    deployment/jarvice-mc-portal JARVICE_PODS_RELOAD=$(date +%s)
 
 -------------------------------------------------------------------------------
 

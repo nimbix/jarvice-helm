@@ -345,7 +345,7 @@ $ kubectl --namespace jarvice-system \
     create configmap jarvice-mc-portal-skin \
     --from-file=jarvice-helm/skin-override
 $ kubectl --namespace jarvice-system set env \
-    deployment/jarvice-mc-portal JARVICE_SKIN_UPDATE=$(date +%s)
+    deployment/jarvice-mc-portal JARVICE_PODS_RELOAD=$(date +%s)
 ```
 
 * View status of the installed kubernetes objects
