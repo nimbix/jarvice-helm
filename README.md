@@ -263,7 +263,7 @@ $ helm upgrade --reuse-values \
     --values jarvice-helm/override.yaml jarvice ./jarvice-helm
 ```
 
-### Non-JARVICE specific services (`jarvice-db`, `jarvice-registry`)
+### Non-JARVICE specific services
 
 #### MySQL database (`jarvice-db`)
 
