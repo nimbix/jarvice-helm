@@ -28,6 +28,11 @@ spec:
 {{- end }}
       imagePullSecrets:
       - name: jarvice-docker
+      volumes:
+        - name: jarvice-settings
+          configMap:
+            name: {{ .Values.jarvice.settings.configMap }}
+            optional: true
       containers:
       - name: jarvice-dal
         image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-dal:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}-{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}
@@ -91,7 +96,11 @@ spec:
           - name: JARVICE_ROOT_USER_VAULT_SIZE
             value: "{{ .Values.jarvice_dal.env.JARVICE_ROOT_USER_VAULT_SIZE }}"
           - name: JARVICE_CFG_NETWORK
-            value: {{ .Values.jarvice_dal.env.JARVICE_CFG_NETWORK }}
+            value: {{ toYaml .Values.jarvice_dal.env.JARVICE_CFG_NETWORK | indent 12}}
+        volumeMounts:
+        - name: jarvice-settings
+          mountPath: /etc/jarvice/jarvice-dal
+          readOnly: true
         resources:
 {{ toYaml .Values.jarvice_dal.resources | indent 10 }}
         securityContext:

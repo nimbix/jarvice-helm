@@ -1,0 +1,15 @@
+[global]
+netmask: 255.255.0.0
+gateway: 172.17.0.1
+dns: 8.8.8.8,8.8.4.4
+search: localdomain,dev.nimbix.net,nimbix.net
+linuxbr: docker0
+naelimit: 10
+nae_nfs_bind: 172.17.0.0/16
+[floating]
+start: 172.17.0.100
+end: 172.17.0.255
+[nat]
+[static]
+[fqdns]
+[naelimits]

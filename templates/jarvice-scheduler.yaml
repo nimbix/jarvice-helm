@@ -23,6 +23,11 @@ spec:
 {{- end }}
       imagePullSecrets:
       - name: jarvice-docker
+      volumes:
+        - name: jarvice-settings
+          configMap:
+            name: {{ .Values.jarvice.settings.configMap }}
+            optional: true
       containers:
       - name: jarvice-scheduler
         image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-scheduler:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}-{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}{{ .Values.jarvice.JARVICE_IMAGES_TAG_DEV }}
@@ -75,6 +80,10 @@ spec:
             value: "{{ .Values.jarvice_scheduler.env.JARVICE_SCHED_PASS_INTERVAL }}"
           - name: JARVICE_MAIL_CONF
             value: {{ toYaml .Values.jarvice_scheduler.env.JARVICE_MAIL_CONF | indent 12 }}
+        volumeMounts:
+        - name: jarvice-settings
+          mountPath: /etc/jarvice/jarvice-scheduler
+          readOnly: true
         resources:
 {{- if .Values.jarvice_scheduler.resources }}
 {{ toYaml .Values.jarvice_scheduler.resources | indent 10 }}

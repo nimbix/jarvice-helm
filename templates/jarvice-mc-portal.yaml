@@ -23,13 +23,9 @@ spec:
       imagePullSecrets:
       - name: jarvice-docker
       volumes:
-        - name: jarvice-mc-portal-skin
+        - name: jarvice-settings
           configMap:
-            name: {{ .Values.jarvice_mc_portal.skin.configMap }}
-            optional: true
-        - name: jarvice-mc-portal-ssl
-          configMap:
-            name: {{ .Values.jarvice_mc_portal.ssl.configMap }}
+            name: {{ .Values.jarvice.settings.configMap }}
             optional: true
       containers:
       - name: jarvice-mc-portal
@@ -110,11 +106,8 @@ spec:
           - name: JARVICE_PORTAL_MAIL_DBPASSWD
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_DBPASSWD }}"
         volumeMounts:
-        - name: jarvice-mc-portal-skin
-          mountPath: /etc/jarvice/jarvice-mc-portal-skin
-          readOnly: true
-        - name: jarvice-mc-portal-ssl
-          mountPath: /etc/jarvice/jarvice-mc-portal-ssl
+        - name: jarvice-settings
+          mountPath: /etc/jarvice/jarvice-mc-portal
           readOnly: true
         resources:
 {{- if .Values.jarvice_mc_portal.resources }}

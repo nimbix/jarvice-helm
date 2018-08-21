@@ -326,46 +326,58 @@ it's own configuration reference.
 
 ## JARVICE Post Installation
 
-### Optionally, customize the JARVICE portal with a new "skin" and/or SSL certificate/key pair
+### Customize JARVICE files via a ConfigMap
 
-- Copy the `jarvice-mc-portal-skin` directory to `jarvice-mc-portal-skin-override`.
-- Update the image files and/or JSON settings of the color palette in the
-  `jarvice-mc-portal-skin-override directory`.
-- Create a kubernetes ConfigMap from the `jarvice-mc-portal-skin-override`
-  directory.
+Some JARVICE files can be updated via a ConfigMap.  The files found in
+`jarvice-helm/jarvice-settings` represent all of those files which may
+optionally be updated from the setting ConfigMap.
 
-- Copy the `jarvice-mc-portal-ssl` directory to `jarvice-mc-portal-ssl-override`.
-- Update the certificate and key files in the `jarvice-mc-portal-ssl-override`
-  directory.
-- Create a kubernetes ConfigMap from the `jarvice-mc-portal-ssl-override`
-  directory.
+The portal may be "skinned" with a custom look and feel by providing
+replacements for `default.png`, `favicon.png`, `logo.png`, `palette.json`,
+or `eula.txt`.
 
-- Update the portal deployment environment to force a rolling update of the
-  pods with the new skin and/or SSL certificate and key.
+The portal SSL certificate and key may be updated by providing replacements
+for `jarvice-mc-portal.crt` and `jarvice-mc-portal.key` to override the
+`jarvice_mc_portal.env.JARVICE_MC_PORTAL_CRT` and
+`jarvice_mc_portal.env.JARVICE_MC_PORTAL_KEY` settings found in `values.yaml`.
 
-Example step-by-step customization procedure for the JARVICE portal:
+Instead of editing the `jarvice_dal.env.JARVICE_CFG_NETWORK` and
+`jarvice_scheduler.env.MAIL_CONF` settings as found in the `values.yaml` file,
+it may be preferable to override them with the `cfg.network` and `mail.conf`
+files respectively.
 
-Skin configuration:
+#### Step-by-step customization procedure for the aforementioned JARVICE settings:
+
+Create directory for setting the JARVICE customizations:
 ```bash
-$ cp -a jarvice-helm/jarvice-mc-portal-skin \
-    jarvice-helm/jarvice-mc-portal-skin-override
-<update files in jarvice-helm/jarvice-mc-portal-skin-override>
-$ kubectl --namespace jarvice-system \
-    create configmap jarvice-mc-portal-skin \
-    --from-file=jarvice-helm/jarvice-mc-portal-skin-override
+$ mkdir -p jarvice-helm/jarvice-settings-override
 ```
 
-Certificate configuration:
+In `jarvice-helm/jarvice-settings-override`, it will only be necessary to
+create those files which are to be customized.  The defaults found in
+`jarvice-helm/jarvice-settings` may be copied and edited as desired.
+
+Load the new JARVICE settings by creating a ConfigMap:
 ```bash
-$ cp -a jarvice-helm/jarvice-mc-portal-ssl \
-    jarvice-helm/jarvice-mc-portal-ssl-override
-<update files in jarvice-helm/jarvice-mc-portal-ssl-override>
 $ kubectl --namespace jarvice-system \
-    create configmap jarvice-mc-portal-ssl \
-    --from-file=jarvice-helm/jarvice-mc-portal-ssl-override
+    create configmap jarvice-settings \
+    --from-file=jarvice-helm/jarvice-settings-override
 ```
 
-Reload pods:
+Reload jarvice-dal pods (only to apply cfg.network update):
+```bash
+$ kubectl --namespace jarvice-system set env \
+    deployment/jarvice-dal JARVICE_PODS_RELOAD=$(date +%s)
+```
+
+Reload jarvice-scheduler pods (only to apply mail.conf update):
+```bash
+$ kubectl --namespace jarvice-system set env \
+    deployment/jarvice-scheduler JARVICE_PODS_RELOAD=$(date +%s)
+```
+
+Reload jarvice-mc-portal pods (only to apply default.png, favicon.png,
+logo.png, palette.json, or eula.txt updates):
 ```bash
 $ kubectl --namespace jarvice-system set env \
     deployment/jarvice-mc-portal JARVICE_PODS_RELOAD=$(date +%s)

@@ -11,6 +11,8 @@ jarvice:
   #JARVICE_LOCAL_REGISTRY: jarvice-registry:5000
   JARVICE_LOCAL_REGISTRY: docker.io
   JARVICE_LOCAL_REPO_BASE: jarvice
+  settings:
+    configMap: jarvice-settings
   imagePullSecret:
     username:
     password:
@@ -142,6 +144,8 @@ jarvice_dal:
 #  nodeSelector:
 #    jarvice.io/jarvice-system: 1
 #    jarvice.io/jarvice-dal: 1
+  # jarvice.settings.configMap takes precedence over envornment settings
+  # for JARVICE_CFG_NETWORK
   env:
     JARVICE_SITE_DBHOST: jarvice-db
     JARVICE_SITE_DBUSER: root
@@ -152,7 +156,22 @@ jarvice_dal:
     JARVICE_USER_REGISTRY_VERIFY: False
     JARVICE_ROOT_USER_VAULT: # default-BLOCK-1GB
     JARVICE_ROOT_USER_VAULT_SIZE: # 1
-    JARVICE_CFG_NETWORK:
+    JARVICE_CFG_NETWORK: |
+        [global]
+        netmask: 255.255.0.0
+        gateway: 172.17.0.1
+        dns: 8.8.8.8,8.8.4.4
+        search: localdomain,dev.nimbix.net,nimbix.net
+        linuxbr: docker0
+        naelimit: 10
+        nae_nfs_bind: 172.17.0.0/16
+        [floating]
+        start: 172.17.0.100
+        end: 172.17.0.255
+        [nat]
+        [static]
+        [fqdns]
+        [naelimits]
 
 jarvice_scheduler:
   enabled: true
@@ -164,6 +183,8 @@ jarvice_scheduler:
 #  nodeSelector:
 #    jarvice.io/jarvice-system: 1
 #    jarvice.io/jarvice-scheduler: 1
+  # jarvice.settings.configMap takes precedence over envornment settings
+  # for JARVICE_MAIL_CONF
   env:
     JARVICE_USE_LXCFS: yes
     JARVICE_K8S_ADMIN_CONF:
@@ -203,12 +224,8 @@ jarvice_mc_portal:
 #  nodeSelector:
 #    jarvice.io/jarvice-system: 1
 #    jarvice.io/jarvice-mc-portal: 1
-  skin:
-    configMap: jarvice-mc-portal-skin
-  # jarvice_mc_portal.ssl.configMap takes precedence over envornment settings
+  # jarvice.settings.configMap takes precedence over envornment settings
   # for JARVICE_MC_PORTAL_CRT and JARVICE_MC_PORTAL_KEY
-  ssl:
-    configMap: jarvice-mc-portal-ssl
   env:
     JARVICE_MC_PORTAL_CRT: |
         -----BEGIN CERTIFICATE-----
