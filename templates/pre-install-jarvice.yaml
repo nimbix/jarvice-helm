@@ -5,9 +5,38 @@ metadata:
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-system
+  #annotations:
+  #  "helm.sh/hook": pre-install
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jarvice-system
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-system
   annotations:
     "helm.sh/hook": pre-install
-    "helm.sh/hook-delete-policy": hook-succeeded
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: jarvice-system-{{ .Release.Name }}
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-system
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-delete-policy": before-hook-creation
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: admin
+  #name: {{ .Values.jarvice.kubernetes.clusterRole }}
+subjects:
+- kind: ServiceAccount
+  name: jarvice-system
+  namespace: {{ .Release.Namespace }}
 ---
 {{- if .Values.jarvice.kubernetes.createClusterRole }}
 apiVersion: rbac.authorization.k8s.io/v1
@@ -19,7 +48,7 @@ metadata:
     component: jarvice-system
   annotations:
     "helm.sh/hook": pre-install
-    "helm.sh/hook-delete-policy": hook-succeeded
+    #"helm.sh/hook-delete-policy": before-hook-creation
 rules:
 - apiGroups: [""]
   resources: ["pods"]
@@ -62,52 +91,3 @@ rules:
   verbs: ["create", "delete", "deletecollection", "get", "list", "patch", "update", "watch"]
 ---
 {{- end }}
-{{- if .Values.jarvice.kubernetes.createServiceAccount }}
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: {{ .Values.jarvice.kubernetes.serviceAccount }}
-  labels:
-    {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-system
-  annotations:
-    "helm.sh/hook": pre-install
-    "helm.sh/hook-delete-policy": hook-succeeded
----
-{{- end }}
-{{- if .Values.jarvice.kubernetes.createServiceAccountCRB }}
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: {{ .Values.jarvice.kubernetes.serviceAccount }}-crb
-  labels:
-    {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-system
-  annotations:
-    "helm.sh/hook": pre-install
-    "helm.sh/hook-delete-policy": hook-succeeded
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: admin
-  #name: {{ .Values.jarvice.kubernetes.clusterRole }}
-subjects:
-- kind: ServiceAccount
-  name: {{ .Values.jarvice.kubernetes.serviceAccount }}
-  namespace: {{ .Release.Namespace }}
----
-{{- end }}
-apiVersion: v1
-kind: Secret
-metadata:
-  name: jarvice-docker
-  labels:
-    {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-system
-  annotations:
-    "helm.sh/hook": pre-install
-    "helm.sh/hook-delete-policy": hook-succeeded
-type: kubernetes.io/dockerconfigjson
-data:
-  .dockerconfigjson: {{ printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" .Values.jarvice.JARVICE_SYSTEM_REGISTRY (printf "%s:%s" .Values.jarvice.imagePullSecret.username .Values.jarvice.imagePullSecret.password | b64enc) | b64enc }}
----

@@ -15,7 +15,7 @@ spec:
         component: jarvice-scheduler
         deployment: jarvice-scheduler
     spec:
-      serviceAccountName: {{ .Values.jarvice.kubernetes.serviceAccount }}
+      serviceAccountName: jarvice-system
       nodeSelector:
         beta.kubernetes.io/arch: "{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}"
 {{- if .Values.jarvice_scheduler.nodeSelector }}

@@ -3,8 +3,6 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: jarvice-memcached
-  annotations:
-    "helm.sh/hook": pre-install
 spec:
   serviceName: jarvice-memcached
   replicas: {{ .Values.jarvice_memcached.replicaCount }}
@@ -57,8 +55,6 @@ metadata:
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-memcached
-  annotations:
-    "helm.sh/hook": pre-install
 spec:
   clusterIP: None
   ports:

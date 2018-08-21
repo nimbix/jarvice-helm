@@ -17,7 +17,7 @@ spec:
       annotations:
         container.apparmor.security.beta.kubernetes.io/jarvice-dal: unconfined
     spec:
-      serviceAccountName: {{ .Values.jarvice.kubernetes.serviceAccount }}
+      serviceAccountName: jarvice-system
 {{- if .Values.jarvice_dal.hostNetwork }}
       hostNetwork: true
 {{- end }}

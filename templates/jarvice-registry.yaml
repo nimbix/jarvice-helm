@@ -7,8 +7,6 @@ metadata:
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-registry
-  annotations:
-    "helm.sh/hook": pre-install
 spec:
   accessModes:
     - {{ .Values.jarvice_registry.persistence.accessMode }}
@@ -33,8 +31,6 @@ metadata:
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-registry
-  annotations:
-    "helm.sh/hook": pre-install
 data:
 {{ toYaml .Values.jarvice_registry.tls.data | indent 2 }}
 ---
@@ -43,8 +39,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: jarvice-registry
-  annotations:
-    "helm.sh/hook": pre-install
 spec:
   replicas: {{ .Values.jarvice_registry.replicaCount }}
   selector:
@@ -109,8 +103,6 @@ metadata:
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-registry
-  annotations:
-    "helm.sh/hook": pre-install
 spec:
   type: ClusterIP
   ports:

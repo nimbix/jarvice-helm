@@ -16,14 +16,9 @@ jarvice:
   imagePullSecret:
     username:
     password:
-  # Set the k8s serviceAccount if previously created, then set the create
-  # options to false.
   kubernetes:
-    clusterRole: jarvice-system-cr
     createClusterRole: false
-    serviceAccount: jarvice-system-sa
-    createServiceAccount: true
-    createServiceAccountCRB: true
+    clusterRole: jarvice-system
 
 # Database server previously set up?  Set enabled to false.
 # Then, set JARVICE_DBHOST, JARVICE_PORTAL_DBHOST et al below in
