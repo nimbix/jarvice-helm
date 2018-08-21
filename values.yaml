@@ -26,7 +26,8 @@ jarvice:
     createServiceAccountCRB: true
 
 # Database server previously set up?  Set enabled to false.
-# Then, set JARVICE_DB_HOST et al below in jarvice_dal env.
+# Then, set JARVICE_DBHOST, JARVICE_PORTAL_DBHOST et al below in
+# the jarvice_dal env and jarvice_mc_portal env.
 jarvice_db:
   enabled: true
   replicaCount: 1
@@ -146,10 +147,11 @@ jarvice_dal:
 #    jarvice.io/jarvice-dal: 1
   # jarvice.settings.configMap takes precedence over envornment settings
   # for JARVICE_CFG_NETWORK
+  # JARVICE_SITE_DBPASSWD inherits from jarvice_db.MYSQL_ROOT_PASSWORD if unset
   env:
     JARVICE_SITE_DBHOST: jarvice-db
     JARVICE_SITE_DBUSER: root
-    JARVICE_SITE_DBPASSWD: Pass1234
+    JARVICE_SITE_DBPASSWD: # Pass1234
     JARVICE_ROOT_USER_CREATE: False
     JARVICE_ROOT_USER_PASSWD: Pass1234
     JARVICE_ROOT_USER_EMAIL: root@localhost
@@ -226,6 +228,7 @@ jarvice_mc_portal:
 #    jarvice.io/jarvice-mc-portal: 1
   # jarvice.settings.configMap takes precedence over envornment settings
   # for JARVICE_MC_PORTAL_CRT and JARVICE_MC_PORTAL_KEY
+  # JARVICE_PORTAL_DBPASSWD inherits from jarvice_db.MYSQL_ROOT_PASSWORD if unset
   env:
     JARVICE_MC_PORTAL_CRT: |
         -----BEGIN CERTIFICATE-----
@@ -289,7 +292,7 @@ jarvice_mc_portal:
     JARVICE_PORTAL_MAIL_USERNAME:
     JARVICE_PORTAL_MAIL_PASSWORD:
     JARVICE_PORTAL_MAIL_ADMINS:
-    JARVICE_PORTAL_MAIL_DBHOST:
-    JARVICE_PORTAL_MAIL_DBUSER:
-    JARVICE_PORTAL_MAIL_DBPASSWD:
+    JARVICE_PORTAL_DBHOST: jarvice-db
+    JARVICE_PORTAL_DBUSER: root
+    JARVICE_PORTAL_DBPASSWD: # Pass1234
 

@@ -18,7 +18,6 @@ After Tiller is initialized, it may be necessary to create a tiller service
 account with a cluster-admin role binding.  The `tiller-sa.yaml` file can be
 used for this.  Modify as necessary for your cluster and issue the following
 commands:
-
 ```bash
 $ kubectl --namespace kube-system create -f jarvice-helm/extra/tiller-sa.yaml
 $ helm init --upgrade --service-account tiller
@@ -41,7 +40,6 @@ it will be necessary to configure MetalLB specifically for your cluster.
 
 Please execute the following to get more details on MetalLB configuration and
 installation:
-
 ```bash
 $ helm inspect stable/metallb
 ```
@@ -62,8 +60,8 @@ https://github.com/nimbix/k8s-rdma-device-plugin
 
 For those sites that do not wish to separately install/maintain a MySQL
 database and docker registry, this helm chart provides installations for them
-via the jarvice-db and jarvice-registry deployments/services.  If you wish to
-use jarvice-db and jarvice-registry as is provided from this helm chart,
+via the `jarvice-db` and `jarvice-registry` deployments/services.  If you wish
+to use `jarvice-db` and `jarvice-registry` as is provided from this helm chart,
 persistent volumes will be required for the kubernetes cluster in order to
 maintain state for the JARVICE database and applications registry.  This will
 be addressed below, but the full details on the setup and management of
@@ -79,11 +77,10 @@ https://kubernetes.io/docs/concepts/storage/persistent-volumes/
 ### kubernetes-dashboard:
 
 While not required, to ease the monitoring of JARVICE in the kubernetes
-cluster, it is recommended that the kubernetes-dashboard is installed into
+cluster, it is recommended that the `kubernetes-dashboard` be installed into
 the cluster.
 
 To quickly install the dashboard, issue the following command:
-
 ```bash
 $ helm install --namespace kube-system \
     --name kubernetes-dashboard stable/kubernetes-dashboard
@@ -91,7 +88,6 @@ $ helm install --namespace kube-system \
 
 Please execute the following to get more details on dashboard configuration and
 installation:
-
 ```bash
 $ helm inspect stable/kubernetes-dashboard
 ```
@@ -101,26 +97,38 @@ cluster-admin role binding so that it can access the necessary kubernetes
 cluster components.  The `kubernetes-dashboard-crb.yaml` file can be
 used for this.  Modify as necessary for your cluster and issue the following
 commands:
-
 ```bash
 $ kubectl --namespace kube-system create -f jarvice-helm/extra/kubernetes-dashboard-crb.yaml
 ```
 
 In order to access the dashboard from outside of the cluster, it will be
 necessary to expose the deployment.  Here is an example:
-
 ```bash
 $ kubectl --namespace kube-system expose deployment kubernetes-dashboard \
     --type=LoadBalancer --name kubernetes-dashboard-lb
 ```
 
-The login token for the dashboard can be retrieved via kubectl:
+Retreieve the IP address from the `kubernetes-dashboard-lb` service:
+```bash
+$ kubectl --namespace kube-system get services \
+    kubernetes-dashboard-lb -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+```
 
+If a specific IP is desired, the `--load-balancer-ip` flag is required:
+```bash
+$ kubectl --namespace kube-system expose deployment kubernetes-dashboard \
+    --type=LoadBalancer --name kubernetes-dashboard-lb \
+    --load-balancer-ip='<available_IP_from_load_balancer_config>'
+```
+
+The login token for the dashboard can be retrieved via kubectl:
 ```bash
 $ secret=$(kubectl --namespace kube-system get secret -o name | \
     grep 'kubernetes-dashboard-token-')
 $ kubectl --namespace kube-system describe $secret | grep '^token:' | awk '{print $2}'
 ```
+
+Use `https://$DASHBOARD_IP:8443/` to log into the dashboard.
 
 ------------------------------------------------------------------------------
 
@@ -129,7 +137,7 @@ $ kubectl --namespace kube-system describe $secret | grep '^token:' | awk '{prin
 ### Code repository of the JARVICE helm chart
 
 It is first necessary to clone this git repository to a client machine that
-has access to the kubernetes cluster and has helm installed.
+has access to the kubernetes cluster and has `helm` installed.
 
 ```bash
 $ git clone https://github.com/nimbix/jarvice-helm.git
@@ -137,7 +145,7 @@ $ git clone https://github.com/nimbix/jarvice-helm.git
 
 ### Quick install command with helm
 
-Once cloned, JARVICE can be quickly installed via the following helm command:
+Once cloned, JARVICE can be quickly installed via the following `helm` command:
 
 ```bash
 $ helm install \
@@ -154,13 +162,13 @@ $ helm install \
 ### Persistent volumes
 
 As mentioned in the installation requirements above, the JARVICE database
-(jarvice-db) and the JARVICE application registry (jarvice-registry) services
-require a that the kubernetes cluster have persistent volumes configured for
-their use.
+(`jarvice-db`) and the JARVICE application registry (`jarvice-registry`)
+services require a that the kubernetes cluster have persistent volumes
+configured for their use.
 
 By default, the deployments of these services look for storage class names of
-"jarvice-db" and "jarvice-registry" respectively.  These defaults can be
-modified in the configuration values YAML or with `--set` on the helm install
+`jarvice-db` and `jarvice-registry` respectively.  These defaults can be
+modified in the configuration values YAML or with `--set` on the `helm install`
 command line.
 
 It is recommended that the persistent volumes be set up before attempting the
@@ -198,9 +206,9 @@ By default, the standard install already has `jarvice_db.enabled=true` and
 `jarvice_registry.enabled=false`.  Also, `jarvice.JARVICE_LOCAL_REGISTRY`
 defaults to `docker.io`.
 
-Also by default, persistence is disabled for jarvice-db and jarvice-registry,
-so note that the persistence settings are required to enable use of
-persistent volumes by the JARVICE helm chart.
+Also by default, persistence is disabled for `jarvice-db` and
+`jarvice-registry`, so note that the persistence settings are required to
+enable use of persistent volumes by the JARVICE helm chart.
 
 If kubernetes persistent volumes were created which do no match the default
 storage classes, it will be necessary to also `--set` the following values to
@@ -237,7 +245,7 @@ $ helm install --values jarvice-helm/override.yaml \
 
 ### Updating configuration (or upgrading to newer JARVICE chart version)
 
-The helm upgrade command can be used to tweak JARVICE after the initial
+The `helm upgrade` command can be used to tweak JARVICE after the initial
 installation.  e.g. If it is necessary to increase the number of
 replicas/pods for one of the JARVICE services.  The following example
 command could be used to update the number of replicas/pods for the
@@ -255,19 +263,18 @@ $ helm upgrade --reuse-values \
     --values jarvice-helm/override.yaml jarvice ./jarvice-helm
 ```
 
-### Non-JARVICE specific services (jarvice-db, jarvice-registry)
+### Non-JARVICE specific services (`jarvice-db`, `jarvice-registry`)
 
-#### MySQL database (jarvice-db)
+#### MySQL database (`jarvice-db`)
 
 If there is an already existing MySQL installation that you wish to use with
 JARVICE, it will be necessary to create an `override.yaml` file (shown above)
-and edit the settings in the jarvice_dal environment stanza
+and edit the settings in the `jarvice_dal` `env` stanza
 (`JARVICE_SITE_DBHOST`, `JARVICE_SITE_DBUSER`, `JARVICE_SITE_DBPASSWD`).
 
 If there is not an existing MySQL installation, but wish to maintain the
-database in kubernetes and outside of the JARVICE helm chart, execute the
+database in kubernetes, but outside of the JARVICE helm chart, execute the
 following to get more details on using helm to perform the installation:
-
 ```bash
 $ helm inspect stable/mysql
 ```
@@ -278,19 +285,39 @@ to disable it in the JARVICE helm chart.  This can be done either in an
 
 `--set jarvice_db.enabled=false`
 
-Note that the MySQL installation will require a database named 'nimbix'.
+Note that the MySQL installation will require a database named `nimbix`.
+If session management is desired for `jarvice-mc-portal` a database named
+`nimbix_portal` is also required along with a `memcached` installation.
 
-#### Docker registry (jarvice-registry)
+#### Memcached (`jarvice-memcached`)
 
-As with the database, you may already have or wish to use a docker registry
+If there is an already existing Memcached installation that you wish to use
+with JARVICE, it will be necessary to create an `override.yaml` file (shown
+above) and edit the `JARVICE_PORTAL_MEMCACHED_LOCATIONS` setting in the
+`jarvice_mc_portal` `env` stanza.
+
+If there is not an existing Memcached installation, but wish to maintain the
+one in kubernetes, but outside of the JARVICE helm chart, execute the
+following to get more details on using helm to perform the installation:
+```bash
+$ helm inspect stable/memcached
+```
+
+When using Memcached outside of the JARVICE helm chart, it will be necessary
+to disable it in the JARVICE helm chart.  This can be done either in an
+`override.yaml` file or via the command line with:
+
+`--set jarvice_memcached.enabled=false`
+
+#### Docker registry (`jarvice-registry`)
+
+As with the above, you may already have or wish to use a docker registry
 outside of the control of the JARVICE helm chart.  If doing so, it will
 be necessary to set the `JARVICE_LOCAL_REGISTRY` from the `values.yaml` to
 point to the hostname/IP of the docker registry.  (Currently, the default
 registry setting points to `docker.io`)
 
-To use the registry provided with this helm chart, use the following setting:
-
-When using a registry provided withe the JARVICE helm chart, it will be
+When using the registry provided with the JARVICE helm chart, it will be
 necessary to enable it in the JARVICE helm chart.  This can be done either in
 an `override.yaml` file or via the command line with:
 
@@ -309,7 +336,6 @@ https://docs.docker.com/registry/insecure/
 
 There is also a docker-registry specific helm chart available for deployment.
 Use the helm inspect command for details:
-
 ```bash
 $ helm inspect stable/docker-registry
 ```

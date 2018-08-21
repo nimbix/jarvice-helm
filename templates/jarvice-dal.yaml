@@ -82,7 +82,11 @@ spec:
           - name: JARVICE_SITE_DBUSER
             value: "{{ .Values.jarvice_dal.env.JARVICE_SITE_DBUSER }}"
           - name: JARVICE_SITE_DBPASSWD
+{{- if empty .Values.jarvice_dal.env.JARVICE_SITE_DBPASSWD }}
+            value: "{{ .Values.jarvice_db.env.MYSQL_ROOT_PASSWORD }}"
+{{- else }}
             value: "{{ .Values.jarvice_dal.env.JARVICE_SITE_DBPASSWD }}"
+{{- end }}
           - name: JARVICE_ROOT_USER_CREATE
             value: "{{ .Values.jarvice_dal.env.JARVICE_ROOT_USER_CREATE }}"
           - name: JARVICE_ROOT_USER_PASSWD

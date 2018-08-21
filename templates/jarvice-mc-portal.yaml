@@ -99,12 +99,16 @@ spec:
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_PASSWORD }}"
           - name: JARVICE_PORTAL_MAIL_ADMINS
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_ADMINS }}"
-          - name: JARVICE_PORTAL_MAIL_DBHOST
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_DBHOST }}"
-          - name: JARVICE_PORTAL_MAIL_DBUSER
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_DBUSER }}"
-          - name: JARVICE_PORTAL_MAIL_DBPASSWD
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_DBPASSWD }}"
+          - name: JARVICE_PORTAL_DBHOST
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DBHOST }}"
+          - name: JARVICE_PORTAL_DBUSER
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DBUSER }}"
+          - name: JARVICE_PORTAL_DBPASSWD
+{{- if empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DBPASSWD }}
+            value: "{{ .Values.jarvice_db.env.MYSQL_ROOT_PASSWORD }}"
+{{- else }}
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DBPASSWD }}"
+{{- end }}
         volumeMounts:
         - name: jarvice-settings
           mountPath: /etc/jarvice/jarvice-mc-portal
