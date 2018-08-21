@@ -7,6 +7,7 @@ metadata:
     component: jarvice-system
   annotations:
     "helm.sh/hook": pre-install
+    "helm.sh/hook-delete-policy": hook-succeeded
 ---
 {{- if .Values.jarvice.kubernetes.createClusterRole }}
 apiVersion: rbac.authorization.k8s.io/v1
@@ -18,6 +19,7 @@ metadata:
     component: jarvice-system
   annotations:
     "helm.sh/hook": pre-install
+    "helm.sh/hook-delete-policy": hook-succeeded
 rules:
 - apiGroups: [""]
   resources: ["pods"]
@@ -70,6 +72,7 @@ metadata:
     component: jarvice-system
   annotations:
     "helm.sh/hook": pre-install
+    "helm.sh/hook-delete-policy": hook-succeeded
 ---
 {{- end }}
 {{- if .Values.jarvice.kubernetes.createServiceAccountCRB }}
@@ -82,6 +85,7 @@ metadata:
     component: jarvice-system
   annotations:
     "helm.sh/hook": pre-install
+    "helm.sh/hook-delete-policy": hook-succeeded
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -102,6 +106,7 @@ metadata:
     component: jarvice-system
   annotations:
     "helm.sh/hook": pre-install
+    "helm.sh/hook-delete-policy": hook-succeeded
 type: kubernetes.io/dockerconfigjson
 data:
   .dockerconfigjson: {{ printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" .Values.jarvice.JARVICE_SYSTEM_REGISTRY (printf "%s:%s" .Values.jarvice.imagePullSecret.username .Values.jarvice.imagePullSecret.password | b64enc) | b64enc }}
