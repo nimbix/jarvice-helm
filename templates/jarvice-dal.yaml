@@ -103,7 +103,7 @@ spec:
             value: {{ toYaml .Values.jarvice_dal.env.JARVICE_CFG_NETWORK | indent 12}}
         volumeMounts:
         - name: jarvice-settings
-          mountPath: /etc/jarvice/jarvice-dal
+          mountPath: /etc/jarvice/settings/jarvice-dal
           readOnly: true
         resources:
 {{ toYaml .Values.jarvice_dal.resources | indent 10 }}

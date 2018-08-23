@@ -82,7 +82,7 @@ spec:
             value: {{ toYaml .Values.jarvice_scheduler.env.JARVICE_MAIL_CONF | indent 12 }}
         volumeMounts:
         - name: jarvice-settings
-          mountPath: /etc/jarvice/jarvice-scheduler
+          mountPath: /etc/jarvice/settings/jarvice-scheduler
           readOnly: true
         resources:
 {{- if .Values.jarvice_scheduler.resources }}

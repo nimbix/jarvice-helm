@@ -1,0 +1,9 @@
+{{- if .Values.jarvice.JARVICE_JOBS_NAMESPACE_CREATE }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-system
+{{- end }}

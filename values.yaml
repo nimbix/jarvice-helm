@@ -1,6 +1,7 @@
 jarvice:
   JARVICE_LICENSE_LIC:
   JARVICE_JOBS_NAMESPACE: jarvice-jobs
+  JARVICE_JOBS_NAMESPACE_CREATE: true
   # Set JARVICE_SYSTEM_NAMESPACE if not using the JARVICE default k8s namespace
   # JARVICE_SYSTEM_NAMESPACE: jarvice-system
   JARVICE_SYSTEM_REGISTRY: quay.io
@@ -13,12 +14,17 @@ jarvice:
   JARVICE_LOCAL_REPO_BASE: jarvice
   settings:
     configMap: jarvice-settings
+  secrets:
+    secretName: jarvice-secrets
   imagePullSecret:
     username:
     password:
   kubernetes:
-    createClusterRole: false
     clusterRole: jarvice-system
+    createClusterRole: true
+  #kubernetes:
+  #  clusterRole: admin
+  #  createClusterRole: false
 
 # Database server previously set up?  Set enabled to false.
 # Then, set JARVICE_DBHOST, JARVICE_PORTAL_DBHOST et al below in

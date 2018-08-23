@@ -7,8 +7,6 @@ metadata:
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-db
-  annotations:
-    "helm.sh/hook": pre-install
 spec:
   volumes:
     - name: jarvice-db-pvc
@@ -33,8 +31,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: jarvice-db
-  annotations:
-    "helm.sh/hook": pre-install
 spec:
   replicas: {{ .Values.jarvice_db.replicaCount }}
   selector:
@@ -88,8 +84,6 @@ metadata:
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-db
-  annotations:
-    "helm.sh/hook": pre-install
 spec:
   type: ClusterIP
   ports:

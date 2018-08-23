@@ -27,6 +27,10 @@ spec:
           configMap:
             name: {{ .Values.jarvice.settings.configMap }}
             optional: true
+        - name: jarvice-secrets
+          secret:
+            secretName: {{ .Values.jarvice.secrets.secretName }}
+            optional: true
       containers:
       - name: jarvice-mc-portal
         image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-mc-portal:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}-{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}
@@ -111,7 +115,10 @@ spec:
 {{- end }}
         volumeMounts:
         - name: jarvice-settings
-          mountPath: /etc/jarvice/jarvice-mc-portal
+          mountPath: /etc/jarvice/settings/jarvice-mc-portal
+          readOnly: true
+        - name: jarvice-secrets
+          mountPath: /etc/jarvice/secrets/jarvice-mc-portal
           readOnly: true
         resources:
 {{- if .Values.jarvice_mc_portal.resources }}

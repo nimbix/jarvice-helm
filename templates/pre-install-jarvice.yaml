@@ -1,14 +1,4 @@
 apiVersion: v1
-kind: Namespace
-metadata:
-  name: {{ .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
-  labels:
-    {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-system
-  #annotations:
-  #  "helm.sh/hook": pre-install
----
-apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: jarvice-system
@@ -17,26 +7,6 @@ metadata:
     component: jarvice-system
   annotations:
     "helm.sh/hook": pre-install
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: jarvice-system-{{ .Release.Name }}
-  labels:
-    {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-system
-  annotations:
-    "helm.sh/hook": pre-install
-    "helm.sh/hook-delete-policy": before-hook-creation
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: admin
-  #name: {{ .Values.jarvice.kubernetes.clusterRole }}
-subjects:
-- kind: ServiceAccount
-  name: jarvice-system
-  namespace: {{ .Release.Namespace }}
 ---
 {{- if .Values.jarvice.kubernetes.createClusterRole }}
 apiVersion: rbac.authorization.k8s.io/v1
@@ -91,3 +61,22 @@ rules:
   verbs: ["create", "delete", "deletecollection", "get", "list", "patch", "update", "watch"]
 ---
 {{- end }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: jarvice-system:{{ .Release.Name }}
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-system
+  annotations:
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-delete-policy": before-hook-creation
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ .Values.jarvice.kubernetes.clusterRole }}
+subjects:
+- kind: ServiceAccount
+  name: jarvice-system
+  namespace: {{ .Release.Namespace }}
+---
