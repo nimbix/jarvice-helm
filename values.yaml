@@ -1,5 +1,15 @@
 jarvice:
+  imagePullSecret:
+    username:
+    password:
   JARVICE_LICENSE_LIC:
+  # JARVICE_REMOTE_* settings are used for application synchronization
+  JARVICE_REMOTE_API_URL: https://api.jarvice.com
+  JARVICE_REMOTE_USER:
+  JARVICE_REMOTE_APIKEY:
+  JARVICE_SYSTEM_REGISTRY: quay.io
+  JARVICE_SYSTEM_REPO_BASE: nimbix
+
   JARVICE_JOBS_NAMESPACE: jarvice-jobs
   JARVICE_JOBS_NAMESPACE_CREATE: true
   # Set JARVICE_SYSTEM_NAMESPACE if not using the JARVICE default k8s namespace
@@ -16,9 +26,6 @@ jarvice:
     configMap: jarvice-settings
   secrets:
     secretName: jarvice-secrets
-  imagePullSecret:
-    username:
-    password:
   kubernetes:
     clusterRole: jarvice-system
     createClusterRole: true
@@ -215,6 +222,23 @@ jarvice_api:
 # JARVICE_PULL_NODE_SELECTOR can determine which nodes to run docker pull on
   env:
     JARVICE_PULL_NODE_SELECTOR:
+
+jarvice_appsync:
+  enabled: true
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 250m
+      memory: 512Mi
+#  nodeSelector:
+#    jarvice.io/jarvice-system: 1
+#    jarvice.io/jarvice-appsync: 1
+  env:
+    JARVICE_SYSTEM_REGISTRY: quay.io
+    JARVICE_SYSTEM_REPO_BASE: nimbix
+    JARVICE_APPSYNC_INTERVAL: 3600
+  livenessProbe:
+    periodSeconds: 900
 
 jarvice_mc_portal:
   enabled: true

@@ -1,0 +1,74 @@
+{{- if .Values.jarvice_appsync.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jarvice-appsync
+spec:
+  replicas: {{ .Values.jarvice_appsync.replicaCount }}
+  selector:
+    matchLabels:
+      deployment: jarvice-appsync
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-appsync
+        deployment: jarvice-appsync
+    spec:
+      nodeSelector:
+        beta.kubernetes.io/arch: "{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}"
+{{- if .Values.jarvice_appsync.nodeSelector }}
+{{ toYaml .Values.jarvice_appsync.nodeSelector | indent 8 }}
+{{- end }}
+      imagePullSecrets:
+      - name: jarvice-docker
+      containers:
+      - name: jarvice-appsync
+        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-appsync:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}-{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}{{ .Values.jarvice.JARVICE_IMAGES_TAG_DEV }}
+        imagePullPolicy: Always
+        readinessProbe:
+          exec:
+            command:
+            - /usr/bin/curl
+            - -k
+            - -s
+            - "{https://jarvice-dal:8443/status,https://jarvice-api:7443,{{ .Values.jarvice.JARVICE_REMOTE_API_URL }}}"
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+        livenessProbe:
+          exec:
+            command:
+            - /usr/bin/curl
+            - -k
+            - -s
+            - "{https://jarvice-dal:8443/status,https://jarvice-api:7443,{{ .Values.jarvice.JARVICE_REMOTE_API_URL }}}"
+          initialDelaySeconds: 30
+          periodSeconds: {{ .Values.jarvice_appsync.livenessProbe.periodSeconds }}
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+        env:
+          - name: JARVICE_DAL_URL
+            value: "https://jarvice-dal:8443"
+          - name: JARVICE_LOCAL_API_URL
+            value: "https://jarvice-api:7443"
+          - name: JARVICE_APP_USER
+            value: "jarvice"
+          - name: JARVICE_REMOTE_API_URL
+            value: "{{ .Values.jarvice.JARVICE_REMOTE_API_URL }}"
+          - name: JARVICE_REMOTE_USER
+            value: "{{ .Values.jarvice.JARVICE_REMOTE_USER }}"
+          - name: JARVICE_REMOTE_APIKEY
+            value: "{{ .Values.jarvice.JARVICE_REMOTE_APIKEY }}"
+          - name: JARVICE_SYSTEM_REGISTRY
+            value: "{{ .Values.jarvice_appsync.env.JARVICE_SYSTEM_REGISTRY }}"
+          - name: JARVICE_SYSTEM_REPO_BASE
+            value: "{{ .Values.jarvice_appsync.env.JARVICE_SYSTEM_REPO_BASE }}"
+          - name: JARVICE_APPSYNC_INTERVAL
+            value: "{{ .Values.jarvice_appsync.env.JARVICE_APPSYNC_INTERVAL }}"
+        resources:
+{{ toYaml .Values.jarvice_dal.resources | indent 10 }}
+{{- end }}
