@@ -55,8 +55,8 @@ jarvice_memcached:
   extendedOptions: modern
   resources:
     limits:
-      cpu: 50m
-      memory: 64Mi
+      cpu: 250m
+      memory: 512Mi
 
 # Want to run the docker registry in JARVICE namespace?  Set enabled to true.
 # Then set JARVICE_LOCAL_REGISTRY to jarvice-registry:5000 as seen above
