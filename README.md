@@ -25,9 +25,9 @@ $ helm init --upgrade --service-account tiller
 
 ### Kubernetes network plugin:
 
-As of this writing, weave is the only known plugin to work out-of-the-box
+As of this writing, Weave is the only known plugin to work out-of-the-box
 on multiple architectures (amd64, ppc64le, arm64).  As such, it is recommended
-that kubernetes installations use the weave plugin if intending to run jobs in
+that kubernetes installations use the Weave plugin if intending to run jobs in
 a multiarch environment.
 
 ### Kubernetes load balancer:
@@ -76,11 +76,11 @@ A JARVICE license and user/password credentials will need to be obtained from
 Nimbix sales (`sales@nimbix.net`) and/or support (`support@nimbix.net`).  The
 license and credentials will be used for the following settings:
 
-    - `jarvice.imagePullSecret.username=<jarvice_quay_io_user>`
-    - `jarvice.imagePullSecret.password=<jarvice_quay_io_pass>`
-    - `jarvice.JARVICE_LICENSE_LIC=<jarvice_license_key>`
-    - `jarvice.JARVICE_REMOTE_USER=<jarvice_upstream_user>`
-    - `jarvice.JARVICE_REMOTE_APIKEY=<jarvice_upstream_user_apikey>`
+    - jarvice.imagePullSecret.username=<jarvice_quay_io_user>
+    - jarvice.imagePullSecret.password=<jarvice_quay_io_pass>
+    - jarvice.JARVICE_LICENSE_LIC=<jarvice_license_key>
+    - jarvice.JARVICE_REMOTE_USER=<jarvice_upstream_user>
+    - jarvice.JARVICE_REMOTE_APIKEY=<jarvice_upstream_user_apikey>
 
 See the commands below for more detail on how to set and use these values.
 
