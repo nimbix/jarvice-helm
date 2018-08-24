@@ -15,6 +15,7 @@ spec:
         component: jarvice-api
         deployment: jarvice-api
     spec:
+      serviceAccountName: jarvice-system
       nodeSelector:
         beta.kubernetes.io/arch: "{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}"
 {{- if .Values.jarvice_api.nodeSelector }}
@@ -68,6 +69,12 @@ spec:
             value: "https://jarvice-dal:8443"
           - name: JARVICE_SCHED_URL
             value: "https://jarvice-scheduler:9443"
+          - name: JARVICE_JOBS_NAMESPACE
+{{- if empty .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
+            value: {{ .Release.Namespace }}-jobs
+{{- else }}
+            value: {{ .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
+{{- end }}
           - name: JARVICE_SYSTEM_NAMESPACE
 {{- if empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
             value: {{ .Release.Namespace }}
