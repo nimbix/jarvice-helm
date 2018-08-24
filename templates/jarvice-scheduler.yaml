@@ -56,6 +56,8 @@ spec:
         env:
           - name: JARVICE_DAL_URL
             value: "https://jarvice-dal:8443"
+          - name: JARVICE_SCHED_URL
+            value: "https://jarvice-scheduler:9443"
           - name: JARVICE_LICENSE_LIC
             value: {{ .Values.jarvice.JARVICE_LICENSE_LIC }}
           - name: JARVICE_JOBS_NAMESPACE
