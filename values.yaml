@@ -3,35 +3,27 @@ jarvice:
     username:
     password:
   JARVICE_LICENSE_LIC:
+
   # JARVICE_REMOTE_* settings are used for application synchronization
   JARVICE_REMOTE_API_URL: https://api.jarvice.com
   JARVICE_REMOTE_USER:
   JARVICE_REMOTE_APIKEY:
-  JARVICE_SYSTEM_REGISTRY: quay.io
-  JARVICE_SYSTEM_REPO_BASE: nimbix
 
-  JARVICE_JOBS_NAMESPACE: jarvice-jobs
-  JARVICE_JOBS_NAMESPACE_CREATE: true
-  # Set JARVICE_SYSTEM_NAMESPACE if not using the JARVICE default k8s namespace
-  # JARVICE_SYSTEM_NAMESPACE: jarvice-system
   JARVICE_SYSTEM_REGISTRY: quay.io
   JARVICE_SYSTEM_REPO_BASE: nimbix
-  JARVICE_SYSTEM_ARCH: amd64
-  JARVICE_IMAGES_TAG: jarvice-testing
-  JARVICE_IMAGES_TAG_DEV: -k8s
-  #JARVICE_LOCAL_REGISTRY: jarvice-registry:5000
-  JARVICE_LOCAL_REGISTRY: docker.io
+  JARVICE_LOCAL_REGISTRY: docker.io # jarvice-registry:5000
   JARVICE_LOCAL_REPO_BASE: jarvice
+
+  JARVICE_IMAGES_TAG: jarvice-testing # latest
+  JARVICE_IMAGES_TAG_DEV: -k8s
+  JARVICE_SYSTEM_ARCH: amd64
+
+  JARVICE_SYSTEM_NAMESPACE: # auto-detected, should not need to be updated
+  JARVICE_JOBS_NAMESPACE: # auto-set, should not need to be updated
   settings:
     configMap: jarvice-settings
   secrets:
     secretName: jarvice-secrets
-  kubernetes:
-    clusterRole: jarvice-system
-    createClusterRole: true
-  #kubernetes:
-  #  clusterRole: admin
-  #  createClusterRole: false
 
 # Database server previously set up?  Set enabled to false.
 # Then, set JARVICE_DBHOST, JARVICE_PORTAL_DBHOST et al below in
@@ -48,7 +40,8 @@ jarvice_db:
     size: 8Gi
   env:
     MYSQL_ROOT_PASSWORD: Pass1234
-    MYSQL_DATABASE: nimbix
+    #MYSQL_USER: nimbix # optional, alternative superuser to root
+    #MYSQL_PASSWORD: Pass1234
 
 # replicaCount change requires JARVICE_PORTAL_MEMCACHED_LOCATIONS update below.
 # Memcached server previously set up?  Set enabled to false.

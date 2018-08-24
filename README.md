@@ -70,6 +70,20 @@ persistent volumes in kubernetes is beyond the scope of this document.
 Please see the kubernetes documentation for more details:
 https://kubernetes.io/docs/concepts/storage/persistent-volumes/
 
+### JARVICE license and credentials
+
+A JARVICE license and user/password credentials will need to be obtained from
+Nimbix sales (`sales@nimbix.net`) and/or support (`support@nimbix.net`).  The
+license and credentials will be used for the following settings:
+
+    - `jarvice.imagePullSecret.username=<jarvice_quay_io_user>`
+    - `jarvice.imagePullSecret.password=<jarvice_quay_io_pass>`
+    - `jarvice.JARVICE_LICENSE_LIC=<jarvice_license_key>`
+    - `jarvice.JARVICE_REMOTE_USER=<jarvice_upstream_user>`
+    - `jarvice.JARVICE_REMOTE_APIKEY=<jarvice_upstream_user_apikey>`
+
+See the commands below for more detail on how to set and use these values.
+
 ------------------------------------------------------------------------------
 
 ## Installation Recommendations
@@ -155,6 +169,18 @@ $ helm install \
     --name jarvice --namespace jarvice-system ./jarvice-helm
 ```
 
+Alternatively, in order to install and get the application catalog
+synchronized, use the following `helm` command:
+```bash
+$ helm install \
+    --set jarvice.imagePullSecret.username="<jarvice_quay_io_user>" \
+    --set jarvice.imagePullSecret.password="<jarvice_quay_io_pass>" \
+    --set jarvice.JARVICE_LICENSE_LIC="<jarvice_license_key>" \
+    --set jarvice.JARVICE_REMOTE_USER="<jarvice_upstream_user>" \
+    --set jarvice.JARVICE_REMOTE_APIKEY="<jarvice_upstream_user_apikey>" \
+    --name jarvice --namespace jarvice-system ./jarvice-helm
+```
+
 ------------------------------------------------------------------------------
 
 ## JARVICE Standard Installation
@@ -186,12 +212,13 @@ https://kubernetes.io/docs/concepts/storage/persistent-volumes/
 
 Expanding upon the previous quick installation command, the following command
 could then be used to install JARVICE with persistence enabled:
-
 ```bash
 $ helm install \
     --set jarvice.imagePullSecret.username="<jarvice_quay_io_user>" \
     --set jarvice.imagePullSecret.password="<jarvice_quay_io_pass>" \
     --set jarvice.JARVICE_LICENSE_LIC="<jarvice_license_key>" \
+    --set jarvice.JARVICE_REMOTE_USER="<jarvice_upstream_user>" \
+    --set jarvice.JARVICE_REMOTE_APIKEY="<jarvice_upstream_user_apikey>" \
     --set jarvice_db.enabled=true \
     --set jarvice_db.persistence.enabled=true \
     --set jarvice_db.persistence.size=10Gi \
@@ -352,11 +379,12 @@ it's own configuration reference.
 
 ## JARVICE Post Installation
 
-### Customize JARVICE files via a ConfigMap
+### Customize JARVICE files via a ConfigMap and Secret
 
-Some JARVICE files can be updated via a ConfigMap.  The files found in
-`jarvice-helm/jarvice-settings` represent all of those files which may
-optionally be updated from the setting ConfigMap.
+Some JARVICE files can be updated via a ConfigMap and Secret.  The files found
+in `jarvice-helm/jarvice-settings` and `jarvice-helm/jarvice-secrets` represent
+all of those files which may optionally be updated from the setting of a
+ConfigMap and Secret.
 
 The portal may be "skinned" with a custom look and feel by providing
 replacements for `default.png`, `favicon.png`, `logo.png`, `palette.json`,
@@ -377,17 +405,23 @@ files respectively.
 Create directory for setting the JARVICE customizations:
 ```bash
 $ mkdir -p jarvice-helm/jarvice-settings-override
+$ mkdir -p jarvice-helm/jarvice-secrets-override
 ```
 
-In `jarvice-helm/jarvice-settings-override`, it will only be necessary to
+In `jarvice-helm/jarvice-settings-override` and
+`jarvice-helm/jarvice-secrets-override`, it will only be necessary to
 create those files which are to be customized.  The defaults found in
-`jarvice-helm/jarvice-settings` may be copied and edited as desired.
+`jarvice-helm/jarvice-settings` and `jarvice-helm/jarvice-secrets` may be
+copied and edited as desired.
 
-Load the new JARVICE settings by creating a ConfigMap:
+Load the new JARVICE settings by creating a ConfigMap and Secret:
 ```bash
 $ kubectl --namespace jarvice-system \
     create configmap jarvice-settings \
     --from-file=jarvice-helm/jarvice-settings-override
+$ kubectl --namespace jarvice-system \
+    create secret generic jarvice-secrets \
+    --from-file=jarvice-helm/jarvice-secrets-override
 ```
 
 Reload jarvice-dal pods (only to apply cfg.network update):

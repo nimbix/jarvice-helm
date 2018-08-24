@@ -15,6 +15,7 @@ spec:
         component: jarvice-appsync
         deployment: jarvice-appsync
     spec:
+      serviceAccountName: jarvice-system
       nodeSelector:
         beta.kubernetes.io/arch: "{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}"
 {{- if .Values.jarvice_appsync.nodeSelector }}
