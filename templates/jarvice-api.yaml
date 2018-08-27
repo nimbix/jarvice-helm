@@ -93,10 +93,10 @@ spec:
             value: {{ .Values.jarvice.JARVICE_LOCAL_REPO_BASE }}
 {{- if (not (empty .Values.jarvice_dockerpull.nodeSelector)) }}
           - name: JARVICE_PULL_NODE_SELECTOR
-            value: {{ .Values.jarvice_dockerpull.nodeSelector }}
+            value: '{{ .Values.jarvice_dockerpull.nodeSelector }}'
 {{- else if (not (empty .Values.jarvice.nodeSelector)) }}
           - name: JARVICE_PULL_NODE_SELECTOR
-            value: {{ .Values.jarvice.nodeSelector }}
+            value: '{{ .Values.jarvice.nodeSelector }}'
 {{- end }}
         resources:
 {{ toYaml .Values.jarvice_api.resources | indent 10 }}
