@@ -144,6 +144,18 @@ $ kubectl --namespace kube-system describe $secret | grep '^token:' | awk '{prin
 
 Use `https://$DASHBOARD_IP:8443/` to log into the dashboard.
 
+### Node label for `jarvice-dockerpull`
+
+In order to take advantage of docker layer caching when pulling
+application images into JARVICE, it is recommended that a node in the
+kubernetes cluster be labeled for those operations.  Use a command similar
+to the following to do so:
+```bash
+$ kubectl label nodes <node_name> jarvice.io/jarvice-dockerpull=
+```
+
+Further details on node labels and selectors can be found below.
+
 ------------------------------------------------------------------------------
 
 ## JARVICE Quick Installation (Demo without persistence)
@@ -243,6 +255,26 @@ match the persistent volume storage classes that you wish to use:
 
 - `jarvice.jarvice_db.persistence.storageClass`
 - `jarvice.jarvice_registry.persistence.storageClass`
+
+### Node labels and selectors
+
+This helm chart utilizes a node selector which is applied to all of the JARVICE
+components (`jarvice.nodeSelector`), as well as node selectors for each
+individual JARVICE component.  These can be set in an `override.yaml` file or
+on the `helm` command line.
+
+Note that node selectors are specified using JSON syntax.  When using `--set`
+on the `helm` command line, special characters must be escaped.  Also,
+individual component selectors will override `jarvice.nodeSelector`.  They are
+not additive.
+
+For example, if both
+`--set jarvice.nodeSelector="\{\"jarvice.io/jarvice-system\": \"\"\}"` and
+`--set jarvice_dockerpull.nodeSelector="\{\"jarvice.io/jarvice-dockerpull\": \"\"\}"`
+are set on the `helm` command line, `jarvice.io/jarvice-system` will not be
+applied to `jarvice_dockerpull.nodeSelector`.  In the case that both node
+selectors are desired for `jarvice_dockerpull.nodeSelector`, use
+`--set jarvice_dockerpull.nodeSelector="\{\"jarvice.io/jarvice-system\": \"\"\, \"jarvice.io/jarvice-dockerpull\": \"\"\}"`.
 
 ### Selecting external, load balancer IP addresses
 

@@ -9,14 +9,17 @@ jarvice:
   JARVICE_REMOTE_USER:
   JARVICE_REMOTE_APIKEY:
 
-  JARVICE_SYSTEM_REGISTRY: quay.io
-  JARVICE_SYSTEM_REPO_BASE: nimbix
   JARVICE_LOCAL_REGISTRY: # jarvice-registry:5000
   JARVICE_LOCAL_REPO_BASE: jarvice
 
+  JARVICE_SYSTEM_REGISTRY: quay.io
+  JARVICE_SYSTEM_REPO_BASE: nimbix
   JARVICE_IMAGES_TAG: jarvice-testing # latest
   JARVICE_IMAGES_TAG_DEV: -k8s
   JARVICE_SYSTEM_ARCH: amd64
+
+  #nodeSelector: # '{"jarvice.io/jarvice-system": ""}'
+  nodeSelector: '{"beta.kubernetes.io/arch": "amd64"}'
 
   JARVICE_SYSTEM_NAMESPACE: # auto-detected, should not need to be updated
   JARVICE_JOBS_NAMESPACE: # auto-set, should not need to be updated
@@ -31,6 +34,7 @@ jarvice:
 jarvice_db:
   enabled: true
   replicaCount: 1
+  nodeSelector: # '{"jarvice.io/jarvice-db": ""}'
   image: mysql:5
   persistence:
     enabled: false
@@ -49,6 +53,7 @@ jarvice_db:
 jarvice_memcached:
   enabled: true
   replicaCount: 3
+  nodeSelector: # '{"jarvice.io/jarvice-memcached": ""}'
   image: memcached:1.5
   maxItemMemory: 64
   verbosity: v
@@ -67,6 +72,7 @@ jarvice_registry:
   external: false
   loadBalancerIP:
   replicaCount: 1
+  nodeSelector: # '{"jarvice.io/jarvice-registry": ""}'
   image: registry:2
   persistence:
     enabled: false
@@ -143,9 +149,7 @@ jarvice_dal:
       cpu: 1
       memory: 16Gi
   hostNetwork: false
-#  nodeSelector:
-#    jarvice.io/jarvice-system: 1
-#    jarvice.io/jarvice-dal: 1
+  nodeSelector: # '{"jarvice.io/jarvice-dal": ""}'
   # jarvice.settings.configMap takes precedence over envornment settings
   # for JARVICE_CFG_NETWORK
   # JARVICE_SITE_DBPASSWD inherits from jarvice_db.MYSQL_ROOT_PASSWORD if unset
@@ -183,9 +187,7 @@ jarvice_scheduler:
     limits:
       cpu: 1
       memory: 4Gi
-#  nodeSelector:
-#    jarvice.io/jarvice-system: 1
-#    jarvice.io/jarvice-scheduler: 1
+  nodeSelector: # '{"jarvice.io/jarvice-scheduler": ""}'
   # jarvice.settings.configMap takes precedence over envornment settings
   # for JARVICE_MAIL_CONF
   env:
@@ -209,12 +211,11 @@ jarvice_api:
     limits:
       cpu: 250m
       memory: 512Mi
-#  nodeSelector:
-#    jarvice.io/jarvice-system: 1
-#    jarvice.io/jarvice-api: 1
-# JARVICE_PULL_NODE_SELECTOR can determine which nodes to run docker pull on
-  env:
-    JARVICE_PULL_NODE_SELECTOR:
+  nodeSelector: # '{"jarvice.io/jarvice-api": ""}'
+
+jarvice_dockerpull:
+  nodeSelector: # '{"jarvice.io/jarvice-dockerpull": ""}'
+
 
 jarvice_appsync:
   enabled: true
@@ -223,9 +224,7 @@ jarvice_appsync:
     limits:
       cpu: 250m
       memory: 512Mi
-#  nodeSelector:
-#    jarvice.io/jarvice-system: 1
-#    jarvice.io/jarvice-appsync: 1
+  nodeSelector: # '{"jarvice.io/jarvice-appsync": ""}'
   env:
     JARVICE_SYSTEM_REGISTRY: quay.io
     JARVICE_SYSTEM_REPO_BASE: nimbix
@@ -241,9 +240,7 @@ jarvice_mc_portal:
     limits:
       cpu: 250m
       memory: 2Gi
-#  nodeSelector:
-#    jarvice.io/jarvice-system: 1
-#    jarvice.io/jarvice-mc-portal: 1
+  nodeSelector: # '{"jarvice.io/jarvice-mc-portal": ""}'
   # jarvice.settings.configMap takes precedence over envornment settings
   # for JARVICE_MC_PORTAL_CRT and JARVICE_MC_PORTAL_KEY
   # JARVICE_PORTAL_DBPASSWD inherits from jarvice_db.MYSQL_ROOT_PASSWORD if unset

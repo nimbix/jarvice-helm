@@ -16,8 +16,11 @@ spec:
         component: jarvice-memcached
         deployment: jarvice-memcached
     spec:
-      nodeSelector:
-        beta.kubernetes.io/arch: "amd64"
+{{- if (not (empty .Values.jarvice_memcached.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice_memcached.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.nodeSelector }}
+{{- end }}
       containers:
       - name: jarvice-memcached
         image: {{ .Values.jarvice_memcached.image }}

@@ -16,10 +16,10 @@ spec:
         deployment: jarvice-api
     spec:
       serviceAccountName: jarvice-system
-      nodeSelector:
-        beta.kubernetes.io/arch: "{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}"
-{{- if .Values.jarvice_api.nodeSelector }}
-{{ toYaml .Values.jarvice_api.nodeSelector | indent 8 }}
+{{- if (not (empty .Values.jarvice_api.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice_api.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.nodeSelector }}
 {{- end }}
       imagePullSecrets:
       - name: jarvice-docker
@@ -91,8 +91,13 @@ spec:
             value: {{ .Values.jarvice.JARVICE_LOCAL_REGISTRY }}
           - name: JARVICE_LOCAL_REPO_BASE
             value: {{ .Values.jarvice.JARVICE_LOCAL_REPO_BASE }}
+{{- if (not (empty .Values.jarvice_dockerpull.nodeSelector)) }}
           - name: JARVICE_PULL_NODE_SELECTOR
-            value: {{ .Values.jarvice_api.env.JARVICE_PULL_NODE_SELECTOR }}
+            value: {{ .Values.jarvice_dockerpull.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.nodeSelector)) }}
+          - name: JARVICE_PULL_NODE_SELECTOR
+            value: {{ .Values.jarvice.nodeSelector }}
+{{- end }}
         resources:
 {{ toYaml .Values.jarvice_api.resources | indent 10 }}
 ---

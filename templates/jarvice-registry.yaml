@@ -51,8 +51,11 @@ spec:
         component: jarvice-registry
         deployment: jarvice-registry
     spec:
-      nodeSelector:
-        beta.kubernetes.io/arch: "amd64"
+{{- if (not (empty .Values.jarvice_registry.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice_registry.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.nodeSelector }}
+{{- end }}
       volumes:
         - name: registry-tls-cert
           configMap:

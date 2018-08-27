@@ -43,8 +43,11 @@ spec:
         component: jarvice-db
         deployment: jarvice-db
     spec:
-      nodeSelector:
-        beta.kubernetes.io/arch: "amd64"
+{{- if (not (empty .Values.jarvice_db.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice_db.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.nodeSelector }}
+{{- end }}
       containers:
       - name: jarvice-db
         image: {{ .Values.jarvice_db.image }}

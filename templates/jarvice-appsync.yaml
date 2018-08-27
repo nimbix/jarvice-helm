@@ -16,10 +16,10 @@ spec:
         deployment: jarvice-appsync
     spec:
       serviceAccountName: jarvice-system
-      nodeSelector:
-        beta.kubernetes.io/arch: "{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}"
-{{- if .Values.jarvice_appsync.nodeSelector }}
-{{ toYaml .Values.jarvice_appsync.nodeSelector | indent 8 }}
+{{- if (not (empty .Values.jarvice_appsync.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice_appsync.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.nodeSelector }}
 {{- end }}
       imagePullSecrets:
       - name: jarvice-docker
