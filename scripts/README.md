@@ -120,7 +120,7 @@ $ ./scripts/jarvice-deploy2eks \
     --jarvice-apikey <apikey>
 ```
 
-To deploy a cluster with a 10 static EKS nodes:
+To deploy a cluster with 10 static EKS nodes:
 ```bash
 $ ./scripts/jarvice-deploy2eks \
     --registry-username <username> \
@@ -131,7 +131,8 @@ $ ./scripts/jarvice-deploy2eks \
     --eks-nodes 10
 ```
 
-To deploy a cluster with an autoscaling group of nodes, use `--eks-nodes-max`:
+To deploy a cluster with an autoscaling group of 10-20 nodes, use
+`--eks-nodes-max`:
 ```bash
 $ ./scripts/jarvice-deploy2eks \
     --registry-username <username> \
@@ -143,7 +144,8 @@ $ ./scripts/jarvice-deploy2eks \
     --eks-nodes-max 20
 ```
 
-To deploy a cluster with an autoscaling group of Nvidia GPU enabled nodes:
+To deploy a cluster with an autoscaling group of 10-20 `p3.2xlarge`
+(Nvidia GPU enabled) nodes:
 ```bash
 $ ./scripts/jarvice-deploy2eks \
     --registry-username <username> \
@@ -157,7 +159,7 @@ $ ./scripts/jarvice-deploy2eks \
     --install-nvidia-plugin
 ```
 
-To do all of the above in the `us-east-1` region with specific zones:
+To do all of the above in the `us-east-1` region with a specific list of zones:
 ```bash
 $ ./scripts/jarvice-deploy2eks \
     --registry-username <username> \
