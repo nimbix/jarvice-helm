@@ -10,9 +10,11 @@ spec:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   storageClassName: jarvice-db
-#  mountOptions:
-#    - hard
-#    - nfsvers=4.1
+#  hostPath:
+#    path: /home/jarvice-db
   nfs:
     path: /home/jarvice-db
     server: 10.20.0.144
+#  mountOptions:
+#    - hard
+#    - nfsvers=4.1

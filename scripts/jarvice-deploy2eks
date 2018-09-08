@@ -1,0 +1,406 @@
+#!/bin/bash
+
+#set -x
+
+if [ "$(arch)" != "x86_64" ]; then
+    echo "This script only supports x86_64 architecture at the moment."
+    exit 1
+fi
+
+eks_cluster_name=jarvice
+eks_node_type=c5.9xlarge
+install_nvidia_plugin=
+eks_nodes=4
+eks_nodes_max=0
+aws_region=us-west-2
+aws_zones=
+helm_name=jarvice
+helm_namespace=jarvice-system
+
+function jarvice_deploy2eks_usage {
+    cat <<EOF
+Usage: $0 [options]
+
+Available [options]:
+  --registry-username <username>    Docker registry username for JARVICE system
+                                    images
+  --registry-password <password>    Docker registry password for JARVICE system
+                                    images
+  --jarvice-license <license_key>   JARVICE license key
+  --jarvice-username <username>     JARVICE platform username for app
+                                    synchronization
+  --jarvice-apikey <apikey>         JARVICE platform apikey for app
+                                    synchronization
+  --jarvice-chart-dir <path>        Alternative JARVICE helm chart directory
+                                    (optional)
+  --eks-cluster-name <name>         EKS cluster name
+                                    (default: $eks_cluster_name)
+  --eks-node-type <node_type>       EC2 instance types for EKS nodes
+                                    (default: $eks_node_type)
+  --install-nvidia-plugin           Install kubernetes device plugin if
+                                    --eks-node-type has Nvidia GPUs
+  --eks-nodes <number>              Number of EKS cluster nodes
+                                    (default: $eks_nodes)
+  --eks-nodes-max <number>          Autoscale up to maximum number of nodes
+                                    (must be greater than --eks-nodes)
+  --aws-region <aws_region>         AWS region for EKS cluster
+                                    (default: $aws_region)
+  --aws-zones <aws_zone_list>       Comma separated zone list for --aws-region
+                                    (optional)
+  --helm-name <app_release_name>    Helm app release name
+                                    (default: $helm_name)
+  --helm-namespace <k8s_namespace>  Cluster namepace to install release into
+                                    (default: $helm_namespace)
+
+See the following link for available EC2 instance types (--eks-node-type):
+https://aws.amazon.com/ec2/instance-types/
+
+Example (minimal) deploy command:
+\$ $0 \\
+    --registry-username <username> \\
+    --registry-password <password> \\
+    --jarvice-license <license_key> \\
+    --jarvice-username <username> \\
+    --jarvice-apikey <apikey>
+
+EOF
+}
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        --help)
+            jarvice_deploy2eks_usage
+            exit 0
+            ;;
+        --registry-username)
+            registry_username=$2
+            shift; shift
+            ;;
+        --registry-password)
+            registry_password=$2
+            shift; shift
+            ;;
+        --jarvice-license)
+            jarvice_license=$2
+            shift; shift
+            ;;
+        --jarvice-username)
+            jarvice_username=$2
+            shift; shift
+            ;;
+        --jarvice-apikey)
+            jarvice_apikey=$2
+            shift; shift
+            ;;
+        --jarvice-chart-dir)
+            jarvice_chart_dir=$2
+            shift; shift
+            ;;
+        --eks-cluster-name)
+            eks_cluster_name=$2
+            shift; shift
+            ;;
+        --eks-node-type)
+            eks_node_type=$2
+            shift; shift
+            ;;
+        --install-nvidia-plugin)
+            install_nvidia_plugin=y
+            shift
+            ;;
+        --eks-nodes)
+            eks_nodes=$2
+            shift; shift
+            ;;
+        --eks-nodes-max)
+            eks_nodes_max=$2
+            shift; shift
+            ;;
+        --aws-region)
+            aws_region=$2
+            shift; shift
+            ;;
+        --aws-zones)
+            aws_zones=$2
+            shift; shift
+            ;;
+        --helm-name)
+            helm_name=$2
+            shift; shift
+            ;;
+        --helm-namespace)
+            helm_namespace=$2
+            shift; shift
+            ;;
+        *)
+            jarvice_deploy2eks_usage
+            exit 1
+            ;;
+    esac
+done
+
+if [ -z "$registry_username" -o -z "$registry_password" -o -z "$jarvice_license" -o -z "$jarvice_username" -o -z "$jarvice_apikey" ]; then
+    echo "Missing credentials and/or license.  Cannot continue."
+    jarvice_deploy2eks_usage
+fi
+
+if [ $eks_nodes_max -gt 0 -a $eks_nodes_max -le $eks_nodes ]; then
+    echo "--eks-nodes-max must be greater than --eks-nodes in order to" \
+        "enable node auto scaling."
+    exit 1
+fi
+
+# Assumes helm chart basedir is one level up from this script
+[ -z "$jarvice_chart_dir" ] && jarvice_chart_dir=$(dirname $(dirname $0))
+echo "Verifying helm chart directory '$jarvice_chart_dir'..."
+CHART_NAME=$(grep '^name: jarvice' $jarvice_chart_dir/Chart.yaml 2>/dev/null)
+if [ -z "$CHART_NAME" ]; then
+    echo "Could not verify helm chart for JARVICE.  Cannot continue."
+    echo "Use --jarvice-chart-dir to specify valid JARVICE helm chart" \
+        "directory."
+    exit 1
+else
+    echo "Found valid chart directory..."
+fi
+
+KUBECTL=$(type -p kubectl)
+AWS=$(type -p aws)
+AWS_IAM_AUTH=$(type -p aws-iam-authenticator)
+EKSCTL=$(type -p eksctl)
+HELM=$(type -p helm)
+CURL=$(type -p curl)
+UNZIP=$(type -p unzip)
+
+set -e
+
+if [ -z "$KUBECTL" -o -z "$AWS" -o -z "$AWS_IAM_AUTH" -o -z "$EKSCTL" -o -z "$HELM" ]; then
+    echo "Missing software needs to be installed.  Verifying sudo access..."
+    SUID=$(sudo id -u)
+    if [ "$SUID" != "0" ]; then
+        echo "Could not verify sudo access.  Cannot continue."
+        echo "Please resolve sudo access before re-running this script."
+        exit 1
+    else
+        echo "Verified sudo access..."
+    fi
+    if [ -z "$CURL" ]; then
+        echo "curl command not found...  Installing..."
+        if [ -e /etc/redhat-release ]; then
+            sudo yum -y install curl
+        else
+            sudo apt-get -y update
+            sudo apt-get -y install curl
+        fi
+    fi
+fi
+
+[ -z "$INSTALL_DIR" ] && INSTALL_DIR=/usr/local
+
+if [ -z "$KUBECTL" ]; then
+    KUBECTL=$INSTALL_DIR/bin/kubectl
+    echo "kubectl command not found...  Installing to $KUBECTL..."
+    sudo bash -c "curl --silent --location https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl >$KUBECTL"
+    sudo chown root.root $KUBECTL
+    sudo chmod 755 $KUBECTL
+else
+    KUBECTL_MAJOR=$($KUBECTL version | grep '^Client' | sed -E 's/.*Major:"([0-9]+)".*/\1/')
+    KUBECTL_MINOR=$($KUBECTL version | grep '^Client' | sed -E 's/.*Minor:"([0-9]+)\+*".*/\1/')
+    echo "Found $KUBECTL... Version: $KUBECTL_MAJOR.$KUBECTL_MINOR"
+    if [ ! $KUBECTL_MAJOR -ge 2 ] && \
+        [ $KUBECTL_MAJOR -ge 1 -a ! $KUBECTL_MINOR -ge 10 ]; then
+        echo "kubectl version 1.10 or newer is required."
+        echo "Please upgrade kubectl or remove it."
+        echo "This script will re-install kubectl if it is removed."
+    fi
+fi
+
+if [ -z "$AWS" ]; then
+    AWS=$INSTALL_DIR/bin/aws
+    echo "aws command not found...  Installing to $AWS..."
+    if [ -z "$UNZIP" ]; then
+        echo "unzip command not found...  Installing..."
+        if [ -e /etc/redhat-release ]; then
+            sudo yum -y install unzip
+        else
+            sudo apt-get -y update
+            sudo apt-get -y install unzip
+        fi
+    fi
+    curl --silent --location "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" >/tmp/awscli-bundle.zip
+    unzip -d /tmp /tmp/awscli-bundle.zip >/dev/null
+    sudo /tmp/awscli-bundle/install -i $INSTALL_DIR/aws -b $AWS
+    rm -rf /tmp/awscli-bundle*
+else
+    echo "Found $AWS..."
+fi
+
+AWS_IAM_USER=$(aws --output=text iam get-user | awk '{print $NF}')
+if [ -z "$AWS_IAM_USER" ]; then
+    echo "AWS IAM user not found..."
+    echo "Please set/export AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables: https://docs.aws.amazon.com/cli/latest/userguide/cli-environment.html"
+    echo "Or set aws_access_key_id and aws_secret_access_key in your credentials file: https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html"
+    exit 1
+else
+    echo "Found AWS IAM user... User name: $AWS_IAM_USER"
+fi
+
+if [ -z "$AWS_IAM_AUTH" ]; then
+    AWS_IAM_AUTH=$INSTALL_DIR/bin/aws-iam-authenticator
+    echo "aws-iam-authenticator command not found...  Installing to $AWS_IAM_AUTH..."
+    sudo bash -c "curl --silent --location https://amazon-eks.s3-us-west-2.amazonaws.com/1.10.3/2018-07-26/bin/linux/amd64/aws-iam-authenticator >$AWS_IAM_AUTH"
+    sudo chown root.root $AWS_IAM_AUTH
+    sudo chmod 755 $AWS_IAM_AUTH
+else
+    echo "Found $AWS_IAM_AUTH..."
+fi
+
+if [ -z "$EKSCTL" ]; then
+    EKSCTL=$INSTALL_DIR/bin/eksctl
+    echo "eksctl command not found...  Installing to $EKSCTL..."
+    curl --silent --location "https://github.com/weaveworks/eksctl/releases/download/latest_release/eksctl_$(uname -s)_amd64.tar.gz" | sudo tar xz -C /usr/local/bin
+    sudo chown root.root $EKSCTL
+    sudo chmod 755 $EKSCTL
+else
+    echo "Found $EKSCTL..."
+fi
+
+if [ -z "$HELM" ]; then
+    HELM_INSTALL_DIR=$INSTALL_DIR/bin
+    HELM=$HELM_INSTALL_DIR/helm
+    echo "helm command not found...  Installing to $HELM..."
+    curl --silent https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get >/tmp/get_helm.sh
+    sudo --preserve-env=PATH,HELM_INSTALL_DIR bash /tmp/get_helm.sh >/dev/null
+    rm -f /tmp/get_helm.sh
+else
+    echo "Found $HELM..."
+fi
+
+echo "------------------------------------------------------------------------"
+
+if [ -z "$KUBECONFIG" ]; then
+    KUBECONFIG=~/.kube/config
+    #echo "KUBECONFIG was not set..."
+fi
+export KUBECONFIG
+
+echo
+echo "* Using $KUBECONFIG for kubeconfig..."
+OLD_CONTEXT=$($KUBECTL config current-context 2>/dev/null || /bin/true)
+
+echo
+echo "* Running $EKSCTL to create EKS cluster..."
+num_nodes="--nodes $eks_nodes"
+[ $eks_nodes_max -gt $eks_nodes ] && \
+    num_nodes="--nodes-min $eks_nodes --nodes-max $eks_nodes_max"
+$EKSCTL create cluster --name $eks_cluster_name \
+    --region $aws_region ${aws_zones:+--zones=$aws_zones} \
+    --node-type $eks_node_type $num_nodes
+
+if [ -n "$install_weave_plugin" ]; then
+    echo
+    echo "* Installing Weave Net network plugin into cluster..."
+    $KUBECTL apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+fi
+
+JARVICE_MACHINES_ADD='[{"mc_name":"n0", "mc_description":"2 core, 16GB RAM (CPU only)", "mc_cores":"2", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"16", "mc_swap":"8", "mc_scratch":"64", "mc_devices":"", "mc_properties":"", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"16", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}, {"mc_name":"n1", "mc_description":"4 core, 32GB RAM (CPU Only)", "mc_cores":"4", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"32", "mc_swap":"16", "mc_scratch":"100", "mc_devices":"", "mc_properties":"", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"32", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
+if [ -n "$install_nvidia_plugin" ]; then
+    echo
+    echo "* Installing Nvidia device plugin into cluster..."
+    SERVER_MAJOR=$($KUBECTL version | grep '^Server' | sed -E 's/.*Major:"([0-9]+)".*/\1/')
+    SERVER_MINOR=$($KUBECTL version | grep '^Server' | sed -E 's/.*Minor:"([0-9]+\+*)".*/\1/')
+    $KUBECTL create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v$SERVER_MAJOR.$SERVER_MINOR/nvidia-device-plugin.yml
+    JARVICE_MACHINES_ADD+=', {"mc_name":"ng0", "mc_description":"2 core, 16GB RAM with Nvidia GPU", "mc_cores":"2", "mc_slots":"16", "mc_gpus":"1", "mc_ram":"16", "mc_swap":"8", "mc_scratch":"64", "mc_devices":"", "mc_properties":"", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"16", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}, {"mc_name":"ng1", "mc_description":"4 core, 32GB RAM with Nvidia GPU", "mc_cores":"4", "mc_slots":"16", "mc_gpus":"1", "mc_ram":"32", "mc_swap":"16", "mc_scratch":"100", "mc_devices":"", "mc_properties":"", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"32", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
+fi
+JARVICE_MACHINES_ADD+=']'
+
+echo
+echo "* Initializing helm and installing Tiller into cluster..."
+$HELM init
+
+echo
+echo "* Creating/setting service account and cluster role binding for Tiller..."
+tiller_sa_yaml=$(cat <<EOF
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tiller
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: tiller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: tiller
+    namespace: kube-system
+EOF
+)
+echo "$tiller_sa_yaml" | $KUBECTL --namespace kube-system create -f -
+$HELM init --upgrade --service-account tiller
+
+echo
+echo -n "* "
+$KUBECTL --namespace kube-system rollout status \
+    deployment tiller-deploy --watch=true
+
+echo
+echo "* Running helm to deploy JARVICE into cluster..."
+$HELM install --debug \
+    --set jarvice.imagePullSecret.username="$registry_username" \
+    --set jarvice.imagePullSecret.password="$registry_password" \
+    --set jarvice.JARVICE_LICENSE_LIC="$jarvice_license" \
+    --set jarvice.JARVICE_REMOTE_USER="$jarvice_username" \
+    --set jarvice.JARVICE_REMOTE_APIKEY="$jarvice_apikey" \
+    --set jarvice_dal.env.JARVICE_MACHINES_ADD="$(echo "$JARVICE_MACHINES_ADD" | sed -e 's#\([]{}",[/]\)#\\\1#g')" \
+    --name $helm_name --namespace $helm_namespace $jarvice_chart_dir
+
+DEPLOYMENTS="jarvice-dal jarvice-scheduler jarvice-api"
+DEPLOYMENTS+=" jarvice-mc-portal jarvice-appsync"
+for deployment in $DEPLOYMENTS; do
+    echo
+    echo -n "* "
+    $KUBECTL --namespace $helm_namespace rollout status \
+        deployment $deployment --watch=true
+done
+
+echo
+echo "------------------------------------------------------------------------"
+
+echo
+echo "JARVICE is deployed and ready!"
+echo
+echo "This EKS cluster may be deleted by executing:"
+echo "\$ eksctl delete cluster --name=$eks_cluster_name --region=$aws_region"
+
+if [ -n "$OLD_CONTEXT" ]; then
+    echo
+    echo "kubeconfig file ($KUBECONFIG) has been modified."
+    echo "Revert to the previous kubeconfig current-context by executing:"
+    echo "\$ kubectl config set current-context $OLD_CONTEXT"
+fi
+
+API_HOST=$($KUBECTL --namespace $helm_namespace \
+    get services jarvice-api-lb \
+    -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+PORTAL_HOST=$($KUBECTL --namespace $helm_namespace \
+    get services jarvice-mc-portal-lb \
+    -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+[ -z "$API_HOST" ] && API_HOST=$($KUBECTL --namespace $helm_namespace \
+    get services jarvice-api-lb \
+    -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+[ -z "$PORTAL_HOST" ] && PORTAL_HOST=$($KUBECTL --namespace $helm_namespace \
+    get services jarvice-mc-portal-lb \
+    -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+
+echo
+echo "JARVICE API endpoint is available at:"
+echo "https://$API_HOST/"
+echo
+echo "JARVICE portal is available at:"
+echo "https://$PORTAL_HOST/"
+

@@ -99,8 +99,10 @@ spec:
             value: "{{ .Values.jarvice_dal.env.JARVICE_ROOT_USER_VAULT }}"
           - name: JARVICE_ROOT_USER_VAULT_SIZE
             value: "{{ .Values.jarvice_dal.env.JARVICE_ROOT_USER_VAULT_SIZE }}"
+          - name: JARVICE_MACHINES_ADD
+            value: '{{ .Values.jarvice_dal.env.JARVICE_MACHINES_ADD }}'
           - name: JARVICE_CFG_NETWORK
-            value: {{ toYaml .Values.jarvice_dal.env.JARVICE_CFG_NETWORK | indent 12}}
+            value: {{ toYaml .Values.jarvice_dal.env.JARVICE_CFG_NETWORK | indent 12 }}
         volumeMounts:
         - name: jarvice-settings
           mountPath: /etc/jarvice/settings/jarvice-dal

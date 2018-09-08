@@ -98,6 +98,8 @@ spec:
         - name: registry-data-vol
           mountPath: /var/lib/registry
 {{- end }}
+        resources:
+{{ toYaml .Values.jarvice_registry.resources | indent 10 }}
 ---
 apiVersion: v1
 kind: Service

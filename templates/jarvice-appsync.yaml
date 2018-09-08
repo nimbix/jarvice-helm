@@ -64,6 +64,12 @@ spec:
             value: "{{ .Values.jarvice.JARVICE_REMOTE_USER }}"
           - name: JARVICE_REMOTE_APIKEY
             value: "{{ .Values.jarvice.JARVICE_REMOTE_APIKEY }}"
+          - name: JARVICE_JOBS_NAMESPACE
+{{- if empty .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
+            value: {{ .Release.Namespace }}-jobs
+{{- else }}
+            value: {{ .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
+{{- end }}
           - name: JARVICE_SYSTEM_REGISTRY
             value: "{{ .Values.jarvice_appsync.env.JARVICE_SYSTEM_REGISTRY }}"
           - name: JARVICE_SYSTEM_REPO_BASE

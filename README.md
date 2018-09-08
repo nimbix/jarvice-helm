@@ -30,13 +30,20 @@ on multiple architectures (amd64, ppc64le, arm64).  As such, it is recommended
 that kubernetes installations use the Weave plugin if intending to run jobs in
 a multiarch environment.
 
+If running on a managed kubernetes service, such as Amazon EKS, a network
+plugin has likely been set up for the cluster.
+
 ### Kubernetes load balancer:
 
-A load balancer is required for making the JARVICE services and apps externally
-available/accessible from outside of the kubernetes cluster.  Currently,
-MetalLB (https://metallb.universe.tf/) is a good solution.  After installing
-helm, MetalLB can quickly be quickly be installed via helm commands.  However,
-it will be necessary to configure MetalLB specifically for your cluster.
+If running on a managed kubernetes service, such as Amazon EKS, a load balancer
+has likely been set up for the cluster.  If running a private kubernetes
+cluster, a load balancer is required for making the JARVICE services and apps
+externally available/accessible from outside of the kubernetes cluster.
+
+Currently, MetalLB (https://metallb.universe.tf/) is a good solution.  After
+installing helm, MetalLB can quickly be quickly be installed via helm commands.
+However, it will be necessary to configure MetalLB specifically for your
+cluster.
 
 Please execute the following to get more details on MetalLB configuration and
 installation:
@@ -106,14 +113,22 @@ installation:
 $ helm inspect stable/kubernetes-dashboard
 ```
 
-After the dashboard is installed, it may be necessary to give it a
-cluster-admin role binding so that it can access the necessary kubernetes
-cluster components.  The `kubernetes-dashboard-crb.yaml` file can be
-used for this.  Modify as necessary for your cluster and issue the following
-commands:
+After the dashboard is installed, it may be desirable to bind the
+`kubernetes-dashboard` service account to the `cluster-admin` role so that it
+can access the necessary kubernetes cluster components.  The
+`kubernetes-dashboard-crb.yaml` file can be used for this.  Modify as necessary
+for your cluster and issue the following commands:
 ```bash
 $ kubectl --namespace kube-system create -f jarvice-helm/extra/kubernetes-dashboard-crb.yaml
 ```
+
+Please be aware the default configuration as provided in
+`kubernetes-dashboard-crb.yaml` will allow users to select `SKIP` from the
+dashboard's login page.  If this is not desired, modify
+`kubernetes-dashboard-crb.yaml` so that it binds the `cluster-admin` role
+to a different service account.  See the access control documentation for
+more information:
+https://github.com/kubernetes/dashboard/wiki/Access-control#admin-privileges
 
 In order to access the dashboard from outside of the cluster, it will be
 necessary to expose the deployment.  Here is an example:
@@ -135,24 +150,37 @@ $ kubectl --namespace kube-system expose deployment kubernetes-dashboard \
     --load-balancer-ip='<available_IP_from_load_balancer_config>'
 ```
 
-The login token for the dashboard can be retrieved via kubectl:
+Login tokens for the dashboard can be retrieved via kubectl.  Here is an
+example:
 ```bash
 $ secret=$(kubectl --namespace kube-system get secret -o name | \
-    grep 'kubernetes-dashboard-token-')
-$ kubectl --namespace kube-system describe $secret | grep '^token:' | awk '{print $2}'
+    grep '<service_account>-token-')
+$ kubectl --namespace kube-system describe $secret | grep '^token:' \
+    | awk '{print $2}'
 ```
 
 Use `https://$DASHBOARD_IP:8443/` to log into the dashboard.
 
-### Node label for `jarvice-dockerpull`
+### Node label for `jarvice-dockerpull` and `jarvice-compute`
 
 In order to take advantage of docker layer caching when pulling
 application images into JARVICE, it is recommended that a node in the
 kubernetes cluster be labeled for those operations.  Use a command similar
 to the following to do so:
 ```bash
-$ kubectl label nodes <node_name> jarvice.io/jarvice-dockerpull=
+$ kubectl label nodes <node_name> node-role.jarvice.io/jarvice-dockerpull=
 ```
+
+Cluster requirements may also make it desirable to designate a set of nodes
+specifically for running JARVICE jobs:
+```bash
+$ kubectl label nodes <node_names> node-role.jarvice.io/jarvice-compute=
+```
+
+After setting the above label, it will be necessary to add a matching
+`node-role.jarvice.io/jarvice-compute=` string to the `properties` field of
+the machine definitions found in the JARVICE console's "Administration" tab.
+This string will be used as a kubernetes node selector when assigning jobs.
 
 Further details on node labels and selectors can be found below.
 
@@ -192,6 +220,14 @@ $ helm install \
     --set jarvice.JARVICE_REMOTE_APIKEY="<jarvice_upstream_user_apikey>" \
     --name jarvice --namespace jarvice-system ./jarvice-helm
 ```
+
+### Quick install to Amazon EKS with `jarvice-deploy2eks` script
+
+If a kubernetes cluster is not readily available, JARVICE can be quickly
+deployed and demoed using the Amazon EKS managed kubernetes service on AWS.
+See the following link for details:
+
+https://github.com/nimbix/jarvice-helm/tree/master/scripts
 
 ------------------------------------------------------------------------------
 
@@ -269,12 +305,12 @@ individual component selectors will override `jarvice.nodeSelector`.  They are
 not additive.
 
 For example, if both
-`--set jarvice.nodeSelector="\{\"jarvice.io/jarvice-system\": \"\"\}"` and
-`--set jarvice_dockerpull.nodeSelector="\{\"jarvice.io/jarvice-dockerpull\": \"\"\}"`
-are set on the `helm` command line, `jarvice.io/jarvice-system` will not be
+`--set jarvice.nodeSelector="\{\"node-role.jarvice.io/jarvice-system\": \"\"\}"` and
+`--set jarvice_dockerpull.nodeSelector="\{\"node-role.jarvice.io/jarvice-dockerpull\": \"\"\}"`
+are set on the `helm` command line, `node-role.jarvice.io/jarvice-system` will not be
 applied to `jarvice_dockerpull.nodeSelector`.  In the case that both node
 selectors are desired for `jarvice_dockerpull.nodeSelector`, use
-`--set jarvice_dockerpull.nodeSelector="\{\"jarvice.io/jarvice-system\": \"\"\, \"jarvice.io/jarvice-dockerpull\": \"\"\}"`.
+`--set jarvice_dockerpull.nodeSelector="\{\"node-role.jarvice.io/jarvice-system\": \"\"\, \"node-role.jarvice.io/jarvice-dockerpull\": \"\"\}"`.
 
 ### Selecting external, load balancer IP addresses
 

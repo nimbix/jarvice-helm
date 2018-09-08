@@ -70,10 +70,16 @@ spec:
             value: "{{ .Values.jarvice_db.env.MYSQL_ROOT_PASSWORD }}"
           - name: MYSQL_DATABASE
             value: "{{ .Values.jarvice_db.env.MYSQL_DATABASE }}"
+          - name: MYSQL_USER
+            value: "{{ .Values.jarvice_db.env.MYSQL_USER }}"
+          - name: MYSQL_PASSWORD
+            value: "{{ .Values.jarvice_db.env.MYSQL_PASSWORD }}"
 {{- if .Values.jarvice_db.persistence.enabled }}
         volumeMounts:
         - mountPath: /var/lib/mysql
           name: db-data-vol
+        resources:
+{{ toYaml .Values.jarvice_db.resources | indent 10 }}
       volumes:
         - name: db-data-vol
           persistentVolumeClaim:
