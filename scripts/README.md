@@ -107,6 +107,14 @@ EOF
 See the following link for more details:
 https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
 
+### KUBECONFIG
+
+`jarvice-deploy2eks` will use `~/.kube/config` as the default kubeconfig file.
+Set the `KUBECONFIG` environment variable to change the default:
+```bash
+$ export KUBECONFIG=~/.kube/config.eks
+```
+
 ### Execution examples
 
 As seen in the `--help` output, this is the minimal command line one can use
