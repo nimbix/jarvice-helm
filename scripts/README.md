@@ -115,6 +115,9 @@ Set the `KUBECONFIG` environment variable to change the default:
 $ export KUBECONFIG=~/.kube/config.eks
 ```
 
+If the kubeconfig file exists, a new context for the EKS cluster will be added
+to it.  If the kubeconfig file doesn't exist, it will be created.
+
 ### Execution examples
 
 As seen in the `--help` output, this is the minimal command line one can use
@@ -229,4 +232,7 @@ https://us-west-2.console.aws.amazon.com/cloudformation/home?#/stacks?filter=act
 
 EKS clusters (select alternative region if necessary):
 https://us-west-2.console.aws.amazon.com/eks/home?#/clusters
+
+VPC management console (select alternative region if necessary):
+https://us-west-2.console.aws.amazon.com/vpc/home
 
