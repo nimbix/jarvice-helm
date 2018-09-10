@@ -201,6 +201,18 @@ with the fllowing command:
 $ kubectl config set current-context <context_name>
 ```
 
+If `eksctl delete` has trouble deleting the Virtual Private Cloud (VPC)
+associated with the `eksctl` created CloudFormation stack, it may be
+necessary to manually remove EC2 load balancers (which contain public IPs)
+and security groups that could have been left over from an incomplete delete
+processes.  That can be done here (select alternative region if necessary):
+https://us-west-2.console.aws.amazon.com/ec2/v2/home
+
+If these resources are not properly cleaned up, and the VPCs aren't
+subsequently deleted, the allotted VPC limit for the AWS account may be
+reached.  In that case, AWS will not allow further VPC creation as a part of
+the bring up of new EKS clusters.
+
 ### Troubleshooting
 
 If an error occurs while `jarvice-deploy2eks` is creating the cluster, it is
@@ -235,4 +247,7 @@ https://us-west-2.console.aws.amazon.com/eks/home?#/clusters
 
 VPC management console (select alternative region if necessary):
 https://us-west-2.console.aws.amazon.com/vpc/home
+
+EC2 Management Console (select alternative region if necessary):
+https://us-west-2.console.aws.amazon.com/ec2/v2/home
 
