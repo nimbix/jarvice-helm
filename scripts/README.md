@@ -36,9 +36,12 @@ Execute `jarvice-deploy2eks` with `--help` to see all of the current command
 line options:
 ```bash
 $ ./scripts/jarvice-deploy2eks --help
-Usage: ./scripts/jarvice-deploy2eks [options]
+Usage:
+  ./scripts/jarvice-deploy2eks [deploy_options]
+  ./scripts/jarvice-deploy2eks --eks-cluster-delete <name> \
+    [ --aws-region <aws_region> ] [ --helm-namespace <k8s_namespace> ]
 
-Available [options]:
+Available [deploy_options]:
   --registry-username <username>    Docker registry username for JARVICE system
                                     images
   --registry-password <password>    Docker registry password for JARVICE system
@@ -69,6 +72,7 @@ Available [options]:
   --helm-namespace <k8s_namespace>  Cluster namepace to install release into
                                     (default: jarvice-system)
 
+Cluster [deploy_options]:
 See the following link for available EC2 instance types (--eks-node-type):
 https://aws.amazon.com/ec2/instance-types/
 
@@ -79,6 +83,10 @@ $ ./scripts/jarvice-deploy2eks \
     --jarvice-license <license_key> \
     --jarvice-username <username> \
     --jarvice-apikey <apikey>
+
+Example (minimal) delete command (must explicitly supply cluster name):
+$ ./scripts/jarvice-deploy2eks --eks-cluster-delete <name>
+
 ```
 
 ### AWS Credentials
@@ -155,8 +163,8 @@ $ ./scripts/jarvice-deploy2eks \
     --eks-nodes-max 20
 ```
 
-To deploy a cluster with an autoscaling group of 10-20 `p3.2xlarge`
-(Nvidia GPU enabled) nodes:
+To deploy a cluster named `nvidia_gpu_cluster` with an autoscaling group of
+10-20 `p3.2xlarge` (Nvidia GPU enabled) nodes:
 ```bash
 $ ./scripts/jarvice-deploy2eks \
     --registry-username <username> \
@@ -167,7 +175,8 @@ $ ./scripts/jarvice-deploy2eks \
     --eks-nodes 10 \
     --eks-nodes-max 20 \
     --eks-node-type p3.2xlarge \
-    --install-nvidia-plugin
+    --install-nvidia-plugin \
+    --eks-cluster-name nvidia_gpu_cluster
 ```
 
 To do all of the above in the `us-east-1` region with a specific list of zones:
@@ -182,44 +191,32 @@ $ ./scripts/jarvice-deploy2eks \
     --eks-nodes-max 20 \
     --eks-node-type p3.2xlarge \
     --install-nvidia-plugin \
+    --eks-cluster-name nvidia_gpu_cluster \
     --aws-region us-east-1 \
     --aws-zones us-east-1a,us-east-1b,us-east-1e
 ```
 
 ### Cluster removal
 
-In order to remove the EKS cluster, use the `eksctl delete cluster` command:
+In order to remove the EKS cluster, use the `--eks-cluster-delete` flag:
 ```bash
-$ eksctl delete cluster --name=jarvice --region=us-west-2
+$ ./scripts/jarvice-deploy2eks \
+    --eks-cluster-delete jarvice --aws-region us-west-2
 ```
 
 If you had a previous kubeconfig file, the installation will have changed the
 `current-context`.  Use `kubectl config get-contexts` to see the available
 contexts in the kubeconfig.  Then, if desired, revert the `current-context`
-with the fllowing command:
+with the following command:
 ```bash
 $ kubectl config set current-context <context_name>
 ```
 
-If `eksctl delete` has trouble deleting the Virtual Private Cloud (VPC)
-associated with the `eksctl` created CloudFormation stack, it may be
-necessary to manually remove EC2 load balancers (which contain public IPs)
-and security groups that could have been left over from an incomplete delete
-processes.  That can be done here (select alternative region if necessary):
-https://us-west-2.console.aws.amazon.com/ec2/v2/home
-
-If these resources are not properly cleaned up, and the VPCs aren't
-subsequently deleted, the allotted VPC limit for the AWS account may be
-reached.  In that case, AWS will not allow further VPC creation as a part of
-the bring up of new EKS clusters.
-
 ### Troubleshooting
 
 If an error occurs while `jarvice-deploy2eks` is creating the cluster, it is
-most likely due to an error occuring while creating the CloudFormation stacks.
-The CloudFormation stacks can be viewed here (select the approprate region if
- not using `us-west-2` default):
-https://us-west-2.console.aws.amazon.com/cloudformation/home?#/stacks?filter=active
+most likely due to an error during creation of the CloudFormation stacks.
+The stacks can be viewed via the CloudFormation Stacks link provided below.
 
 If the stack creation complains of a lack of resources, it may recommend a
 list of zones which can be used to access the necessary resources.  If so, try
@@ -227,11 +224,18 @@ re-running `jarvice-deploy2eks` with the `--aws-zones` flag to request those
 zones.
 
 If the error was due to a previously existing Virtual Private Cloud (VPC)
-stack of the same name, it will be necessary to delete it manually.  If the
-stack previously failed to delete, manually select to retain the previous
-resources associated with the stack when retrying the deletion.
+stack of the same name, it will be necessary to delete it manually (see the
+VPC management console link below).
 
-### AWS resources links
+If the EC2 load balancer resources associated with the Virtual Private Cloud
+(VPC) of a previous cluster deployment were not properly cleaned up on cluster
+deletion, the VPCs will not be subsequently deleted.  This may cause the
+allotted VPC limit for the AWS account to be reached.  In that case, AWS will
+not allow further VPC creation during the bring up of new EKS clusters.
+Use the the EC2 and VPC management console links below to manually
+delete the EC2 load balancers and then VPCs.
+
+### AWS resource links
 
 The `jarvice-deploy2eks` creates a number of AWS resources.  They can be
 viewed via the following links.

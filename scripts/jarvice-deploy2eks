@@ -8,6 +8,7 @@ if [ "$(arch)" != "x86_64" ]; then
 fi
 
 eks_cluster_name=jarvice
+eks_cluster_delete=
 eks_node_type=c5.9xlarge
 install_nvidia_plugin=
 eks_nodes=4
@@ -19,9 +20,12 @@ helm_namespace=jarvice-system
 
 function jarvice_deploy2eks_usage {
     cat <<EOF
-Usage: $0 [options]
+Usage:
+  $0 [deploy_options]
+  $0 --eks-cluster-delete <name> \\
+    [ --aws-region <aws_region> ] [ --helm-namespace <k8s_namespace> ]
 
-Available [options]:
+Available [deploy_options]:
   --registry-username <username>    Docker registry username for JARVICE system
                                     images
   --registry-password <password>    Docker registry password for JARVICE system
@@ -52,6 +56,7 @@ Available [options]:
   --helm-namespace <k8s_namespace>  Cluster namepace to install release into
                                     (default: $helm_namespace)
 
+Cluster [deploy_options]:
 See the following link for available EC2 instance types (--eks-node-type):
 https://aws.amazon.com/ec2/instance-types/
 
@@ -62,6 +67,9 @@ Example (minimal) deploy command:
     --jarvice-license <license_key> \\
     --jarvice-username <username> \\
     --jarvice-apikey <apikey>
+
+Example (minimal) delete command (must explicitly supply cluster name):
+\$ $0 --eks-cluster-delete <name>
 
 EOF
 }
@@ -98,6 +106,10 @@ while [ $# -gt 0 ]; do
             ;;
         --eks-cluster-name)
             eks_cluster_name=$2
+            shift; shift
+            ;;
+        --eks-cluster-delete)
+            eks_cluster_delete=$2
             shift; shift
             ;;
         --eks-node-type)
@@ -139,6 +151,31 @@ while [ $# -gt 0 ]; do
     esac
 done
 
+KUBECTL=$(type -p kubectl)
+AWS=$(type -p aws)
+AWS_IAM_AUTH=$(type -p aws-iam-authenticator)
+EKSCTL=$(type -p eksctl)
+HELM=$(type -p helm)
+CURL=$(type -p curl)
+UNZIP=$(type -p unzip)
+
+if [ -z "$KUBECONFIG" ]; then
+    KUBECONFIG=~/.kube/config
+fi
+export KUBECONFIG
+
+if [ -n "$eks_cluster_delete" ]; then
+    echo "* Using $KUBECONFIG for kubeconfig..."
+    echo "* Deleting EKS cluster '$eks_cluster_delete' in region" \
+        "'$aws_region'..."
+
+    # On VPC deletion, AWS apparently isn't smart enough to delete any EC2
+    # load balancers associated with it
+    $KUBECTL --namespace $helm_namespace delete services \
+        jarvice-api-lb jarvice-mc-portal-lb
+    $EKSCTL delete cluster --name $eks_cluster_delete --aws-region $aws_region
+fi
+
 if [ -z "$registry_username" -o -z "$registry_password" -o -z "$jarvice_license" -o -z "$jarvice_username" -o -z "$jarvice_apikey" ]; then
     echo "Missing credentials and/or license.  Cannot continue."
     jarvice_deploy2eks_usage
@@ -162,14 +199,6 @@ if [ -z "$CHART_NAME" ]; then
 else
     echo "Found valid chart directory..."
 fi
-
-KUBECTL=$(type -p kubectl)
-AWS=$(type -p aws)
-AWS_IAM_AUTH=$(type -p aws-iam-authenticator)
-EKSCTL=$(type -p eksctl)
-HELM=$(type -p helm)
-CURL=$(type -p curl)
-UNZIP=$(type -p unzip)
 
 set -e
 
@@ -277,12 +306,6 @@ fi
 
 echo "------------------------------------------------------------------------"
 
-if [ -z "$KUBECONFIG" ]; then
-    KUBECONFIG=~/.kube/config
-    #echo "KUBECONFIG was not set..."
-fi
-export KUBECONFIG
-
 echo
 echo "* Using $KUBECONFIG for kubeconfig..."
 OLD_CONTEXT=$($KUBECTL config current-context 2>/dev/null || /bin/true)
@@ -374,8 +397,12 @@ echo "------------------------------------------------------------------------"
 echo
 echo "JARVICE is deployed and ready!"
 echo
+if [ "$helm_namespace" != "jarvice-system" ]; then
+    helm_flag="--helm-namespace $helm_namespace"
+fi
 echo "This EKS cluster may be deleted by executing:"
-echo "\$ eksctl delete cluster --name=$eks_cluster_name --region=$aws_region"
+echo "\$ $0 --eks-cluster-delete $eks_cluster_name --aws-region $aws_region" \
+    "$helm_flag"
 
 if [ -n "$OLD_CONTEXT" ]; then
     echo
