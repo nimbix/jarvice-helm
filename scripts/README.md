@@ -227,13 +227,14 @@ If the error was due to a previously existing Virtual Private Cloud (VPC)
 stack of the same name, it will be necessary to delete it manually (see the
 VPC management console link below).
 
-If the EC2 load balancer resources associated with the Virtual Private Cloud
-(VPC) of a previous cluster deployment were not properly cleaned up on cluster
-deletion, the VPCs will not be subsequently deleted.  This may cause the
-allotted VPC limit for the AWS account to be reached.  In that case, AWS will
-not allow further VPC creation during the bring up of new EKS clusters.
-Use the the EC2 and VPC management console links below to manually
-delete the EC2 load balancers and then VPCs.
+If the EC2 load balancers and matching elastic load balancer (ELB) security
+groups associated with the Virtual Private Cloud (VPC) of a previous cluster
+deployment were not properly cleaned up on cluster deletion, the VPCs
+will not be subsequently deleted.  This may cause the allotted VPC limit for
+the AWS account to be reached.  In that case, AWS will not allow further VPC
+creation during the bring up of new EKS clusters.  Use the the EC2 and VPC
+management console links below to manually delete the load balancers and
+security groups before deleting the associated VPCs.
 
 ### AWS resource links
 
