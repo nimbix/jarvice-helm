@@ -39,7 +39,7 @@ $ ./scripts/jarvice-deploy2eks --help
 Usage:
   ./scripts/jarvice-deploy2eks [deploy_options]
   ./scripts/jarvice-deploy2eks --eks-cluster-delete <name> \
-    [ --aws-region <aws_region> ] [ --helm-namespace <k8s_namespace> ]
+    [ --aws-region <aws_region> ]
 
 Available [deploy_options]:
   --registry-username <username>    Docker registry username for JARVICE system

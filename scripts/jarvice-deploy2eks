@@ -23,7 +23,7 @@ function jarvice_deploy2eks_usage {
 Usage:
   $0 [deploy_options]
   $0 --eks-cluster-delete <name> \\
-    [ --aws-region <aws_region> ] [ --helm-namespace <k8s_namespace> ]
+    [ --aws-region <aws_region> ]
 
 Available [deploy_options]:
   --registry-username <username>    Docker registry username for JARVICE system
@@ -165,15 +165,26 @@ fi
 export KUBECONFIG
 
 if [ -n "$eks_cluster_delete" ]; then
+    set -e
     echo "* Using $KUBECONFIG for kubeconfig..."
     echo "* Deleting EKS cluster '$eks_cluster_delete' in region" \
         "'$aws_region'..."
 
     # On VPC deletion, AWS apparently isn't smart enough to delete any EC2
     # load balancers associated with it
-    $KUBECTL --namespace $helm_namespace delete services \
-        jarvice-api-lb jarvice-mc-portal-lb
-    $EKSCTL delete cluster --name $eks_cluster_delete --aws-region $aws_region
+    LB_SERVICES=$($KUBECTL --all-namespaces=true get services | \
+        grep LoadBalancer | awk '{print $1":"$2}')
+    for LB_SERVICE in $LB_SERVICES; do
+        namespace=$(echo $LB_SERVICE | awk -F: '{print $1}')
+        loadbalancer=$(echo $LB_SERVICE | awk -F: '{print $2}')
+        $KUBECTL --namespace $namespace delete services $loadbalancer
+    done
+    sleep 1
+    $EKSCTL delete cluster --name $eks_cluster_delete --region $aws_region
+    echo
+    echo "EKS cluster '$eks_cluster_delete' has been deleted from '$aws_region'"
+    echo
+    exit 0
 fi
 
 if [ -z "$registry_username" -o -z "$registry_password" -o -z "$jarvice_license" -o -z "$jarvice_username" -o -z "$jarvice_apikey" ]; then
@@ -397,12 +408,8 @@ echo "------------------------------------------------------------------------"
 echo
 echo "JARVICE is deployed and ready!"
 echo
-if [ "$helm_namespace" != "jarvice-system" ]; then
-    helm_flag="--helm-namespace $helm_namespace"
-fi
 echo "This EKS cluster may be deleted by executing:"
-echo "\$ $0 --eks-cluster-delete $eks_cluster_name --aws-region $aws_region" \
-    "$helm_flag"
+echo "\$ $0 --eks-cluster-delete $eks_cluster_name --aws-region $aws_region"
 
 if [ -n "$OLD_CONTEXT" ]; then
     echo
