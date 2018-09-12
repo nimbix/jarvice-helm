@@ -182,7 +182,8 @@ if [ -n "$eks_cluster_delete" ]; then
     sleep 1
     $EKSCTL delete cluster --name $eks_cluster_delete --region $aws_region
     echo
-    echo "EKS cluster '$eks_cluster_delete' has been deleted from '$aws_region'"
+    echo "EKS cluster '$eks_cluster_delete' is in the process of being" \
+        "deleted from '$aws_region'..."
     echo
     exit 0
 fi
@@ -376,6 +377,7 @@ EOF
 )
 echo "$tiller_sa_yaml" | $KUBECTL --namespace kube-system create -f -
 $HELM init --upgrade --service-account tiller
+sleep 1
 
 echo
 echo -n "* "
@@ -392,6 +394,7 @@ $HELM install --debug \
     --set jarvice.JARVICE_REMOTE_APIKEY="$jarvice_apikey" \
     --set jarvice_dal.env.JARVICE_MACHINES_ADD="$(echo "$JARVICE_MACHINES_ADD" | sed -e 's#\([]{}",[/]\)#\\\1#g')" \
     --name $helm_name --namespace $helm_namespace $jarvice_chart_dir
+sleep 1
 
 DEPLOYMENTS="jarvice-dal jarvice-scheduler jarvice-api"
 DEPLOYMENTS+=" jarvice-mc-portal jarvice-appsync"
