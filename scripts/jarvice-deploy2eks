@@ -384,6 +384,7 @@ echo -n "* "
 $KUBECTL --namespace kube-system rollout status \
     deployment tiller-deploy --watch=true
 
+# TODO: revert replicaCount once we sort out the load balancer issue
 echo
 echo "* Running helm to deploy JARVICE into cluster..."
 $HELM install --debug \
@@ -392,6 +393,7 @@ $HELM install --debug \
     --set jarvice.JARVICE_LICENSE_LIC="$jarvice_license" \
     --set jarvice.JARVICE_REMOTE_USER="$jarvice_username" \
     --set jarvice.JARVICE_REMOTE_APIKEY="$jarvice_apikey" \
+    --set jarvice_mc_portal.replicaCount=1 \
     --set jarvice_dal.env.JARVICE_MACHINES_ADD="$(echo "$JARVICE_MACHINES_ADD" | sed -e 's#\([]{}",[/]\)#\\\1#g')" \
     --name $helm_name --namespace $helm_namespace $jarvice_chart_dir
 sleep 1
