@@ -13,6 +13,7 @@ eks_node_type=c5.9xlarge
 install_nvidia_plugin=
 eks_nodes=4
 eks_nodes_max=0
+eks_nodes_vol_size=100
 aws_region=us-west-2
 aws_zones=
 helm_name=jarvice
@@ -47,6 +48,8 @@ Available [deploy_options]:
                                     (default: $eks_nodes)
   --eks-nodes-max <number>          Autoscale up to maximum number of nodes
                                     (must be greater than --eks-nodes)
+  --eks-nodes-vol-size <number>     Size of the nodes' EBS volume in GB
+                                    (default: $eks_nodes_vol_size)
   --aws-region <aws_region>         AWS region for EKS cluster
                                     (default: $aws_region)
   --aws-zones <aws_zone_list>       Comma separated zone list for --aws-region
@@ -158,33 +161,133 @@ EKSCTL=$(type -p eksctl)
 HELM=$(type -p helm)
 CURL=$(type -p curl)
 UNZIP=$(type -p unzip)
+JQ=$(type -p jq)
+
+KUBECTL_VER_REQ=1.10
+EKSCTL_VER_REQ=0.1.2
 
 if [ -z "$KUBECONFIG" ]; then
     KUBECONFIG=~/.kube/config
 fi
 export KUBECONFIG
 
+function check_deps {
+    if [ -z "$KUBECTL" -o -z "$AWS" -o -z "$AWS_IAM_AUTH" -o -z "$EKSCTL" -o -z "$HELM" -o -z "$JQ" ]; then
+        echo "Missing software needs to be installed.  Verifying sudo access..."
+        SUID=$(sudo id -u)
+        if [ "$SUID" != "0" ]; then
+            echo "Could not verify sudo access.  Cannot continue."
+            echo "Please resolve sudo access before re-running this script."
+            exit 1
+        else
+            echo "Verified sudo access..."
+        fi
+        install_pkgs=
+        if [ -z "$CURL" ]; then
+            echo "curl command not found...  Installing..."
+            install_pkgs+="curl "
+        fi
+        if [ -z "$JQ" ]; then
+            echo "jq command not found...  Installing..."
+            install_pkgs+="jq "
+        fi
+        if [ -n "$install_pkgs" ]; then
+            if [ -e /etc/redhat-release ]; then
+                sudo yum -y install $install_pkgs
+            else
+                sudo apt-get -y update
+                sudo apt-get -y install $install_pkgs
+            fi
+        fi
+    fi
+}
+
+function get_json_value {
+    json=$1
+    key=$2
+    echo "$json" | \
+        python -c "import json,sys;obj=json.load(sys.stdin);print obj$key;" \
+        2>/dev/null || /bin/true
+}
+
+function strict_version {
+    ver=$1
+    ver_req=$2
+    python -c "from distutils.version import StrictVersion;print StrictVersion('$ver') >= StrictVersion('$ver_req');"
+}
+
+function eks_stack_delete {
+    stack_name="$1"
+
+    echo "* Deleting CloudFormation stack '$stack_name'..."
+    $AWS --region $aws_region cloudformation \
+        delete-stack --stack-name $stack_name
+    status="DELETE_IN_PROGRESS"
+    while [ "$status" = "DELETE_IN_PROGRESS" ]; do
+        echo -n "."
+        sleep 5
+        status=$($AWS --region $aws_region cloudformation \
+            describe-stacks --stack-name $stack_name --output=json \
+            2>/dev/null || /bin/true)
+        status=$(get_json_value "$status" "['Stacks'][0]['StackStatus']")
+        status_reason=$(get_json_value "$status" "['Stacks'][0]['StackStatusReason']")
+    done
+    echo "$status"
+    if [ -n "$status_reason" ]; then
+        echo "$status_reason"
+    fi
+}
+
 if [ -n "$eks_cluster_delete" ]; then
     set -e
+    check_deps
+
+    echo
     echo "* Using $KUBECONFIG for kubeconfig..."
+
+    echo
     echo "* Deleting EKS cluster '$eks_cluster_delete' in region" \
         "'$aws_region'..."
 
-    # On VPC deletion, AWS apparently isn't smart enough to delete any EC2
-    # load balancers associated with it
-    LB_SERVICES=$($KUBECTL --all-namespaces=true get services | \
-        grep LoadBalancer | awk '{print $1":"$2}')
-    for LB_SERVICE in $LB_SERVICES; do
-        namespace=$(echo $LB_SERVICE | awk -F: '{print $1}')
-        loadbalancer=$(echo $LB_SERVICE | awk -F: '{print $2}')
-        $KUBECTL --namespace $namespace delete services $loadbalancer
+    # eksctl doesn't delete EC2 load balancers and ELB security groups
+    # associated with it.  So we're doing it the hard way..
+    TAG_KEY_VAL="kubernetes.io/cluster/$eks_cluster_delete"
+    AWS_ELB_SEC_GROUP_NAMES=$($AWS --region $aws_region ec2 \
+        describe-security-groups --no-paginate --output=text \
+        --filters Name=tag-key,Values=$TAG_KEY_VAL \
+        --query "SecurityGroups[*].{Name:GroupName}" | grep '^k8s-elb-' \
+        || /bin/true)
+    AWS_ELB_NAMES=$(echo "$AWS_ELB_SEC_GROUP_NAMES" | sed -e 's/k8s-elb-//')
+    for elb_name in $AWS_ELB_NAMES; do
+        echo "* Deleting AWS elastic load balancer '$elb_name'..."
+        $AWS --region $aws_region elb delete-load-balancer \
+            --load-balancer-name=$elb_name
     done
-    sleep 1
-    $EKSCTL delete cluster --name $eks_cluster_delete --region $aws_region
-    echo
-    echo "EKS cluster '$eks_cluster_delete' is in the process of being" \
-        "deleted from '$aws_region'..."
-    echo
+
+    eks_stack_delete "eksctl-$eks_cluster_delete-nodegroup-0"
+
+    AWS_ELB_SEC_GROUP_IDS=$($AWS --region $aws_region ec2 \
+        describe-security-groups --no-paginate --output=text \
+        --filters Name=tag-key,Values=$TAG_KEY_VAL \
+        --query "SecurityGroups[*].{ID:GroupId}")
+        #--filters Name=tag:eksctl.cluster.k8s.io/v1alpha1/cluster-name,Values=$eks_cluster_delete \
+
+    for group_id in $AWS_ELB_SEC_GROUP_IDS; do
+        echo "* Deleting AWS EC2 security group '$group_id'..."
+        $AWS --region $aws_region ec2 delete-security-group \
+            --group-id=$group_id
+    done
+
+    eks_stack_delete "eksctl-$eks_cluster_delete-cluster"
+
+    #echo "* Deleting EKS cluster '$eks_cluster_delete' in region" \
+    #    "'$aws_region'..."
+    #$EKSCTL delete cluster --name $eks_cluster_delete --region $aws_region
+    #echo
+    #echo "EKS cluster '$eks_cluster_delete' is in the process of being" \
+    #    "deleted from '$aws_region'..."
+    #echo
+
     exit 0
 fi
 
@@ -213,27 +316,7 @@ else
 fi
 
 set -e
-
-if [ -z "$KUBECTL" -o -z "$AWS" -o -z "$AWS_IAM_AUTH" -o -z "$EKSCTL" -o -z "$HELM" ]; then
-    echo "Missing software needs to be installed.  Verifying sudo access..."
-    SUID=$(sudo id -u)
-    if [ "$SUID" != "0" ]; then
-        echo "Could not verify sudo access.  Cannot continue."
-        echo "Please resolve sudo access before re-running this script."
-        exit 1
-    else
-        echo "Verified sudo access..."
-    fi
-    if [ -z "$CURL" ]; then
-        echo "curl command not found...  Installing..."
-        if [ -e /etc/redhat-release ]; then
-            sudo yum -y install curl
-        else
-            sudo apt-get -y update
-            sudo apt-get -y install curl
-        fi
-    fi
-fi
+check_deps
 
 [ -z "$INSTALL_DIR" ] && INSTALL_DIR=/usr/local
 
@@ -246,12 +329,13 @@ if [ -z "$KUBECTL" ]; then
 else
     KUBECTL_MAJOR=$($KUBECTL version | grep '^Client' | sed -E 's/.*Major:"([0-9]+)".*/\1/')
     KUBECTL_MINOR=$($KUBECTL version | grep '^Client' | sed -E 's/.*Minor:"([0-9]+)\+*".*/\1/')
-    echo "Found $KUBECTL... Version: $KUBECTL_MAJOR.$KUBECTL_MINOR"
-    if [ ! $KUBECTL_MAJOR -ge 2 ] && \
-        [ $KUBECTL_MAJOR -ge 1 -a ! $KUBECTL_MINOR -ge 10 ]; then
-        echo "kubectl version 1.10 or newer is required."
+    KUBECTL_VER="$KUBECTL_MAJOR.$KUBECTL_MINOR"
+    echo "Found $KUBECTL... Version: $KUBECTL_VER"
+    if [ "$(strict_version $KUBECTL_VER $KUBECTL_VER_REQ)" != "True" ]; then
+        echo "kubectl version $KUBECTL_VER_REQ or newer is required."
         echo "Please upgrade kubectl or remove it."
         echo "This script will re-install kubectl if it is removed."
+        exit 1
     fi
 fi
 
@@ -275,7 +359,7 @@ else
     echo "Found $AWS..."
 fi
 
-AWS_IAM_USER=$(aws --output=text iam get-user | awk '{print $NF}')
+AWS_IAM_USER=$($AWS --output=text iam get-user | awk '{print $NF}')
 if [ -z "$AWS_IAM_USER" ]; then
     echo "AWS IAM user not found..."
     echo "Please set/export AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables: https://docs.aws.amazon.com/cli/latest/userguide/cli-environment.html"
@@ -302,7 +386,16 @@ if [ -z "$EKSCTL" ]; then
     sudo chown root.root $EKSCTL
     sudo chmod 755 $EKSCTL
 else
-    echo "Found $EKSCTL..."
+    EKSCTL_VER=$($EKSCTL version | sed -e 's/.*{/{/')
+    EKSCTL_VER=$(echo "$EKSCTL_VER" | jq -r '.gitTag')
+    echo "Found $EKSCTL... Version: $EKSCTL_VER"
+
+    if [ "$(strict_version $EKSCTL_VER $EKSCTL_VER_REQ)" != "True" ]; then
+        echo "eksctl version $EKSCTL_VER_REQ or newer is required."
+        echo "Please upgrade eksctl or remove it."
+        echo "This script will re-install eksctl if it is removed."
+        exit 1
+    fi
 fi
 
 if [ -z "$HELM" ]; then
@@ -324,12 +417,64 @@ OLD_CONTEXT=$($KUBECTL config current-context 2>/dev/null || /bin/true)
 
 echo
 echo "* Running $EKSCTL to create EKS cluster..."
-num_nodes="--nodes $eks_nodes"
-[ $eks_nodes_max -gt $eks_nodes ] && \
-    num_nodes="--nodes-min $eks_nodes --nodes-max $eks_nodes_max"
+#num_nodes="--nodes $eks_nodes"
+#[ $eks_nodes_max -gt $eks_nodes ] && \
+#    num_nodes="--nodes-min $eks_nodes --nodes-max $eks_nodes_max"
+#$EKSCTL create cluster --name $eks_cluster_name \
+#    --region $aws_region ${aws_zones:+--zones=$aws_zones} \
+#    --node-type $eks_node_type $num_nodes
 $EKSCTL create cluster --name $eks_cluster_name \
     --region $aws_region ${aws_zones:+--zones=$aws_zones} \
-    --node-type $eks_node_type $num_nodes
+    --node-type $eks_node_type --nodes 0
+
+echo
+echo "* Updating nodegroup stack..."
+# Get template body of node stack newly created by eksctl
+template_body=$($AWS --region $aws_region cloudformation \
+    get-template --stack-name eksctl-$eks_cluster_name-nodegroup-0 | \
+    jq ".TemplateBody")
+
+map=$(cat <<EOF
+{
+    "DeviceName": "/dev/xvda",
+    "Ebs": {
+        "VolumeSize": "$eks_nodes_vol_size",
+        "VolumeType": "gp2",
+        "DeleteOnTermination": true,
+    }
+}
+EOF
+)
+[ $eks_nodes_max -eq 0 ] && eks_nodes_max=$eks_nodes
+template_body=$(echo "$template_body" | \
+    jq ".Resources.NodeLaunchConfig.Properties.BlockDeviceMappings = [$map]" | \
+    jq ".Resources.NodeGroup.Properties.DesiredCapacity = \"$eks_nodes\"" | \
+    jq ".Resources.NodeGroup.Properties.MinSize = \"$eks_nodes\"" | \
+    jq ".Resources.NodeGroup.Properties.MaxSize = \"$eks_nodes_max\"")
+
+$AWS --region $aws_region cloudformation \
+    update-stack --stack-name eksctl-$eks_cluster_name-nodegroup-0 \
+    --capabilities CAPABILITY_IAM \
+    --template-body "$template_body" \
+    --parameters \
+        ParameterKey=ClusterName,ParameterValue=$eks_cluster_name \
+        ParameterKey=ClusterStackName,ParameterValue=eksctl-$eks_cluster_name-cluster \
+        ParameterKey=NodeGroupID,ParameterValue=0 >/dev/null
+
+echo
+echo "* Waiting for minimum number of nodes to be ready..."
+ready_nodes=0
+echo "$ready_nodes of $eks_nodes are ready..."
+while [ $ready_nodes -lt $eks_nodes ]; do
+    sleep 5
+    echo -n "."
+    ready_count=$(kubectl get nodes 2>/dev/null | \
+        grep --count Ready || /bin/true)
+    if [ $ready_count -gt $ready_nodes ]; then
+        ready_nodes=$ready_count
+        echo; echo "$ready_nodes of $eks_nodes are ready..."
+    fi
+done
 
 if [ -n "$install_weave_plugin" ]; then
     echo

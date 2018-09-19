@@ -63,6 +63,8 @@ Available [deploy_options]:
                                     (default: 4)
   --eks-nodes-max <number>          Autoscale up to maximum number of nodes
                                     (must be greater than --eks-nodes)
+  --eks-nodes-vol-size <number>     Size of the nodes' EBS volume in GB
+                                    (default: 100)
   --aws-region <aws_region>         AWS region for EKS cluster
                                     (default: us-west-2)
   --aws-zones <aws_zone_list>       Comma separated zone list for --aws-region
