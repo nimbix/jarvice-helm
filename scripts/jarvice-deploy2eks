@@ -131,6 +131,10 @@ while [ $# -gt 0 ]; do
             eks_nodes_max=$2
             shift; shift
             ;;
+        --eks-nodes-vol-size)
+            eks_nodes_vol_size=$2
+            shift; shift
+            ;;
         --aws-region)
             aws_region=$2
             shift; shift
