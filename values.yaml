@@ -155,7 +155,7 @@ jarvice_dal:
   resources:
     limits:
       cpu: 1
-      memory: 1Gi
+      memory: 16Gi
   hostNetwork: false
   nodeSelector: # '{"node-role.jarvice.io/jarvice-dal": ""}'
   # jarvice.settings.configMap takes precedence over envornment settings
