@@ -77,5 +77,5 @@ spec:
           - name: JARVICE_APPSYNC_INTERVAL
             value: "{{ .Values.jarvice_appsync.env.JARVICE_APPSYNC_INTERVAL }}"
         resources:
-{{ toYaml .Values.jarvice_dal.resources | indent 10 }}
+{{ toYaml .Values.jarvice_appsync.resources | indent 10 }}
 {{- end }}
