@@ -289,7 +289,7 @@ function eks_nodegroup_stacks_get {
             jq -r ".Resources.NodeGroup.Properties.MaxSize")
         vol_size=$(echo "$template_body" | \
             jq -r ".Resources.NodeLaunchConfig.Properties.BlockDeviceMappings[0].Ebs.VolumeSize")
-        echo -e "$nodegroup_id\t$node_type\t\t$min_size\t\t$max_size\t$vol_size"
+        echo -e "$nodegroup_id\t$node_type\t\t$min_size\t\t$max_size\t$vol_size GB"
     done
 }
 
