@@ -35,11 +35,12 @@ from start to finish, will be approximately 20 minutes.
 Execute `jarvice-deploy2eks` with `--help` to see all of the current command
 line options:
 ```bash
-$ ./scripts/jarvice-deploy2eks --help
 Usage:
-  ./scripts/jarvice-deploy2eks [deploy_options]
-  ./scripts/jarvice-deploy2eks --eks-cluster-delete <name> \
-    [ --aws-region <aws_region> ]
+  ./scripts/jarvice-deploy2eks [deploy_options] [eks_cluster_options]
+  ./scripts/jarvice-deploy2eks --eks-stack-add [eks_cluster_options]
+  ./scripts/jarvice-deploy2eks --eks-stack-update <number> [eks_cluster_options]
+  ./scripts/jarvice-deploy2eks --eks-stack-delete <number> [--eks-cluster-name <name>] [--aws-region <aws_region>]
+  ./scripts/jarvice-deploy2eks --eks-cluster-delete <name> [--aws-region <aws_region>]
 
 Available [deploy_options]:
   --registry-username <username>    Docker registry username for JARVICE system
@@ -53,28 +54,30 @@ Available [deploy_options]:
                                     synchronization
   --jarvice-chart-dir <path>        Alternative JARVICE helm chart directory
                                     (optional)
+  --helm-name <app_release_name>    Helm app release name
+                                    (default: jarvice)
+  --helm-namespace <k8s_namespace>  Cluster namepace to install release into
+                                    (default: jarvice-system)
+
+Available [eks_cluster_options]:
+  --aws-region <aws_region>         AWS region for EKS cluster
+                                    (default: us-west-2)
+  --aws-zones <aws_zone_list>       Comma separated zone list for --aws-region
+                                    (initial deploy only, optional)
   --eks-cluster-name <name>         EKS cluster name
                                     (default: jarvice)
   --eks-node-type <node_type>       EC2 instance types for EKS nodes
                                     (default: c5.9xlarge)
-  --install-nvidia-plugin           Install kubernetes device plugin if
-                                    --eks-node-type has Nvidia GPUs
   --eks-nodes <number>              Number of EKS cluster nodes
                                     (default: 4)
   --eks-nodes-max <number>          Autoscale up to maximum number of nodes
                                     (must be greater than --eks-nodes)
   --eks-nodes-vol-size <number>     Size of the nodes' EBS volume in GB
                                     (default: 100)
-  --aws-region <aws_region>         AWS region for EKS cluster
-                                    (default: us-west-2)
-  --aws-zones <aws_zone_list>       Comma separated zone list for --aws-region
-                                    (optional)
-  --helm-name <app_release_name>    Helm app release name
-                                    (default: jarvice)
-  --helm-namespace <k8s_namespace>  Cluster namepace to install release into
-                                    (default: jarvice-system)
+  --install-nvidia-plugin           Install kubernetes device plugin if
+                                    --eks-node-type has Nvidia GPUs
+                                    (initial deploy only, optional)
 
-Cluster [deploy_options]:
 See the following link for available EC2 instance types (--eks-node-type):
 https://aws.amazon.com/ec2/instance-types/
 
