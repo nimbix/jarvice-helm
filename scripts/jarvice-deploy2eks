@@ -29,6 +29,7 @@ Usage:
   $0 --eks-stack-add [eks_cluster_options]
   $0 --eks-stack-update <number> [eks_cluster_options]
   $0 --eks-stack-delete <number> [--eks-cluster-name <name>] [--aws-region <aws_region>]
+  $0 --eks-stack-get <number> [--eks-cluster-name <name>] [--aws-region <aws_region>]
   $0 --eks-cluster-delete <name> [--aws-region <aws_region>]
 
 Available [deploy_options]:
@@ -158,6 +159,10 @@ while [ $# -gt 0 ]; do
             helm_namespace=$2
             shift; shift
             ;;
+        --eks-stacks-get)
+            eks_stacks_get=y
+            shift
+            ;;
         --eks-stack-add)
             eks_stack_add=y
             shift
@@ -262,6 +267,32 @@ function eks_cf_stack_delete {
     fi
 }
 
+function eks_nodegroup_stacks_get {
+    nodegroup_ids=$($AWS --region $aws_region cloudformation \
+        describe-stacks | \
+        jq -r ".Stacks[] | select(.Parameters[].ParameterValue==\"eksctl-$eks_cluster_name-cluster\").Parameters[] | select(.ParameterKey==\"NodeGroupID\").ParameterValue" | \
+            sort)
+    echo -e "ID\tnode_type\tmin_nodes\tmax_nodes\tvol_size"
+    echo -e "--\t---------\t---------\t---------\t--------"
+    for nodegroup_id in $nodegroup_ids; do
+        stack_name="eksctl-$eks_cluster_name-nodegroup-$nodegroup_id"
+        template_body=$($AWS --region $aws_region cloudformation \
+            get-template \
+            --stack-name $stack_name 2>/dev/null | \
+            jq ".TemplateBody")
+        echo "$template_body" >/tmp/tbody.json
+        node_type=$(echo "$template_body" | \
+            jq -r ".Resources.NodeLaunchConfig.Properties.InstanceType")
+        min_size=$(echo "$template_body" | \
+            jq -r ".Resources.NodeGroup.Properties.MinSize")
+        max_size=$(echo "$template_body" | \
+            jq -r ".Resources.NodeGroup.Properties.MaxSize")
+        vol_size=$(echo "$template_body" | \
+            jq -r ".Resources.NodeLaunchConfig.Properties.BlockDeviceMappings[0].Ebs.VolumeSize")
+        echo -e "$nodegroup_id\t$node_type\t\t$min_size\t\t$max_size\t$vol_size"
+    done
+}
+
 function eks_nodegroup_stack_add_update {
     nodegroup_id=$1
 
@@ -302,6 +333,7 @@ EOF
     [ $eks_nodes_max -eq 0 ] && eks_nodes_max=$eks_nodes
     template_body=$(echo "$template_body" | \
         jq ".Resources.NodeLaunchConfig.Properties.BlockDeviceMappings = [$map]" | \
+        jq ".Resources.NodeLaunchConfig.Properties.InstanceType = \"$eks_node_type\"" | \
         jq ".Resources.NodeGroup.Properties.DesiredCapacity = \"$eks_nodes\"" | \
         jq ".Resources.NodeGroup.Properties.MinSize = \"$eks_nodes\"" | \
         jq ".Resources.NodeGroup.Properties.MaxSize = \"$eks_nodes_max\"")
@@ -439,6 +471,18 @@ if [ $eks_nodes_max -gt 0 -a $eks_nodes_max -le $eks_nodes ]; then
     echo "--eks-nodes-max must be greater than --eks-nodes in order to" \
         "enable node auto scaling."
     exit 1
+fi
+
+if [ -n "$eks_stacks_get" ]; then
+    set -e
+    check_deps
+
+    if [ -z "$eks_cluster_name" ]; then
+        jarvice_deploy2eks_usage
+    fi
+    eks_nodegroup_stacks_get
+
+    exit 0
 fi
 
 if [ -n "$eks_stack_add" ]; then

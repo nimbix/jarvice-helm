@@ -40,6 +40,7 @@ Usage:
   ./scripts/jarvice-deploy2eks --eks-stack-add [eks_cluster_options]
   ./scripts/jarvice-deploy2eks --eks-stack-update <number> [eks_cluster_options]
   ./scripts/jarvice-deploy2eks --eks-stack-delete <number> [--eks-cluster-name <name>] [--aws-region <aws_region>]
+  ./scripts/jarvice-deploy2eks --eks-stacks-get <number> [--eks-cluster-name <name>] [--aws-region <aws_region>]
   ./scripts/jarvice-deploy2eks --eks-cluster-delete <name> [--aws-region <aws_region>]
 
 Available [deploy_options]:
