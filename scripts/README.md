@@ -39,9 +39,12 @@ Usage:
   ./scripts/jarvice-deploy2eks [deploy_options] [eks_cluster_options]
   ./scripts/jarvice-deploy2eks --eks-stack-add [eks_cluster_options]
   ./scripts/jarvice-deploy2eks --eks-stack-update <number> [eks_cluster_options]
-  ./scripts/jarvice-deploy2eks --eks-stack-delete <number> [--eks-cluster-name <name>] [--aws-region <aws_region>]
-  ./scripts/jarvice-deploy2eks --eks-stacks-get <number> [--eks-cluster-name <name>] [--aws-region <aws_region>]
-  ./scripts/jarvice-deploy2eks --eks-cluster-delete <name> [--aws-region <aws_region>]
+  ./scripts/jarvice-deploy2eks --eks-stack-delete <number> \
+        [--eks-cluster-name <name>] [--aws-region <aws_region>]
+  ./scripts/jarvice-deploy2eks --eks-stack-get <number> \
+        [--eks-cluster-name <name>] [--aws-region <aws_region>]
+  ./scripts/jarvice-deploy2eks --eks-cluster-delete <name> \
+        [--aws-region <aws_region>] [--database-vol-delete]
 
 Available [deploy_options]:
   --registry-username <username>    Docker registry username for JARVICE system
@@ -75,9 +78,6 @@ Available [eks_cluster_options]:
                                     (must be greater than --eks-nodes)
   --eks-nodes-vol-size <number>     Size of the nodes' EBS volume in GB
                                     (default: 100)
-  --install-nvidia-plugin           Install kubernetes device plugin if
-                                    --eks-node-type has Nvidia GPUs
-                                    (initial deploy only, optional)
 
 See the following link for available EC2 instance types (--eks-node-type):
 https://aws.amazon.com/ec2/instance-types/
@@ -92,7 +92,6 @@ $ ./scripts/jarvice-deploy2eks \
 
 Example (minimal) delete command (must explicitly supply cluster name):
 $ ./scripts/jarvice-deploy2eks --eks-cluster-delete <name>
-
 ```
 
 ### AWS Credentials

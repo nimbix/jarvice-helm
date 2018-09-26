@@ -21,6 +21,7 @@ helm_namespace=jarvice-system
 eks_stack_add=
 eks_stack_update=
 eks_stack_delete=
+database_vol_delete=
 
 function jarvice_deploy2eks_usage {
     cat <<EOF
@@ -28,9 +29,12 @@ Usage:
   $0 [deploy_options] [eks_cluster_options]
   $0 --eks-stack-add [eks_cluster_options]
   $0 --eks-stack-update <number> [eks_cluster_options]
-  $0 --eks-stack-delete <number> [--eks-cluster-name <name>] [--aws-region <aws_region>]
-  $0 --eks-stack-get <number> [--eks-cluster-name <name>] [--aws-region <aws_region>]
-  $0 --eks-cluster-delete <name> [--aws-region <aws_region>]
+  $0 --eks-stack-delete <number> \\
+        [--eks-cluster-name <name>] [--aws-region <aws_region>]
+  $0 --eks-stack-get <number> \\
+        [--eks-cluster-name <name>] [--aws-region <aws_region>]
+  $0 --eks-cluster-delete <name> \\
+        [--aws-region <aws_region>] [--database-vol-delete]
 
 Available [deploy_options]:
   --registry-username <username>    Docker registry username for JARVICE system
@@ -64,9 +68,6 @@ Available [eks_cluster_options]:
                                     (must be greater than --eks-nodes)
   --eks-nodes-vol-size <number>     Size of the nodes' EBS volume in GB
                                     (default: $eks_nodes_vol_size)
-  --install-nvidia-plugin           Install kubernetes device plugin if
-                                    --eks-node-type has Nvidia GPUs
-                                    (initial deploy only, optional)
 
 See the following link for available EC2 instance types (--eks-node-type):
 https://aws.amazon.com/ec2/instance-types/
@@ -123,13 +124,13 @@ while [ $# -gt 0 ]; do
             eks_cluster_delete=$2
             shift; shift
             ;;
+        --database-vol-delete)
+            database_vol_delete=y
+            shift
+            ;;
         --eks-node-type)
             eks_node_type=$2
             shift; shift
-            ;;
-        --install-nvidia-plugin)
-            install_nvidia_plugin=y
-            shift
             ;;
         --eks-nodes)
             eks_nodes=$2
@@ -182,6 +183,12 @@ while [ $# -gt 0 ]; do
     esac
 done
 
+# If "Accelerate Computing" NVIDIA type found, auto install NVIDIA plugin
+# See: https://aws.amazon.com/ec2/instance-types/
+if [[ $eks_node_type == p2.* ]] || [[ $eks_node_type == p3.* ]]; then
+    install_nvidia_plugin=y
+fi
+
 KUBECTL=$(type -p kubectl)
 AWS=$(type -p aws)
 AWS_IAM_AUTH=$(type -p aws-iam-authenticator)
@@ -198,6 +205,8 @@ if [ -z "$KUBECONFIG" ]; then
     KUBECONFIG=~/.kube/config
 fi
 export KUBECONFIG
+
+###############################################################################
 
 function check_deps {
     if [ -z "$KUBECTL" -o -z "$AWS" -o -z "$AWS_IAM_AUTH" -o -z "$EKSCTL" -o -z "$HELM" -o -z "$JQ" ]; then
@@ -244,6 +253,14 @@ function strict_version {
     python -c "from distutils.version import StrictVersion;print StrictVersion('$ver') >= StrictVersion('$ver_req');"
 }
 
+function kubectl_install_nvidia_plugin {
+    echo
+    echo "* Installing Nvidia device plugin into cluster..."
+    SERVER_MAJOR=$($KUBECTL version | grep '^Server' | sed -E 's/.*Major:"([0-9]+)".*/\1/')
+    SERVER_MINOR=$($KUBECTL version | grep '^Server' | sed -E 's/.*Minor:"([0-9]+)\+*".*/\1/')
+    $KUBECTL create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v$SERVER_MAJOR.$SERVER_MINOR/nvidia-device-plugin.yml 2>/dev/null || /bin/true
+}
+
 function eks_cf_stack_delete {
     stack_name="$1"
 
@@ -270,7 +287,7 @@ function eks_cf_stack_delete {
 function eks_nodegroup_stacks_get {
     nodegroup_ids=$($AWS --region $aws_region cloudformation \
         describe-stacks | \
-        jq -r ".Stacks[] | select(.Parameters[].ParameterValue==\"eksctl-$eks_cluster_name-cluster\").Parameters[] | select(.ParameterKey==\"NodeGroupID\").ParameterValue" | \
+        $JQ -r ".Stacks[] | select(.Parameters[].ParameterValue==\"eksctl-$eks_cluster_name-cluster\").Parameters[] | select(.ParameterKey==\"NodeGroupID\").ParameterValue" | \
             sort)
     echo -e "ID\tnode_type\tmin_nodes\tmax_nodes\tvol_size"
     echo -e "--\t---------\t---------\t---------\t--------"
@@ -279,16 +296,16 @@ function eks_nodegroup_stacks_get {
         template_body=$($AWS --region $aws_region cloudformation \
             get-template \
             --stack-name $stack_name 2>/dev/null | \
-            jq ".TemplateBody")
+            $JQ ".TemplateBody")
         echo "$template_body" >/tmp/tbody.json
         node_type=$(echo "$template_body" | \
-            jq -r ".Resources.NodeLaunchConfig.Properties.InstanceType")
+            $JQ -r ".Resources.NodeLaunchConfig.Properties.InstanceType")
         min_size=$(echo "$template_body" | \
-            jq -r ".Resources.NodeGroup.Properties.MinSize")
+            $JQ -r ".Resources.NodeGroup.Properties.MinSize")
         max_size=$(echo "$template_body" | \
-            jq -r ".Resources.NodeGroup.Properties.MaxSize")
+            $JQ -r ".Resources.NodeGroup.Properties.MaxSize")
         vol_size=$(echo "$template_body" | \
-            jq -r ".Resources.NodeLaunchConfig.Properties.BlockDeviceMappings[0].Ebs.VolumeSize")
+            $JQ -r ".Resources.NodeLaunchConfig.Properties.BlockDeviceMappings[0].Ebs.VolumeSize")
         echo -e "$nodegroup_id\t$node_type\t\t$min_size\t\t$max_size\t$vol_size GB"
     done
 }
@@ -304,16 +321,16 @@ function eks_nodegroup_stack_add_update {
         template_body=$($AWS --region $aws_region cloudformation \
             get-template \
             --stack-name $stack_name 2>/dev/null | \
-            jq ".TemplateBody")
+            $JQ ".TemplateBody")
     else
         command=create-stack
         template_body=$($AWS --region $aws_region cloudformation \
             get-template \
             --stack-name eksctl-$eks_cluster_name-nodegroup-0 | \
-            jq ".TemplateBody")
+            $JQ ".TemplateBody")
         nodegroup_id=$($AWS --region $aws_region cloudformation \
             describe-stacks | \
-            jq -r ".Stacks[] | select(.Parameters[].ParameterValue==\"eksctl-$eks_cluster_name-cluster\").Parameters[] | select(.ParameterKey==\"NodeGroupID\").ParameterValue" | \
+            $JQ -r ".Stacks[] | select(.Parameters[].ParameterValue==\"eksctl-$eks_cluster_name-cluster\").Parameters[] | select(.ParameterKey==\"NodeGroupID\").ParameterValue" | \
             sort | tail -n 1)
         nodegroup_id=$((nodegroup_id+1))
         stack_name="eksctl-$eks_cluster_name-nodegroup-$nodegroup_id"
@@ -332,11 +349,11 @@ EOF
 )
     [ $eks_nodes_max -eq 0 ] && eks_nodes_max=$eks_nodes
     template_body=$(echo "$template_body" | \
-        jq ".Resources.NodeLaunchConfig.Properties.BlockDeviceMappings = [$map]" | \
-        jq ".Resources.NodeLaunchConfig.Properties.InstanceType = \"$eks_node_type\"" | \
-        jq ".Resources.NodeGroup.Properties.DesiredCapacity = \"$eks_nodes\"" | \
-        jq ".Resources.NodeGroup.Properties.MinSize = \"$eks_nodes\"" | \
-        jq ".Resources.NodeGroup.Properties.MaxSize = \"$eks_nodes_max\"")
+        $JQ ".Resources.NodeLaunchConfig.Properties.BlockDeviceMappings = [$map]" | \
+        $JQ ".Resources.NodeLaunchConfig.Properties.InstanceType = \"$eks_node_type\"" | \
+        $JQ ".Resources.NodeGroup.Properties.DesiredCapacity = \"$eks_nodes\"" | \
+        $JQ ".Resources.NodeGroup.Properties.MinSize = \"$eks_nodes\"" | \
+        $JQ ".Resources.NodeGroup.Properties.MaxSize = \"$eks_nodes_max\"")
 
     if [ "$command" = "update-stack" ]; then
         echo
@@ -382,7 +399,7 @@ EOF
     echo "* Updating aws-auth ConfigMap..."
     role_arns=$($AWS --region $aws_region cloudformation \
         describe-stacks | \
-        jq -r ".Stacks[] | select(.Parameters[].ParameterValue==\"eksctl-$eks_cluster_name-cluster\").Outputs[].OutputValue")
+        $JQ -r ".Stacks[] | select(.Parameters[].ParameterValue==\"eksctl-$eks_cluster_name-cluster\").Outputs[].OutputValue")
         configmap_yaml=$(cat <<EOF
 apiVersion: v1
 kind: ConfigMap
@@ -407,7 +424,10 @@ EOF
     echo "$configmap_yaml" | $KUBECTL --namespace kube-system apply -f - >/dev/null 2>&1
 }
 
+###############################################################################
+
 if [ -n "$eks_cluster_delete" ]; then
+    eks_cluster_name=$eks_cluster_delete
     set -e
     check_deps
 
@@ -415,12 +435,12 @@ if [ -n "$eks_cluster_delete" ]; then
     echo "* Using $KUBECONFIG for kubeconfig..."
 
     echo
-    echo "* Deleting EKS cluster '$eks_cluster_delete' in region" \
+    echo "* Deleting EKS cluster '$eks_cluster_name' in region" \
         "'$aws_region'..."
 
     # eksctl doesn't delete EC2 load balancers and ELB security groups
     # associated with it.  So we're doing it the hard way..
-    TAG_KEY_VAL="kubernetes.io/cluster/$eks_cluster_delete"
+    TAG_KEY_VAL="kubernetes.io/cluster/$eks_cluster_name"
     AWS_ELB_SEC_GROUP_NAMES=$($AWS --region $aws_region ec2 \
         describe-security-groups --no-paginate --output=text \
         --filters Name=tag-key,Values=$TAG_KEY_VAL \
@@ -436,7 +456,7 @@ if [ -n "$eks_cluster_delete" ]; then
 
     nodegroup_stacks=$($AWS --region $aws_region cloudformation \
         describe-stacks | \
-        jq -r ".Stacks[] | select(.Parameters[].ParameterValue==\"eksctl-$eks_cluster_delete-cluster\").StackName")
+        $JQ -r ".Stacks[] | select(.Parameters[].ParameterValue==\"eksctl-$eks_cluster_name-cluster\").StackName")
     for nodegroup_stack in $nodegroup_stacks; do
         eks_cf_stack_delete "$nodegroup_stack"
     done
@@ -445,7 +465,6 @@ if [ -n "$eks_cluster_delete" ]; then
         describe-security-groups --no-paginate --output=text \
         --filters Name=tag-key,Values=$TAG_KEY_VAL \
         --query "SecurityGroups[*].{ID:GroupId}")
-        #--filters Name=tag:eksctl.cluster.k8s.io/v1alpha1/cluster-name,Values=$eks_cluster_delete \
 
     echo
     for group_id in $AWS_ELB_SEC_GROUP_IDS; do
@@ -454,16 +473,38 @@ if [ -n "$eks_cluster_delete" ]; then
             --group-id=$group_id
     done
 
-    eks_cf_stack_delete "eksctl-$eks_cluster_delete-cluster"
+    eks_cf_stack_delete "eksctl-$eks_cluster_name-cluster"
 
-    #echo "* Deleting EKS cluster '$eks_cluster_delete' in region" \
+    #echo "* Deleting EKS cluster '$eks_cluster_name' in region" \
     #    "'$aws_region'..."
-    #$EKSCTL delete cluster --name $eks_cluster_delete --region $aws_region
+    #$EKSCTL delete cluster --name $eks_cluster_name --region $aws_region
     #echo
-    #echo "EKS cluster '$eks_cluster_delete' is in the process of being" \
+    #echo "EKS cluster '$eks_cluster_name' is in the process of being" \
     #    "deleted from '$aws_region'..."
     #echo
 
+    filters="Name=tag-key,Values=kubernetes.io/cluster/$eks_cluster_name"
+    filters+=" Name=tag:kubernetes.io/created-for/pvc/name,Values=jarvice-db-pvc"
+    filters+=" Name=status,Values=available"
+    pvc_vol=$($AWS --region $aws_region ec2 \
+        describe-volumes --no-paginate --output=json --filters $filters)
+    vol_id=$(echo "$pvc_vol" | $JQ -r ".Volumes[0].VolumeId | select(.!=null)")
+    if [ -z "$vol_id" ]; then
+        echo
+        echo "* ERROR: Could not find EC2 volume containing JARVICE database!"
+        echo
+        exit 1
+    fi
+    if [ -n "$database_vol_delete" ]; then
+        echo
+        echo "* Deleting EC2 volume ('$vol_id') containing JARVICE database..."
+        $AWS --region $aws_region ec2 \
+            delete-volume --volume-id $vol_id
+    else
+        echo
+        echo "* Preserved EC2 volume ('$vol_id') containing JARVICE database..."
+    fi
+    echo
     exit 0
 fi
 
@@ -493,7 +534,9 @@ if [ -n "$eks_stack_add" ]; then
         jarvice_deploy2eks_usage
     fi
     eks_nodegroup_stack_add_update
-
+    if [ -n "$install_nvidia_plugin" ]; then
+        kubectl_install_nvidia_plugin
+    fi
     exit 0
 fi
 
@@ -505,7 +548,9 @@ if [ -n "$eks_stack_update" ]; then
         jarvice_deploy2eks_usage
     fi
     eks_nodegroup_stack_add_update $eks_stack_update
-
+    if [ -n "$install_nvidia_plugin" ]; then
+        kubectl_install_nvidia_plugin
+    fi
     exit 0
 fi
 
@@ -589,7 +634,8 @@ else
     echo "Found $AWS..."
 fi
 
-AWS_IAM_USER=$($AWS --output=text iam get-user | awk '{print $NF}')
+AWS_IAM_USER=$($AWS --output=json iam get-user | \
+    $JQ -r ".User.UserName | select(.!=null)")
 if [ -z "$AWS_IAM_USER" ]; then
     echo "AWS IAM user not found..."
     echo "Please set/export AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY environment variables: https://docs.aws.amazon.com/cli/latest/userguide/cli-environment.html"
@@ -617,7 +663,7 @@ if [ -z "$EKSCTL" ]; then
     sudo chmod 755 $EKSCTL
 else
     EKSCTL_VER=$($EKSCTL version | sed -e 's/.*{/{/')
-    EKSCTL_VER=$(echo "$EKSCTL_VER" | jq -r '.gitTag')
+    EKSCTL_VER=$(echo "$EKSCTL_VER" | $JQ -r '.gitTag')
     echo "Found $EKSCTL... Version: $EKSCTL_VER"
 
     if [ "$(strict_version $EKSCTL_VER $EKSCTL_VER_REQ)" != "True" ]; then
@@ -684,11 +730,7 @@ fi
 
 JARVICE_MACHINES_ADD='[{"mc_name":"n0", "mc_description":"2 core, 16GB RAM (CPU only)", "mc_cores":"2", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"16", "mc_swap":"8", "mc_scratch":"64", "mc_devices":"", "mc_properties":"", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"16", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}, {"mc_name":"n1", "mc_description":"4 core, 32GB RAM (CPU Only)", "mc_cores":"4", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"32", "mc_swap":"16", "mc_scratch":"100", "mc_devices":"", "mc_properties":"", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"32", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
 if [ -n "$install_nvidia_plugin" ]; then
-    echo
-    echo "* Installing Nvidia device plugin into cluster..."
-    SERVER_MAJOR=$($KUBECTL version | grep '^Server' | sed -E 's/.*Major:"([0-9]+)".*/\1/')
-    SERVER_MINOR=$($KUBECTL version | grep '^Server' | sed -E 's/.*Minor:"([0-9]+\+*)".*/\1/')
-    $KUBECTL create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v$SERVER_MAJOR.$SERVER_MINOR/nvidia-device-plugin.yml
+    kubectl_install_nvidia_plugin
     JARVICE_MACHINES_ADD+=', {"mc_name":"ng0", "mc_description":"2 core, 16GB RAM with Nvidia GPU", "mc_cores":"2", "mc_slots":"16", "mc_gpus":"1", "mc_ram":"16", "mc_swap":"8", "mc_scratch":"64", "mc_devices":"", "mc_properties":"", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"16", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}, {"mc_name":"ng1", "mc_description":"4 core, 32GB RAM with Nvidia GPU", "mc_cores":"4", "mc_slots":"16", "mc_gpus":"1", "mc_ram":"32", "mc_swap":"16", "mc_scratch":"100", "mc_devices":"", "mc_properties":"", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"32", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
 fi
 JARVICE_MACHINES_ADD+=']'
@@ -729,6 +771,81 @@ echo -n "* "
 $KUBECTL --namespace kube-system rollout status \
     deployment tiller-deploy --watch=true
 
+echo
+echo "* Creating 'gp2' StorageClass..."
+storage_class_yaml=$(cat <<EOF
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: gp2
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: gp2
+reclaimPolicy: Delete
+mountOptions:
+  - debug
+EOF
+)
+echo "$storage_class_yaml" | $KUBECTL --namespace kube-system create -f -
+echo
+echo "* Setting 'gp2' StorageClass as the default..."
+$KUBECTL patch storageclass gp2 -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+
+echo
+echo "* Creating 'jarvice-db' StorageClass..."
+storage_class_yaml=$(cat <<EOF
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: jarvice-db
+provisioner: kubernetes.io/aws-ebs
+parameters:
+  type: gp2
+reclaimPolicy: Retain
+mountOptions:
+  - debug
+EOF
+)
+echo "$storage_class_yaml" | $KUBECTL --namespace kube-system create -f -
+
+filters="Name=tag-key,Values=kubernetes.io/cluster/$eks_cluster_name"
+filters+=" Name=tag:kubernetes.io/created-for/pvc/name,Values=jarvice-db-pvc"
+filters+=" Name=status,Values=available"
+echo
+echo "* Searching for jarvice-db-pvc volume previously created for '$eks_cluster_name'..."
+pvc_vol=$($AWS --region $aws_region ec2 \
+        describe-volumes --no-paginate --output=json --filters $filters)
+vol_id=$(echo "$pvc_vol" | $JQ -r ".Volumes[0].VolumeId | select(.!=null)")
+if [ -n "$vol_id" ]; then
+    vol_size=$(echo "$pvc_vol" | $JQ -r ".Volumes[0].Size")
+    vol_zone=$(echo "$pvc_vol" | $JQ -r ".Volumes[0].AvailabilityZone")
+    echo "Found ${vol_size}GB volume '$vol_id' in availability zone '$vol_zone'..."
+    echo
+    echo "* Recreating 'jarvice-db-pv' PersistentVolume using '$vol_id' for cluster '$eks_cluster_name'..."
+    pv_yaml=$(cat <<EOF
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: jarvice-db-pv
+spec:
+  awsElasticBlockStore:
+    fsType: ext4
+    volumeID: aws://$vol_zone/$vol_id
+  capacity:
+    storage: ${vol_size}Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: jarvice-db
+  mountOptions:
+    - debug
+EOF
+)
+    echo "$pv_yaml" | $KUBECTL --namespace kube-system create -f -
+else
+    echo "No previous volume was found."
+fi
+
 # TODO: revert replicaCount once we sort out the load balancer issue
 echo
 echo "* Running helm to deploy JARVICE into cluster..."
@@ -738,6 +855,7 @@ $HELM install --debug \
     --set jarvice.JARVICE_LICENSE_LIC="$jarvice_license" \
     --set jarvice.JARVICE_REMOTE_USER="$jarvice_username" \
     --set jarvice.JARVICE_REMOTE_APIKEY="$jarvice_apikey" \
+    --set jarvice_db.persistence.enabled="true" \
     --set jarvice_mc_portal.replicaCount=1 \
     --set jarvice_dal.replicaCount=1 \
     --set jarvice_dal.env.JARVICE_MACHINES_ADD="$(echo "$JARVICE_MACHINES_ADD" | sed -e 's#\([]{}",[/]\)#\\\1#g')" \
