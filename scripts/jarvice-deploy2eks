@@ -511,7 +511,7 @@ if [ -n "$eks_cluster_delete" ]; then
         $AWS --region $aws_region ec2 \
             delete-volume --volume-id $vol_id
     else
-        echo "Preserved EBS volume containing JARVICE database:  $vol_id"
+        echo "Preserved EBS volume containing the JARVICE database:  $vol_id"
         echo "Re-run '--eks-cluster-delete' with '--database-vol-delete' to delete it."
     fi
     echo
