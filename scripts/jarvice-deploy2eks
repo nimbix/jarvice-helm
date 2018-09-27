@@ -512,6 +512,8 @@ if [ -n "$eks_cluster_delete" ]; then
             delete-volume --volume-id $vol_id
     else
         echo "Preserved EBS volume containing the JARVICE database:  $vol_id"
+        echo "It will be reused if another `$eks_cluster_name` cluster is created in the `$aws_region` region."
+        echo
         echo "This EBS volume may be deleted by executing:"
         echo "\$ $0 --eks-cluster-delete $eks_cluster_name --aws-region $aws_region --database-vol-delete"
     fi

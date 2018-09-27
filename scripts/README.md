@@ -23,7 +23,9 @@ an Amazon EKS cluster with a single command line.
 
 It will first verify and, if needed, install software components needed for
 interacting with AWS and EKS.  Subsequently, it will create and initialize
-an EKS cluster.  That process will take approximately 15 minutes.
+an EKS cluster.  That process will take approximately 15 minutes.  That may
+vary depending on the settings chosen for the number of EKS nodes and the
+accompanying volume sizes.
 
 Next, it will install kubernetes plugins and initialize/configure Tiller
 to enable installation of the JARVICE helm chart into the cluster.  Lastly,
@@ -155,6 +157,18 @@ $ ./scripts/jarvice-deploy2eks \
     --eks-nodes 10
 ```
 
+To deploy a cluster with 10 static EKS nodes with 200GB EBS volumes:
+```bash
+$ ./scripts/jarvice-deploy2eks \
+    --registry-username <username> \
+    --registry-password <password> \
+    --jarvice-license <license_key> \
+    --jarvice-username <username> \
+    --jarvice-apikey <apikey> \
+    --eks-nodes 10 \
+    --eks-nodes-vol-size 200
+```
+
 To deploy a cluster with an autoscaling group of 10-20 nodes, use
 `--eks-nodes-max`:
 ```bash
@@ -169,7 +183,7 @@ $ ./scripts/jarvice-deploy2eks \
 ```
 
 To deploy a cluster named `nvidia_gpu_cluster` with an autoscaling group of
-10-20 `p3.2xlarge` (Nvidia GPU enabled) nodes:
+10-20 `p3.2xlarge` (NVIDIA GPU enabled) nodes:
 ```bash
 $ ./scripts/jarvice-deploy2eks \
     --registry-username <username> \
@@ -180,9 +194,10 @@ $ ./scripts/jarvice-deploy2eks \
     --eks-nodes 10 \
     --eks-nodes-max 20 \
     --eks-node-type p3.2xlarge \
-    --install-nvidia-plugin \
     --eks-cluster-name nvidia_gpu_cluster
 ```
+Note: The NVIDIA device plugin will automatically be installed when `p2` or
+`p3` node types are used.
 
 To do all of the above in the `us-east-1` region with a specific list of zones:
 ```bash
@@ -195,11 +210,40 @@ $ ./scripts/jarvice-deploy2eks \
     --eks-nodes 10 \
     --eks-nodes-max 20 \
     --eks-node-type p3.2xlarge \
-    --install-nvidia-plugin \
     --eks-cluster-name nvidia_gpu_cluster \
     --aws-region us-east-1 \
     --aws-zones us-east-1a,us-east-1b,us-east-1e
 ```
+
+To update the number of nodes in the base stack (0):
+```bash
+$ ./scripts/jarvice-deploy2eks \
+    --eks-stack-update 0 \
+    --eks-nodes 20 \
+    --eks-nodes-max 30
+```
+
+To add a node group stack of 20 `c5.18xlarge` nodes:
+```bash
+$ ./scripts/jarvice-deploy2eks \
+    --eks-stack-add \
+    --eks-nodes 20 \
+    --eks-node-type c5.18xlarge
+```
+
+To list the stacks' details of a cluster in the `us-east-1` region:
+```bash
+$ ./scripts/jarvice-deploy2eks \
+    --eks-stacks-get \
+    --aws-region us-east-1
+```
+
+To delete a node group stack:
+```bash
+$ ./scripts/jarvice-deploy2eks \
+    --eks-stack-delete 1
+```
+Note:  The base stack (0) can only be updated, not deleted.
 
 ### Cluster removal
 
@@ -208,6 +252,15 @@ In order to remove the EKS cluster, use the `--eks-cluster-delete` flag:
 $ ./scripts/jarvice-deploy2eks \
     --eks-cluster-delete jarvice --aws-region us-west-2
 ```
+
+To delete the JARVICE database volume along with the cluster, the
+`--database-vol-delete` flag must be explicitly provided:
+```bash
+$ ./scripts/jarvice-deploy2eks \
+    --eks-cluster-delete jarvice --aws-region us-west-2 --database-vol-delete
+```
+Note:  Preserved JARVICE database volumes will be reused if an EKS cluster of
+the same name is recreated in the same AWS region.
 
 If you had a previous kubeconfig file, the installation will have changed the
 `current-context`.  Use `kubectl config get-contexts` to see the available
