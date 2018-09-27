@@ -500,20 +500,19 @@ if [ -n "$eks_cluster_delete" ]; then
     pvc_vol=$($AWS --region $aws_region ec2 \
         describe-volumes --no-paginate --output=json --filters $filters)
     vol_id=$(echo "$pvc_vol" | $JQ -r ".Volumes[0].VolumeId | select(.!=null)")
+    echo
     if [ -z "$vol_id" ]; then
-        echo
         echo "* ERROR: Could not find EBS volume containing JARVICE database!"
         echo
         exit 1
     fi
     if [ -n "$database_vol_delete" ]; then
-        echo
         echo "* Deleting EBS volume ('$vol_id') containing JARVICE database..."
         $AWS --region $aws_region ec2 \
             delete-volume --volume-id $vol_id
     else
-        echo
-        echo "* Preserved EBS volume ('$vol_id') containing JARVICE database..."
+        echo "Preserved EBS volume ('$vol_id') containing JARVICE database."
+        echo "Re-run '--eks-cluster-delete' with '--database-vol-delete' to delete it."
     fi
     echo
     exit 0
