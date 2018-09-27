@@ -484,6 +484,17 @@ if [ -n "$eks_cluster_delete" ]; then
     #echo
 
     filters="Name=tag-key,Values=kubernetes.io/cluster/$eks_cluster_name"
+    vol_ids=$($AWS --region $aws_region ec2 \
+        describe-volumes --no-paginate --output=json --filters $filters | \
+        $JQ -r '.Volumes[] | select(contains({Tags: [{Key: "kubernetes.io/created-for/pvc/name"},{Value: "jarvice-db-pvc"}] }) | not).VolumeId | select(.!=null)')
+    echo
+    for vol_id in $vol_ids; do
+        echo "* Deleting AWS EBS volume '$vol_id'..."
+        $AWS --region $aws_region ec2 \
+            delete-volume --volume-id $vol_id
+    done
+
+    filters="Name=tag-key,Values=kubernetes.io/cluster/$eks_cluster_name"
     filters+=" Name=tag:kubernetes.io/created-for/pvc/name,Values=jarvice-db-pvc"
     filters+=" Name=status,Values=available"
     pvc_vol=$($AWS --region $aws_region ec2 \
@@ -491,18 +502,18 @@ if [ -n "$eks_cluster_delete" ]; then
     vol_id=$(echo "$pvc_vol" | $JQ -r ".Volumes[0].VolumeId | select(.!=null)")
     if [ -z "$vol_id" ]; then
         echo
-        echo "* ERROR: Could not find EC2 volume containing JARVICE database!"
+        echo "* ERROR: Could not find EBS volume containing JARVICE database!"
         echo
         exit 1
     fi
     if [ -n "$database_vol_delete" ]; then
         echo
-        echo "* Deleting EC2 volume ('$vol_id') containing JARVICE database..."
+        echo "* Deleting EBS volume ('$vol_id') containing JARVICE database..."
         $AWS --region $aws_region ec2 \
             delete-volume --volume-id $vol_id
     else
         echo
-        echo "* Preserved EC2 volume ('$vol_id') containing JARVICE database..."
+        echo "* Preserved EBS volume ('$vol_id') containing JARVICE database..."
     fi
     echo
     exit 0
@@ -812,7 +823,7 @@ filters="Name=tag-key,Values=kubernetes.io/cluster/$eks_cluster_name"
 filters+=" Name=tag:kubernetes.io/created-for/pvc/name,Values=jarvice-db-pvc"
 filters+=" Name=status,Values=available"
 echo
-echo "* Searching for jarvice-db-pvc volume previously created for '$eks_cluster_name'..."
+echo "* Searching for 'jarvice-db-pvc' EBS volume previously created for '$eks_cluster_name'..."
 pvc_vol=$($AWS --region $aws_region ec2 \
         describe-volumes --no-paginate --output=json --filters $filters)
 vol_id=$(echo "$pvc_vol" | $JQ -r ".Volumes[0].VolumeId | select(.!=null)")
@@ -843,7 +854,7 @@ EOF
 )
     echo "$pv_yaml" | $KUBECTL --namespace kube-system create -f -
 else
-    echo "No previous volume was found."
+    echo "No previous EBS volume was found."
 fi
 
 # TODO: revert replicaCount once we sort out the load balancer issue
