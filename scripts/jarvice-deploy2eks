@@ -22,6 +22,7 @@ eks_stack_add=
 eks_stack_update=
 eks_stack_delete=
 database_vol_delete=
+vault_vols_delete=
 
 function jarvice_deploy2eks_usage {
     cat <<EOF
@@ -34,7 +35,8 @@ Usage:
   $0 --eks-stack-get <number> \\
         [--eks-cluster-name <name>] [--aws-region <aws_region>]
   $0 --eks-cluster-delete <name> \\
-        [--aws-region <aws_region>] [--database-vol-delete]
+        [--aws-region <aws_region>] \\
+        [--database-vol-delete] [--vault-vols-delete]
 
 Available [deploy_options]:
   --registry-username <username>    Docker registry username for JARVICE system
@@ -48,10 +50,6 @@ Available [deploy_options]:
                                     synchronization
   --jarvice-chart-dir <path>        Alternative JARVICE helm chart directory
                                     (optional)
-  --helm-name <app_release_name>    Helm app release name
-                                    (default: $helm_name)
-  --helm-namespace <k8s_namespace>  Cluster namepace to install release into
-                                    (default: $helm_namespace)
 
 Available [eks_cluster_options]:
   --aws-region <aws_region>         AWS region for EKS cluster
@@ -84,6 +82,11 @@ Example (minimal) delete command (must explicitly supply cluster name):
 \$ $0 --eks-cluster-delete <name>
 
 EOF
+# Hide these for now.  Not sure these options make sense in a singular cluster.
+#  --helm-name <app_release_name>    Helm app release name
+#                                    (default: $helm_name)
+#  --helm-namespace <k8s_namespace>  Cluster namepace to install release into
+#                                    (default: $helm_namespace)
 }
 
 while [ $# -gt 0 ]; do
@@ -126,6 +129,10 @@ while [ $# -gt 0 ]; do
             ;;
         --database-vol-delete)
             database_vol_delete=y
+            shift
+            ;;
+        --vault-vols-delete)
+            vault_vols_delete=y
             shift
             ;;
         --eks-node-type)
@@ -483,39 +490,72 @@ if [ -n "$eks_cluster_delete" ]; then
     #    "deleted from '$aws_region'..."
     #echo
 
+    #filters="Name=tag-key,Values=kubernetes.io/cluster/$eks_cluster_name"
+    #vol_ids=$($AWS --region $aws_region ec2 \
+    #    describe-volumes --no-paginate --output=json --filters $filters | \
+    #    $JQ -r '.Volumes[] | select(contains({Tags: [{Key: "kubernetes.io/created-for/pvc/name"},{Value: "jarvice-db-pvc"}] }) | not).VolumeId | select(.!=null)')
     filters="Name=tag-key,Values=kubernetes.io/cluster/$eks_cluster_name"
-    vol_ids=$($AWS --region $aws_region ec2 \
+    filters+=" Name=tag:kubernetes.io/created-for/pvc/namespace,Values=$helm_namespace-jobs"
+    filters+=" Name=status,Values=available"
+    vold_ids=$($AWS --region $aws_region ec2 \
         describe-volumes --no-paginate --output=json --filters $filters | \
-        $JQ -r '.Volumes[] | select(contains({Tags: [{Key: "kubernetes.io/created-for/pvc/name"},{Value: "jarvice-db-pvc"}] }) | not).VolumeId | select(.!=null)')
+        $JQ -r ".Volumes[].VolumeId | select(.!=null)")
     echo
+    if [ -n "$vault_vols_delete" ]; then
+        echo "* Deleting AWS EBS user vault volumes..."
+    else
+        echo "* Preserving AWS EBS user vault volumes..."
+    fi
     for vol_id in $vol_ids; do
-        echo "* Deleting AWS EBS volume '$vol_id'..."
-        $AWS --region $aws_region ec2 \
-            delete-volume --volume-id $vol_id
+        echo "$vol_id"
+        if [ -n "$vault_vols_delete" ]; then
+            $AWS --region $aws_region ec2 \
+                delete-volume --volume-id $vol_id
+        fi
     done
 
     filters="Name=tag-key,Values=kubernetes.io/cluster/$eks_cluster_name"
+    filters+=" Name=tag:kubernetes.io/created-for/pvc/namespace,Values=$helm_namespace"
     filters+=" Name=tag:kubernetes.io/created-for/pvc/name,Values=jarvice-db-pvc"
     filters+=" Name=status,Values=available"
     pvc_vol=$($AWS --region $aws_region ec2 \
         describe-volumes --no-paginate --output=json --filters $filters)
     vol_id=$(echo "$pvc_vol" | $JQ -r ".Volumes[0].VolumeId | select(.!=null)")
-    echo
     if [ -z "$vol_id" ]; then
+        echo
         echo "* ERROR: Could not find EBS volume containing JARVICE database!"
         echo
         exit 1
     fi
     if [ -n "$database_vol_delete" ]; then
+        echo
         echo "* Deleting EBS volume ('$vol_id') containing JARVICE database..."
         $AWS --region $aws_region ec2 \
             delete-volume --volume-id $vol_id
-    else
-        echo "Preserved EBS volume containing the JARVICE database:  $vol_id"
-        echo "It will be reused if another `$eks_cluster_name` cluster is created in the `$aws_region` region."
+    fi
+
+    echo
+    echo "------------------------------------------------------------------------"
+    echo
+    echo "Succesfully deleted '$eks_cluster_name' cluster is in the '$aws_region' region."
+    echo
+    if [ -z "$database_vol_delete" ]; then
         echo
-        echo "This EBS volume may be deleted by executing:"
+        echo "** Preserved EBS volume containing the JARVICE database:  $vol_id"
+        echo
+        echo "* EBS volume for the JARVICE database may be deleted by executing:"
         echo "\$ $0 --eks-cluster-delete $eks_cluster_name --aws-region $aws_region --database-vol-delete"
+    fi
+    if [ -z "$vault_vols_delete" ]; then
+        echo
+        echo "** Preserved EBS volumes containing user vaults."
+        echo
+        echo "* EBS user vault volumes may be deleted by executing:"
+        echo "\$ $0 --eks-cluster-delete $eks_cluster_name --aws-region $aws_region --vault-vols-delete"
+    fi
+    if [ -z "$database_vol_delete" -o -z "$vault_vols_delete" ]; then
+        echo
+        echo "** Preserved volumes will be reused if another '$eks_cluster_name' cluster is created in the '$aws_region' region."
     fi
     echo
     exit 0
@@ -798,7 +838,7 @@ metadata:
 provisioner: kubernetes.io/aws-ebs
 parameters:
   type: gp2
-reclaimPolicy: Delete
+reclaimPolicy: Retain
 mountOptions:
   - debug
 EOF
@@ -826,6 +866,7 @@ EOF
 echo "$storage_class_yaml" | $KUBECTL --namespace kube-system create -f -
 
 filters="Name=tag-key,Values=kubernetes.io/cluster/$eks_cluster_name"
+filters+=" Name=tag:kubernetes.io/created-for/pvc/namespace,Values=$helm_namespace"
 filters+=" Name=tag:kubernetes.io/created-for/pvc/name,Values=jarvice-db-pvc"
 filters+=" Name=status,Values=available"
 echo
@@ -838,7 +879,7 @@ if [ -n "$vol_id" ]; then
     vol_zone=$(echo "$pvc_vol" | $JQ -r ".Volumes[0].AvailabilityZone")
     echo "Found ${vol_size}GB volume '$vol_id' in availability zone '$vol_zone'..."
     echo
-    echo "* Recreating 'jarvice-db-pv' PersistentVolume using '$vol_id' for cluster '$eks_cluster_name'..."
+    echo "* Recreating 'jarvice-db-pv' PersistentVolume using '$vol_id'..."
     pv_yaml=$(cat <<EOF
 apiVersion: v1
 kind: PersistentVolume
@@ -878,6 +919,48 @@ $HELM install --debug \
     --set jarvice_dal.env.JARVICE_MACHINES_ADD="$(echo "$JARVICE_MACHINES_ADD" | sed -e 's#\([]{}",[/]\)#\\\1#g')" \
     --name $helm_name --namespace $helm_namespace $jarvice_chart_dir
 sleep 1
+
+filters="Name=tag-key,Values=kubernetes.io/cluster/$eks_cluster_name"
+filters+=" Name=tag:kubernetes.io/created-for/pvc/namespace,Values=$helm_namespace-jobs"
+filters+=" Name=status,Values=available"
+echo
+echo "* Searching for EBS user vault volumes previously created for '$eks_cluster_name'..."
+vol_ids=$($AWS --region $aws_region ec2 \
+    describe-volumes --no-paginate --output=json --filters $filters | \
+    $JQ -r ".Volumes[].VolumeId | select(.!=null)")
+for vol_id in $vol_ids; do
+    pvc_vol=$($AWS --region $aws_region ec2 \
+        describe-volumes --no-paginate --output=json --volume-ids $vol_id)
+    vol_size=$(echo "$pvc_vol" | $JQ -r ".Volumes[0].Size")
+    vol_zone=$(echo "$pvc_vol" | $JQ -r ".Volumes[0].AvailabilityZone")
+    vol_pv_name=$(echo "$pvc_vol" | $JQ -r ".Volumes[0].Tags[] | select(.Key==\"kubernetes.io/created-for/pvc/name\").Value")
+    echo "Found ${vol_size}GB volume '$vol_id' in availability zone '$vol_zone'..."
+    echo
+    echo "* Recreating PersistentVolume '$vol_pv_name' using '$vol_id' for cluster '$eks_cluster_name'..."
+    pv_yaml=$(cat <<EOF
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: $vol_pv_name
+spec:
+  awsElasticBlockStore:
+    fsType: ext4
+    volumeID: aws://$vol_zone/$vol_id
+  capacity:
+    storage: ${vol_size}Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: gp2
+  mountOptions:
+    - debug
+EOF
+)
+    echo "$pv_yaml" | $KUBECTL --namespace kube-system create -f -
+done
+if [ -z "$vol_ids" ]; then
+    echo "No previous EBS user vault volumes were found."
+fi
 
 DEPLOYMENTS="jarvice-dal jarvice-scheduler jarvice-api"
 DEPLOYMENTS+=" jarvice-mc-portal jarvice-appsync"

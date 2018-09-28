@@ -46,7 +46,8 @@ Usage:
   ./scripts/jarvice-deploy2eks --eks-stack-get <number> \
         [--eks-cluster-name <name>] [--aws-region <aws_region>]
   ./scripts/jarvice-deploy2eks --eks-cluster-delete <name> \
-        [--aws-region <aws_region>] [--database-vol-delete]
+        [--aws-region <aws_region>] \
+        [--database-vol-delete] [--vault-vols-delete]
 
 Available [deploy_options]:
   --registry-username <username>    Docker registry username for JARVICE system
@@ -60,10 +61,6 @@ Available [deploy_options]:
                                     synchronization
   --jarvice-chart-dir <path>        Alternative JARVICE helm chart directory
                                     (optional)
-  --helm-name <app_release_name>    Helm app release name
-                                    (default: jarvice)
-  --helm-namespace <k8s_namespace>  Cluster namepace to install release into
-                                    (default: jarvice-system)
 
 Available [eks_cluster_options]:
   --aws-region <aws_region>         AWS region for EKS cluster
@@ -253,14 +250,16 @@ $ ./scripts/jarvice-deploy2eks \
     --eks-cluster-delete jarvice --aws-region us-west-2
 ```
 
-To delete the JARVICE database volume along with the cluster, the
-`--database-vol-delete` flag must be explicitly provided:
+To delete the JARVICE database and/or user vault EBS volumes along with the
+cluster, the `--database-vol-delete` and/or `--vault-vols-delete` flags must
+be explicitly provided:
 ```bash
 $ ./scripts/jarvice-deploy2eks \
-    --eks-cluster-delete jarvice --aws-region us-west-2 --database-vol-delete
+    --eks-cluster-delete jarvice --aws-region us-west-2 \
+    --database-vol-delete --vault-vols-delete
 ```
-Note:  Preserved JARVICE database volumes will be reused if an EKS cluster of
-the same name is recreated in the same AWS region.
+Note:  Preserved JARVICE database and user vault EBS volumes will be reused
+if an EKS cluster of the same name is recreated in the same AWS region.
 
 If you had a previous kubeconfig file, the installation will have changed the
 `current-context`.  Use `kubectl config get-contexts` to see the available
