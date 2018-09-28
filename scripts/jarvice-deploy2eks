@@ -11,6 +11,7 @@ eks_cluster_name=jarvice
 eks_cluster_delete=
 eks_node_type=c5.9xlarge
 install_nvidia_plugin=
+install_dashboard=
 eks_nodes=4
 eks_nodes_max=0
 eks_nodes_vol_size=100
@@ -49,6 +50,8 @@ Available [deploy_options]:
   --jarvice-apikey <apikey>         JARVICE platform apikey for app
                                     synchronization
   --jarvice-chart-dir <path>        Alternative JARVICE helm chart directory
+                                    (optional)
+  --install-dashboard               Install kubernetes dashboard into cluster
                                     (optional)
 
 Available [eks_cluster_options]:
@@ -118,6 +121,10 @@ while [ $# -gt 0 ]; do
         --jarvice-chart-dir)
             jarvice_chart_dir=$2
             shift; shift
+            ;;
+        --install-dashboard)
+            install_dashboard=y
+            shift
             ;;
         --eks-cluster-name)
             eks_cluster_name=$2
@@ -828,6 +835,15 @@ echo -n "* "
 $KUBECTL --namespace kube-system rollout status \
     deployment tiller-deploy --watch=true
 
+if [ -n "$install_dashboard" ]; then
+    echo
+    echo "* Installing kubernetes-dashboard..."
+    $HELM install --namespace kube-system \
+        --name kubernetes-dashboard stable/kubernetes-dashboard
+    $KUBECTL --namespace kube-system expose deployment kubernetes-dashboard \
+        --type=LoadBalancer --name kubernetes-dashboard-lb
+fi
+
 echo
 echo "* Creating 'gp2' StorageClass..."
 storage_class_yaml=$(cat <<EOF
@@ -931,6 +947,7 @@ vol_ids=$($AWS --region $aws_region ec2 \
 for vol_id in $vol_ids; do
     pvc_vol=$($AWS --region $aws_region ec2 \
         describe-volumes --no-paginate --output=json --volume-ids $vol_id)
+    vol_type=$(echo "$pvc_vol" | $JQ -r ".Volumes[0].VolumeType")
     vol_size=$(echo "$pvc_vol" | $JQ -r ".Volumes[0].Size")
     vol_zone=$(echo "$pvc_vol" | $JQ -r ".Volumes[0].AvailabilityZone")
     vol_pv_name=$(echo "$pvc_vol" | $JQ -r ".Volumes[0].Tags[] | select(.Key==\"kubernetes.io/created-for/pvc/name\").Value")
@@ -951,12 +968,31 @@ spec:
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: gp2
+  storageClassName: $vol_type
   mountOptions:
     - debug
 EOF
 )
     echo "$pv_yaml" | $KUBECTL --namespace kube-system create -f -
+
+    echo
+    echo "* Recreating PersistentVolumeClaim '$vol_pv_name' in '$helm_namespace-jobs' namespace..."
+    pvc_yaml=$(cat <<EOF
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: $vol_pv_name
+spec:
+  resources:
+    requests:
+      storage: ${vol_size}Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: $vol_type
+EOF
+)
+    echo "$pvc_yaml" | $KUBECTL --namespace $helm_namespace-jobs create -f -
 done
 if [ -z "$vol_ids" ]; then
     echo "No previous EBS user vault volumes were found."
@@ -1000,6 +1036,18 @@ PORTAL_HOST=$($KUBECTL --namespace $helm_namespace \
     get services jarvice-mc-portal-lb \
     -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
+if [ -n "$install_dashboard" ]; then
+    DASHBOARD_HOST=$($KUBECTL --namespace kube-system \
+        get services kubernetes-dashboard-lb \
+        -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+    [ -z "$DASHBOARD_HOST" ] && \
+        DASHBOARD_HOST=$($KUBECTL --namespace kube-system \
+        get services kubernetes-dashboard-lb \
+        -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+    echo
+    echo "Kubernetes dashbaord is available at:"
+    echo "https://$DASHBOARD_HOST:8443/"
+fi
 echo
 echo "JARVICE API endpoint is available at:"
 echo "https://$API_HOST/"
