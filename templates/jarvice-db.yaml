@@ -52,6 +52,9 @@ spec:
       - name: jarvice-db
         image: {{ .Values.jarvice_db.image }}
         imagePullPolicy: Always
+        command:
+          - docker-entrypoint.sh
+          - --ignore-db-dir=lost+found
         ports:
           - name: "jarvice-db"
             containerPort: 3306
