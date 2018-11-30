@@ -15,6 +15,7 @@ spec:
         component: jarvice-dal
         deployment: jarvice-dal
       annotations:
+        deployment-date: {{ now | quote }}
         container.apparmor.security.beta.kubernetes.io/jarvice-dal: unconfined
     spec:
       serviceAccountName: jarvice-system

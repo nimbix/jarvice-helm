@@ -14,6 +14,8 @@ spec:
         {{- include "jarvice.release_labels" . | indent 8 }}
         component: jarvice-api
         deployment: jarvice-api
+      annotations:
+        deployment-date: {{ now | quote }}
     spec:
       serviceAccountName: jarvice-system
 {{- if (not (empty .Values.jarvice_api.nodeSelector)) }}
@@ -91,6 +93,13 @@ spec:
             value: {{ .Values.jarvice.JARVICE_LOCAL_REGISTRY }}
           - name: JARVICE_LOCAL_REPO_BASE
             value: {{ .Values.jarvice.JARVICE_LOCAL_REPO_BASE }}
+{{- if (not (empty .Values.jarvice_dockerbuild.nodeSelector)) }}
+          - name: JARVICE_BUILD_NODE_SELECTOR
+            value: '{{ .Values.jarvice_dockerbuild.nodeSelector }}'
+{{- else if (not (empty .Values.jarvice.nodeSelector)) }}
+          - name: JARVICE_BUILD_NODE_SELECTOR
+            value: '{{ .Values.jarvice.nodeSelector }}'
+{{- end }}
 {{- if (not (empty .Values.jarvice_dockerpull.nodeSelector)) }}
           - name: JARVICE_PULL_NODE_SELECTOR
             value: '{{ .Values.jarvice_dockerpull.nodeSelector }}'

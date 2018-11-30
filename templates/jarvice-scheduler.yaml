@@ -14,6 +14,8 @@ spec:
         {{- include "jarvice.release_labels" . | indent 8 }}
         component: jarvice-scheduler
         deployment: jarvice-scheduler
+      annotations:
+        deployment-date: {{ now | quote }}
     spec:
       serviceAccountName: jarvice-system
 {{- if (not (empty .Values.jarvice_scheduler.nodeSelector)) }}

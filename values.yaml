@@ -57,6 +57,7 @@ jarvice_db:
 jarvice_memcached:
   enabled: true
   replicaCount: 3
+  pbdMinAvailable: 2
   resources:
     limits:
       cpu: 250m
@@ -221,9 +222,11 @@ jarvice_api:
       memory: 512Mi
   nodeSelector: # '{"node-role.jarvice.io/jarvice-api": ""}'
 
+jarvice_dockerbuild:
+  nodeSelector: # '{"node-role.jarvice.io/jarvice-dockerbuild": ""}'
+
 jarvice_dockerpull:
   nodeSelector: # '{"node-role.jarvice.io/jarvice-dockerpull": ""}'
-
 
 jarvice_appsync:
   enabled: true
