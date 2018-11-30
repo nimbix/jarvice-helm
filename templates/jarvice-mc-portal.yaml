@@ -14,6 +14,8 @@ spec:
         {{- include "jarvice.release_labels" . | indent 8 }}
         component: jarvice-mc-portal
         deployment: jarvice-mc-portal
+      annotations:
+        deployment-date: {{ now | quote }}
     spec:
 {{- if (not (empty .Values.jarvice_mc_portal.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice_mc_portal.nodeSelector }}
