@@ -203,6 +203,7 @@ jarvice_scheduler:
   env:
     JARVICE_USE_LXCFS: yes
     JARVICE_SCHED_PASS_INTERVAL: 5
+    JARVICE_SCHED_PODSCHED: default-scheduler
     JARVICE_MAIL_CONF: |
         [mail]
         from: JARVICE Job Status <DoNotReply@localhost>
