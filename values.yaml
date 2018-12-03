@@ -39,7 +39,7 @@ jarvice_db:
       cpu: 250m
       memory: 512Mi
   nodeSelector: # '{"node-role.jarvice.io/jarvice-db": ""}'
-  image: mysql:5
+  image: mysql:5.6
   persistence:
     enabled: false
     # storageClass: "-"
