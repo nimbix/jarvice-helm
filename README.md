@@ -289,8 +289,8 @@ If kubernetes persistent volumes were created which do no match the default
 storage classes, it will be necessary to also `--set` the following values to
 match the persistent volume storage classes that you wish to use:
 
-- `jarvice.jarvice_db.persistence.storageClass`
-- `jarvice.jarvice_registry.persistence.storageClass`
+- `jarvice_db.persistence.storageClass`
+- `jarvice_registry.persistence.storageClass`
 
 ### Node labels and selectors
 
