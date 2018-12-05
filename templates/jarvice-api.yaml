@@ -35,24 +35,20 @@ spec:
           - name: http
             containerPort: 7080
         readinessProbe:
-          exec:
-            command:
-            - /usr/bin/curl
-            - -k
-            - -s
-            - https://jarvice-dal:8443/status
+          httpGet:
+            scheme: HTTPS
+            port: https
+            path: /ready
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 1
           successThreshold: 1
           failureThreshold: 3
         livenessProbe:
-          exec:
-            command: 
-            - /usr/bin/curl
-            - -k
-            - -s
-            - https://jarvice-dal:8443/status
+          httpGet:
+            scheme: HTTPS
+            port: https
+            path: /live
           initialDelaySeconds: 30
           periodSeconds: 30
           timeoutSeconds: 1

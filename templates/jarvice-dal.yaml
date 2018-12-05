@@ -47,7 +47,7 @@ spec:
           httpGet:
             scheme: HTTPS
             port: https
-            path: /status
+            path: /ready
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 1
@@ -57,7 +57,7 @@ spec:
           httpGet:
             scheme: HTTPS
             port: https
-            path: /status
+            path: /live
           initialDelaySeconds: 10
           periodSeconds: 20
           timeoutSeconds: 1

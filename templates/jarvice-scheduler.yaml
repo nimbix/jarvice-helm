@@ -38,18 +38,20 @@ spec:
           - name: https
             containerPort: 9443
         readinessProbe:
-          tcpSocket:
+          httpGet:
             scheme: HTTPS
             port: https
+            path: /ready
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 1
           successThreshold: 1
           failureThreshold: 3
         livenessProbe:
-          tcpSocket:
+          httpGet:
             scheme: HTTPS
             port: https
+            path: /live
           initialDelaySeconds: 20
           periodSeconds: 20
           timeoutSeconds: 1
