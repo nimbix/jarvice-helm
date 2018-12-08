@@ -86,7 +86,15 @@ spec:
           - name: JARVICE_USER_DEFAULT_DEVELOPER
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_USER_DEFAULT_DEVELOPER }}"
           - name: JARVICE_PORTAL_MEMCACHED_LOCATIONS
+{{- if and .Values.jarvice_memcached.enabled (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MEMCACHED_LOCATIONS) }}
+            {{- $memcachedCount := .Values.jarvice_memcached.replicaCount }}
+            value: "
+              {{- range $i, $none := until (int $memcachedCount) }}
+                {{- if gt $i 0}},{{- end }}jarvice-memcached-{{ $i }}.jarvice-memcached:11211
+              {{- end }}"
+{{- else }}
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MEMCACHED_LOCATIONS }}"
+{{- end }}
           - name: JARVICE_PORTAL_APP_OWNERS
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_APP_OWNERS }}"
           - name: JARVICE_PORTAL_MAIL_FROM

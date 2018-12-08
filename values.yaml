@@ -51,8 +51,7 @@ jarvice_db:
     #MYSQL_USER: nimbix # optional, alternative superuser to root
     #MYSQL_PASSWORD: Pass1234
 
-# replicaCount change requires JARVICE_PORTAL_MEMCACHED_LOCATIONS update below.
-# Memcached server previously set up?  Set enabled to false.
+# Memcached server previously set up?  Set jarvice_memcached.enabled to false.
 # Then, set JARVICE_PORTAL_MEMCACHED_LOCATIONS below in jarvice_mc_portal env.
 jarvice_memcached:
   enabled: true
@@ -311,7 +310,9 @@ jarvice_mc_portal:
         -----END PRIVATE KEY-----
     JARVICE_USER_DEFAULT_ENABLED: True
     JARVICE_USER_DEFAULT_DEVELOPER: True
-    JARVICE_PORTAL_MEMCACHED_LOCATIONS: jarvice-memcached-0.jarvice-memcached:11211,jarvice-memcached-1.jarvice-memcached:11211,jarvice-memcached-2.jarvice-memcached:11211
+    # If null, JARVICE_PORTAL_MEMCACHED_LOCATIONS is auto-generated based on
+    # jarvice_memcached.enabled/jarvice_memcached.replicaCount
+    JARVICE_PORTAL_MEMCACHED_LOCATIONS: # jarvice-memcached-0.jarvice-memcached:11211,jarvice-memcached-1.jarvice-memcached:11211,jarvice-memcached-2.jarvice-memcached:11211
     JARVICE_PORTAL_APP_OWNERS:
     JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
     JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
