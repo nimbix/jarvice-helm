@@ -1,4 +1,14 @@
 {{- if .Values.jarvice_memcached.enabled }}
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: jarvice-memcached
+spec:
+  selector:
+    matchLabels:
+      deployment: jarvice-memcached
+  minAvailable: {{ .Values.jarvice_memcached.pdbMinAvailable }}
+---
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -21,6 +31,24 @@ spec:
 {{- else if (not (empty .Values.jarvice.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice.nodeSelector }}
 {{- end }}
+      affinity:
+        podAntiAffinity:
+        {{- if eq .Values.jarvice_memcached.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                deployment: jarvice-memcached
+        {{- else if eq .Values.jarvice_memcached.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  deployment: jarvice-memcached
+                  release: {{ .Release.Name }}
+        {{- end }}
       containers:
       - name: jarvice-memcached
         image: {{ .Values.jarvice_memcached.image }}
