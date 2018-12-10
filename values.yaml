@@ -58,8 +58,8 @@ jarvice_memcached:
   replicaCount: 3
   # PodDisruptionBudget default requires 2 minimum nodes must be running
   pbdMinAvailable: 2
-  # antiAffinity default of "soft" prefers that memcached pods run on diff
-  # nodes.  Set to "hard" to require pods to run on diff nodes.
+  # antiAffinity default of "soft" prefers that pods run on diff nodes.
+  # Set to "hard" to require pods to run on diff nodes.
   antiAffinity: "soft"
   resources:
     limits:
@@ -156,6 +156,9 @@ jarvice_registry:
 jarvice_dal:
   enabled: true
   replicaCount: 2
+  # antiAffinity default of "soft" prefers that pods run on diff nodes.
+  # Set to "hard" to require pods to run on diff nodes.
+  antiAffinity: "soft"
   resources:
     limits:
       cpu: 1
@@ -219,6 +222,9 @@ jarvice_scheduler:
 jarvice_api:
   enabled: true
   replicaCount: 2
+  # antiAffinity default of "soft" prefers that pods run on diff nodes.
+  # Set to "hard" to require pods to run on diff nodes.
+  antiAffinity: "soft"
   loadBalancerIP:
   resources:
     limits:
@@ -250,6 +256,9 @@ jarvice_appsync:
 jarvice_mc_portal:
   enabled: true
   replicaCount: 2
+  # antiAffinity default of "soft" prefers that pods run on diff nodes.
+  # Set to "hard" to require pods to run on diff nodes.
+  antiAffinity: "soft"
   loadBalancerIP:
   resources:
     limits:

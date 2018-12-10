@@ -22,6 +22,23 @@ spec:
 {{- else if (not (empty .Values.jarvice.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice.nodeSelector }}
 {{- end }}
+      affinity:
+        podAntiAffinity:
+        {{- if eq .Values.jarvice_mc_portal.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                deployment: jarvice-mc-portal
+        {{- else if eq .Values.jarvice_mc_portal.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  deployment: jarvice-mc-portal
+        {{- end }}
       imagePullSecrets:
       - name: jarvice-docker
       volumes:

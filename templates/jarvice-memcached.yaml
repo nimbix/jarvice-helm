@@ -47,7 +47,6 @@ spec:
               labelSelector:
                 matchLabels:
                   deployment: jarvice-memcached
-                  release: {{ .Release.Name }}
         {{- end }}
       containers:
       - name: jarvice-memcached
