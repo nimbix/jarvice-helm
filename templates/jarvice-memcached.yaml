@@ -7,7 +7,7 @@ spec:
   selector:
     matchLabels:
       deployment: jarvice-memcached
-  minAvailable: {{ .Values.jarvice_memcached.pdbMinAvailable }}
+  minAvailable: {{ .Values.jarvice_memcached.pdb.minAvailable }}
 ---
 apiVersion: apps/v1
 kind: StatefulSet

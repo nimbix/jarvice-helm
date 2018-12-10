@@ -56,8 +56,9 @@ jarvice_db:
 jarvice_memcached:
   enabled: true
   replicaCount: 3
-  # PodDisruptionBudget default requires 2 minimum nodes must be running
-  pbdMinAvailable: 2
+  # PodDisruptionBudget default requires 2 minimum pods must be running
+  pbd:
+    minAvailable: 2
   # antiAffinity default of "soft" prefers that pods run on diff nodes.
   # Set to "hard" to require pods to run on diff nodes.
   antiAffinity: "soft"
