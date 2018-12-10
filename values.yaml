@@ -199,6 +199,9 @@ jarvice_dal:
 jarvice_scheduler:
   enabled: true
   replicaCount: 1
+  # antiAffinity default of "soft" prefers that pods run on diff nodes.
+  # Set to "hard" to require pods to run on diff nodes.
+  antiAffinity: "soft"
   resources:
     limits:
       cpu: 1
