@@ -1,4 +1,14 @@
 {{- if .Values.jarvice_scheduler.enabled }}
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: jarvice-scheduler
+spec:
+  selector:
+    matchLabels:
+      deployment: jarvice-scheduler
+  minAvailable: {{ .Values.jarvice_scheduler.pdb.minAvailable }}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:

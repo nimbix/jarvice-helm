@@ -1,4 +1,14 @@
 {{- if .Values.jarvice_mc_portal.enabled }}
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: jarvice-mc-portal
+spec:
+  selector:
+    matchLabels:
+      deployment: jarvice-mc-portal
+  minAvailable: {{ .Values.jarvice_mc_portal.pdb.minAvailable }}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:

@@ -1,4 +1,14 @@
 {{- if .Values.jarvice_dal.enabled }}
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: jarvice-dal
+spec:
+  selector:
+    matchLabels:
+      deployment: jarvice-dal
+  minAvailable: {{ .Values.jarvice_dal.pdb.minAvailable }}
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:

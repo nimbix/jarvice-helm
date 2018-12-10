@@ -157,6 +157,9 @@ jarvice_registry:
 jarvice_dal:
   enabled: true
   replicaCount: 2
+  # PodDisruptionBudget default requires 25% minimum of pods must be running
+  pbd:
+    minAvailable: "25%"
   # antiAffinity default of "soft" prefers that pods run on diff nodes.
   # Set to "hard" to require pods to run on diff nodes.
   antiAffinity: "soft"
@@ -200,6 +203,9 @@ jarvice_dal:
 jarvice_scheduler:
   enabled: true
   replicaCount: 1
+  # PodDisruptionBudget default requires 25% minimum of pods must be running
+  pbd:
+    minAvailable: "25%"
   # antiAffinity default of "soft" prefers that pods run on diff nodes.
   # Set to "hard" to require pods to run on diff nodes.
   antiAffinity: "soft"
@@ -226,6 +232,9 @@ jarvice_scheduler:
 jarvice_api:
   enabled: true
   replicaCount: 2
+  # PodDisruptionBudget default requires 25% minimum of pods must be running
+  pbd:
+    minAvailable: "25%"
   # antiAffinity default of "soft" prefers that pods run on diff nodes.
   # Set to "hard" to require pods to run on diff nodes.
   antiAffinity: "soft"
@@ -260,6 +269,9 @@ jarvice_appsync:
 jarvice_mc_portal:
   enabled: true
   replicaCount: 2
+  # PodDisruptionBudget default requires 25% minimum of pods must be running
+  pbd:
+    minAvailable: "25%"
   # antiAffinity default of "soft" prefers that pods run on diff nodes.
   # Set to "hard" to require pods to run on diff nodes.
   antiAffinity: "soft"
