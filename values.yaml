@@ -77,8 +77,8 @@ jarvice_memcached:
 # in the jarvice: stanza.  Set loadBalancerIP if desired.
 jarvice_registry:
   enabled: false
-  # external must be set to true to enable direct access from outside cluster.
-  external: false
+  clusterIP:
+  # jarvice-registry-lb service only created if loadBalancerIP is not empty
   loadBalancerIP:
   replicaCount: 1
   resources:

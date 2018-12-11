@@ -110,6 +110,9 @@ metadata:
     component: jarvice-registry
 spec:
   type: ClusterIP
+{{- if (not (empty .Values.jarvice_registry.clusterIP)) }}
+  clusterIP: {{ .Values.jarvice_registry.clusterIP }}
+{{- end }}
   ports:
   - protocol: TCP
     port: 5000
@@ -118,7 +121,7 @@ spec:
   selector:
     deployment: jarvice-registry
 ---
-{{- if .Values.jarvice_registry.external }}
+{{- if (not (empty .Values.jarvice_registry.loadBalancerIP)) }}
 apiVersion: v1
 kind: Service
 metadata:
