@@ -339,6 +339,7 @@ jarvice_mc_portal:
         -----END PRIVATE KEY-----
     JARVICE_USER_DEFAULT_ENABLED: True
     JARVICE_USER_DEFAULT_DEVELOPER: True
+    JARVICE_PORTAL_WEB_HOST: # https://jarvice.localdomain
     # If null, JARVICE_PORTAL_MEMCACHED_LOCATIONS is auto-generated based on
     # jarvice_memcached.enabled/jarvice_memcached.replicaCount
     JARVICE_PORTAL_MEMCACHED_LOCATIONS: # jarvice-memcached-0.jarvice-memcached:11211,jarvice-memcached-1.jarvice-memcached:11211,jarvice-memcached-2.jarvice-memcached:11211
