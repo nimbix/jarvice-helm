@@ -218,7 +218,7 @@ spec:
       paths:
       - backend:
           serviceName: jarvice-mc-portal
-          servicePort: 80
+          servicePort: 443
 ---
 {{- end }}
 {{- end }}
