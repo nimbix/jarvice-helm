@@ -199,6 +199,7 @@ jarvice_dal:
         [static]
         [fqdns]
         [naelimits]
+    JARVICE_NODE_ENV: production
 
 jarvice_scheduler:
   enabled: true

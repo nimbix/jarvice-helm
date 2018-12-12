@@ -104,7 +104,7 @@ spec:
           - name: JARVICE_SCHED_URL
             value: "https://jarvice-scheduler:9443"
           - name: JARVICE_NODE_ENV
-            value: "production"
+            value: "{{ .Values.jarvice_dal.env.JARVICE_NODE_ENV }}"
           - name: JARVICE_SITE_DBHOST
             value: "{{ .Values.jarvice_dal.env.JARVICE_SITE_DBHOST }}"
           - name: JARVICE_SITE_DBUSER
