@@ -176,4 +176,22 @@ spec:
   selector:
     deployment: jarvice-api
 ---
+{{- if (not (empty .Values.jarvice_api.ingressHost)) }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: jarvice-api
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-api
+spec:
+  rules:
+  - host: {{ .Values.jarvice_api.ingressHost }}
+    http:
+      paths:
+      - backend:
+          serviceName: jarvice-api
+          servicePort: 80
+---
+{{- end }}
 {{- end }}

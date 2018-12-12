@@ -203,4 +203,22 @@ spec:
   selector:
     deployment: jarvice-mc-portal
 ---
+{{- if (not (empty .Values.jarvice_mc_portal.ingressHost)) }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: jarvice-mc-portal
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-mc-portal
+spec:
+  rules:
+  - host: {{ .Values.jarvice_mc_portal.ingressHost }}
+    http:
+      paths:
+      - backend:
+          serviceName: jarvice-mc-portal
+          servicePort: 80
+---
+{{- end }}
 {{- end }}

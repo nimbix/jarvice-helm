@@ -239,6 +239,7 @@ jarvice_api:
   # Set to "hard" to require pods to run on diff nodes.
   antiAffinity: "soft"
   loadBalancerIP:
+  ingressHost: # jarvice-api.my-domain.com
   resources:
     limits:
       cpu: 250m
@@ -276,6 +277,7 @@ jarvice_mc_portal:
   # Set to "hard" to require pods to run on diff nodes.
   antiAffinity: "soft"
   loadBalancerIP:
+  ingressHost: # jarvice.my-domain.com
   resources:
     limits:
       cpu: 250m
