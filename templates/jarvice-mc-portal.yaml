@@ -226,10 +226,10 @@ metadata:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-mc-portal
 spec:
-  tls:
-  - hosts:
-    - {{ .Values.jarvice_mc_portal.ingressHost }}
-    secretName: jarvice-mc-portal-tls
+  #tls:
+  #- hosts:
+  #  - {{ .Values.jarvice_mc_portal.ingressHost }}
+  #  secretName: jarvice-mc-portal-tls
   rules:
   - host: {{ .Values.jarvice_mc_portal.ingressHost }}
     http:
