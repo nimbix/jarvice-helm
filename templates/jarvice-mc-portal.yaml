@@ -213,8 +213,10 @@ metadata:
     component: jarvice-mc-portal
 type: Opaque
 data:
-  tls.crt: {{ toYaml .Values.jarvice_mc_portal.env.JARVICE_MC_PORTAL_CRT | indent 12 }}
-  tls.key: {{ toYaml .Values.jarvice_mc_portal.env.JARVICE_MC_PORTAL_KEY | indent 12 }}
+  tls.crt: {{ .Values.jarvice_mc_portal.secret.crt }}
+  tls.key: {{ .Values.jarvice_mc_portal.secret.key }}
+  #tls.crt: {{ .Values.jarvice_mc_portal.env.JARVICE_MC_PORTAL_CRT }}
+  #tls.key: {{ .Values.jarvice_mc_portal.env.JARVICE_MC_PORTAL_KEY }}
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
