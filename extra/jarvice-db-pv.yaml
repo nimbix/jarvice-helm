@@ -10,11 +10,45 @@ spec:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   storageClassName: jarvice-db
+  #
+  # Uncomment and edit the appropriate method below to set up the PV
+  #
 #  hostPath:
 #    path: /home/jarvice-db
-  nfs:
-    path: /home/jarvice-db
-    server: 10.20.0.144
+#
+#  nfs:
+#    path: /home/jarvice-db
+#    server: 10.20.0.144
 #  mountOptions:
 #    - hard
 #    - nfsvers=4.1
+#
+#  rbd:
+#    monitors: 
+#      - 10.0.0.116:6789
+#      - 10.0.0.117:6789
+#      - 10.0.0.118:6789
+#    pool: kube
+#    image: jarvice
+#    user: admin
+#    secretRef:
+#      name: ceph-secret 
+#    fsType: ext4 
+#    readOnly: false
+#---
+#  Do the following to create ceph-secret (or comment out YAML below)
+#  $ kubectl create secret generic ceph-secret --type="kubernetes.io/rbd" \
+#     --from-literal=key='<ceph-secret>' --namespace=<jarvice-system-namespace>
+#
+#apiVersion: v1
+#kind: Secret
+#metadata:
+#  name: ceph-secret
+#  namespace: <jarvice-system-namespace>
+#type: kubernetes.io/rbd
+#data:
+#  # Using the following command will create encoded string:
+#  # $ echo "<ceph-secret>" | base64
+#  key: <base64-encoded-ceph-secret>
+#  namespace: <jarvice-system-namespace>
+#---
