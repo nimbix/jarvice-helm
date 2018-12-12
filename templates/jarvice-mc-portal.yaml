@@ -98,8 +98,8 @@ spec:
             value: "enable"
           - name: JARVICE_MC_PORTAL_HTTP_PORT
             value: "80"
-          #- name: JARVICE_MC_PORTAL_HTTP_REDIRECT_PORT
-          #  value: "443"
+          - name: JARVICE_MC_PORTAL_HTTP_REDIRECT_PORT
+            value: "443"
           - name: JARVICE_DAL_URL
             value: "https://jarvice-dal:8443"
           - name: JARVICE_API_URL
@@ -204,6 +204,18 @@ spec:
     deployment: jarvice-mc-portal
 ---
 {{- if (not (empty .Values.jarvice_mc_portal.ingressHost)) }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: jarvice-mc-portal-tls
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-mc-portal
+type: Opaque
+data:
+  tls.crt: {{ .Values.jarvice_mc_portal.env.JARVICE_MC_PORTAL_CRT }}
+  tls.key: {{ .Values.jarvice_mc_portal.env.JARVICE_MC_PORTAL_KEY }}
+---
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -212,6 +224,10 @@ metadata:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-mc-portal
 spec:
+  tls:
+  - hosts:
+    - {{ .Values.jarvice_mc_portal.ingressHost }}
+    secretName: jarvice-mc-portal-tls
   rules:
   - host: {{ .Values.jarvice_mc_portal.ingressHost }}
     http:
