@@ -213,8 +213,8 @@ metadata:
     component: jarvice-mc-portal
 type: Opaque
 data:
-  tls.crt: {{ .Values.jarvice_mc_portal.env.JARVICE_MC_PORTAL_CRT }}
-  tls.key: {{ .Values.jarvice_mc_portal.env.JARVICE_MC_PORTAL_KEY }}
+  tls.crt: {{ toYaml .Values.jarvice_mc_portal.env.JARVICE_MC_PORTAL_CRT | indent 12 }}
+  tls.key: {{ toYaml .Values.jarvice_mc_portal.env.JARVICE_MC_PORTAL_KEY | indent 12 }}
 ---
 apiVersion: extensions/v1beta1
 kind: Ingress
@@ -234,7 +234,7 @@ spec:
       paths:
       - backend:
           serviceName: jarvice-mc-portal
-          servicePort: 80
+          servicePort: 443
 ---
 {{- end }}
 {{- end }}
