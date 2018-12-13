@@ -22,6 +22,7 @@ jarvice:
   JARVICE_JOBS_LB_SERVICE: false
 
   JARVICE_POD_SCHED_NAME: jarvice
+  JARVICE_POD_SCHED_LOGLEVEL: 30
 
   #nodeSelector: # '{"node-role.jarvice.io/jarvice-system": ""}'
   nodeSelector: '{"beta.kubernetes.io/arch": "amd64"}'
