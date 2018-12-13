@@ -90,7 +90,10 @@ spec:
           - name: JARVICE_SCHED_URL
             value: "https://jarvice-scheduler:9443"
           - name: JARVICE_LICENSE_LIC
-            value: {{ .Values.jarvice.JARVICE_LICENSE_LIC }}
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-license
+                key: JARVICE_LICENSE_LIC
           - name: JARVICE_JOBS_NAMESPACE
 {{- if empty .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
             value: {{ .Release.Namespace }}-jobs

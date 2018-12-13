@@ -63,9 +63,15 @@ spec:
           - name: JARVICE_REMOTE_API_URL
             value: "{{ .Values.jarvice.JARVICE_REMOTE_API_URL }}"
           - name: JARVICE_REMOTE_USER
-            value: "{{ .Values.jarvice.JARVICE_REMOTE_USER }}"
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-appsync
+                key: JARVICE_REMOTE_USER
           - name: JARVICE_REMOTE_APIKEY
-            value: "{{ .Values.jarvice.JARVICE_REMOTE_APIKEY }}"
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-appsync
+                key: JARVICE_REMOTE_APIKEY
           - name: JARVICE_JOBS_NAMESPACE
 {{- if empty .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
             value: {{ .Release.Namespace }}-jobs

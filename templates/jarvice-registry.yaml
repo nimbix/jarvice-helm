@@ -23,16 +23,18 @@ spec:
 {{- end }}
 ---
 {{- end }}
-{{- if .Values.jarvice_registry.tls.createConfigMap }}
+{{- if (not (empty .Values.jarvice_registry.tls.secretName)) }}
 apiVersion: v1
-kind: ConfigMap
+kind: Secret
 metadata:
-  name: {{ .Values.jarvice_registry.tls.configMap }}
+  name: {{ .Values.jarvice_registry.tls.secretName }}
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-registry
+type: Opaque
 data:
-{{ toYaml .Values.jarvice_registry.tls.data | indent 2 }}
+  tls.crt: {{ .Values.jarvice_registry.tls.crt }}
+  tls.key: {{ .Values.jarvice_registry.tls.key }}
 ---
 {{- end }}
 apiVersion: apps/v1
@@ -58,8 +60,12 @@ spec:
 {{- end }}
       volumes:
         - name: registry-tls-cert
-          configMap:
-            name: {{ .Values.jarvice_registry.tls.configMap }}
+          secret:
+{{- if (not (empty .Values.jarvice_registry.tls.secretName)) }}
+            name: {{ .Values.jarvice_registry.tls.secretName }}
+{{- else }}
+            name: jarvice-tls
+{{- end }}
             optional: true
 {{- if .Values.jarvice_registry.persistence.enabled }}
         - name: registry-data-vol
@@ -87,9 +93,9 @@ spec:
           - name: REGISTRY_HTTP_ADDR
             value: "{{ .Values.jarvice_registry.env.REGISTRY_HTTP_ADDR }}"
           - name: REGISTRY_HTTP_TLS_CERTIFICATE
-            value: "{{ .Values.jarvice_registry.env.REGISTRY_HTTP_TLS_CERTIFICATE }}"
+            value: /etc/ssl/docker/tls.crt
           - name: REGISTRY_HTTP_TLS_KEY
-            value: "{{ .Values.jarvice_registry.env.REGISTRY_HTTP_TLS_KEY }}"
+            value: /etc/ssl/docker/tls.key
         volumeMounts:
         - name: registry-tls-cert
           mountPath: /etc/ssl/docker

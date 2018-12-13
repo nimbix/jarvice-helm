@@ -94,6 +94,16 @@ spec:
             value: "https://jarvice-dal:8443"
           - name: JARVICE_SCHED_URL
             value: "https://jarvice-scheduler:9443"
+          - name: JARVICE_API_CRT
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-tls
+                key: tls.crt
+          - name: JARVICE_API_KEY
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-tls
+                key: tls.key
           - name: JARVICE_JOBS_NAMESPACE
 {{- if empty .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
             value: {{ .Release.Namespace }}-jobs
