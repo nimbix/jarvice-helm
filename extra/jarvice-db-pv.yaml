@@ -48,7 +48,7 @@ spec:
 #type: kubernetes.io/rbd
 #data:
 #  # Using the following command will create encoded string:
-#  # $ echo "<ceph-secret>" | base64
+#  # $ echo -n "<ceph-secret>" | base64
 #  key: <base64-encoded-ceph-secret>
 #  namespace: <jarvice-system-namespace>
 #---
