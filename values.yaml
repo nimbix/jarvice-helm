@@ -18,6 +18,9 @@ jarvice:
   JARVICE_IMAGES_TAG_DEV: -k8s
   JARVICE_SYSTEM_ARCH: amd64
 
+  JARVICE_JOBS_DOMAIN:
+  JARVICE_JOBS_LB_SERVICE: false
+
   #nodeSelector: # '{"node-role.jarvice.io/jarvice-system": ""}'
   nodeSelector: '{"beta.kubernetes.io/arch": "amd64"}'
 

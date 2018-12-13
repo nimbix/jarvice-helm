@@ -326,6 +326,10 @@ to the JARVICE services, here are the settings to use:
 - `jarvice_mc_portal.loadBalancerIP`
 - `jarvice_api.loadBalancerIP`
 
+### Using an Ingress controller for jobs
+
+By default, interactive JARVICE jobs request LoadBalancer addresses; to use an Ingress controller, set the parameter ```jarvice.JARVICE_JOBS_DOMAIN``` to the FQDN of the Ingress controller; JARVICE will create ```*.${JARVICE_JOBS_DOMAIN}``` address for accessing interactive jobs over HTTPS.  To assign LoadBalancer addresses even if Ingress is used, set ```jarvice.JARVICE_JOBS_LB_SERVICE=true```, in which case JARVICE will create both Ingress as well as LoadBalancer service IPs for interactive jobs.
+
 ### Site specific configuration
 
 The easiest way to configure all of the JARVICE options is to copy the default
