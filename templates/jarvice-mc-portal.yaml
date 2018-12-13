@@ -98,8 +98,8 @@ spec:
             value: "enable"
           - name: JARVICE_MC_PORTAL_HTTP_PORT
             value: "80"
-          #- name: JARVICE_MC_PORTAL_HTTP_REDIRECT_PORT
-          #  value: "443"
+          - name: JARVICE_MC_PORTAL_HTTP_REDIRECT_PORT
+            value: "443"
           - name: JARVICE_DAL_URL
             value: "https://jarvice-dal:8443"
           - name: JARVICE_API_URL
@@ -223,18 +223,24 @@ metadata:
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-mc-portal
+  annotations:
+    ingress.kubernetes.io/ssl-passthrough: "true"
+    ingress.kubernetes.io/ssl-redirect: "true"
+    #ingress.kubernetes.io/affinity: cookie
+    #ingress.kubernetes.io/cache-enable: "false"
+    #ingress.kubernetes.io/cache-ignore-cookies: '*'
 spec:
-  tls:
-  - hosts:
-    - {{ .Values.jarvice_mc_portal.ingressHost }}
-    secretName: jarvice-mc-portal-tls
+  #tls:
+  #- hosts:
+  #  - {{ .Values.jarvice_mc_portal.ingressHost }}
+  #  secretName: jarvice-mc-portal-tls
   rules:
   - host: {{ .Values.jarvice_mc_portal.ingressHost }}
     http:
       paths:
       - backend:
           serviceName: jarvice-mc-portal
-          servicePort: 80
+          servicePort: https
 ---
 {{- end }}
 {{- end }}

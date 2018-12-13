@@ -191,7 +191,7 @@ spec:
       paths:
       - backend:
           serviceName: jarvice-api
-          servicePort: 7080
+          servicePort: http
 ---
 {{- end }}
 {{- end }}
