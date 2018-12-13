@@ -21,6 +21,8 @@ jarvice:
   JARVICE_JOBS_DOMAIN:
   JARVICE_JOBS_LB_SERVICE: false
 
+  JARVICE_POD_SCHED_NAME: jarvice
+
   #nodeSelector: # '{"node-role.jarvice.io/jarvice-system": ""}'
   nodeSelector: '{"beta.kubernetes.io/arch": "amd64"}'
 
@@ -176,7 +178,7 @@ jarvice_scheduler:
   env:
     JARVICE_USE_LXCFS: yes
     JARVICE_SCHED_PASS_INTERVAL: 5
-    JARVICE_SCHED_PODSCHED: default-scheduler
+    JARVICE_POD_SCHED_USE: jarvice
     JARVICE_MAIL_CONF: |
         [mail]
         from: JARVICE Job Status <DoNotReply@localhost>
@@ -185,6 +187,26 @@ jarvice_scheduler:
         server: localhost:25
         ;username: DoNotReply@localhost
         ;password: Pass1234
+
+jarvice_pod_scheduler:
+  enabled: true
+  replicaCount: 1
+  # PodDisruptionBudget default requires 25% minimum of pods must be running
+  pbd:
+    minAvailable: "25%"
+  # antiAffinity default of "soft" prefers that pods run on diff nodes.
+  # Set to "hard" to require pods to run on diff nodes.
+  antiAffinity: "soft"
+  resources:
+    limits:
+      cpu: 1
+      memory: 2Gi
+  nodeSelector: # '{"node-role.jarvice.io/jarvice-pod-scheduler": ""}'
+  # jarvice.settings.configMap takes precedence over envornment settings
+  # for JARVICE_MAIL_CONF
+  env:
+    JARVICE_POD_SCHED_NAME: jarvice
+    JARVICE_POD_SCHED_LOG_LEVEL: 30
 
 jarvice_api:
   enabled: true

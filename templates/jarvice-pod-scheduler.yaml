@@ -1,0 +1,73 @@
+{{- if .Values.jarvice_pod_scheduler.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jarvice-pod-scheduler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment: jarvice-pod-scheduler
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-pod-scheduler
+        deployment: jarvice-pod-scheduler
+      annotations:
+        deployment-date: {{ now | quote }}
+    spec:
+      serviceAccountName: jarvice-system
+{{- if (not (empty .Values.jarvice_pod_scheduler.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice_pod_scheduler.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.nodeSelector }}
+{{- end }}
+      imagePullSecrets:
+      - name: jarvice-docker
+      containers:
+      - name: jarvice-pod-scheduler
+        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-scheduler:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}-{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}{{ .Values.jarvice.JARVICE_IMAGES_TAG_DEV }}
+        imagePullPolicy: Always
+        readinessProbe:
+          exec:
+            command:
+            - /usr/bin/curl
+            - -k
+            - -s
+            - "{https://jarvice-dal:8443/status,https://jarvice-api:7443,{{ .Values.jarvice.JARVICE_REMOTE_API_URL }}}"
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+        livenessProbe:
+          exec:
+            command:
+            - /usr/bin/curl
+            - -k
+            - -s
+            - "{https://jarvice-dal:8443/status,https://jarvice-api:7443,{{ .Values.jarvice.JARVICE_REMOTE_API_URL }}}"
+          initialDelaySeconds: 30
+          periodSeconds: {{ .Values.jarvice_pod_scheduler.livenessProbe.periodSeconds }}
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+        env:
+          - name: JARVICE_DAL_URL
+            value: "https://jarvice-dal:8443"
+          - name: JARVICE_LOCAL_API_URL
+            value: "https://jarvice-api:7443"
+          - name: JARVICE_SYSTEM_NAMESPACE
+{{- if empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+            value: {{ .Release.Namespace }}
+{{- else }}
+            value: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+{{- end }}
+          - name: JARVICE_POD_SCHED_NAME
+            value: "{{ .Values.jarvice.JARVICE_POD_SCHED_NAME }}"
+          - name: JARVICE_POD_SCHED_LOGLEVEL
+            value: "{{ .Values.jarvice.JARVICE_POD_SCHED_LOGLEVEL }}"
+        resources:
+{{ toYaml .Values.jarvice_pod_scheduler.resources | indent 10 }}
+{{- end }}
