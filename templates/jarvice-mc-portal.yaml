@@ -187,7 +187,7 @@ spec:
   selector:
     deployment: jarvice-mc-portal
 ---
-{{- if (not (empty .Values.jarvice_mc_portal.loadBalancerIP)) }}
+{{- if (empty .Values.jarvice_mc_portal.ingressHost) }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -210,8 +210,7 @@ spec:
   selector:
     deployment: jarvice-mc-portal
 ---
-{{- end }}
-{{- if (not (empty .Values.jarvice_mc_portal.ingressHost)) }}
+{{- else }}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
