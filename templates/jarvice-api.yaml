@@ -164,6 +164,7 @@ spec:
   selector:
     deployment: jarvice-api
 ---
+{{- if (not (empty .Values.jarvice_api.loadBalancerIP)) }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -186,6 +187,7 @@ spec:
   selector:
     deployment: jarvice-api
 ---
+{{- end }}
 {{- if (not (empty .Values.jarvice_api.ingressHost)) }}
 apiVersion: extensions/v1beta1
 kind: Ingress
