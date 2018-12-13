@@ -208,6 +208,8 @@ jarvice_pod_scheduler:
   env:
     JARVICE_POD_SCHED_NAME: jarvice
     JARVICE_POD_SCHED_LOG_LEVEL: 30
+  livenessProbe:
+    periodSeconds: 900
 
 jarvice_api:
   enabled: true
