@@ -10,7 +10,7 @@ This is the Helm chart for installation of JARVICE into a kubernetes cluster.
 
 The installation requires that the helm command line be installed on a client
 machine and that Tiller is installed/initialized in the target kubernetes
-cluster.  Please see the Quckstart/Installation guide:
+cluster.  Please see the Quick start/Installation guide:
 
 https://docs.helm.sh/using_helm/#quickstart-guide
 
@@ -58,8 +58,8 @@ externally available/accessible from outside of the kubernetes cluster via
 fixed, DNS host names.
 
 Currently, Traefik (https://traefik.io/) is the solution that is
-supported by JARVICE.  After installing helm, Traefik can quickly be quickly
-be installed via helm commands.  However, it will be necessary to configure
+supported by JARVICE.  After installing helm, Traefik can quickly be 
+installed via helm commands.  However, it will be necessary to configure
 Traefik specifically for your cluster.
 
 Please visit https://github.com/helm/charts/tree/master/stable/traefik and/or
@@ -193,7 +193,7 @@ $ kubectl --namespace kube-system expose deployment kubernetes-dashboard \
     --type=LoadBalancer --name kubernetes-dashboard-lb
 ```
 
-Retreieve the IP address from the `kubernetes-dashboard-lb` service:
+Retrieve the IP address from the `kubernetes-dashboard-lb` service:
 ```bash
 $ kubectl --namespace kube-system get services \
     kubernetes-dashboard-lb -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
@@ -491,7 +491,7 @@ The registry can be exposed for access from outside the cluster via:
 
 Please note, that the default TLS certificate and key will not match your
 domain/IP and will either need to be updated or used as an "insecure"
-docker registry.  Please see the docker documention for more information:
+docker registry.  Please see the docker documentation for more information:
 
 https://docs.docker.com/registry/insecure/
 
@@ -506,7 +506,7 @@ $ helm inspect stable/docker-registry
 ## JARVICE Configuration Values Reference
 
 More information on the specific JARVICE configuration options can be found
-in the commments found in the `values.yaml` file.  Please refer to that as
+in the comments found in the `values.yaml` file.  Please refer to that as
 it's own configuration reference.
 
 ------------------------------------------------------------------------------
