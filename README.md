@@ -513,6 +513,30 @@ it's own configuration reference.
 
 ## JARVICE Post Installation
 
+### Install recommended DaemonSets
+
+#### LXCFS
+
+JARVICE utilizes LXCFS so that each Nimbix Application Environment (NAE) will
+properly reflect the resources requested for each job.  Please use the
+following to install:
+```bash
+$ kubectl create -f https://raw.githubusercontent.com/nimbix/lxcfs-initializer/master/lxcfs-daemonset.yaml
+```
+
+#### JARVICE Cache Pull
+
+JARVICE Cache Pull is a DaemonSet which can be utilized to pre-populate
+kubernetes worker nodes with docker images.  This should be used to speed up
+job startup times for the most used JARVICE applications.  It can be installed
+with the following command:
+```bash
+$ kubectl --namespace <jarvice-system> create -f https://raw.githubusercontent.com/nimbix/jarvice-cache-pull/master/jarvice-cache-pull.yaml
+```
+
+Please view the README.md for more detailed configuration information:
+https://github.com/nimbix/jarvice-cache-pull
+
 ### Customize JARVICE files via a ConfigMap and Secret
 
 Some JARVICE files can be updated via a ConfigMap and Secret.  The files found
