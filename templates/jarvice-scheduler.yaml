@@ -122,8 +122,14 @@ spec:
             value: "{{ .Values.jarvice_scheduler.env.JARVICE_K8S_ADMIN_CONF }}"
           - name: JARVICE_SCHED_PASS_INTERVAL
             value: "{{ .Values.jarvice_scheduler.env.JARVICE_SCHED_PASS_INTERVAL }}"
+{{- if .Values.jarvice_pod_scheduler.enabled }}
           - name: JARVICE_POD_SCHED_USE
-            value: "{{ .Values.jarvice.JARVICE_POD_SCHED_NAME }}"
+{{- if empty .Values.jarvice_pod_scheduler.JARVICE_POD_SCHED_NAME }}
+            value: "{{ .Release.Namespace }}"
+{{- else }}
+            value: "{{ .Values.jarvice_pod_scheduler.env.JARVICE_POD_SCHED_NAME }}"
+{{- end }}
+{{- end }}
           - name: JARVICE_JOBS_DOMAIN
             value: "{{ .Values.jarvice.JARVICE_JOBS_DOMAIN }}"
           - name: JARVICE_JOBS_LB_SERVICE

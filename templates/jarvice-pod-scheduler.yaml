@@ -54,10 +54,6 @@ spec:
           successThreshold: 1
           failureThreshold: 3
         env:
-          - name: JARVICE_DAL_URL
-            value: "https://jarvice-dal:8443"
-          - name: JARVICE_LOCAL_API_URL
-            value: "https://jarvice-api:7443"
           - name: JARVICE_SYSTEM_NAMESPACE
 {{- if empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
             value: {{ .Release.Namespace }}
@@ -65,9 +61,13 @@ spec:
             value: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
 {{- end }}
           - name: JARVICE_POD_SCHED_NAME
-            value: "{{ .Values.jarvice.JARVICE_POD_SCHED_NAME }}"
+{{- if empty .Values.jarvice_pod_scheduler.JARVICE_POD_SCHED_NAME }}
+            value: "{{ .Release.Namespace }}"
+{{- else }}
+            value: "{{ .Values.jarvice_pod_scheduler.env.JARVICE_POD_SCHED_NAME }}"
+{{- end }}
           - name: JARVICE_POD_SCHED_LOGLEVEL
-            value: "{{ .Values.jarvice.JARVICE_POD_SCHED_LOGLEVEL }}"
+            value: "{{ .Values.jarvice_pod_scheduler.env.JARVICE_POD_SCHED_LOGLEVEL }}"
         resources:
 {{ toYaml .Values.jarvice_pod_scheduler.resources | indent 10 }}
 {{- end }}

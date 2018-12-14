@@ -21,9 +21,6 @@ jarvice:
   JARVICE_JOBS_DOMAIN:
   JARVICE_JOBS_LB_SERVICE: false
 
-  JARVICE_POD_SCHED_NAME: jarvice
-  JARVICE_POD_SCHED_LOGLEVEL: 30
-
   #nodeSelector: # '{"node-role.jarvice.io/jarvice-system": ""}'
   nodeSelector: '{"beta.kubernetes.io/arch": "amd64"}'
 
@@ -180,7 +177,6 @@ jarvice_scheduler:
   env:
     JARVICE_USE_LXCFS: yes
     JARVICE_SCHED_PASS_INTERVAL: 5
-    JARVICE_POD_SCHED_USE: jarvice
     JARVICE_MAIL_CONF: |
         [mail]
         from: JARVICE Job Status <DoNotReply@localhost>
@@ -207,7 +203,7 @@ jarvice_pod_scheduler:
   # jarvice.settings.configMap takes precedence over envornment settings
   # for JARVICE_MAIL_CONF
   env:
-    JARVICE_POD_SCHED_NAME: jarvice
+    JARVICE_POD_SCHED_NAME:  # auto-set, should not need to be updated
     JARVICE_POD_SCHED_LOG_LEVEL: 30
   livenessProbe:
     periodSeconds: 900
