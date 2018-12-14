@@ -51,6 +51,62 @@ installation:
 $ helm inspect stable/metallb
 ```
 
+### Kubernetes ingress controller:
+
+An ingress controller is required for making the JARVICE services and apps
+externally available/accessible from outside of the kubernetes cluster via
+fixed, DNS host names.
+
+Currently, Traefik (https://traefik.io/) is the solution that is
+supported by JARVICE.  After installing helm, Traefik can quickly be quickly
+be installed via helm commands.  However, it will be necessary to configure
+Traefik specifically for your cluster.
+
+Please visit https://github.com/helm/charts/tree/master/stable/traefik and/or
+execute the following to get more details on Traefik configuration and
+installation via helm:
+```bash
+$ helm inspect stable/traefik
+```
+
+Here is an example command to install Traefik for use with JARVICE:
+```bash
+$ helm install stable/traefik \
+    --set rbac.enabled=true \
+    --set nodeSelector."beta\.kubernetes\.io/arch"=amd64 \
+    --set ssl.enabled=true \
+    --set ssl.enforced=true \
+    --set ssl.permanentRedirect=true \
+    --set ssl.insecureSkipVerify=true \
+    --set ssl.defaultCert="$(cat site.localdomain.crt | base64 -w 0)" \
+    --set ssl.defaultKey="$(cat site.localdomain.key | base64 -w 0)" \
+    --set rootCAs="$(cat rootCA.crt)" \
+    --set dashboard.enabled=true \
+    --set dashboard.domain=traefik-dashboard.<domain> \
+    --set loadBalancerIP=<static-ip> \
+    --set memoryRequest=1Gi \
+    --set memoryLimit=1Gi \
+    --set cpuRequest=1 \
+    --set cpuLimit=1 \
+    --set replicas=3 \
+    traefik stable/traefik
+```
+
+There are a few things to note when installing Traefik for JARVICE.  In
+particular, the default resource setting for the helm chart are not sufficient
+for use with JARVICE.  It will be necessary to adjust the number of pod
+replicas, cpu, and memory settings per site specifications.
+
+It will also be necessary to have a valid `loadBalancerIP` or `externalIP`
+which is accessible via DNS lookups.  The site domain's DNS settings will need
+to allow wildcard lookups so that the ingress controller can use random host
+names for routing JARVICE jobs.  A JARVICE job hostname will look similar to
+`jarvice-system-jobs-80.<domain>`.
+
+The full details of a site specific Traefik deployment are beyond the scope of
+this document.  Please start here for more in depth information on Traefik:
+https://github.com/containous/traefik
+
 ### Kubernetes device plugins:
 
 If the cluster nodes have NVIDIA GPU devices installed, it will be necessary
