@@ -10,7 +10,7 @@ JARVICE has a concept of teams, with team leaders known as "payers" - this conce
 1. Avoid using the ```root``` account to lead a team; instead invite a user, and have that user in turn invite other users from their own *Account* section to join their respective team
 2. Avoid deleting user accounts, and this can cause referential integrity errors when auditing job history and other historical metrics; instead, unused user accounts should be locked or disabled
 
-## Configuring Macine Types
+## Configuring Machine Types
 Machine types in JARVICE are used to describe resources that a job requests along with metadata for workflow construction.  Machine types are configured in the *Machines* view in the *Administration* section of the web portal.
 
 If using applications from a typical Nimbix service catalog, the best practice is to follow the [Resource Selection](https://jarvice.readthedocs.io/en/latest/machines/) guidelines in the JARVICE developer documentation to select machine names (the ```name``` field) so that these applications can leverage them properly.
@@ -109,7 +109,7 @@ and set the container environment value ```JARVICE_POD_SCHED_LOGLEVEL``` to ```2
 
 Once you edit this value, find the ```jarvice-pod-scheduler-*``` pod, and tail its logs - e.g.:
 
-```kubectl logs -f --namespace=jarvice-system `kubectl get pods --namespace=jarvice-system |grep ^jarvice-pod-scheduler|awk '{print $1}'````
+```kubectl logs -f --namespace=jarvice-system $(kubectl get pods --namespace=jarvice-system |grep ^jarvice-pod-scheduler|awk '{print $1}')```
 
 Note that the above examples assume the JARVICE system namespace is configured as ```jarvice-system```; please adjust accordingly if you are using a different namespace.
 
