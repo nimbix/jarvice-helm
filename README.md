@@ -37,7 +37,7 @@ plugin has likely been set up for the cluster.
 
 If running on a managed kubernetes service, such as Amazon EKS, a load balancer
 has likely been set up for the cluster.  If running a private kubernetes
-cluster, a load balancer is required for making the JARVICE services and apps
+cluster, a load balancer is required for making the JARVICE services and jobs
 externally available/accessible from outside of the kubernetes cluster.
 
 Currently, MetalLB (https://metallb.universe.tf/) is a good solution.  After
@@ -53,7 +53,7 @@ $ helm inspect stable/metallb
 
 ### Kubernetes ingress controller:
 
-An ingress controller is required for making the JARVICE services and apps
+An ingress controller is required for making the JARVICE services and jobs
 externally available/accessible from outside of the kubernetes cluster via
 fixed, DNS host names.
 
@@ -384,7 +384,13 @@ to the JARVICE services, here are the settings to use:
 
 ### Using an Ingress controller for jobs
 
-By default, interactive JARVICE jobs request LoadBalancer addresses; to use an Ingress controller, set the parameter ```jarvice.JARVICE_JOBS_DOMAIN``` to the FQDN of the Ingress controller; JARVICE will create ```*.${JARVICE_JOBS_DOMAIN}``` address for accessing interactive jobs over HTTPS.  To assign LoadBalancer addresses even if Ingress is used, set ```jarvice.JARVICE_JOBS_LB_SERVICE=true```, in which case JARVICE will create both Ingress as well as LoadBalancer service IPs for interactive jobs.
+By default, interactive JARVICE jobs request LoadBalancer addresses; to use
+an Ingress controller, set the parameter `jarvice.JARVICE_JOBS_DOMAIN` to the
+FQDN of the Ingress controller; JARVICE will create `*.${JARVICE_JOBS_DOMAIN}`
+address for accessing interactive jobs over HTTPS.  To assign LoadBalancer
+addresses even if Ingress is used, set `jarvice.JARVICE_JOBS_LB_SERVICE=true`,
+in which case JARVICE will create both Ingress as well as LoadBalancer service
+IPs for interactive jobs.
 
 ### Site specific configuration
 
