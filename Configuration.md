@@ -109,7 +109,7 @@ and set the container environment value ```JARVICE_POD_SCHED_LOGLEVEL``` to ```2
 
 Once you edit this value, find the ```jarvice-pod-scheduler-*``` pod, and tail its logs - e.g.:
 
-```kubectl logs -f --namespace=jarvice-system `kubectl get pods --namespace=jarvice-system |grep ^jarvice-pod-scheduler|awk '{print $1}'```
+```kubectl logs -f --namespace=jarvice-system $(kubectl get pods --namespace=jarvice-system |grep ^jarvice-pod-scheduler|awk '{print $1}')```
 
 Note that the above examples assume the JARVICE system namespace is configured as ```jarvice-system```; please adjust accordingly if you are using a different namespace.
 
