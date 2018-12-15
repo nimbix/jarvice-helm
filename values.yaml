@@ -26,6 +26,7 @@ jarvice:
 
   JARVICE_SYSTEM_NAMESPACE: # auto-detected, should not need to be updated
   JARVICE_JOBS_NAMESPACE: # auto-set, should not need to be updated
+  JARVICE_POD_SCHED_LOGLEVEL: 30
   settings:
     configMap: jarvice-settings
   # jarvice-tls secret will be created from tls.crt and tls.key
@@ -195,7 +196,6 @@ jarvice_pod_scheduler:
   nodeSelector: # '{"node-role.jarvice.io/jarvice-pod-scheduler": ""}'
   env:
     JARVICE_POD_SCHED_NAME:  # auto-set, should not need to be updated
-    JARVICE_POD_SCHED_LOG_LEVEL: 30
 
 jarvice_api:
   enabled: true

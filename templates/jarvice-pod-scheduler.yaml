@@ -65,7 +65,7 @@ spec:
             value: "{{ .Values.jarvice_pod_scheduler.env.JARVICE_POD_SCHED_NAME }}"
 {{- end }}
           - name: JARVICE_POD_SCHED_LOGLEVEL
-            value: "{{ .Values.jarvice_pod_scheduler.env.JARVICE_POD_SCHED_LOGLEVEL }}"
+            value: "{{ .Values.jarvice.JARVICE_POD_SCHED_LOGLEVEL }}"
         resources:
 {{ toYaml .Values.jarvice_pod_scheduler.resources | indent 10 }}
 {{- end }}
