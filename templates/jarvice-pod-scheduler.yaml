@@ -34,7 +34,7 @@ spec:
             command:
             - /bin/sh
             - -c
-            - /usr/bin/curl -s -k https://jarvice-sched:9443/live | grep -q OK
+            - /usr/bin/curl -s -k https://jarvice-scheduler:9443/live | grep -q OK
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 1
@@ -45,7 +45,7 @@ spec:
             command:
             - /bin/sh
             - -c
-            - /usr/bin/curl -s -k https://jarvice-sched:9443/live | grep -q OK
+            - /usr/bin/curl -s -k https://jarvice-scheduler:9443/live | grep -q OK
           initialDelaySeconds: 20
           periodSeconds: 20
           timeoutSeconds: 1
