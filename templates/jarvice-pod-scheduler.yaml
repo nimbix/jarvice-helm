@@ -32,10 +32,9 @@ spec:
         readinessProbe:
           exec:
             command:
-            - /usr/bin/curl
-            - -k
-            - -s
-            - "{https://jarvice-dal:8443/status,https://jarvice-api:7443,{{ .Values.jarvice.JARVICE_REMOTE_API_URL }}}"
+            - /bin/sh
+            - -c
+            - /usr/bin/curl -s -k https://jarvice-sched:9443/live | grep -q OK
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 1
@@ -44,12 +43,11 @@ spec:
         livenessProbe:
           exec:
             command:
-            - /usr/bin/curl
-            - -k
-            - -s
-            - "{https://jarvice-dal:8443/status,https://jarvice-api:7443,{{ .Values.jarvice.JARVICE_REMOTE_API_URL }}}"
-          initialDelaySeconds: 30
-          periodSeconds: {{ .Values.jarvice_pod_scheduler.livenessProbe.periodSeconds }}
+            - /bin/sh
+            - -c
+            - /usr/bin/curl -s -k https://jarvice-sched:9443/live | grep -q OK
+          initialDelaySeconds: 20
+          periodSeconds: 20
           timeoutSeconds: 1
           successThreshold: 1
           failureThreshold: 3

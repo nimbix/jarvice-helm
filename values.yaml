@@ -188,25 +188,14 @@ jarvice_scheduler:
 
 jarvice_pod_scheduler:
   enabled: true
-  replicaCount: 1
-  # PodDisruptionBudget default requires 25% minimum of pods must be running
-  pbd:
-    minAvailable: "25%"
-  # antiAffinity default of "soft" prefers that pods run on diff nodes.
-  # Set to "hard" to require pods to run on diff nodes.
-  antiAffinity: "soft"
   resources:
     limits:
       cpu: 1
       memory: 2Gi
   nodeSelector: # '{"node-role.jarvice.io/jarvice-pod-scheduler": ""}'
-  # jarvice.settings.configMap takes precedence over envornment settings
-  # for JARVICE_MAIL_CONF
   env:
     JARVICE_POD_SCHED_NAME:  # auto-set, should not need to be updated
     JARVICE_POD_SCHED_LOG_LEVEL: 30
-  livenessProbe:
-    periodSeconds: 900
 
 jarvice_api:
   enabled: true
@@ -243,8 +232,6 @@ jarvice_appsync:
     JARVICE_SYSTEM_REGISTRY: quay.io
     JARVICE_SYSTEM_REPO_BASE: nimbix
     JARVICE_APPSYNC_INTERVAL: 3600
-  livenessProbe:
-    periodSeconds: 900
 
 jarvice_mc_portal:
   enabled: true
