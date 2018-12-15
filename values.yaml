@@ -232,6 +232,8 @@ jarvice_appsync:
     JARVICE_SYSTEM_REGISTRY: quay.io
     JARVICE_SYSTEM_REPO_BASE: nimbix
     JARVICE_APPSYNC_INTERVAL: 3600
+  livenessProbe:
+    periodSeconds: 900
 
 jarvice_mc_portal:
   enabled: true
