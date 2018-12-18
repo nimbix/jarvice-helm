@@ -91,7 +91,11 @@ spec:
           - name: JARVICE_API_HTTP_PORT
             value: "7080"
           - name: JARVICE_DAL_URL
-            value: "https://jarvice-dal:8443"
+{{- if empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+            value: "https://jarvice-dal.{{ .Release.Namespace }}:8443"
+{{- else }}
+            value: "https://jarvice-dal.{{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}:8443"
+{{- end }}
           - name: JARVICE_SCHED_URL
             value: "https://jarvice-scheduler:9443"
           - name: JARVICE_API_CRT
