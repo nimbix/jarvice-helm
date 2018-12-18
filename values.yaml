@@ -26,6 +26,8 @@ jarvice:
 
   JARVICE_SYSTEM_NAMESPACE: # auto-detected, should not need to be updated
   JARVICE_JOBS_NAMESPACE: # auto-set, should not need to be updated
+  JARVICE_BUILDS_NAMESPACE: # auto-set, should not need to be updated
+  JARVICE_PULLS_NAMESPACE: # auto-set, should not need to be updated
   JARVICE_POD_SCHED_LOGLEVEL: 30
 
   # JARVICE_MAIL_CONF can be overridden with jarvice_api.env.JARVICE_MAIL_CONF

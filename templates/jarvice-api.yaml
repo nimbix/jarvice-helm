@@ -110,6 +110,18 @@ spec:
 {{- else }}
             value: {{ .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
 {{- end }}
+          - name: JARVICE_BUILDS_NAMESPACE
+{{- if empty .Values.jarvice.JARVICE_BUILDS_NAMESPACE }}
+            value: {{ .Release.Namespace }}-builds
+{{- else }}
+            value: {{ .Values.jarvice.JARVICE_BUILDS_NAMESPACE }}
+{{- end }}
+          - name: JARVICE_PULLS_NAMESPACE
+{{- if empty .Values.jarvice.JARVICE_PULLS_NAMESPACE }}
+            value: {{ .Release.Namespace }}-pulls
+{{- else }}
+            value: {{ .Values.jarvice.JARVICE_PULLS_NAMESPACE }}
+{{- end }}
           - name: JARVICE_SYSTEM_NAMESPACE
 {{- if empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
             value: {{ .Release.Namespace }}
