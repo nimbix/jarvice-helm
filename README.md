@@ -224,17 +224,17 @@ application images into JARVICE, it is recommended that a node in the
 kubernetes cluster be labeled for those operations.  Use a command similar
 to the following to do so:
 ```bash
-$ kubectl label nodes <node_name> node-role.jarvice.io/jarvice-dockerpull=
+$ kubectl label nodes <node_name> node-role.kubernetes.io/jarvice-dockerpull=
 ```
 
 Cluster requirements may also make it desirable to designate a set of nodes
 specifically for running JARVICE jobs:
 ```bash
-$ kubectl label nodes <node_names> node-role.jarvice.io/jarvice-compute=
+$ kubectl label nodes <node_names> node-role.kubernetes.io/jarvice-compute=
 ```
 
 After setting the above label, it will be necessary to add a matching
-`node-role.jarvice.io/jarvice-compute=` string to the `properties` field of
+`node-role.kubernetes.io/jarvice-compute=` string to the `properties` field of
 the machine definitions found in the JARVICE console's "Administration" tab.
 This string will be used as a kubernetes node selector when assigning jobs.
 
@@ -361,12 +361,12 @@ individual component selectors will override `jarvice.nodeSelector`.  They are
 not additive.
 
 For example, if both
-`--set jarvice.nodeSelector="\{\"node-role.jarvice.io/jarvice-system\": \"\"\}"` and
-`--set jarvice_dockerpull.nodeSelector="\{\"node-role.jarvice.io/jarvice-dockerpull\": \"\"\}"`
-are set on the `helm` command line, `node-role.jarvice.io/jarvice-system` will not be
+`--set jarvice.nodeSelector="\{\"node-role.kubernetes.io/jarvice-system\": \"\"\}"` and
+`--set jarvice_dockerpull.nodeSelector="\{\"node-role.kubernetes.io/jarvice-dockerpull\": \"\"\}"`
+are set on the `helm` command line, `node-role.kubernetes.io/jarvice-system` will not be
 applied to `jarvice_dockerpull.nodeSelector`.  In the case that both node
 selectors are desired for `jarvice_dockerpull.nodeSelector`, use
-`--set jarvice_dockerpull.nodeSelector="\{\"node-role.jarvice.io/jarvice-system\": \"\"\, \"node-role.jarvice.io/jarvice-dockerpull\": \"\"\}"`.
+`--set jarvice_dockerpull.nodeSelector="\{\"node-role.kubernetes.io/jarvice-system\": \"\"\, \"node-role.kubernetes.io/jarvice-dockerpull\": \"\"\}"`.
 
 ### Selecting external, load balancer IP addresses
 
