@@ -140,6 +140,7 @@ spec:
           - name: JARVICE_PULL_NODE_SELECTOR
             value: '{{ .Values.jarvice.nodeSelector }}'
 {{- end }}
+          - name: JARVICE_MAIL_CONF
 {{- if empty .Values.jarvice_api.env.JARVICE_MAIL_CONF }}
             value: {{ toYaml .Values.jarvice.JARVICE_MAIL_CONF | indent 12 }}
 {{- else }}
