@@ -54,7 +54,7 @@ spec:
       - name: jarvice-docker
       containers:
       - name: jarvice-api
-        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-api:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}-{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}{{ .Values.jarvice.JARVICE_IMAGES_TAG_DEV }}
+        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-api:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}-{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}
         imagePullPolicy: Always
         ports:
           - name: https
@@ -82,6 +82,8 @@ spec:
           successThreshold: 1
           failureThreshold: 3
         env:
+          - name: JARVICE_SYSTEM_K8S
+            value: "true"
           - name: JARVICE_API_HTTPS
             value: "enable"
           - name: JARVICE_API_HTTPS_PORT
@@ -143,7 +145,7 @@ spec:
           - name: JARVICE_SYSTEM_REPO_BASE
             value: {{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}
           - name: JARVICE_IMAGES_TAG
-            value: {{ .Values.jarvice.JARVICE_IMAGES_TAG }}-{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}{{ .Values.jarvice.JARVICE_IMAGES_TAG_DEV }}
+            value: {{ .Values.jarvice.JARVICE_IMAGES_TAG }}-{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}
           - name: JARVICE_LOCAL_REGISTRY
             value: {{ .Values.jarvice.JARVICE_LOCAL_REGISTRY }}
           - name: JARVICE_LOCAL_REPO_BASE
