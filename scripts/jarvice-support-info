@@ -1,0 +1,277 @@
+#!/bin/bash
+
+#set -x
+
+if [ "$(arch)" != "x86_64" ]; then
+    echo "This script only supports x86_64 architecture at the moment."
+    exit 1
+fi
+
+KUBECTL=$(type -p kubectl)
+HELM=$(type -p helm)
+JQ=$(type -p jq)
+SHYAML=$(type -p shyaml)
+GPG=$(type -p gpg)
+
+KUBECTL_VER_REQ=1.10
+
+
+function usage {
+    cat <<EOF
+Usage:
+  $0 [options]
+
+Options:
+  --helm-release-name <relname> Gather info for specific JARVICE helm release.  
+                                (default: auto detects latest)
+  --output-file <filename>      Write output to specified file.
+                                (default: <helm-release-name.gpg>)
+  --tmp <directory>             Directory to use for temporary files
+                                (default: /tmp)
+
+EOF
+}
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        --help)
+            usage
+            exit 0
+            ;;
+        --helm-release-name)
+            helm_release_name=$2
+            shift; shift
+            ;;
+        --output-file)
+            output_file=$2
+            shift; shift
+            ;;
+        --tmp)
+            tmp=$2
+            shift; shift
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+[ -z "$tmp" ] && tmp=/tmp
+
+function strict_version {
+    ver=$1
+    ver_req=$2
+    python -c "from distutils.version import StrictVersion;print StrictVersion('$ver') >= StrictVersion('$ver_req');"
+}
+
+function check_deps {
+    if [ -z "$KUBECTL" -o -z "$HELM" -o -z "$JQ" -o -z "$SHYAML" -o -z "$GPG" ]; then
+        echo "Missing software needs to be installed.  Verifying sudo access..."
+        SUID=$(sudo id -u)
+        if [ "$SUID" != "0" ]; then
+            echo "Could not verify sudo access.  Cannot continue."
+            echo "Please resolve sudo access before re-running this script."
+            exit 1
+        else
+            echo "Verified sudo access..."
+        fi
+        install_pkgs=
+        if [ -z "$JQ" ]; then
+            echo "jq command not found...  Installing..."
+            install_pkgs+="jq "
+        fi
+        if [ -z "$GPG" ]; then
+            echo "gpg command not found...  Installing..."
+            install_pkgs+="gnupg "
+        fi
+        if [ -n "$install_pkgs" ]; then
+            if [ -e /etc/redhat-release ]; then
+                sudo yum -y install $install_pkgs
+            else
+                sudo apt-get -y update
+                sudo apt-get -y install $install_pkgs
+            fi
+        fi
+    fi
+}
+
+###############################################################################
+
+set -e
+check_deps
+
+if [ -z "$KUBECTL" ]; then
+    KUBECTL=$INSTALL_DIR/bin/kubectl
+    echo "kubectl command not found...  Installing to $KUBECTL..."
+    sudo bash -c "curl --silent --location https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl >$KUBECTL"
+    sudo chown root.root $KUBECTL
+    sudo chmod 755 $KUBECTL
+else
+    KUBECTL_MAJOR=$($KUBECTL version | grep '^Client' | sed -E 's/.*Major:"([0-9]+)".*/\1/')
+    KUBECTL_MINOR=$($KUBECTL version | grep '^Client' | sed -E 's/.*Minor:"([0-9]+)\+*".*/\1/')
+    KUBECTL_VER="$KUBECTL_MAJOR.$KUBECTL_MINOR"
+    echo "Found $KUBECTL... Version: $KUBECTL_VER"
+    if [ "$(strict_version $KUBECTL_VER $KUBECTL_VER_REQ)" != "True" ]; then
+        echo "kubectl version $KUBECTL_VER_REQ or newer is required."
+        echo "Please upgrade kubectl or remove it."
+        echo "This script will re-install kubectl if it is removed."
+        exit 1
+    fi
+fi
+
+if [ -z "$HELM" ]; then
+    HELM_INSTALL_DIR=$INSTALL_DIR/bin
+    HELM=$HELM_INSTALL_DIR/helm
+    echo "helm command not found...  Installing to $HELM..."
+    curl --silent https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get >$tmp/get_helm.sh
+    sudo --preserve-env=PATH,HELM_INSTALL_DIR bash $tmp/get_helm.sh >/dev/null
+    rm -f $tmp/get_helm.sh
+else
+    echo "Found $HELM..."
+fi
+
+###############################################################################
+
+if [ -z "$helm_release_name" ]; then
+    echo "Getting latest helm jarvice chart installation..."
+    helm_release_name=$($HELM list --date --output json | \
+        $JQ -r "[.Releases[] | select(.Chart | startswith(\"jarvice-\")) | select(.Status==\"DEPLOYED\")] | last | .Name")
+    echo "Found installed helm chart release: $helm_release_name"
+fi
+
+tmpdir=$(mktemp -d "$tmp/$helm_release_name.XXXX")
+outdir=$tmpdir/$helm_release_name
+mkdir -p $outdir/helm
+
+echo "Gathering helm release info, status, values..."
+helm_release_info=$($HELM list --date --output json | \
+    $JQ -r ".Releases[] | select(.Name==\"$helm_release_name\")")
+[ -z "$helm_release_info" ] && echo "Could not find helm deployment!" && exit 1
+
+echo "Got helm release info:"
+echo "$helm_release_info"
+
+echo "$helm_release_info" | python -m json.tool >$outdir/helm/release.json
+$HELM status $helm_release_name >$outdir/helm/status.txt
+$HELM get values $helm_release_name >$outdir/helm/values.yaml
+values_yaml=$outdir/helm/values-all.yaml
+$HELM get values --all $helm_release_name >$values_yaml
+
+kubedir=$outdir/kubernetes
+mkdir -p $kubedir
+echo
+echo "Gathering kubernetes info..."
+
+jarvice_system_namespace=$(cat $values_yaml | \
+    shyaml get-value jarvice.JARVICE_SYSTEM_NAMESPACE)
+[ "$jarvice_system_namespace" = "None" ] && \
+    jarvice_system_namespace=$(echo $helm_release_info | $JQ -r .Namespace)
+jarvice_jobs_namespace=$(cat $values_yaml | \
+    shyaml get-value jarvice.JARVICE_JOBS_NAMESPACE)
+[ "$jarvice_jobs_namespace" = "None" ] && \
+    jarvice_jobs_namespace=$jarvice_system_namespace-jobs
+jarvice_builds_namespace=$(cat $values_yaml | \
+    shyaml get-value jarvice.JARVICE_BUILDS_NAMESPACE)
+[ "$jarvice_builds_namespace" = "None" ] && \
+    jarvice_builds_namespace=$jarvice_system_namespace-builds
+jarvice_pulls_namespace=$(cat $values_yaml | \
+    shyaml get-value jarvice.JARVICE_PULLS_NAMESPACE)
+[ "$jarvice_pulls_namespace" = "None" ] && \
+    jarvice_pulls_namespace=$jarvice_system_namespace-pulls
+
+cat <<EOF
+JARVICE_SYSTEM_NAMESPACE: $jarvice_system_namespace
+JARVICE_JOBS_NAMESPACE: $jarvice_jobs_namespace
+JARVICE_BUILDS_NAMESPACE: $jarvice_builds_namespace
+JARVICE_PULLS_NAMESPACE: $jarvice_pulls_namespace
+EOF
+
+gets="nodes persistentvolumes storageclasses"
+for get in $gets; do
+    echo "Getting $get..."
+    $KUBECTL -n kube-system get $get >$kubedir/$get.txt
+    $KUBECTL -n kube-system get -o json $get >$kubedir/$get.json
+done
+
+namespaces="$jarvice_system_namespace $jarvice_jobs_namespace $jarvice_builds_namespace $jarvice_pulls_namespace"
+for ns in $namespaces; do
+    echo; echo "Getting data from namespace: $ns"
+    mkdir -p $kubedir/$ns
+    gets="configmaps secrets persistentvolumeclaims all"
+    for get in $gets; do
+        echo "Getting $get..."
+        $KUBECTL -n $ns get $get >$kubedir/$ns/$get.txt 2>&1
+        $KUBECTL -n $ns get $get -o json > $kubedir/$ns/$get.json
+    done
+    kinds=$(cat $kubedir/$ns/all.json | \
+        $JQ -r '.items[] | .kind + "/" + .metadata.name')
+    for kind in $kinds; do
+        logdir=$kubedir/$ns/logs/$(dirname $kind | tr A-Z a-z)
+        mkdir -p $logdir
+        echo "Gathering logs for $kind..."
+        $KUBECTL -n $ns logs --all-containers=true --pod-running-timeout=3s \
+            $kind >$logdir/$(basename $kind).log 2>&1 || \
+            rm -f $logdir/$(basename $kind).log
+    done
+done
+
+echo "Packaging installation info..."
+tgz=$tmpdir/$helm_release_name.tgz
+tar czf $tgz -C $tmpdir ./$helm_release_name
+
+gpg_pub_key=$(cat <<EOF
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v1
+
+mQENBFZNjFsBCAClJlqi84dNgwCnRn9XFLoj9WGkNdRJq6dvTjbMS7p58P2CdPyO
+hLu1+56nFf9CqY9oWb5ysvLj0Lqa8Sc0E7EjdaFEdQ2yAVfXDVlLEBD1iofsa6Mw
+xiFvbriYEtGj/oo2/MO4x3wz7rNo1hh7PSi2zXUjOH0Qw6TIQdU7B3uZgU5DQLKx
+0ASjw/on9yDCecXN/FoXZEXq4gtuPx3knw/n9XkucpSOgSqdgjTOqGGocK0X4jEk
+0xfXaACR45Uw1/6hV2C7jkBI212VX4hnc+xX8aIQQRfR5pYsj2QglS9SC76BgZ56
+cczjksZuU6MJTd1hsoSyOLo+w7jega/Qt76PABEBAAG0NU5pbWJpeCwgSW5jLiAo
+VGVjaG5pY2FsIFN1cHBvcnQpIDxzdXBwb3J0QG5pbWJpeC5uZXQ+iQE4BBMBAgAi
+BQJWTYxbAhsDBgsJCAcDAgYVCAIJCgsEFgIDAQIeAQIXgAAKCRANj/zL34E/z4PK
+B/9a8DhQjSVt9Rq+uvtcfFkxMJPHLThoJMNfI3zyG7l03BhZX/9DIpPzRr+rICN9
+pEH5KF2sbwISeKOTr3kPw8nkxchqclRMf8E3sWW3cTqLEWrCTpDkZR2WFeVz/6Bz
+zWmiFYsx4e1eKZIFIesUHLFsw9bc9mwVspu4QUpFNXtz8VbxnGmjhVgw32PZkcqG
+hKzXExVyLt8gPrTM3v04B7XxEDlXICDU2HlK8tVaOmLiwPt2620V79ALnOUA6UI2
+qTedLjRJ/Doy9ylu9VNcHcLPDZ4vQLNojEamNkxASXoLDfUTwVq8/143e9celnNw
+GLaZnJsYim09PNuBtOyBcxhIuQENBFZNjFsBCAC2MaeCx0xCbaAqPTdJV4GNTOf9
+WhjOw8SKBNWTHxL39ok8dP9hv2y3Fml2G1QZ+wtB43Ve3Sx/ZBhS2bZG7rvumLV3
+m1kjk5Qa54ybu1PlZmXdRAF3F1YlrmVSdQLR/jumjF8GdpD0vNBwJlSzNtBy1+7W
+jAkF+O4MAAuSlyvHMMUSB582noNmihglOleKTjE/sv2qfdR1huvBUf1eAgiHuqib
+tT6o2TYp9elZ4KdeSSTOOicTkh99jcqFShKVKU72E489wgh/E8Fam1F4/9bCB7y3
+yXGHehzHvZ2dqE+oqDlw9pIK2Eu2GQMc4uylrvs4Fvy3adyQJ8O6gHlrkC+nABEB
+AAGJAR8EGAECAAkFAlZNjFsCGwwACgkQDY/8y9+BP8/cHQf/TPT/eKYWZqWsTQkN
+paZcf3O6kvNsFEkUYzlciGKPnNkQ9ty0X24zw65k6Phz3WaIpmiwPHyp0OFHd0H5
+p1mkn+iSYiiWbUyEz8GIBfMfs0MB6kCR8eTFJlqDYd9pGGg+sL6LbtD10i8fDepX
+zVGQIKd5hEl8gLR99PMPX7+olNedi5L00SklC4HiLWs+Lq8+nEMcB1cCQHu8fkNI
+WA7ifKNoiQc1uBtmLqm4R3quyQop7FlwApY8RlVoxfSF7MSjzyPfD3Uy5Lnrq+8x
+O+PVQ7v4bDwX5i7tVYa03EuUAe5Or5KsY0U0WBCFCUMxU+2G/v66b2TTNqwa2z+o
+axmDPg==
+=jHFO
+-----END PGP PUBLIC KEY BLOCK-----
+EOF
+)
+
+echo "Encrypting packaged info..."
+mkdir -p $tmpdir/gpg
+gpg_keyfile=$tmpdir/gpg/nimbix.pub
+echo "$gpg_pub_key" >$gpg_keyfile
+
+gpg_keyring=$tmpdir/gpg/keyring.gpg
+$GPG --quiet --no-default-keyring --keyring $gpg_keyring --import $gpg_keyfile
+
+[ -z "$output_file" ] && output_file=$helm_release_name.gpg
+support=support@nimbix.net
+$GPG --quiet --no-default-keyring --keyring $gpg_keyring --encrypt \
+    --trust-model always --recipient $support --output $output_file $tgz
+rm -rf $tmpdir
+
+echo
+echo "Finished gathering installation info."
+echo "Wrote encrypted information file: $output_file"
+echo "For support, please send the encrypted information file to: $support"
+echo
+
