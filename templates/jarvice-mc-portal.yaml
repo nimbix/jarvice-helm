@@ -27,6 +27,11 @@ spec:
       annotations:
         deployment-date: {{ now | quote }}
     spec:
+{{- if (not (empty .Values.jarvice_mc_portal.tolerations)) }}
+      tolerations: {{ .Values.jarvice_mc_portal.tolerations }}
+{{- else if (not (empty .Values.jarvice.tolerations)) }}
+      tolerations: {{ .Values.jarvice.tolerations }}
+{{- end }}
 {{- if (not (empty .Values.jarvice_mc_portal.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice_mc_portal.nodeSelector }}
 {{- else if (not (empty .Values.jarvice.nodeSelector)) }}
@@ -90,6 +95,8 @@ spec:
           successThreshold: 1
           failureThreshold: 3
         env:
+          - name: JARVICE_SYSTEM_K8S
+            value: "true"
           - name: JARVICE_MC_PORTAL_HTTPS
             value: "enable"
           - name: JARVICE_MC_PORTAL_HTTPS_PORT

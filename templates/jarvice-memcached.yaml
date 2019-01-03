@@ -26,6 +26,11 @@ spec:
         component: jarvice-memcached
         deployment: jarvice-memcached
     spec:
+{{- if (not (empty .Values.jarvice_memcached.tolerations)) }}
+      tolerations: {{ .Values.jarvice_memcached.tolerations }}
+{{- else if (not (empty .Values.jarvice.tolerations)) }}
+      tolerations: {{ .Values.jarvice.tolerations }}
+{{- end }}
 {{- if (not (empty .Values.jarvice_memcached.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice_memcached.nodeSelector }}
 {{- else if (not (empty .Values.jarvice.nodeSelector)) }}

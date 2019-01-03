@@ -32,6 +32,11 @@ spec:
 {{- if .Values.jarvice_dal.hostNetwork }}
       hostNetwork: true
 {{- end }}
+{{- if (not (empty .Values.jarvice_dal.tolerations)) }}
+      tolerations: {{ .Values.jarvice_dal.tolerations }}
+{{- else if (not (empty .Values.jarvice.tolerations)) }}
+      tolerations: {{ .Values.jarvice.tolerations }}
+{{- end }}
 {{- if (not (empty .Values.jarvice_dal.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice_dal.nodeSelector }}
 {{- else if (not (empty .Values.jarvice.nodeSelector)) }}
@@ -91,6 +96,8 @@ spec:
           successThreshold: 1
           failureThreshold: 2
         env:
+          - name: JARVICE_SYSTEM_K8S
+            value: "true"
           - name: JARVICE_DAL_HTTPS
             value: "enable"
           - name: JARVICE_DAL_HTTPS_PORT

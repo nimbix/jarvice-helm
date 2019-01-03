@@ -43,6 +43,11 @@ spec:
         component: jarvice-db
         deployment: jarvice-db
     spec:
+{{- if (not (empty .Values.jarvice_db.tolerations)) }}
+      tolerations: {{ .Values.jarvice_db.tolerations }}
+{{- else if (not (empty .Values.jarvice.tolerations)) }}
+      tolerations: {{ .Values.jarvice.tolerations }}
+{{- end }}
 {{- if (not (empty .Values.jarvice_db.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice_db.nodeSelector }}
 {{- else if (not (empty .Values.jarvice.nodeSelector)) }}

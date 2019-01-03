@@ -18,6 +18,11 @@ spec:
         deployment-date: {{ now | quote }}
     spec:
       serviceAccountName: jarvice-system
+{{- if (not (empty .Values.jarvice_pod_scheduler.tolerations)) }}
+      tolerations: {{ .Values.jarvice_pod_scheduler.tolerations }}
+{{- else if (not (empty .Values.jarvice.tolerations)) }}
+      tolerations: {{ .Values.jarvice.tolerations }}
+{{- end }}
 {{- if (not (empty .Values.jarvice_pod_scheduler.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice_pod_scheduler.nodeSelector }}
 {{- else if (not (empty .Values.jarvice.nodeSelector)) }}
@@ -52,6 +57,8 @@ spec:
           successThreshold: 1
           failureThreshold: 3
         env:
+          - name: JARVICE_SYSTEM_K8S
+            value: "true"
           - name: JARVICE_SYSTEM_NAMESPACE
 {{- if empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
             value: {{ .Release.Namespace }}

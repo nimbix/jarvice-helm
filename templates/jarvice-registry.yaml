@@ -53,6 +53,11 @@ spec:
         component: jarvice-registry
         deployment: jarvice-registry
     spec:
+{{- if (not (empty .Values.jarvice_registry.tolerations)) }}
+      tolerations: {{ .Values.jarvice_registry.tolerations }}
+{{- else if (not (empty .Values.jarvice.tolerations)) }}
+      tolerations: {{ .Values.jarvice.tolerations }}
+{{- end }}
 {{- if (not (empty .Values.jarvice_registry.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice_registry.nodeSelector }}
 {{- else if (not (empty .Values.jarvice.nodeSelector)) }}
@@ -62,9 +67,9 @@ spec:
         - name: registry-tls-cert
           secret:
 {{- if (not (empty .Values.jarvice_registry.tls.secretName)) }}
-            name: {{ .Values.jarvice_registry.tls.secretName }}
+            secretName: {{ .Values.jarvice_registry.tls.secretName }}
 {{- else }}
-            name: jarvice-tls
+            secretName: jarvice-tls
 {{- end }}
             optional: true
 {{- if .Values.jarvice_registry.persistence.enabled }}
@@ -77,16 +82,16 @@ spec:
         image: {{ .Values.jarvice_registry.image }}
         imagePullPolicy: Always
         ports:
-          - name: jarvice-registr
-            containerPort: 5000
+          - name: https
+            containerPort: 443
         readinessProbe:
           tcpSocket:
-            port: jarvice-registr
+            port: https
           initialDelaySeconds: 5
           timeoutSeconds: 1
         livenessProbe:
           tcpSocket:
-            port: jarvice-registr
+            port: https
           initialDelaySeconds: 30
           timeoutSeconds: 5
         env:
@@ -116,14 +121,11 @@ metadata:
     component: jarvice-registry
 spec:
   type: ClusterIP
-{{- if (not (empty .Values.jarvice_registry.clusterIP)) }}
-  clusterIP: {{ .Values.jarvice_registry.clusterIP }}
-{{- end }}
   ports:
   - protocol: TCP
-    port: 5000
-    targetPort: 5000
-    name: jarvice-registr
+    port: 443
+    targetPort: 443
+    name: https
   selector:
     deployment: jarvice-registry
 ---
@@ -140,9 +142,9 @@ spec:
   loadBalancerIP: {{ .Values.jarvice_registry.loadBalancerIP }}
   ports:
   - protocol: TCP
-    port: 5000
-    targetPort: 5000
-    name: jarvice-registr
+    port: 443
+    targetPort: 443
+    name: https
   selector:
     deployment: {{ template "jarvice.name" . }}-registry
 ---

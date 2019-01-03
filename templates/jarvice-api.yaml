@@ -28,6 +28,11 @@ spec:
         deployment-date: {{ now | quote }}
     spec:
       serviceAccountName: jarvice-system
+{{- if (not (empty .Values.jarvice_api.tolerations)) }}
+      tolerations: {{ .Values.jarvice_api.tolerations }}
+{{- else if (not (empty .Values.jarvice.tolerations)) }}
+      tolerations: {{ .Values.jarvice.tolerations }}
+{{- end }}
 {{- if (not (empty .Values.jarvice_api.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice_api.nodeSelector }}
 {{- else if (not (empty .Values.jarvice.nodeSelector)) }}
@@ -150,6 +155,20 @@ spec:
             value: {{ .Values.jarvice.JARVICE_LOCAL_REGISTRY }}
           - name: JARVICE_LOCAL_REPO_BASE
             value: {{ .Values.jarvice.JARVICE_LOCAL_REPO_BASE }}
+{{- if (not (empty .Values.jarvice_dockerbuild.tolerations)) }}
+          - name: JARVICE_BUILD_NODE_TOLERATIONS
+            value: '{{ .Values.jarvice_dockerbuild.tolerations }}'
+{{- else if (not (empty .Values.jarvice.tolerations)) }}
+          - name: JARVICE_BUILD_NODE_TOLERATIONS
+            value: '{{ .Values.jarvice.tolerations }}'
+{{- end }}
+{{- if (not (empty .Values.jarvice_dockerpull.tolerations)) }}
+          - name: JARVICE_PULL_NODE_TOLERATIONS
+            value: '{{ .Values.jarvice_dockerpull.tolerations }}'
+{{- else if (not (empty .Values.jarvice.tolerations)) }}
+          - name: JARVICE_PULL_NODE_TOLERATIONS
+            value: '{{ .Values.jarvice.tolerations }}'
+{{- end }}
 {{- if (not (empty .Values.jarvice_dockerbuild.nodeSelector)) }}
           - name: JARVICE_BUILD_NODE_SELECTOR
             value: '{{ .Values.jarvice_dockerbuild.nodeSelector }}'
