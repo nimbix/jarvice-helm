@@ -78,7 +78,7 @@ function check_deps {
         fi
         if [ -z "$SHYAML" ]; then
             echo "shyaml command not found...  Installing..."
-            sudo pip install shyaml
+            sudo -H pip install shyaml
         fi
         install_pkgs=
         if [ -z "$JQ" ]; then
