@@ -118,7 +118,7 @@ spec:
           - name: JARVICE_SYSTEM_REPO_BASE
             value: {{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}
           - name: JARVICE_IMAGES_TAG
-            value: {{ .Values.jarvice.JARVICE_IMAGES_TAG }}
+            value: {{ .Values.jarvice.JARVICE_IMAGES_TAG }}-{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}
           - name: JARVICE_LOCAL_REGISTRY
             value: {{ .Values.jarvice.JARVICE_LOCAL_REGISTRY }}
           - name: JARVICE_LOCAL_REPO_BASE
