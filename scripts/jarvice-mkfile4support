@@ -76,6 +76,10 @@ function check_deps {
         else
             echo "Verified sudo access..."
         fi
+        if [ -z "$SHYAML" ]; then
+            echo "shyaml command not found...  Installing..."
+            sudo pip install shyaml
+        fi
         install_pkgs=
         if [ -z "$JQ" ]; then
             echo "jq command not found...  Installing..."
