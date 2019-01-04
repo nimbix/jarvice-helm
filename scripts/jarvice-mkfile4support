@@ -221,6 +221,7 @@ for ns in $namespaces; do
 done
 
 echo "Packaging installation info..."
+[ -z "$output_file" ] && output_file=$helm_release_name.gpg
 tgz=$(dirname $output_file)/$helm_release_name.tgz
 tar czf $tgz -C $tmpdir ./$helm_release_name
 
@@ -267,7 +268,6 @@ echo "$gpg_pub_key" >$gpg_keyfile
 gpg_keyring=$tmpdir/gpg/keyring.gpg
 $GPG --quiet --no-default-keyring --keyring $gpg_keyring --import $gpg_keyfile
 
-[ -z "$output_file" ] && output_file=$helm_release_name.gpg
 support=support@nimbix.net
 $GPG --quiet --no-default-keyring --keyring $gpg_keyring --encrypt \
     --trust-model always --recipient $support --output $output_file $tgz
