@@ -79,6 +79,8 @@ spec:
               secretKeyRef:
                 name: jarvice-appsync
                 key: JARVICE_REMOTE_APIKEY
+          - name: JARVICE_APPSYNC_USERONLY
+            value: "{{ .Values.jarvice.JARVICE_APPSYNC_USERONLY }}"
           - name: JARVICE_JOBS_NAMESPACE
 {{- if empty .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
             value: {{ .Release.Namespace }}-jobs

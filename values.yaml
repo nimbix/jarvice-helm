@@ -8,6 +8,7 @@ jarvice:
   JARVICE_REMOTE_API_URL: https://api.jarvice.com
   JARVICE_REMOTE_USER:
   JARVICE_REMOTE_APIKEY:
+  JARVICE_APPSYNC_USERONLY: false
 
   JARVICE_LOCAL_REGISTRY: # jarvice-registry:443
   JARVICE_LOCAL_REPO_BASE: jarvice
