@@ -221,7 +221,7 @@ for ns in $namespaces; do
 done
 
 echo "Packaging installation info..."
-tgz=$tmpdir/$helm_release_name.tgz
+tgz=$(dirname $output_file)/$helm_release_name.tgz
 tar czf $tgz -C $tmpdir ./$helm_release_name
 
 gpg_pub_key=$(cat <<EOF
@@ -275,6 +275,7 @@ rm -rf $tmpdir
 
 echo
 echo "Finished gathering installation info."
+echo "Wrote tarred, gzipped information file: $tgz"
 echo "Wrote encrypted information file: $output_file"
 echo "For support, please send the encrypted information file to: $support"
 echo
