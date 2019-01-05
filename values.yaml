@@ -104,9 +104,9 @@ jarvice_memcached:
 # in the jarvice: stanza.  Set loadBalancerIP if desired.
 jarvice_registry:
   enabled: false
-  # jarvice-registry-lb service only created if loadBalancerIP is not empty
-  loadBalancerIP:
   replicaCount: 1
+  loadBalancerIP:
+  ingressHost: # jarvice-registry.my-domain.com
   resources:
     limits:
       cpu: 250m

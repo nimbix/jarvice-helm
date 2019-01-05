@@ -129,7 +129,7 @@ spec:
   selector:
     deployment: jarvice-registry
 ---
-{{- if (not (empty .Values.jarvice_registry.loadBalancerIP)) }}
+{{- if (empty .Values.jarvice_registry.ingressHost) }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -147,6 +147,23 @@ spec:
     name: https
   selector:
     deployment: {{ template "jarvice.name" . }}-registry
+---
+{{- else }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: jarvice-registry
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-registry
+spec:
+  rules:
+  - host: {{ .Values.jarvice_registry.ingressHost }}
+    http:
+      paths:
+      - backend:
+          serviceName: jarvice-registry
+          servicePort: https
 ---
 {{- end }}
 {{- end }}
