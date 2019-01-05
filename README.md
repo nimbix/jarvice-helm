@@ -74,15 +74,18 @@ Here is an example command to install Traefik for use with JARVICE:
 $ helm install stable/traefik \
     --set rbac.enabled=true \
     --set nodeSelector."beta\.kubernetes\.io/arch"=amd64 \
+    --set nodeSelector."node-role\.kubernetes\.io/jarvice-system"="" \
+    --set tolerations[0].key="node-role.kubernetes.io/jarvice-system" \
+    --set tolerations[0].effect="NoSchedule" \
+    --set tolerations[0].operator="Exists" \
     --set ssl.enabled=true \
     --set ssl.enforced=true \
     --set ssl.permanentRedirect=true \
     --set ssl.insecureSkipVerify=true \
-    --set ssl.defaultCert="$(cat site.localdomain.crt | base64 -w 0)" \
-    --set ssl.defaultKey="$(cat site.localdomain.key | base64 -w 0)" \
-    --set rootCAs="$(cat rootCA.crt)" \
+    --set ssl.defaultCert="$(cat <site-domain>.pem | base64 -w 0)" \
+    --set ssl.defaultKey="$(cat <site-domain>.key | base64 -w 0)" \
     --set dashboard.enabled=true \
-    --set dashboard.domain=traefik-dashboard.<domain> \
+    --set dashboard.domain=traefik-dashboard.<site-domain> \
     --set loadBalancerIP=<static-ip> \
     --set memoryRequest=1Gi \
     --set memoryLimit=1Gi \
@@ -348,6 +351,43 @@ match the persistent volume storage classes that you wish to use:
 - `jarvice_db.persistence.storageClass`
 - `jarvice_registry.persistence.storageClass`
 
+### Node taints and pod tolerations
+
+This helm chart utilizes tolerations which are applied to all of the JARVICE
+components (`jarvice.tolerations`), as well as tolerations for each
+individual JARVICE component.  These can be set in an `override.yaml` file or
+on the `helm` command line.
+
+By default `jarvice.tolerations` tolerates the `NoSchedule` effect for the
+key `node-role.kubernetes.io/jarvice-system`.  A `kubectl` command line
+similar to the following could be used to taint nodes for executing pods of
+the `jarvice-system` components:
+```bash
+$ kubectl taint nodes -l node-role.kubernetes.io/jarvice-system= \
+    node-role.kubernetes.io/jarvice-system=:NoSchedule
+```
+
+This is a quick and dirty way to list node taints after adding them:
+```bash
+$ kubectl get nodes -o json | \
+    jq -r '.items[] | select(.spec.taints!=null) | .metadata.name + ": " + (.spec.taints[] | join("|"))'
+```
+
+The following example shows how `--set` flags on the helm install/upgrade
+command line could be used to override the default tolerations for the
+`jarvice-api` component:
+```bash
+$ helm install \
+    --set jarvice_api.tolerations[0].effect=NoSchedule \
+    --set jarvice_api.tolerations[0].key=node-role.kubernetes.io/jarvice-system \
+    --set jarvice_api.tolerations[0].operator=Exists \
+    --set jarvice_api.tolerations[1].effect=NoSchedule \
+    --set jarvice_api.tolerations[1].key=node-role.kubernetes.io/jarvice-api \
+    --set jarvice_api.tolerations[1].operator=Exists
+    ...
+    --name jarvice --namespace jarvice-system ./jarvice-helm
+```
+
 ### Node labels and selectors
 
 This helm chart utilizes a node selector which is applied to all of the JARVICE
@@ -604,7 +644,7 @@ $ kubectl --namespace jarvice-system set env \
 ### View status of the installed kubernetes objects
 
 To get the status for all of the kubernetes objects created in the
-"jarvice-system" namespace:
+`jarvice-system` namespace:
 
 ```bash
 $ kubectl --namespace jarvice-system get all
