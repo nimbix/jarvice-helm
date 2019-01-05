@@ -25,6 +25,15 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{/*
+JARVICE version for images
+*/}}
+{{- define "jarvice.version" -}}
+{{- if semverCompare "^2.0.18-0" .Chart.Version -}}
+{{- printf "-%s" .Chart.Version -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "jarvice.chart" -}}

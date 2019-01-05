@@ -32,7 +32,7 @@ spec:
       - name: jarvice-docker
       containers:
       - name: jarvice-pod-scheduler
-        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-scheduler:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}-{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}
+        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-scheduler:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}{{- include "jarvice.version" . -}}-{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}
         imagePullPolicy: Always
         readinessProbe:
           exec:
