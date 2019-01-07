@@ -4,7 +4,7 @@ This is the Helm chart for installation of JARVICE into a kubernetes cluster.
 
 ------------------------------------------------------------------------------
 
-## Installation Prerequisites
+## Prerequisites for JARVICE Installation
 
 ### Helm (with Tiller) package manager for kubernetes (https://helm.sh/):
 
@@ -47,13 +47,14 @@ jarvice-master/jarvice 	2.0.18-1.20190105.2358	2.0.18     	JARVICE cloud platfor
 ```
 -->
 
-### Kubernetes CPU management policies:
+### Configure kubernetes CPU management policies:
 
-JARVICE prefers that kubelets use a `static` CPU managment policy on
-the JARVICE worker nodes.  This policy can be set with the arguments given to
-a worker node's kublet on startup.
+Enterprise JARVICE installations will want kubelets that are configured to use
+a `static` CPU managment policy on the JARVICE worker nodes.  This policy can
+be set with the arguments given to a worker node's kublet on startup.
 
-The default CPU management policy is `none`.  As such, it will be necessary
+The default CPU management policy is `none`.  If CPU management policy wasn't
+set to `static` at JARVICE worker node install time, it will be necessary
 to drain each worker node and remove the previous `cpu_manager_state` file
 as a part of the process of restarting each worker node's kubelet.
 
@@ -339,7 +340,7 @@ For example, if both `jarvice.nodeSelector` and
 --set jarvice_dockerpull.nodeSelector="\{\"node-role.kubernetes.io/jarvice-dockerpull\": \"\"\}"
 ```
 
-In the above case,
+In the example above,
 `node-role.kubernetes.io/jarvice-system` will not be
 applied to `jarvice_dockerpull.nodeSelector`.  In the case that both node
 selectors are desired for `jarvice_dockerpull.nodeSelector`, use:
