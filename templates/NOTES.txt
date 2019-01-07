@@ -2,7 +2,7 @@
 ************* It may take a few minutes for JARVICE to fully load *************
 *******************************************************************************
 
-* Customize JARVICE files via a ConfigMap and Secret
+* Customize JARVICE files via a ConfigMap
 
 See the following link for more detailed information:
 https://github.com/nimbix/jarvice-helm#jarvice-post-installation
@@ -11,21 +11,15 @@ Step-by-step customization procedure for the aforementioned JARVICE settings:
 
 Create directories for setting the JARVICE customizations:
 $ mkdir -p jarvice-helm/jarvice-settings-override
-$ mkdir -p jarvice-helm/jarvice-secrets-override
 
-In jarvice-helm/jarvice-settings-override and
-jarvice-helm/jarvice-secrets-override, it will only be necessary to
+In jarvice-helm/jarvice-settings-override, it will only be necessary to
 create those files which are to be customized.  The defaults found in
-jarvice-helm/jarvice-settings and jarvice-helm/jarvice-secrets may be
-copied and edited as desired.
+jarvice-helm/jarvice-settings may be copied and edited as desired.
 
-Load the new JARVICE settings by creating a ConfigMap and Secret:
+Load the new JARVICE settings by creating a ConfigMap:
 $ kubectl --namespace {{ .Release.Namespace }} \
     create configmap {{ .Values.jarvice.settings.configMap }} \
     --from-file=jarvice-helm/jarvice-settings-override
-$ kubectl --namespace {{ .Release.Namespace }} \
-    create secret generic {{ .Values.jarvice.secrets.secretName }} \
-    --from-file=jarvice-helm/jarvice-secrets-override
 
 Reload jarvice-dal pods (only to apply cfg.network update):
 $ kubectl --namespace {{ .Release.Namespace }} set env \

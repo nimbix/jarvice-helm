@@ -191,7 +191,7 @@ JARVICE_BUILDS_NAMESPACE: $jarvice_builds_namespace
 JARVICE_PULLS_NAMESPACE: $jarvice_pulls_namespace
 EOF
 
-gets="nodes persistentvolumes storageclasses"
+gets="nodes daemonsets persistentvolumes storageclasses"
 for get in $gets; do
     echo "Getting $get..."
     $KUBECTL -n kube-system get $get >$kubedir/$get.txt
