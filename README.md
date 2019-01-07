@@ -442,29 +442,29 @@ releases of JARVICE.
 
 ## JARVICE Quick Installation (Demo without persistence)
 
-[](Comment: chart repository is not yet enabled
-//The installation commands assume that they are being run on a client machine
-//that has access to the kubernetes cluster and has `helm` installed as
-//mentioned in the installation prerequisites above.  They also assume that the
-//`jarvice-master` chart repository has also been added.
-//
-//### Find the latest JARVICE chart version
-//
-//It is first necessary to find the latest available JARVICE chart version:
-//```bash
-//$ helm repo update
-//$ helm search jarvice
-//```
-//
-//Optionally, with the chart version returned by the search, verify the chart
-//signature:
-//```bash
-//$ helm inspect chart --verify --version <chart-version> jarvice-master/jarvice
-//```
-//
-//It will also be necessary to provide `--version <chart-version>` to execute
-//the helm install and upgrade functions mentioned below.
-)
+<!--
+The installation commands assume that they are being run on a client machine
+that has access to the kubernetes cluster and has `helm` installed as
+mentioned in the installation prerequisites above.  They also assume that the
+`jarvice-master` chart repository has also been added.
+
+### Find the latest JARVICE chart version
+
+It is first necessary to find the latest available JARVICE chart version:
+```bash
+$ helm repo update
+$ helm search jarvice
+```
+
+Optionally, with the chart version returned by the search, verify the chart
+signature:
+```bash
+$ helm inspect chart --verify --version <chart-version> jarvice-master/jarvice
+```
+
+It will also be necessary to provide `--version <chart-version>` to execute
+the helm install and upgrade functions mentioned below.
+-->
 
 ### Code repository of the JARVICE helm chart
 
@@ -486,10 +486,10 @@ $ helm install \
     --set jarvice.JARVICE_LICENSE_LIC="<jarvice_license_key>" \
     --name jarvice --namespace jarvice-system ./jarvice-helm
 ```
-[](Comment: chart repository is not yet enabled
-//    --name jarvice --namespace jarvice-system \
-//    --version <chart-version> jarvice-master/jarvice
-)
+<!--
+    --name jarvice --namespace jarvice-system \
+    --version <chart-version> jarvice-master/jarvice
+-->
 
 Alternatively, in order to install and get the application catalog
 synchronized, use the following `helm` command:
@@ -502,10 +502,10 @@ $ helm install \
     --set jarvice.JARVICE_REMOTE_APIKEY="<jarvice_upstream_user_apikey>" \
     --name jarvice --namespace jarvice-system ./jarvice-helm
 ```
-[](Comment: chart repository is not yet enabled
-//    --name jarvice --namespace jarvice-system \
-//    --version <chart-version> jarvice-master/jarvice
-)
+<!--
+    --name jarvice --namespace jarvice-system \
+    --version <chart-version> jarvice-master/jarvice
+-->
 
 ### Quick install to Amazon EKS with `jarvice-deploy2eks` script
 
