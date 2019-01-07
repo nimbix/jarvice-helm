@@ -332,13 +332,20 @@ on the `helm` command line, special characters must be escaped.  Also,
 individual component node selectors are not additive.  They will override
 `jarvice.nodeSelector` if they are set.
 
-For example, if both
-`--set jarvice.nodeSelector="\{\"node-role.kubernetes.io/jarvice-system\": \"\"\}"` and
-`--set jarvice_dockerpull.nodeSelector="\{\"node-role.kubernetes.io/jarvice-dockerpull\": \"\"\}"`
-are set on the `helm` command line, `node-role.kubernetes.io/jarvice-system` will not be
+For example, if both `jarvice.nodeSelector` and
+`jarvice_dockerpull.nodeSelector` are specified on the `helm` command line:
+```bash
+--set jarvice.nodeSelector="\{\"node-role.kubernetes.io/jarvice-system\": \"\"\}"
+--set jarvice_dockerpull.nodeSelector="\{\"node-role.kubernetes.io/jarvice-dockerpull\": \"\"\}"
+```
+
+In the above case,
+`node-role.kubernetes.io/jarvice-system` will not be
 applied to `jarvice_dockerpull.nodeSelector`.  In the case that both node
-selectors are desired for `jarvice_dockerpull.nodeSelector`, use
-`--set jarvice_dockerpull.nodeSelector="\{\"node-role.kubernetes.io/jarvice-system\": \"\"\, \"node-role.kubernetes.io/jarvice-dockerpull\": \"\"\}"`.
+selectors are desired for `jarvice_dockerpull.nodeSelector`, use:
+```bash
+--set jarvice_dockerpull.nodeSelector="\{\"node-role.kubernetes.io/jarvice-system\": \"\"\, \"node-role.kubernetes.io/jarvice-dockerpull\": \"\"\}"
+```
 
 For more information on assigning kubernetes node labels and using node
 selectors, please see the kubernetes documentation:
