@@ -418,6 +418,10 @@ $ helm install \
     --name jarvice --namespace jarvice-system ./jarvice-helm
 ```
 
+For more information on assigning kubernetes taints and tolerations,
+please see the kubernetes documentation:
+https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+
 #### `jarvice-compute` taints and pod tolerations
 
 The following would taint `jarvice-compute` nodes which are already labeled
