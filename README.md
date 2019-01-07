@@ -23,29 +23,29 @@ $ kubectl --namespace kube-system create -f jarvice-helm/extra/tiller-sa.yaml
 $ helm init --upgrade --service-account tiller
 ```
 
-[](Comment: chart repository is not yet enabled
-//After helm is installed, add the `jarvice-master` chart repository:
-//```bash
-//$ helm repo add jarvice-master https://repo.nimbix.net/charts/jarvice-master
-//```
-//
-//To confirm that the chart repository was properly added, execute the following
-//set of commands:
-//```bash
-//$ helm repo list
-//$ helm repo update
-//$ helm search jarvice
-//```
-//
-//The `update` command will make sure that the helm installation has access to
-//all of the latest JARVICE updates.  It will also need to be run before doing
-//future JARVICE upgrades.
-//The `search` command will output the latest available version of JARVICE:
-//```bash
-//NAME                   	CHART VERSION         	APP VERSION	DESCRIPTION
-//jarvice-master/jarvice 	2.0.18-1.20190105.2358	2.0.18     	JARVICE cloud platform
-//```
-)
+<!--
+After helm is installed, add the `jarvice-master` chart repository:
+```bash
+$ helm repo add jarvice-master https://repo.nimbix.net/charts/jarvice-master
+```
+
+To confirm that the chart repository was properly added, execute the following
+set of commands:
+```bash
+$ helm repo list
+$ helm repo update
+$ helm search jarvice
+```
+
+The `update` command will make sure that the helm installation has access to
+all of the latest JARVICE updates.  It will also need to be run before doing
+future JARVICE upgrades.
+The `search` command will output the latest available version of JARVICE:
+```bash
+NAME                   	CHART VERSION         	APP VERSION	DESCRIPTION
+jarvice-master/jarvice 	2.0.18-1.20190105.2358	2.0.18     	JARVICE cloud platform
+```
+-->
 
 ### Kubernetes CPU management policies:
 
@@ -102,7 +102,7 @@ cluster, a load balancer is required for making the JARVICE services and jobs
 externally available/accessible from outside of the kubernetes cluster.
 
 Currently, MetalLB (https://metallb.universe.tf/) is a good solution.  After
-installing helm, MetalLB can quickly be quickly be installed via helm commands.
+installing helm, MetalLB can quickly be installed via helm commands.
 However, it will be necessary to configure MetalLB specifically for your
 cluster.
 
@@ -308,8 +308,9 @@ when running JARVICE applications.
 
 As such, it may be beneficial to pre-plan and determine how to manage the
 various JARVICE components on kubernetes cluster nodes.  It is recommended
-that a kubernetes cluster running JARVICE utilize kubernetes node selectors
-and node taints to "shape" which pods do and do not run on particular nodes.
+that a kubernetes cluster running JARVICE utilize kubernetes node
+labels/selectors and node taints/tolerations to "shape" which pods do and
+do not run on particular nodes.
 
 #### Node labels and selectors
 
@@ -320,7 +321,7 @@ $ kubectl label nodes <node_name> node-role.kubernetes.io/jarvice-system=
 ```
 
 Once the kubernetes nodes are labeled, the JARVICE helm chart can direct pod
-types to specific nodes by utilizing node selectors.  The JARVICE helm charts
+types to specific nodes by utilizing node selectors.  The JARVICE helm chart
 provides node selector settings which can be applied to all of the
 `jarvice-system` components (`jarvice.nodeSelector`), as well as node
 selectors for each individual JARVICE component.  These can be set in a
@@ -369,7 +370,7 @@ After setting the `jarvice-compute` labels, it will be necessary to add a
 matching `node-role.kubernetes.io/jarvice-compute=` string to the `properties`
 field of the machine definitions found in the JARVICE console's
 "Administration" tab.  This string will be used as a kubernetes node selector
-when assigning jobs.
+when the JARVICE scheduler assignings jobs.
 
 Please see the [JARVICE System Configuration Notes](Configuration.md) for more
 information.
