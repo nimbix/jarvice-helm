@@ -4,7 +4,7 @@ This is the Helm chart for installation of JARVICE into a kubernetes cluster.
 
 ------------------------------------------------------------------------------
 
-## Installation Prerequisites
+## Prerequisites for JARVICE Installation
 
 ### Helm (with Tiller) package manager for kubernetes (https://helm.sh/):
 
@@ -23,37 +23,38 @@ $ kubectl --namespace kube-system create -f jarvice-helm/extra/tiller-sa.yaml
 $ helm init --upgrade --service-account tiller
 ```
 
-[](Comment: chart repository is not yet enabled
-//After helm is installed, add the `jarvice-master` chart repository:
-//```bash
-//$ helm repo add jarvice-master https://repo.nimbix.net/charts/jarvice-master
-//```
-//
-//To confirm that the chart repository was properly added, execute the following
-//set of commands:
-//```bash
-//$ helm repo list
-//$ helm repo update
-//$ helm search jarvice
-//```
-//
-//The `update` command will make sure that the helm installation has access to
-//all of the latest JARVICE updates.  It will also need to be run before doing
-//future JARVICE upgrades.
-//The `search` command will output the latest available version of JARVICE:
-//```bash
-//NAME                   	CHART VERSION         	APP VERSION	DESCRIPTION
-//jarvice-master/jarvice 	2.0.18-1.20190105.2358	2.0.18     	JARVICE cloud platform
-//```
-)
+<!--
+After helm is installed, add the `jarvice-master` chart repository:
+```bash
+$ helm repo add jarvice-master https://repo.nimbix.net/charts/jarvice-master
+```
 
-### Kubernetes CPU management policies:
+To confirm that the chart repository was properly added, execute the following
+set of commands:
+```bash
+$ helm repo list
+$ helm repo update
+$ helm search jarvice
+```
 
-JARVICE prefers that kubelets use a `static` CPU managment policy on
-the JARVICE worker nodes.  This policy can be set with the arguments given to
-a worker node's kublet on startup.
+The `update` command will make sure that the helm installation has access to
+all of the latest JARVICE updates.  It will also need to be run before doing
+future JARVICE upgrades.
+The `search` command will output the latest available version of JARVICE:
+```bash
+NAME                   	CHART VERSION         	APP VERSION	DESCRIPTION
+jarvice-master/jarvice 	2.0.18-1.20190105.2358	2.0.18     	JARVICE cloud platform
+```
+-->
 
-The default CPU management policy is `none`.  As such, it will be necessary
+### Configure kubernetes CPU management policies:
+
+Enterprise JARVICE installations will want kubelets that are configured to use
+a `static` CPU managment policy on the JARVICE worker nodes.  This policy can
+be set with the arguments given to a worker node's kublet on startup.
+
+The default CPU management policy is `none`.  If CPU management policy wasn't
+set to `static` at JARVICE worker node install time, it will be necessary
 to drain each worker node and remove the previous `cpu_manager_state` file
 as a part of the process of restarting each worker node's kubelet.
 
@@ -102,7 +103,7 @@ cluster, a load balancer is required for making the JARVICE services and jobs
 externally available/accessible from outside of the kubernetes cluster.
 
 Currently, MetalLB (https://metallb.universe.tf/) is a good solution.  After
-installing helm, MetalLB can quickly be quickly be installed via helm commands.
+installing helm, MetalLB can quickly be installed via helm commands.
 However, it will be necessary to configure MetalLB specifically for your
 cluster.
 
@@ -308,8 +309,9 @@ when running JARVICE applications.
 
 As such, it may be beneficial to pre-plan and determine how to manage the
 various JARVICE components on kubernetes cluster nodes.  It is recommended
-that a kubernetes cluster running JARVICE utilize kubernetes node selectors
-and node taints to "shape" which pods do and do not run on particular nodes.
+that a kubernetes cluster running JARVICE utilize kubernetes node
+labels/selectors and node taints/tolerations to "shape" which pods do and
+do not run on particular nodes.
 
 #### Node labels and selectors
 
@@ -320,7 +322,7 @@ $ kubectl label nodes <node_name> node-role.kubernetes.io/jarvice-system=
 ```
 
 Once the kubernetes nodes are labeled, the JARVICE helm chart can direct pod
-types to specific nodes by utilizing node selectors.  The JARVICE helm charts
+types to specific nodes by utilizing node selectors.  The JARVICE helm chart
 provides node selector settings which can be applied to all of the
 `jarvice-system` components (`jarvice.nodeSelector`), as well as node
 selectors for each individual JARVICE component.  These can be set in a
@@ -331,13 +333,20 @@ on the `helm` command line, special characters must be escaped.  Also,
 individual component node selectors are not additive.  They will override
 `jarvice.nodeSelector` if they are set.
 
-For example, if both
-`--set jarvice.nodeSelector="\{\"node-role.kubernetes.io/jarvice-system\": \"\"\}"` and
-`--set jarvice_dockerpull.nodeSelector="\{\"node-role.kubernetes.io/jarvice-dockerpull\": \"\"\}"`
-are set on the `helm` command line, `node-role.kubernetes.io/jarvice-system` will not be
+For example, if both `jarvice.nodeSelector` and
+`jarvice_dockerpull.nodeSelector` are specified on the `helm` command line:
+```bash
+--set jarvice.nodeSelector="\{\"node-role.kubernetes.io/jarvice-system\": \"\"\}"
+--set jarvice_dockerpull.nodeSelector="\{\"node-role.kubernetes.io/jarvice-dockerpull\": \"\"\}"
+```
+
+In the example above,
+`node-role.kubernetes.io/jarvice-system` will not be
 applied to `jarvice_dockerpull.nodeSelector`.  In the case that both node
-selectors are desired for `jarvice_dockerpull.nodeSelector`, use
-`--set jarvice_dockerpull.nodeSelector="\{\"node-role.kubernetes.io/jarvice-system\": \"\"\, \"node-role.kubernetes.io/jarvice-dockerpull\": \"\"\}"`.
+selectors are desired for `jarvice_dockerpull.nodeSelector`, use:
+```bash
+--set jarvice_dockerpull.nodeSelector="\{\"node-role.kubernetes.io/jarvice-system\": \"\"\, \"node-role.kubernetes.io/jarvice-dockerpull\": \"\"\}"
+```
 
 For more information on assigning kubernetes node labels and using node
 selectors, please see the kubernetes documentation:
@@ -369,7 +378,7 @@ After setting the `jarvice-compute` labels, it will be necessary to add a
 matching `node-role.kubernetes.io/jarvice-compute=` string to the `properties`
 field of the machine definitions found in the JARVICE console's
 "Administration" tab.  This string will be used as a kubernetes node selector
-when assigning jobs.
+when the JARVICE scheduler assignings jobs.
 
 Please see the [JARVICE System Configuration Notes](Configuration.md) for more
 information.
@@ -441,29 +450,29 @@ releases of JARVICE.
 
 ## JARVICE Quick Installation (Demo without persistence)
 
-[](Comment: chart repository is not yet enabled
-//The installation commands assume that they are being run on a client machine
-//that has access to the kubernetes cluster and has `helm` installed as
-//mentioned in the installation prerequisites above.  They also assume that the
-//`jarvice-master` chart repository has also been added.
-//
-//### Find the latest JARVICE chart version
-//
-//It is first necessary to find the latest available JARVICE chart version:
-//```bash
-//$ helm repo update
-//$ helm search jarvice
-//```
-//
-//Optionally, with the chart version returned by the search, verify the chart
-//signature:
-//```bash
-//$ helm inspect chart --verify --version <chart-version> jarvice-master/jarvice
-//```
-//
-//It will also be necessary to provide `--version <chart-version>` to execute
-//the helm install and upgrade functions mentioned below.
-)
+<!--
+The installation commands assume that they are being run on a client machine
+that has access to the kubernetes cluster and has `helm` installed as
+mentioned in the installation prerequisites above.  They also assume that the
+`jarvice-master` chart repository has also been added.
+
+### Find the latest JARVICE chart version
+
+It is first necessary to find the latest available JARVICE chart version:
+```bash
+$ helm repo update
+$ helm search jarvice
+```
+
+Optionally, with the chart version returned by the search, verify the chart
+signature:
+```bash
+$ helm inspect chart --verify --version <chart-version> jarvice-master/jarvice
+```
+
+It will also be necessary to provide `--version <chart-version>` to execute
+the helm install and upgrade functions mentioned below.
+-->
 
 ### Code repository of the JARVICE helm chart
 
@@ -485,10 +494,10 @@ $ helm install \
     --set jarvice.JARVICE_LICENSE_LIC="<jarvice_license_key>" \
     --name jarvice --namespace jarvice-system ./jarvice-helm
 ```
-[](Comment: chart repository is not yet enabled
-//    --name jarvice --namespace jarvice-system \
-//    --version <chart-version> jarvice-master/jarvice
-)
+<!--
+    --name jarvice --namespace jarvice-system \
+    --version <chart-version> jarvice-master/jarvice
+-->
 
 Alternatively, in order to install and get the application catalog
 synchronized, use the following `helm` command:
@@ -501,10 +510,10 @@ $ helm install \
     --set jarvice.JARVICE_REMOTE_APIKEY="<jarvice_upstream_user_apikey>" \
     --name jarvice --namespace jarvice-system ./jarvice-helm
 ```
-[](Comment: chart repository is not yet enabled
-//    --name jarvice --namespace jarvice-system \
-//    --version <chart-version> jarvice-master/jarvice
-)
+<!--
+    --name jarvice --namespace jarvice-system \
+    --version <chart-version> jarvice-master/jarvice
+-->
 
 ### Quick install to Amazon EKS with `jarvice-deploy2eks` script
 
