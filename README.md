@@ -10,7 +10,7 @@ This is the Helm chart for installation of JARVICE into a kubernetes cluster.
 
 The installation requires that the helm command line be installed on a client
 machine and that Tiller is installed/initialized in the target kubernetes
-cluster.  Please see the Quick start/Installation guide:
+cluster.  Please see the Helm Quickstart/Installation guide:
 
 https://docs.helm.sh/using_helm/#quickstart-guide
 
@@ -22,6 +22,67 @@ commands:
 $ kubectl --namespace kube-system create -f jarvice-helm/extra/tiller-sa.yaml
 $ helm init --upgrade --service-account tiller
 ```
+
+[](Comment: chart repository is not yet enabled
+//After helm is installed, add the `jarvice-master` chart repository:
+//```bash
+//$ helm repo add jarvice-master https://repo.nimbix.net/charts/jarvice-master
+//```
+//
+//To confirm that the chart repository was properly added, execute the following
+//set of commands:
+//```bash
+//$ helm repo list
+//$ helm repo update
+//$ helm search jarvice
+//```
+//
+//The `update` command will make sure that the helm installation has access to
+//all of the latest JARVICE updates.  It will also need to be run before doing
+//future JARVICE upgrades.
+//The `search` command will output the latest available version of JARVICE:
+//```bash
+//NAME                   	CHART VERSION         	APP VERSION	DESCRIPTION
+//jarvice-master/jarvice 	2.0.18-1.20190105.2358	2.0.18     	JARVICE cloud platform
+//```
+)
+
+### Kubernetes CPU management policies:
+
+JARVICE prefers that kubelets use a `static` CPU managment policy on
+the JARVICE worker nodes.  This policy can be set with the arguments given to
+a worker node's kublet on startup.
+
+The default CPU management policy is `none`.  As such, it will be necessary
+to drain each worker node and remove the previous `cpu_manager_state` file
+as a part of the process of restarting each worker node's kubelet.
+
+The following shell script is an example of how one might reconfigure worker
+node kubelets on Ubuntu systems:
+```bash
+#!/bin/bash
+
+# Set KUBELET_EXTRA_ARGS=--cpu-manager-policy=static --kube-reserved cpu=0.1
+# Then restart kublet
+cmd=$(cat <<EOF
+sudo systemctl stop kublet;
+sudo rm -f /var/lib/kubelet/cpu_manager_state;
+sudo sed -i -e 's/^KUBELET_.*/KUBELET_EXTRA_ARGS=--cpu-manager-policy=static --kube-reserved cpu=0.1/' /etc/default/kubelet;
+sudo systemctl start kubelet
+EOF
+)
+
+nodes=$(kubectl get nodes -o name | awk -F/ '{print $2}')
+for n in nodes; do
+    kubectl drain --ignore-daemonsets --delete-local-data --force $n
+    ssh sudo-user@$n "$cmd"
+    kubectl uncordon $n
+done
+```
+
+Please see the following link for for more information on kubernetes CPU
+management policies:
+https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/
 
 ### Kubernetes network plugin:
 
@@ -122,6 +183,11 @@ to install the device plugin in order for JARVICE to make use of them.  Please
 see the following link for plugin installation details:
 https://github.com/nimbix/k8s-rdma-device-plugin
 
+To quickly install the RDMA device plugin DaemonSet, execute the following:
+```bash
+$ kubectl -n kube-system apply -f https://raw.githubusercontent.com/nimbix/k8s-rdma-device-plugin/master/rdma-device-plugin.yml
+```
+
 ### Kubernetes persistent volumes (for non-demo installation):
 
 For those sites that do not wish to separately install/maintain a MySQL
@@ -136,7 +202,7 @@ persistent volumes in kubernetes is beyond the scope of this document.
 Please see the kubernetes documentation for more details:
 https://kubernetes.io/docs/concepts/storage/persistent-volumes/
 
-### JARVICE license and credentials
+### JARVICE license and credentials:
 
 A JARVICE license and user/password credentials will need to be obtained from
 Nimbix sales (`sales@nimbix.net`) and/or support (`support@nimbix.net`).  The
@@ -220,32 +286,180 @@ $ kubectl --namespace kube-system describe $secret | grep '^token:' \
 
 Use `https://$DASHBOARD_IP:8443/` to log into the dashboard.
 
-### Node label for `jarvice-dockerpull` and `jarvice-compute`
+### Kubernetes Cluster Shaping
 
-In order to take advantage of docker layer caching when pulling
-application images into JARVICE, it is recommended that a node in the
-kubernetes cluster be labeled for those operations.  Use a command similar
-to the following to do so:
+At the highest level, JARVICE utilizes pods which can be thought of as
+encompassing two essential types.  The first of which, `jarvice-system`, are
+used for running the JARVICE platform itself.  The second type,
+`jarvice-compute`, are used for running JARVICE application jobs.
+
+The `jarvice-system` pods could be broken down further into four basic types.
+The base `jarvice-system` pods contain components related to the web portal,
+API endpoints, Data Abstraction Layer (DAL), etc.  JARVICE application
+builds use `jarvice-dockerbuild` and `jarvice-dockerpull` pod types.  Lastly,
+there are other non-JARVICE installed/controlled components.  These other
+components, such as ingress controllers, can be thought of as the
+`jarvice-other` type as they live outside of the JARVICE namespaces.
+
+In order to get the best performance out of JARVICE, it will be necessary to
+categorize nodes and separate pod types to prevent overlap.  e.g.  Mixing
+`jarvice-system` pods with `jarvice-compute` pods could affect performance
+when running JARVICE applications.
+
+As such, it may be beneficial to pre-plan and determine how to manage the
+various JARVICE components on kubernetes cluster nodes.  It is recommended
+that a kubernetes cluster running JARVICE utilize kubernetes node selectors
+and node taints to "shape" which pods do and do not run on particular nodes.
+
+#### Node labels and selectors
+
+The following example commands show how one may label kubernetes nodes so
+that JARVICE can assign pods to them with node selectors:
 ```bash
+$ kubectl label nodes <node_name> node-role.kubernetes.io/jarvice-system=
+```
+
+Once the kubernetes nodes are labeled, the JARVICE helm chart can direct pod
+types to specific nodes by utilizing node selectors.  The JARVICE helm charts
+provides node selector settings which can be applied to all of the
+`jarvice-system` components (`jarvice.nodeSelector`), as well as node
+selectors for each individual JARVICE component.  These can be set in a
+configuration values `override.yaml` file or on the `helm` command line.
+
+Note that node selectors are specified using JSON syntax.  When using `--set`
+on the `helm` command line, special characters must be escaped.  Also,
+individual component node selectors are not additive.  They will override
+`jarvice.nodeSelector` if they are set.
+
+For example, if both
+`--set jarvice.nodeSelector="\{\"node-role.kubernetes.io/jarvice-system\": \"\"\}"` and
+`--set jarvice_dockerpull.nodeSelector="\{\"node-role.kubernetes.io/jarvice-dockerpull\": \"\"\}"`
+are set on the `helm` command line, `node-role.kubernetes.io/jarvice-system` will not be
+applied to `jarvice_dockerpull.nodeSelector`.  In the case that both node
+selectors are desired for `jarvice_dockerpull.nodeSelector`, use
+`--set jarvice_dockerpull.nodeSelector="\{\"node-role.kubernetes.io/jarvice-system\": \"\"\, \"node-role.kubernetes.io/jarvice-dockerpull\": \"\"\}"`.
+
+For more information on assigning kubernetes node labels and using node
+selectors, please see the kubernetes documentation:
+https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
+
+##### Node labels for `jarvice-dockerbuild` and `jarvice-dockerpull`
+
+In order to take advantage of docker layer caching when building and pulling
+application images into JARVICE, it may be advantageous that a node in the
+kubernetes cluster be labeled for both of those operations simultaneously.
+Use commands similar to the following to do so:
+```bash
+$ kubectl label nodes <node_name> node-role.kubernetes.io/jarvice-dockerbuild=
 $ kubectl label nodes <node_name> node-role.kubernetes.io/jarvice-dockerpull=
 ```
 
-Cluster requirements may also make it desirable to designate a set of nodes
-specifically for running JARVICE jobs:
+To take advantage of such a setup, set `jarvice_dockerbuild.nodeSelector` and
+`jarvice_dockerpull.nodeSelector` in the JARVICE helm chart.
+
+##### Utilizing `jarvice-compute` labels
+
+The following demonstrates how one might label nodes for `jarvice-compute`
+pods:
 ```bash
-$ kubectl label nodes <node_names> node-role.kubernetes.io/jarvice-compute=
+$ kubectl label nodes <node_name> node-role.kubernetes.io/jarvice-compute=
 ```
 
-After setting the above label, it will be necessary to add a matching
-`node-role.kubernetes.io/jarvice-compute=` string to the `properties` field of
-the machine definitions found in the JARVICE console's "Administration" tab.
-This string will be used as a kubernetes node selector when assigning jobs.
+After setting the `jarvice-compute` labels, it will be necessary to add a
+matching `node-role.kubernetes.io/jarvice-compute=` string to the `properties`
+field of the machine definitions found in the JARVICE console's
+"Administration" tab.  This string will be used as a kubernetes node selector
+when assigning jobs.
 
-Further details on node labels and selectors can be found below.
+Please see the [JARVICE System Configuration Notes](Configuration.md) for more
+information.
+
+#### Node taints and pod tolerations
+
+Kubernetes node taints can be used to provide an effect opposite to that of
+nodes selectors.  That is, they are used to "repel" pod types from nodes.
+For example, a node marked with a `jarvice-compute` label for sending jobs to
+it with a node selector could also have a `jarvice-compute` taint in order to
+keep non `jarvice-compute` pods from running on it.  This would be the best
+practice for isolating `jarvice-compute` application job pods.
+
+This JARVICE helm chart utilizes tolerations settings which are applied to all
+of the JARVICE components (`jarvice.tolerations`), as well as tolerations for
+each individual JARVICE component.  These can be set in a values
+`override.yaml` file or on the `helm` command line.
+
+By default `jarvice.tolerations` tolerates the `NoSchedule` effect for the
+key `node-role.kubernetes.io/jarvice-system`.  A `kubectl` command line
+similar to the following could be used to taint nodes already labeled
+with `node-role.kubernetes.io/jarvice-system`:
+```bash
+$ kubectl taint nodes -l node-role.kubernetes.io/jarvice-system= \
+    node-role.kubernetes.io/jarvice-system=:NoSchedule
+```
+
+This is a quick and dirty way to list node taints after adding them:
+```bash
+$ kubectl get nodes -o json | \
+    jq -r '.items[] | select(.spec.taints!=null) | .metadata.name + ": " + (.spec.taints[] | join("|"))'
+```
+
+The following example shows how `--set` flags on the helm install/upgrade
+command line could be used to override the default tolerations for the
+`jarvice-api` component:
+```bash
+$ helm install \
+    --set jarvice_api.tolerations[0].effect=NoSchedule \
+    --set jarvice_api.tolerations[0].key=node-role.kubernetes.io/jarvice-system \
+    --set jarvice_api.tolerations[0].operator=Exists \
+    --set jarvice_api.tolerations[1].effect=NoSchedule \
+    --set jarvice_api.tolerations[1].key=node-role.kubernetes.io/jarvice-api \
+    --set jarvice_api.tolerations[1].operator=Exists
+    ...
+    --name jarvice --namespace jarvice-system ./jarvice-helm
+```
+
+#### `jarvice-compute` taints and pod tolerations
+
+The following would taint `jarvice-compute` nodes which are already labeled
+with `node-role.kubernetes.io/jarvice-compute`:
+```bash
+$ kubectl taint nodes -l node-role.kubernetes.io/jarvice-compute= \
+    node-role.kubernetes.io/jarvice-compute=:NoSchedule
+```
+
+By default, the JARVICE job scheduler creates job pods that tolerate the
+`NoSchedule` effect on nodes with the `node-role.kubernetes.io/jarvice-compute`
+taint.  This is currently not configurable.
+Tolerations for `jarvice-compute` will be made configurable in future
+releases of JARVICE.
 
 ------------------------------------------------------------------------------
 
 ## JARVICE Quick Installation (Demo without persistence)
+
+[](Comment: chart repository is not yet enabled
+//The installation commands assume that they are being run on a client machine
+//that has access to the kubernetes cluster and has `helm` installed as
+//mentioned in the installation prerequisites above.  They also assume that the
+//`jarvice-master` chart repository has also been added.
+//
+//### Find the latest JARVICE chart version
+//
+//It is first necessary to find the latest available JARVICE chart version:
+//```bash
+//$ helm repo update
+//$ helm search jarvice
+//```
+//
+//Optionally, with the chart version returned by the search, verify the chart
+//signature:
+//```bash
+//$ helm inspect chart --verify --version <chart-version> jarvice-master/jarvice
+//```
+//
+//It will also be necessary to provide `--version <chart-version>` to execute
+//the helm install and upgrade functions mentioned below.
+)
 
 ### Code repository of the JARVICE helm chart
 
@@ -267,6 +481,10 @@ $ helm install \
     --set jarvice.JARVICE_LICENSE_LIC="<jarvice_license_key>" \
     --name jarvice --namespace jarvice-system ./jarvice-helm
 ```
+[](Comment: chart repository is not yet enabled
+//    --name jarvice --namespace jarvice-system \
+//    --version <chart-version> jarvice-master/jarvice
+)
 
 Alternatively, in order to install and get the application catalog
 synchronized, use the following `helm` command:
@@ -279,6 +497,10 @@ $ helm install \
     --set jarvice.JARVICE_REMOTE_APIKEY="<jarvice_upstream_user_apikey>" \
     --name jarvice --namespace jarvice-system ./jarvice-helm
 ```
+[](Comment: chart repository is not yet enabled
+//    --name jarvice --namespace jarvice-system \
+//    --version <chart-version> jarvice-master/jarvice
+)
 
 ### Quick install to Amazon EKS with `jarvice-deploy2eks` script
 
@@ -350,63 +572,6 @@ match the persistent volume storage classes that you wish to use:
 
 - `jarvice_db.persistence.storageClass`
 - `jarvice_registry.persistence.storageClass`
-
-### Node taints and pod tolerations
-
-This helm chart utilizes tolerations which are applied to all of the JARVICE
-components (`jarvice.tolerations`), as well as tolerations for each
-individual JARVICE component.  These can be set in an `override.yaml` file or
-on the `helm` command line.
-
-By default `jarvice.tolerations` tolerates the `NoSchedule` effect for the
-key `node-role.kubernetes.io/jarvice-system`.  A `kubectl` command line
-similar to the following could be used to taint nodes for executing pods of
-the `jarvice-system` components:
-```bash
-$ kubectl taint nodes -l node-role.kubernetes.io/jarvice-system= \
-    node-role.kubernetes.io/jarvice-system=:NoSchedule
-```
-
-This is a quick and dirty way to list node taints after adding them:
-```bash
-$ kubectl get nodes -o json | \
-    jq -r '.items[] | select(.spec.taints!=null) | .metadata.name + ": " + (.spec.taints[] | join("|"))'
-```
-
-The following example shows how `--set` flags on the helm install/upgrade
-command line could be used to override the default tolerations for the
-`jarvice-api` component:
-```bash
-$ helm install \
-    --set jarvice_api.tolerations[0].effect=NoSchedule \
-    --set jarvice_api.tolerations[0].key=node-role.kubernetes.io/jarvice-system \
-    --set jarvice_api.tolerations[0].operator=Exists \
-    --set jarvice_api.tolerations[1].effect=NoSchedule \
-    --set jarvice_api.tolerations[1].key=node-role.kubernetes.io/jarvice-api \
-    --set jarvice_api.tolerations[1].operator=Exists
-    ...
-    --name jarvice --namespace jarvice-system ./jarvice-helm
-```
-
-### Node labels and selectors
-
-This helm chart utilizes a node selector which is applied to all of the JARVICE
-components (`jarvice.nodeSelector`), as well as node selectors for each
-individual JARVICE component.  These can be set in an `override.yaml` file or
-on the `helm` command line.
-
-Note that node selectors are specified using JSON syntax.  When using `--set`
-on the `helm` command line, special characters must be escaped.  Also,
-individual component selectors will override `jarvice.nodeSelector`.  They are
-not additive.
-
-For example, if both
-`--set jarvice.nodeSelector="\{\"node-role.kubernetes.io/jarvice-system\": \"\"\}"` and
-`--set jarvice_dockerpull.nodeSelector="\{\"node-role.kubernetes.io/jarvice-dockerpull\": \"\"\}"`
-are set on the `helm` command line, `node-role.kubernetes.io/jarvice-system` will not be
-applied to `jarvice_dockerpull.nodeSelector`.  In the case that both node
-selectors are desired for `jarvice_dockerpull.nodeSelector`, use
-`--set jarvice_dockerpull.nodeSelector="\{\"node-role.kubernetes.io/jarvice-system\": \"\"\, \"node-role.kubernetes.io/jarvice-dockerpull\": \"\"\}"`.
 
 ### Selecting external, load balancer IP addresses
 
@@ -561,7 +726,8 @@ JARVICE utilizes LXCFS so that each Nimbix Application Environment (NAE) will
 properly reflect the resources requested for each job.  Please use the
 following to install:
 ```bash
-$ kubectl create -f https://raw.githubusercontent.com/nimbix/lxcfs-initializer/master/lxcfs-daemonset.yaml
+$ kubectl --namespace kube-system create \
+    -f https://raw.githubusercontent.com/nimbix/lxcfs-initializer/master/lxcfs-daemonset.yaml
 ```
 
 #### JARVICE Cache Pull
@@ -571,27 +737,38 @@ kubernetes worker nodes with docker images.  This should be used to speed up
 job startup times for the most used JARVICE applications.  It can be installed
 with the following command:
 ```bash
-$ kubectl --namespace <jarvice-system> create -f https://raw.githubusercontent.com/nimbix/jarvice-cache-pull/master/jarvice-cache-pull.yaml
+$ kubectl --namespace <jarvice-system> create \
+    -f https://raw.githubusercontent.com/nimbix/jarvice-cache-pull/master/jarvice-cache-pull.yaml
 ```
 
 Please view the README.md for more detailed configuration information:
 https://github.com/nimbix/jarvice-cache-pull
 
-### Customize JARVICE files via a ConfigMap and Secret
+### Set up database backups
 
-Some JARVICE files can be updated via a ConfigMap and Secret.  The files found
-in `jarvice-helm/jarvice-settings` and `jarvice-helm/jarvice-secrets` represent
+It is recommended that JARVICE database backups be regularly scheduled.
+If using `jarvice-db` as is provided in the JARVICE helm chart, the following
+script could be executed from a cronjob to regularly dump the database:
+```bash
+#!/bin/bash
+
+pod=$(kubectl -n jarvice-system get pods -l component=jarvice-db -ojson | \
+        jq -r '.items[] | select(.status.phase=="Running") | .metadata.name')
+kubectl -n jarvice-system exec $pod -- \
+        mysqldump --user=root --password="Pass1234" \
+        nimbix >jarvice-db.sql
+```
+
+### Customize JARVICE files via a ConfigMap
+
+Some JARVICE files can be updated via a ConfigMap.  The files found
+in `jarvice-helm/jarvice-settings` represent
 all of those files which may optionally be updated from the setting of a
-ConfigMap and Secret.
+ConfigMap.
 
 The portal may be "skinned" with a custom look and feel by providing
 replacements for `default.png`, `favicon.png`, `logo.png`, `palette.json`,
 or `eula.txt`.
-
-The portal SSL certificate and key may be updated by providing replacements
-for `jarvice-mc-portal.crt` and `jarvice-mc-portal.key` to override the
-`jarvice_mc_portal.env.JARVICE_MC_PORTAL_CRT` and
-`jarvice_mc_portal.env.JARVICE_MC_PORTAL_KEY` settings found in `values.yaml`.
 
 Instead of editing the `jarvice_dal.env.JARVICE_CFG_NETWORK` and
 `jarvice_scheduler.env.MAIL_CONF` settings as found in the `values.yaml` file,
@@ -603,23 +780,17 @@ files respectively.
 Create directory for setting the JARVICE customizations:
 ```bash
 $ mkdir -p jarvice-helm/jarvice-settings-override
-$ mkdir -p jarvice-helm/jarvice-secrets-override
 ```
 
-In `jarvice-helm/jarvice-settings-override` and
-`jarvice-helm/jarvice-secrets-override`, it will only be necessary to
+In `jarvice-helm/jarvice-settings-override`, it will only be necessary to
 create those files which are to be customized.  The defaults found in
-`jarvice-helm/jarvice-settings` and `jarvice-helm/jarvice-secrets` may be
-copied and edited as desired.
+`jarvice-helm/jarvice-settings` may be copied and edited as desired.
 
-Load the new JARVICE settings by creating a ConfigMap and Secret:
+Load the new JARVICE settings by creating a ConfigMap:
 ```bash
 $ kubectl --namespace jarvice-system \
     create configmap jarvice-settings \
     --from-file=jarvice-helm/jarvice-settings-override
-$ kubectl --namespace jarvice-system \
-    create secret generic jarvice-secrets \
-    --from-file=jarvice-helm/jarvice-secrets-override
 ```
 
 Reload jarvice-dal pods (only to apply cfg.network update):
