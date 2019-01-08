@@ -48,12 +48,18 @@ Create app name and version as used by the app label.
 {{- end -}}
 
 {{/*
+Create release annotations for metadata.
+*/}}
+{{- define "jarvice.release_annotations" }}
+chart: {{ template "jarvice.chart" . }}
+jarvice: {{ template "jarvice.app" . }}
+release: {{ .Release.Name }}
+{{- end }}
+
+{{/*
 Create release labels for metadata.
 */}}
 {{- define "jarvice.release_labels" }}
-heritage: {{ .Release.Service }}
-release: {{ .Release.Name }}
-chart: {{ template "jarvice.chart" . }}
 app: {{ template "jarvice.name" . }}
-jarvice: {{ template "jarvice.app" . }}
+heritage: {{ .Release.Service }}
 {{- end }}
