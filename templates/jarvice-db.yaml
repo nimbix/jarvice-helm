@@ -75,13 +75,30 @@ spec:
           timeoutSeconds: 5
         env:
           - name: MYSQL_ROOT_PASSWORD
-            value: "{{ .Values.jarvice_db.env.MYSQL_ROOT_PASSWORD }}"
-          - name: MYSQL_DATABASE
-            value: "{{ .Values.jarvice_db.env.MYSQL_DATABASE }}"
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-db
+{{- if (not (empty .Values.jarvice_db.env.MYSQL_ROOT_PASSWORD)) }}
+                key: MYSQL_ROOT_PASSWORD
+{{- else }}
+                key: JARVICE_DBPASSWD
+{{- end }}
+{{- if or (not (empty .Values.jarvice_db.env.MYSQL_USER)) (ne "root" .Values.jarvice.JARVICE_DBUSER) }}
           - name: MYSQL_USER
+{{- if (not (empty .Values.jarvice_db.env.MYSQL_USER)) }}
             value: "{{ .Values.jarvice_db.env.MYSQL_USER }}"
+{{- else }}
+            value: "{{ .Values.jarvice.JARVICE_DBUSER }}"
+{{- end }}
           - name: MYSQL_PASSWORD
-            value: "{{ .Values.jarvice_db.env.MYSQL_PASSWORD }}"
+            valueFrom:
+              secretKeyRef:
+{{- if (not (empty .Values.jarvice_db.env.MYSQL_PASSWORD)) }}
+                key: MYSQL_PASSWORD
+{{- else }}
+                key: JARVICE_DBPASSWD
+{{- end }}
+{{- end }}
 {{- if .Values.jarvice_db.persistence.enabled }}
         volumeMounts:
         - mountPath: /var/lib/mysql

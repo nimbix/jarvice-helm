@@ -63,7 +63,7 @@ spec:
             optional: true
         - name: jarvice-secrets
           secret:
-            secretName: {{ .Values.jarvice.secrets.secretName }}
+            secretName: jarvice-secrets
             optional: true
       containers:
       - name: jarvice-mc-portal
@@ -147,19 +147,35 @@ spec:
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_SERVER }}"
           - name: JARVICE_PORTAL_MAIL_USERNAME
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_USERNAME }}"
+{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_PASSWORD)) }}
           - name: JARVICE_PORTAL_MAIL_PASSWORD
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_PASSWORD }}"
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-mc-portal
+                key: JARVICE_PORTAL_MAIL_PASSWORD
+{{- end }}
           - name: JARVICE_PORTAL_MAIL_ADMINS
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_ADMINS }}"
           - name: JARVICE_PORTAL_DBHOST
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DBHOST }}"
-          - name: JARVICE_PORTAL_DBUSER
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DBUSER }}"
-          - name: JARVICE_PORTAL_DBPASSWD
-{{- if empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DBPASSWD }}
-            value: "{{ .Values.jarvice_db.env.MYSQL_ROOT_PASSWORD }}"
+{{- if empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DBHOST }}
+            value: "{{ .Values.jarvice.JARVICE_DBHOST }}"
 {{- else }}
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DBPASSWD }}"
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DBHOST }}"
+{{- end }}
+          - name: JARVICE_PORTAL_DBUSER
+{{- if empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DBUSER }}
+            value: "{{ .Values.jarvice.JARVICE_DBUSER }}"
+{{- else }}
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DBUSER }}"
+{{- end }}
+          - name: JARVICE_PORTAL_DBPASSWD
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-db
+{{- if empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DBPASSWD }}
+                key: JARVICE_DBPASSWD
+{{- else }}
+                key: JARVICE_PORTAL_DBPASSWD
 {{- end }}
         volumeMounts:
         - name: jarvice-settings

@@ -648,8 +648,8 @@ $ helm upgrade --reuse-values \
 
 If there is an already existing MySQL installation that you wish to use with
 JARVICE, it will be necessary to create an `override.yaml` file (shown above)
-and edit the settings in the `jarvice_dal` `env` stanza
-(`JARVICE_SITE_DBHOST`, `JARVICE_SITE_DBUSER`, `JARVICE_SITE_DBPASSWD`).
+and edit the settings database settings (`JARVICE_DBHOST`, `JARVICE_DBUSER`,
+`JARVICE_DBPASSWD`) in the base `jarvice` configuration stanza.
 
 If there is not an existing MySQL installation, but wish to maintain the
 database in kubernetes, but outside of the JARVICE helm chart, execute the

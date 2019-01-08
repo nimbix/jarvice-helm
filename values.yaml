@@ -27,10 +27,12 @@ jarvice:
   #nodeSelector: # '{"node-role.kubernetes.io/jarvice-system": ""}'
   nodeSelector: '{"beta.kubernetes.io/arch": "amd64"}'
 
-  JARVICE_SYSTEM_NAMESPACE: # auto-detected, should not need to be updated
-  JARVICE_JOBS_NAMESPACE: # auto-set, should not need to be updated
-  JARVICE_BUILDS_NAMESPACE: # auto-set, should not need to be updated
-  JARVICE_PULLS_NAMESPACE: # auto-set, should not need to be updated
+  # JARVICE_DBHOST and JARVICE_DBUSER only need to change if using a database
+  # not provided by this helm chart
+  JARVICE_DBHOST: jarvice-db
+  JARVICE_DBUSER: root
+  JARVICE_DBPASSWD: Pass1234
+
   JARVICE_POD_SCHED_LOGLEVEL: 30
 
   # JARVICE_MAIL_CONF can be overridden with jarvice_api.env.JARVICE_MAIL_CONF
@@ -43,16 +45,25 @@ jarvice:
       server: localhost:25
       ;username: DoNotReply@localhost
       ;password: Pass1234
+
+  # Review the following for more information on "skinning" JARVICE with
+  # the optional jarvice.settings.configMap:
+  # https://github.com/nimbix/jarvice-helm#customize-jarvice-files-via-a-configmap
+  settings:
+    configMap: jarvice-settings
+
   # jarvice-tls secret will be created from tls.crt and tls.key
   # tls.crt and tls.key are base64 encoded:
   # e.g. echo -n "$tls_crt" | base64 -w 0
   tls:
     crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURwVENDQW8yZ0F3SUJBZ0lKQUwyNDNJLzZNaEFQTUEwR0NTcUdTSWIzRFFFQkN3VUFNR2t4Q3pBSkJnTlYKQkFZVEFsVlRNUTR3REFZRFZRUUlEQVZVWlhoaGN6RVBNQTBHQTFVRUJ3d0dSR0ZzYkdGek1ROHdEUVlEVlFRSwpEQVpPYVcxaWFYZ3hEekFOQmdOVkJBc01CbEJQVWxSQlRERVhNQlVHQTFVRUF3d09Ta0ZTVmtsRFJTMVFUMUpVClFVd3dIaGNOTVRjd016SXlNRFl4TmpVNFdoY05NVGN3TkRJeE1EWXhOalU0V2pCcE1Rc3dDUVlEVlFRR0V3SlYKVXpFT01Bd0dBMVVFQ0F3RlZHVjRZWE14RHpBTkJnTlZCQWNNQmtSaGJHeGhjekVQTUEwR0ExVUVDZ3dHVG1sdApZbWw0TVE4d0RRWURWUVFMREFaUVQxSlVRVXd4RnpBVkJnTlZCQU1NRGtwQlVsWkpRMFV0VUU5U1ZFRk1NSUlCCklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF3b2RTTHlpSTZ1RFlZYnZuNHBuUkZjU0kKZ2hwUTUzZXpUZXEyM3FMNWY0ZGhUWk9nUjlHdmNlZnVLMXZ3RnhQYjNiWVB2bjhtODVQZzR2UjM1MzNGM3RLVgpFUkRQYTd5aWRGZWZ1RnVTRm0yUEtlWkoxelRXUm5Ed3VMS0p1cXRQdDlPa1ltdmNBK1NveHhQd0VBa0hHTURRCmxhSEtzU2dGYS9raG1OWi9PUFZZSllHSjlFK25KanNwb0hkR2F1RWFvUnczbVhQWUwrbjVhbTVMQmpFYUhqUnYKSjY2UzRUS0UwbTZrQWh1MXV2WkRKRjVDSXdKSVpRM3lvOWNaYVAxZVRWYUMzcjl5L3V5aWhURHRWVXJaTUpHNwpjVWkyNkhvNGNLYVJVeDg3RU9scnJzK0cvNVJJT3grS3BvaXpuYVFxYzdoTlhmOHJKSDdjcXZvVWJlVUxnd0lECkFRQUJvMUF3VGpBZEJnTlZIUTRFRmdRVVh4bkZRTW1hZFBTTWEwb2FSK0p5NnF0NUxaZ3dId1lEVlIwakJCZ3cKRm9BVVh4bkZRTW1hZFBTTWEwb2FSK0p5NnF0NUxaZ3dEQVlEVlIwVEJBVXdBd0VCL3pBTkJna3Foa2lHOXcwQgpBUXNGQUFPQ0FRRUFvSUNZWHBUVUd0cGlaVy9WeWhJejVuaHp2ei90dHF3WENtSi9hZkc3bU96anZWRzQ1dmIrCm93Q0tNOGlOU3VhZDh1eWdtYnovSG5ZT3ErVzVCSmxZQS8wRnZyeDRPWGl3eVYxSWhxRXJnMVBqRWJxVFJIby8KOUlCSzkxbmc2MkRxSkJyajhORnZVcWJvZmhUY0hvN3BTVktabGt1VUIrY3VWVVBINkhSSHFidHUvR1lBbnlVRwp4R1krSmsvNHZXekppbDIrRENUMkpHOHhLcGxsd2hOcGdXYWhaVDhwQVZCTWE3OXpYUU1qOEpzZFc3VDFZV3BnClpFVTRuNkVoa2FPakVOZDhhSFZMbXpDVTdaMXptY1BSTDYvNEUydFBLVklFaGttZDh4M2h0ZU43N3BTM1pIZFoKMStGNGZ1V2t3UXcwdkpBSTlNdnhiT242STNkOGVuMW5KQT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
     key: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktjd2dnU2pBZ0VBQW9JQkFRRENoMUl2S0lqcTROaGgKdStmaW1kRVZ4SWlDR2xEbmQ3Tk42cmJlb3ZsL2gyRk5rNkJIMGE5eDUrNHJXL0FYRTl2ZHRnKytmeWJ6aytEaQo5SGZuZmNYZTBwVVJFTTlydktKMFY1KzRXNUlXYlk4cDVrblhOTlpHY1BDNHNvbTZxMCszMDZSaWE5d0Q1S2pICkUvQVFDUWNZd05DVm9jcXhLQVZyK1NHWTFuODQ5VmdsZ1luMFQ2Y21PeW1nZDBacTRScWhIRGVaYzlndjZmbHEKYmtzR01Sb2VORzhucnBMaE1vVFNicVFDRzdXNjlrTWtYa0lqQWtobERmS2oxeGxvL1Y1TlZvTGV2M0wrN0tLRgpNTzFWU3Rrd2tidHhTTGJvZWpod3BwRlRIenNRNld1dXo0Yi9sRWc3SDRxbWlMT2RwQ3B6dUUxZC95c2tmdHlxCitoUnQ1UXVEQWdNQkFBRUNnZ0VBRXJiMEdDZGRMTU9lN2FBblNleWthZVN6Z1ZqSXljd0JTeEMyc1NxYXVFTXQKQUVxZ2srZy9hY1QzYStKM2NiRHVhU0VYMktyZzgzUVpvWndGWVJiL2oxVlJGQWc2L0ZGMGk1N1dkZVVSWStqOAphZnFHeGhhR090YW93Z3dqSmZ0UE93ODRkR09PRWkzUWN2NmZETnZoZStjbzZneGJ0TGwxOUJKT3dpWjRyT0Q2CmpGUm5jU3ZZeHJSNSs2YXFoVjRJT0ZneGhZd1hGZWhsZjBrVTNPcU02Y0l2VERJOG5ocXJaYWR0eXFMM2VpV3gKMlVzR0JHTlJkWHlkVVJjWE1NbTlqVWhGOFNrVFNpWGxjbEdEK0lmNXBFUDErQ3FoRC9QbjNNbUlIeTRoQkFjUwpHbC81K2RCOW9xeWJyU1BmSnBTUjdHYSt5cTdyUWwvOENWR3JIcUFjK1FLQmdRRDFrbmNiV0pVc3ZVK0IvV0JkCnRMYkVwYjNqazBxQ3JIMVVRS3FacHVuYUMrcEFKZTEveS9XekZueHF6MUVxUmRNMW1WUVBNU2dnWmt2RWRnSS8KNmU0Uno5VEFrS2NNanhpdUpaRTA5eHlhSjJiNEpSdzdPTVhnYXYvWFN5OE9kQkxmQkZEeFVGZmRDaWJZN2JwegorcG5acWZQSklLUHNoTmhYV1RDY21HM2lkUUtCZ1FES3lmcG5QR0d1cEtNSGZxN2d3SW1HZktGekxVY1I4MWl4ClcxdUFGS0kvY3lueFcwTHQ5VS9zUEE0RXArWXd5WUNhQjJrOHdQNVc1akRmRG0zVVEzVXlvQnVESm5ka1pjcWgKNXBhOE9TYzNCdjJhWjh6Rjl6VUZjdHRGTUNwUE15VlFPeWlkVTRsQzZCN09VUUMvSEduQWh5YnQvZ2NvcFVqTApCYURZKy9LSEZ3S0JnRmM5U3hicDUwVFhsQkZINUI0bC91L3BPWVpKWXlUOUJpRVNRQWtKNVBYVFdjcWtMclZCCnplMXJSWlBrUnA5UDR2S2RuK0V0dzJXUE1jZC9iTmtyejZtQVBjS1RJT1V6U0w5RkZVck5wdG1VdWQzWndTZkEKeVhzcVIrMUNCbHVLSE5JaGhHZlY5UURQaEhGNE1zN1U3aWNIVzFYT1JLM1htOHVjSWNyZjA5bXBBb0dCQUpoSApOYWJpTzhRR1Uzb2tValBwd1J2aGFPZHhmNlhtSTVzRExHR3duT21pbEVOdXNZSzVMS3dMcU1jc1FYb3ZSa2ZqCitzMnBheFJjUlNTcTFDU0tCMjdkdGVzMUxvQ1F3Nm54MncwNnFjenpqZXF0dWFLSzhTREhVQXJUa1dIcDJVSTMKT2xkeHpHZ1dvRk56bG1qc2NDa29GRDZ3L0RVMGNNWXIwczQ5MjdBL0FvR0FBYjE2U05FUEZCbVh6QXhmUTFkZApZdGtqRHFoanIwclBCUG1Qalhkek56TkZyaFBPZUdrdEE3aXloZWM1Mndxdlh6TVZBQzZDVjBwN1hHZGlOdUk3CnN6ckZ4UHBPYmwzb3l6YWVUNy92V0tzTG9KSzF3TGJ6SlNET1dwU29MYmlMVWh1SkZ4bG5zZ08zMVNjcE9YTE4KUDZtZ08wemlVeG5XcVdDY1BDN3k4NU09Ci0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
-  settings:
-    configMap: jarvice-settings
-  secrets:
-    secretName: jarvice-secrets
+
+  JARVICE_SYSTEM_NAMESPACE: # auto-detected, should not need to be updated
+  JARVICE_JOBS_NAMESPACE: # auto-set, should not need to be updated
+  JARVICE_BUILDS_NAMESPACE: # auto-set, should not need to be updated
+  JARVICE_PULLS_NAMESPACE: # auto-set, should not need to be updated
+
 
 # Database server previously set up?  Set enabled to false.
 # Then, set JARVICE_DBHOST, JARVICE_PORTAL_DBHOST et al below in
@@ -73,10 +84,16 @@ jarvice_db:
     storageClass: "jarvice-db"
     accessMode: ReadWriteOnce
     size: 8Gi
+  # MYSQL_ROOT_PASSWORD inherits from jarvice.JARVICE_DBPASSWD if unset
+  # MYSQL_USER only inherits from jarvice.JARVICE_DBUSER if
+  #     jarvice.JARVICE_DBUSER != 'root'
+  # MYSQL_PASSWORD is only used if MYSQL_USER is set or
+  #     jarvice.JARVICE_DBUSER != 'root'
+  # MYSQL_PASSWORD inherits from jarvice.JARVICE_DBPASSWD if unset
   env:
-    MYSQL_ROOT_PASSWORD: Pass1234
-    #MYSQL_USER: nimbix # optional, alternative superuser to root
-    #MYSQL_PASSWORD: Pass1234
+    MYSQL_ROOT_PASSWORD: # Pass1234
+    MYSQL_USER: # nimbix # optional, additional superuser
+    MYSQL_PASSWORD: # Pass1234
 
 # Memcached server previously set up?  Set jarvice_memcached.enabled to false.
 # Then, set JARVICE_PORTAL_MEMCACHED_LOCATIONS below in jarvice_mc_portal env.
@@ -147,10 +164,12 @@ jarvice_dal:
   nodeSelector: # '{"node-role.kubernetes.io/jarvice-dal": ""}'
   # jarvice.settings.configMap takes precedence over envornment settings
   # for JARVICE_CFG_NETWORK
-  # JARVICE_SITE_DBPASSWD inherits from jarvice_db.MYSQL_ROOT_PASSWORD if unset
+  # JARVICE_SITE_DBHOST inherits from jarvice.JARVICE_DBHOST if unset
+  # JARVICE_SITE_DBPASSWD inherits from jarvice.JARVICE_DBPASSWD if unset
+  # JARVICE_SITE_DBUSER inherits from jarvice.JARVICE_DBUSER if unset
   env:
-    JARVICE_SITE_DBHOST: jarvice-db
-    JARVICE_SITE_DBUSER: root
+    JARVICE_SITE_DBHOST: # jarvice-db
+    JARVICE_SITE_DBUSER: # root
     JARVICE_SITE_DBPASSWD: # Pass1234
     JARVICE_ROOT_USER_CREATE: False
     JARVICE_ROOT_USER_PASSWD: Pass1234
@@ -261,9 +280,11 @@ jarvice_appsync:
       memory: 512Mi
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-appsync", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.kubernetes.io/jarvice-appsync": ""}'
+  # If JARVICE_SYSTEM_REGISTRY and/or JARVICE_SYSTEM_REPO_BASE are not set in
+  # jarvice_appsync.env, they will be set via the global jarvice stanza above.
   env:
-    JARVICE_SYSTEM_REGISTRY: quay.io
-    JARVICE_SYSTEM_REPO_BASE: nimbix
+    JARVICE_SYSTEM_REGISTRY: # quay.io
+    JARVICE_SYSTEM_REPO_BASE: # nimbix
     JARVICE_APPSYNC_INTERVAL: 3600
   livenessProbe:
     periodSeconds: 900
@@ -287,7 +308,9 @@ jarvice_mc_portal:
   nodeSelector: # '{"node-role.kubernetes.io/jarvice-mc-portal": ""}'
   # jarvice.settings.configMap takes precedence over envornment settings
   # for JARVICE_MC_PORTAL_CRT and JARVICE_MC_PORTAL_KEY
-  # JARVICE_PORTAL_DBPASSWD inherits from jarvice_db.MYSQL_ROOT_PASSWORD if unset
+  # JARVICE_PORTAL_DBHOST inherits from jarvice.JARVICE_DBHOST if unset
+  # JARVICE_PORTAL_DBPASSWD inherits from jarvice.JARVICE_DBPASSWD if unset
+  # JARVICE_PORTAL_DBUSER inherits from jarvice.JARVICE_DBUSER if unset
   env:
     JARVICE_USER_DEFAULT_ENABLED: True
     JARVICE_USER_DEFAULT_DEVELOPER: True
@@ -302,7 +325,7 @@ jarvice_mc_portal:
     JARVICE_PORTAL_MAIL_USERNAME:
     JARVICE_PORTAL_MAIL_PASSWORD:
     JARVICE_PORTAL_MAIL_ADMINS:
-    JARVICE_PORTAL_DBHOST: jarvice-db
-    JARVICE_PORTAL_DBUSER: root
+    JARVICE_PORTAL_DBHOST: # jarvice-db
+    JARVICE_PORTAL_DBUSER: # root
     JARVICE_PORTAL_DBPASSWD: # Pass1234
 
