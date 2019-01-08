@@ -66,8 +66,6 @@ jarvice:
 
 
 # Database server previously set up?  Set enabled to false.
-# Then, set JARVICE_DBHOST, JARVICE_PORTAL_DBHOST et al below in
-# the jarvice_dal env and jarvice_mc_portal env.
 jarvice_db:
   enabled: true
   replicaCount: 1
@@ -118,8 +116,8 @@ jarvice_memcached:
   extendedOptions: modern
 
 # Want to run the docker registry in JARVICE namespace?  Set enabled to true.
-# Then set JARVICE_LOCAL_REGISTRY to jarvice-registry:5000 as seen above
-# in the jarvice: stanza.  Set loadBalancerIP if desired.
+# Then set JARVICE_LOCAL_REGISTRY to jarvice-registry:443 as seen above
+# in the jarvice: stanza.  Use ingressHost or set loadBalancerIP as desired.
 jarvice_registry:
   enabled: false
   replicaCount: 1
@@ -162,7 +160,7 @@ jarvice_dal:
   hostNetwork: false
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-dal", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.kubernetes.io/jarvice-dal": ""}'
-  # jarvice.settings.configMap takes precedence over envornment settings
+  # jarvice.settings.configMap takes precedence over environment settings
   # for JARVICE_CFG_NETWORK
   # JARVICE_SITE_DBHOST inherits from jarvice.JARVICE_DBHOST if unset
   # JARVICE_SITE_DBPASSWD inherits from jarvice.JARVICE_DBPASSWD if unset
@@ -211,7 +209,7 @@ jarvice_scheduler:
       memory: 4Gi
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-scheduler", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.kubernetes.io/jarvice-scheduler": ""}'
-  # jarvice.settings.configMap takes precedence over envornment settings
+  # jarvice.settings.configMap takes precedence over environnment settings
   # for JARVICE_MAIL_CONF
   env:
     JARVICE_USE_LXCFS: yes
@@ -306,8 +304,6 @@ jarvice_mc_portal:
       memory: 2Gi
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-mc-portal", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.kubernetes.io/jarvice-mc-portal": ""}'
-  # jarvice.settings.configMap takes precedence over envornment settings
-  # for JARVICE_MC_PORTAL_CRT and JARVICE_MC_PORTAL_KEY
   # JARVICE_PORTAL_DBHOST inherits from jarvice.JARVICE_DBHOST if unset
   # JARVICE_PORTAL_DBPASSWD inherits from jarvice.JARVICE_DBPASSWD if unset
   # JARVICE_PORTAL_DBUSER inherits from jarvice.JARVICE_DBUSER if unset
