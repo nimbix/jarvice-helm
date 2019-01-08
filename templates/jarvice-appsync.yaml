@@ -88,9 +88,17 @@ spec:
             value: {{ .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
 {{- end }}
           - name: JARVICE_SYSTEM_REGISTRY
+{{- if (not (empty .Values.jarvice_appsync.env.JARVICE_SYSTEM_REGISTRY)) }}
             value: "{{ .Values.jarvice_appsync.env.JARVICE_SYSTEM_REGISTRY }}"
+{{- else }}
+            value: "{{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}"
+{{- end }}
           - name: JARVICE_SYSTEM_REPO_BASE
+{{- if (not (empty .Values.jarvice_appsync.env.JARVICE_SYSTEM_REPO_BASE)) }}
             value: "{{ .Values.jarvice_appsync.env.JARVICE_SYSTEM_REPO_BASE }}"
+{{- else }}
+            value: "{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}"
+{{- end }}
           - name: JARVICE_APPSYNC_INTERVAL
             value: "{{ .Values.jarvice_appsync.env.JARVICE_APPSYNC_INTERVAL }}"
         resources:
