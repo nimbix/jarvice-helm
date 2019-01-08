@@ -567,7 +567,7 @@ $ helm install \
     --set jarvice_registry.enabled=true \
     --set jarvice_registry.persistence.enabled=true \
     --set jarvice_registry.persistence.size=1000Gi \
-    --set jarvice.JARVICE_LOCAL_REGISTRY=jarvice-registry:5000 \
+    --set jarvice.JARVICE_LOCAL_REGISTRY=jarvice-registry:443 \
     --name jarvice --namespace jarvice-system ./jarvice-helm
 ```
 
@@ -701,17 +701,14 @@ necessary to enable it in the JARVICE helm chart.  This can be done either in
 an `override.yaml` file or via the command line with:
 
 `--set jarvice_registry.enabled=true`
-`--set jarvice.JARVICE_LOCAL_REGISTRY=jarvice-registry:5000`
+`--set jarvice.JARVICE_LOCAL_REGISTRY=jarvice-registry:443`
 
 The registry can be exposed for access from outside the cluster via:
 
-`--set jarvice_registry.external=true`
+`--set jarvice_registry.ingressHost=<jarvice-registry.my-domain.com`
 
-Please note, that the default TLS certificate and key will not match your
-domain/IP and will either need to be updated or used as an "insecure"
-docker registry.  Please see the docker documentation for more information:
-
-https://docs.docker.com/registry/insecure/
+Please note, that this will require that an ingress controller is installed
+in the kubernetes cluster which has a valid TLS certificate and key.
 
 There is also a docker-registry specific helm chart available for deployment.
 Use the helm inspect command for details:
@@ -746,9 +743,51 @@ $ kubectl --namespace kube-system create \
 #### JARVICE Cache Pull
 
 JARVICE Cache Pull is a DaemonSet which can be utilized to pre-populate
-kubernetes worker nodes with docker images.  This should be used to speed up
-job startup times for the most used JARVICE applications.  It can be installed
-with the following command:
+kubernetes worker nodes with the docker images used to run JARVICE
+appplications.  This can be used to speed up job startup times for the most
+used JARVICE applications.
+
+The `image-cache` ConfigMap is used to configure the interval at which images
+will be pulled along with which images to pull on certain architectures.  The
+ConfigMap can be created with commands similar to the following:
+```bash
+$ cat >image.config <<EOF
+[
+    {
+        "ref": "ubuntu:xenial",
+        "registry": "docker.io",
+        "private": false,
+        "config": "jarvice-docker",
+        "arch": {
+            "amd64": "docker.io/library/ubuntu:xenial",
+            "ppc64le": "docker.io/ppc64le/ubuntu:xenial"
+        }
+    },
+    {
+        "ref": "centos:latest",
+        "registry": "docker.io",
+        "private": false,
+        "config": "jarvice-docker",
+        "arch": {
+            "amd64": "docker.io/library/centos:latest",
+            "ppc64le": "docker.io/ppc64le/centos:latest"
+        }
+    },
+    {
+        "ref": "base-centos7-realvnc",
+        "registry": "quay.io",
+        "private": true,
+        "config": "jarvice-docker",
+        "arch": {
+            "amd64": "quay.io/nimbix/base-centos7-realvnc:7.5"
+        }
+    }
+EOF
+$ kubectl --namespace <jarvice-system> create \
+    configmap image-cache --from-literal interval=300 --from-file image.config
+```
+
+The correlating DaemonSet can be installed with the following command:
 ```bash
 $ kubectl --namespace <jarvice-system> create \
     -f https://raw.githubusercontent.com/nimbix/jarvice-cache-pull/master/jarvice-cache-pull.yaml
@@ -836,7 +875,8 @@ $ kubectl --namespace jarvice-system get all
 
 ### Retreive IP addresses for accessing JARVICE
 
-The LoadBalancer IP addresses for the MC portal and the API endpoint can be
+If utilizing LoadBalancer IP addresses instead of an ingress controller for
+web portal and API endpoint access, the LoadBalancer IP addresses can be
 found with the following commands:
 
 ```bash
