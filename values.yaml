@@ -15,7 +15,7 @@ jarvice:
 
   JARVICE_SYSTEM_REGISTRY: quay.io
   JARVICE_SYSTEM_REPO_BASE: nimbix
-  JARVICE_IMAGES_TAG: jarvice-testing # latest
+  JARVICE_IMAGES_TAG: jarvice-testing
   JARVICE_IMAGES_VERSION: # (set to empty when install/upgrade w/ chart repo)
   JARVICE_SYSTEM_ARCH: amd64
 
