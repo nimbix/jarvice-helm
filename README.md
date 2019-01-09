@@ -133,7 +133,7 @@ $ helm inspect stable/traefik
 
 Here is an example command to install Traefik for use with JARVICE:
 ```bash
-$ helm install stable/traefik \
+$ helm upgrade --install \
     --set rbac.enabled=true \
     --set nodeSelector."beta\.kubernetes\.io/arch"=amd64 \
     --set nodeSelector."node-role\.kubernetes\.io/jarvice-system"="" \
@@ -154,7 +154,7 @@ $ helm install stable/traefik \
     --set cpuRequest=1 \
     --set cpuLimit=1 \
     --set replicas=3 \
-    traefik stable/traefik
+    --namespace <kube-system> traefik stable/traefik
 ```
 
 There are a few things to note when installing Traefik for JARVICE.  In
