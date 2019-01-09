@@ -799,16 +799,18 @@ https://github.com/nimbix/jarvice-cache-pull
 ### Set up database backups
 
 It is recommended that JARVICE database backups be regularly scheduled.
-If using `jarvice-db` as is provided in the JARVICE helm chart, the following
-script could be executed from a cronjob to regularly dump the database:
+The following script could be executed from a cronjob to regularly dump
+the database:
 ```bash
 #!/bin/bash
 
-pod=$(kubectl -n jarvice-system get pods -l component=jarvice-db -ojson | \
-        jq -r '.items[] | select(.status.phase=="Running") | .metadata.name')
-kubectl -n jarvice-system exec $pod -- \
-        mysqldump --user=root --password="Pass1234" \
-        nimbix >jarvice-db.sql
+pod=$(kubectl -n jarvice-system get pods -l component=jarvice-dal -ojson | \
+        jq -r '.items[] | select(.status.phase=="Running") | .metadata.name' | \
+        head -n 1)
+cmd='mysqldump '
+cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
+cmd+=' --host="$JARVICE_SITE_DBHOST" nimbix'
+kubectl -n jarvice-system exec $pod -- bash -c "$cmd" >jarvice-db.sql
 ```
 
 ### Customize JARVICE files via a ConfigMap
