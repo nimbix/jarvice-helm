@@ -28,8 +28,12 @@ If release name contains chart name it will be used as a full name.
 JARVICE version for images
 */}}
 {{- define "jarvice.version" -}}
+{{- if (not (empty .Values.JARVICE_IMAGES_VERSION)) -}}
+{{- printf "-%s" .Values.JARVICE_IMAGES_VERSION -}}
+{{- else -}}
 {{- if semverCompare "^2.0.18-0" .Chart.Version -}}
 {{- printf "-%s" .Chart.Version -}}
+{{- end -}}
 {{- end -}}
 {{- end -}}
 
