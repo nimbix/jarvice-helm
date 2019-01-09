@@ -804,13 +804,30 @@ the database:
 ```bash
 #!/bin/bash
 
-pod=$(kubectl -n jarvice-system get pods -l component=jarvice-dal -ojson | \
+namespace=jarvice-system
+pod=$(kubectl -n $namespace get pods -l component=jarvice-dal -ojson | \
         jq -r '.items[] | select(.status.phase=="Running") | .metadata.name' | \
         head -n 1)
 cmd='mysqldump '
 cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
 cmd+=' --host="$JARVICE_SITE_DBHOST" nimbix'
-kubectl -n jarvice-system exec $pod -- bash -c "$cmd" >jarvice-db.sql
+kubectl -n $namespace exec $pod -- bash -c "$cmd" >jarvice-db.sql
+```
+
+#### Restoring the database from backup
+
+The following script can be used to restore the database from the backup:
+```bash
+#!/bin/bash
+
+namespace=jarvice-system
+pod=$(kubectl -n $namespace get pods -l component=jarvice-dal -ojson | \
+        jq -r '.items[] | select(.status.phase=="Running") | .metadata.name' | \
+        head -n 1)
+cmd='mysql '
+cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
+cmd+=' --host="$JARVICE_SITE_DBHOST" --database=nimbix'
+kubectl -n $namespace exec --stdin $pod -- bash -c "$cmd" <jarvice-db.sql
 ```
 
 ### Customize JARVICE files via a ConfigMap
