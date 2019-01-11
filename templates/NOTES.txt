@@ -21,18 +21,15 @@ $ kubectl --namespace {{ .Release.Namespace }} \
     create configmap {{ .Values.jarvice.settings.configMap }} \
     --from-file=jarvice-helm/jarvice-settings-override
 
-Reload jarvice-dal pods (only to apply cfg.network update):
-$ kubectl --namespace {{ .Release.Namespace }} set env \
-    deployment/jarvice-dal JARVICE_PODS_RELOAD=$(date +%s)
-
-Reload jarvice-scheduler pods (only to apply mail.conf update):
-$ kubectl --namespace {{ .Release.Namespace }} set env \
-    deployment/jarvice-scheduler JARVICE_PODS_RELOAD=$(date +%s)
-
 Reload jarvice-mc-portal pods (only to apply default.png, favicon.png,
 logo.png, palette.json, or eula.txt updates):
-$ kubectl --namespace {{ .Release.Namespace }} set env \
-    deployment/jarvice-mc-portal JARVICE_PODS_RELOAD=$(date +%s)
+$ kubectl --namespace jarvice-system delete pods -l component=jarvice-mc-portal
+
+Reload jarvice-scheduler pods (only to apply mail.conf update):
+$ kubectl --namespace jarvice-system delete pods -l component=jarvice-scheduler
+
+Reload jarvice-dal pods (only to apply cfg.network update):
+$ kubectl --namespace jarvice-system delete pods -l component=jarvice-dal
 
 -------------------------------------------------------------------------------
 
