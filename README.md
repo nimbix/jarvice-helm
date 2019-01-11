@@ -23,7 +23,7 @@ $ kubectl --namespace kube-system create -f jarvice-helm/extra/tiller-sa.yaml
 $ helm init --upgrade --service-account tiller
 ```
 
-<!--
+<!--  Comment: helm repo not yet enabled
 After helm is installed, add the `jarvice-master` chart repository:
 ```bash
 $ helm repo add jarvice-master https://repo.nimbix.net/charts/jarvice-master
@@ -144,8 +144,8 @@ $ helm upgrade --install \
     --set ssl.enforced=true \
     --set ssl.permanentRedirect=true \
     --set ssl.insecureSkipVerify=true \
-    --set ssl.defaultCert="$(cat <site-domain>.pem | base64 -w 0)" \
-    --set ssl.defaultKey="$(cat <site-domain>.key | base64 -w 0)" \
+    --set ssl.defaultCert="$(base64 -w 0 <site-domain>.pem)" \
+    --set ssl.defaultKey="$(base64 -w 0 <site-domain>.key)" \
     --set dashboard.enabled=true \
     --set dashboard.domain=traefik-dashboard.<site-domain> \
     --set loadBalancerIP=<static-ip> \
@@ -424,7 +424,7 @@ $ helm install \
     --set jarvice_api.tolerations[1].key=node-role.kubernetes.io/jarvice-api \
     --set jarvice_api.tolerations[1].operator=Exists
     ...
-    --name jarvice --namespace jarvice-system ./jarvice-helm
+    --namespace jarvice-system --name jarvice ./jarvice-helm
 ```
 
 For more information on assigning kubernetes taints and tolerations,
@@ -450,7 +450,7 @@ releases of JARVICE.
 
 ## JARVICE Quick Installation (Demo without persistence)
 
-<!--
+<!--  Comment: helm repo not yet enabled
 The installation commands assume that they are being run on a client machine
 that has access to the kubernetes cluster and has `helm` installed as
 mentioned in the installation prerequisites above.  They also assume that the
@@ -492,10 +492,10 @@ $ helm install \
     --set jarvice.imagePullSecret.username="<jarvice_quay_io_user>" \
     --set jarvice.imagePullSecret.password="<jarvice_quay_io_pass>" \
     --set jarvice.JARVICE_LICENSE_LIC="<jarvice_license_key>" \
-    --name jarvice --namespace jarvice-system ./jarvice-helm
+    --namespace jarvice-system --name jarvice ./jarvice-helm
 ```
 <!--
-    --name jarvice --namespace jarvice-system \
+    --namespace jarvice-system --name jarvice \
     --version <chart-version> jarvice-master/jarvice
 -->
 
@@ -508,10 +508,10 @@ $ helm install \
     --set jarvice.JARVICE_LICENSE_LIC="<jarvice_license_key>" \
     --set jarvice.JARVICE_REMOTE_USER="<jarvice_upstream_user>" \
     --set jarvice.JARVICE_REMOTE_APIKEY="<jarvice_upstream_user_apikey>" \
-    --name jarvice --namespace jarvice-system ./jarvice-helm
+    --namespace jarvice-system --name jarvice ./jarvice-helm
 ```
 <!--
-    --name jarvice --namespace jarvice-system \
+    --namespace jarvice-system --name jarvice \
     --version <chart-version> jarvice-master/jarvice
 -->
 
@@ -568,7 +568,7 @@ $ helm install \
     --set jarvice_registry.persistence.enabled=true \
     --set jarvice_registry.persistence.size=1000Gi \
     --set jarvice.JARVICE_LOCAL_REGISTRY=jarvice-registry:443 \
-    --name jarvice --namespace jarvice-system ./jarvice-helm
+    --namespace jarvice-system --name jarvice jarvice-helm
 ```
 
 By default, the standard install already has `jarvice_db.enabled=true` and
@@ -619,7 +619,7 @@ a part of the helm installation command:
 ```bash
 $ cp jarvice-helm/values.yaml jarvice-helm/override.yaml
 $ helm install --values jarvice-helm/override.yaml \
-    --name jarvice --namespace jarvice-system ./jarvice-helm
+    --namespace jarvice-system --name jarvice ./jarvice-helm
 ```
 
 ### Updating configuration (or upgrading to newer JARVICE chart version)
@@ -705,7 +705,7 @@ an `override.yaml` file or via the command line with:
 
 The registry can be exposed for access from outside the cluster via:
 
-`--set jarvice_registry.ingressHost=<jarvice-registry.my-domain.com`
+`--set jarvice_registry.ingressHost=<jarvice-registry.my-domain.com>`
 
 Please note, that this will require that an ingress controller is installed
 in the kubernetes cluster which has a valid TLS certificate and key.
@@ -805,9 +805,10 @@ the database:
 #!/bin/bash
 
 namespace=jarvice-system
-pod=$(kubectl -n $namespace get pods -l component=jarvice-dal -ojson | \
-        jq -r '.items[] | select(.status.phase=="Running") | .metadata.name' | \
-        head -n 1)
+pod=$(kubectl -n $namespace get pods \
+        -l component=jarvice-dal \
+        --field-selector=status.phase=Running \
+        -o jsonpath={.items[0].metadata.name})
 cmd='mysqldump '
 cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
 cmd+=' --host="$JARVICE_SITE_DBHOST" nimbix'
@@ -821,9 +822,10 @@ The following script can be used to restore the database from the backup:
 #!/bin/bash
 
 namespace=jarvice-system
-pod=$(kubectl -n $namespace get pods -l component=jarvice-dal -ojson | \
-        jq -r '.items[] | select(.status.phase=="Running") | .metadata.name' | \
-        head -n 1)
+pod=$(kubectl -n $namespace get pods \
+        -l component=jarvice-dal \
+        --field-selector=status.phase=Running \
+        -o jsonpath={.items[0].metadata.name})
 cmd='mysql '
 cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
 cmd+=' --host="$JARVICE_SITE_DBHOST" --database=nimbix'
@@ -864,23 +866,20 @@ $ kubectl --namespace jarvice-system \
     --from-file=jarvice-helm/jarvice-settings-override
 ```
 
-Reload jarvice-dal pods (only to apply cfg.network update):
+Reload jarvice-mc-portal pods (only to apply default.png, favicon.png,
+logo.png, palette.json, or eula.txt updates):
 ```bash
-$ kubectl --namespace jarvice-system set env \
-    deployment/jarvice-dal JARVICE_PODS_RELOAD=$(date +%s)
+$ kubectl --namespace jarvice-system delete pods -l component=jarvice-mc-portal
 ```
 
 Reload jarvice-scheduler pods (only to apply mail.conf update):
 ```bash
-$ kubectl --namespace jarvice-system set env \
-    deployment/jarvice-scheduler JARVICE_PODS_RELOAD=$(date +%s)
+$ kubectl --namespace jarvice-system delete pods -l component=jarvice-scheduler
 ```
 
-Reload jarvice-mc-portal pods (only to apply default.png, favicon.png,
-logo.png, palette.json, or eula.txt updates):
+Reload jarvice-dal pods (only to apply cfg.network update):
 ```bash
-$ kubectl --namespace jarvice-system set env \
-    deployment/jarvice-mc-portal JARVICE_PODS_RELOAD=$(date +%s)
+$ kubectl --namespace jarvice-system delete pods -l component=jarvice-dal
 ```
 
 ### View status of the installed kubernetes objects
