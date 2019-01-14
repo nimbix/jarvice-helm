@@ -125,8 +125,13 @@ spec:
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_USER_DEFAULT_ENABLED }}"
           - name: JARVICE_USER_DEFAULT_DEVELOPER
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_USER_DEFAULT_DEVELOPER }}"
+{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_WEB_HOST)) }}
           - name: JARVICE_PORTAL_WEB_HOST
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_WEB_HOST }}"
+{{- else if (not (empty .Values.jarvice_mc_portal.ingressHost)) }}
+          - name: JARVICE_PORTAL_WEB_HOST
+            value: "https://{{ .Values.jarvice_mc_portal.ingressHost }}"
+{{- end }}
           - name: JARVICE_PORTAL_MEMCACHED_LOCATIONS
 {{- if and .Values.jarvice_memcached.enabled (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MEMCACHED_LOCATIONS) }}
             {{- $memcachedCount := .Values.jarvice_memcached.replicaCount }}
