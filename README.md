@@ -515,6 +515,8 @@ $ helm install \
     --version <chart-version> jarvice-master/jarvice
 -->
 
+**NOTE:** `jarvice.JARVICE_APPSYNC_USERONLY=true` can be set to only synchronize application catalog items owned by the user set in `jarvice.JARVICE_REMOTE_USER`; this is a simple way to restrict the applications that get synchronized from the upstream service catalog.
+
 ### Quick install to Amazon EKS with `jarvice-deploy2eks` script
 
 If a kubernetes cluster is not readily available, JARVICE can be quickly
