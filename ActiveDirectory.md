@@ -1,4 +1,4 @@
-# Active Directory Authentication and Authorization Best Practices
+# Active Directory Authentication Best Practices
 
 JARVICE supports authentication against Active Directory using LDAP binding.  For simple user authentication, a service account is not needed.
 
