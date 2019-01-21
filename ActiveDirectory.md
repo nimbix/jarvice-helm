@@ -28,4 +28,6 @@ When creating apps with PushToCompute, any team member can elect to make the app
 1. Active Directory Users must log in to JARVICE with their common name (CN), not their user principal name (UPN)
 2. Users can determine the account name JARVICE automatically generates for them by visiting the *Account* section
 3. JARVICE does not support password reset via Active Directory - users must do this outside of JARVICE, including situations where new accounts require initial password setting
+4. The team "payer" account must be a native JARVICE account and not an Active Directory one; typically, this user will be invited by the system administrator and will be given *SAML Admin* role after signup; note that *SAML Admin* role enables both SAML (federated) and LDAP (direct) configuration
+5. Currently, each team will have its own dedicated login link; Active Directory logins cannot occur on the main JARVICE portal's login page; once you save configuration, JARVICE will generate a login link that you can send to users
 
