@@ -22,21 +22,23 @@ Note that an initial JARVICE deployment defines some default machine types but t
 
 In the table below, the first column refers to values in the JARVICE machine configuration, while the second column explains what JARVICE will translate into Kubernetes requests.
 
+**WARNING**: The ```static``` CPU manager policy is, at the time of this writing, known to interfere with GPU operations and may have other issues.  As a best practice, do not configure any ```kubelet``` with this option.  This means that even when using Guaranteed QoS (as explained below), running a command such as ```nproc```, even if using the ```lxcfs``` device, will still show all cores/threads on the host machine.  To programmatically configure solvers and other CPU-intensive utilities to properly allocate threads on the allotted CPU, it's best to count the number of entries in ```/etc/JARVICE/cores```, as this will be set to reflect the core count specified in the machine definition.
+
 The following conditions exist along with their recommended usecases:
 
 **Condition**|**Kubernetes Request**|**Usecase**
 ---|---|---
 ```cores == slots```|```requests.cpu=cores``` (Guaranteed QoS)|use to request less than a full node's worth of resource, and should generally be used with ```static``` CPU manager policy
-```cores < slots```|```requests.cpu=(cores-0.9), limits.cpu=slots``` (Burstable QoS)|use to request a full node's worth of resource, and for performance reasons should be used with ```none``` CPU manager policy; setting ```slots``` to something like 10% more than ```cores``` typically eliminates significant throttling from CFS, but a better alternative may be to pass ```--cpu-cfs-quota=false``` to the *kubelet* on nodes that primarily are used as full systems
-```cores > slots```|```requests.cpu=slots, limits.cpu=cores``` (Burstable QoS)|use to oversubscribe work on the node since the ```cores``` value is always passed to the application to indicate how much work it should do (via ```/etc/JARVICE/cores``` in the runtime environment); this works with either CPU manager policy, but this method should be rarely used given the implications of oversubscribing systems
+```cores < slots```|```requests.cpu=(cores-0.9), limits.cpu=slots``` (Burstable QoS)|use to request a full node's worth of resource; setting ```slots``` to something like 10% more than ```cores``` typically eliminates significant throttling from CFS, but a better alternative may be to pass ```--cpu-cfs-quota=false``` to the *kubelet* on nodes that primarily are used as full systems; note that JARVICE assumes that all Daemonsets and other system pods are requesting less than 1 full CPU core on each node, which is typically a reasonable assumption
+```cores > slots```|```requests.cpu=slots, limits.cpu=cores``` (Burstable QoS)|use to oversubscribe work on the node since the ```cores``` value is always passed to the application to indicate how much work it should do (via ```/etc/JARVICE/cores``` in the runtime environment); this works with any CPU manager policy, but this method should be rarely used given the implications of oversubscribing systems
 
 #### Best practice recommendations
 
-1. For nodes that will primarily be used as full entities with parallel CPU-intensive solvers (e.g. CFD, etc.), set CPU manager policy to ```none``` on the nodes and set ```cores``` to the number of physical cores in the node, and ```slots``` to a value that is 5-10% above that.  Also consider using ```--cpu-cfs-quota=false``` to the *kubelet* on those nodes, and using labels and taints to control assignmnet of work (and respective ```properties``` in the JARVICE machine definition that describes them)
-2. For nodes that will primarily be used for fractional containers, e.g. jobs that are GPU heavy but don't require much CPU/system memory resource, set ```cores``` and ```slots``` to equal values (representing some fraction of the node's CPU availability) and use ```static``` CPU manager policies on those nodes.  Consider using labels and taints to control assignment of work (and respective ```properties``` in the JARVICE machine definitions that describe them)
+1. For machine types that will primarily be used as full entities with parallel CPU-intensive solvers (e.g. CFD, etc.), set ```cores``` to the number of physical cores in the node, and ```slots``` to a value that is 5-10% above that.  Also consider using ```--cpu-cfs-quota=false``` to the *kubelet* on those nodes, and using labels and taints to control assignmnet of work (and respective ```properties``` in the JARVICE machine definition that describes them)
+2. For nodes that will primarily be used for fractional containers, e.g. jobs that are GPU heavy but don't require much CPU/system memory resource, set ```cores``` and ```slots``` to equal values (representing some fraction of the node's CPU availability).  Consider using labels and taints to control assignment of work (and respective ```properties``` in the JARVICE machine definitions that describe them)
 3. Rarely consider oversubscription, other than perhaps for testing.
 
-See also: [Kubernetes CPU Management Policies](https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/)
+See also: [Kubernetes CPU Management Policies](https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/), but see above warning on ```static``` CPU policy!
 
 #### Examples (machine definitions)
 
@@ -71,7 +73,7 @@ properties (optional)|accelerator=nvidia-tesla-k80,cudaversion=somevalue
 
 Note that it may be advantageous to label the node with the the CUDA version in the case that these vary by GPU types.  The NVIDIA GPU driver daemonset already presents a value for the ```accelerator``` label.
 
-Also, in the case where applications running on this resource type will be GPU heavy rather than CPU heavy, consider reducing the CPU allocation rather then dividing it equally across all CPUs, so that non-GPU jobs can also fit on the node.  Note that this practice is best served with ```static``` CPU manager policy.
+Also, in the case where applications running on this resource type will be GPU heavy rather than CPU heavy, consider reducing the CPU allocation rather then dividing it equally across all CPUs, so that non-GPU jobs can also fit on the node.
 
 See below for the meaning of ```lxcfs``` device.
 
@@ -81,8 +83,25 @@ The *JARVICE* column below refers to the value to populate in the "devices" fiel
 
 JARVICE|K8S Resource request/behavior|Notes
 ---|---|---
-```ibrdma```|```tencent.com/rdma```: ```1```|Requests RDMA over InfiniBand - requires the Nimbix-forked [k8s-rdma-device-plugin](https://github.com/nimbix/k8s-rdma-device-plugin) unless/until the original applies the fixes
-```lxcfs```|Applies ```lxcfs``` FUSE mounts in ```/proc``` for the container, to present ```cpuinfo```, ```meminfo```, etc. to reflect the ```cgroup``` values|Requires the [Kubernetes Initializer for LXCFS](https://github.com/nimbix/lxcfs-initializer) DaemonSet deployed on the cluster, or ```lxcfs``` installed and started on the host, and ```cpuinfo``` won't work correctly unless ```static``` CPU manger policy is used
+```ibrdma[:n]```|```tencent.com/rdma```: ```<n>```|Requests RDMA over InfiniBand - requires the Nimbix-forked [k8s-rdma-device-plugin](https://github.com/nimbix/k8s-rdma-device-plugin) unless/until the original applies the fixes; set *n* to the number of devices to request, which defaults to 1 if not specified
+```lxcfs```|Applies ```lxcfs``` FUSE mounts in ```/proc``` for the container, to present ```cpuinfo```, ```meminfo```, etc. to reflect the ```cgroup``` values|Requires the [Kubernetes Initializer for LXCFS](https://github.com/nimbix/lxcfs-initializer) DaemonSet deployed on the cluster, or ```lxcfs``` installed and started on the host, and ```cpuinfo``` won't work correctly unless ```static``` CPU manger policy is used - but see above warning about this policy!
+```fpga-xilinx-<*>[:n]```|```xilinx.com/fpga-xilinx-<*>[:n]```|Requests Xilinx FPGA of a specific type and DSA, where *<*>* defines the type and DSA (Xilinx-specific) and *n* specifies the number of devices to request, which defaults to 1 if not specified; requires a DaemonSet that deploys the [xilinxatg/xilinx_k8s_fpga_plugin](https://hub.docker.com/r/xilinxatg/xilinx_k8s_fpga_plugin/) container
+```/<host-path>=<container-path>[:ro\|:rw]```|Applies *VolumeMount* to pod of a *HostPath* volume|Specifies an absolute path on the host (*host-path*) to bind into the container in *container-path* with either read/only (*:ro*) or read/write (*:rw*) permissions; if permissions are not specified, the default is read/only; note that commas cannot be used in either path
+```*[:n]```|direct passthrough of resource request|Requests any other resource directly from Kubernetes, but cannot be used for resources that JARVICE already handles in the machine definition; use with caution as this is not checked and can cause jobs to not start properly; *n* refers to scale, and defaults to 1 if not specified
+
+### Examples
+
+#### Requests 2 RDMA devices, and maps a public data set mounted on the host
+
+```
+ibrdma:2,/mnt/dataset=/mnt/dataset:ro
+```
+(Note that the ```:ro``` is optional since this is the default)
+
+#### Requets LXCFS, a single RDMA device, a public data set mounted on the host, and shared scratch mounted on the host
+```
+ibrdma,lxcfs,/mnt/dataset=/mnt/dataset,/mnt/scratch=/scratch:rw
+```
 
 ## JARVICE HPC Pod Scheduler Notes
 
