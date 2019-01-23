@@ -174,10 +174,27 @@ https://github.com/containous/traefik
 
 ### Kubernetes device plugins:
 
+#### NVIDIA device plugin
+
 If the cluster nodes have NVIDIA GPU devices installed, it will be necessary
-to install the device plugin in order for JARVICE to make use of them.  Please
-see the following link for plugin installation details:
+to install the NVIDIA device plugin and it's
+[prerequisites](https://github.com/NVIDIA/k8s-device-plugin#prerequisites)
+in order for JARVICE to make use of them.
+
+This helm chart includes a script which will install and configure all of the
+device plugin
+[prerequisites](https://github.com/NVIDIA/k8s-device-plugin#prerequisites) on
+kubernetes worker nodes running Ubuntu or CentOS/RHEL distributions.  It can
+be run directly with the following command line:
+```bash
+$ curl https://raw.githubusercontent.com/nimbix/jarvice-helm/master/scripts/nvidia-docker-install | bash
+```
+
+For further details on installing the NVIDIA device plugin itself,
+please see the following link for plugin installation details:
 https://github.com/NVIDIA/k8s-device-plugin
+
+#### RDMA device plugin
 
 If the cluster nodes have RDMA capable devices installed, it will be necessary
 to install the device plugin in order for JARVICE to make use of them.  Please
