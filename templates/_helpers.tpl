@@ -25,6 +25,17 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{/*
+JARVICE tag for images
+*/}}
+{{- define "jarvice.tag" -}}
+{{- if (not (empty .Values.jarvice.JARVICE_IMAGES_TAG)) -}}
+{{- printf "%s" .Values.jarvice.JARVICE_IMAGES_VERSION -}}
+{{- else -}}
+{{- printf "jarvice-master" -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 JARVICE version for images
 */}}
 {{- define "jarvice.version" -}}
