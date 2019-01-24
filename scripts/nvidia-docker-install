@@ -1,0 +1,94 @@
+#!/bin/bash
+
+set -e
+
+. /etc/os-release
+DISTRO="$ID$VERSION_ID"
+if [ "$ID" != "ubuntu" ] && [ "$ID" != "centos" ] && [ "$ID" != "rhel" ]; then
+    echo "This distro is not supported."
+    exit 1
+fi
+
+export DEBIAN_FRONTEND=noninteractive
+if [ "$ID" = "ubuntu" ]; then
+    sudo apt-get -y update
+    sudo apt-get -y install --no-install-recommends \
+        curl jq apt-transport-https ca-certificates
+else
+    sudo yum -y install epel-release
+    sudo yum -y install curl jq
+fi
+
+# Set up CUDA repo
+CUDA_REPO_ID=$ID
+[ "$ID" = "centos" ] && CUDA_REPO_ID=rhel
+CUDA_REPO_REL=$(echo $VERSION_ID | sed -e 's/\.//')
+ARCH=$(arch)
+CUDA_REPO_ARCH=$ARCH
+[ "$ID" = "ubuntu" ] && [ "$CUDA_REPO_ARCH" = "ppc64le" ] && \
+    CUDA_REPO_ARCH=ppc64el
+
+URL_NVIDIA_CUDA=http://developer.download.nvidia.com/compute/cuda/repos/$CUDA_REPO_ID$CUDA_REPO_REL/$CUDA_REPO_ARCH
+URL_NVIDIA_CUDA_KEY=$URL_NVIDIA_CUDA/7fa2af80.pub
+
+repo_file=
+if [ "$ID" = "ubuntu" ]; then
+    repo_file=/etc/apt/sources.list.d/nvidia.list
+    cat <<EOF | sudo tee $repo_file >/dev/null
+deb $URL_NVIDIA_CUDA  /
+EOF
+else
+    repo_file=/etc/yum.repos.d/nvidia.repo
+    cat <<EOF | sudo tee $repo_file >/dev/null
+[cuda]
+name=cuda
+baseurl=$URL_NVIDIA_CUDA
+gpgcheck=1
+enabled=1
+gpgkey=$URL_NVIDIA_CUDA_KEY
+
+EOF
+fi
+
+# Set up NVIDIA docker repos
+URL_NVIDIA_GITHUB=https://nvidia.github.io
+URL_NVIDIA_GITHUB_KEY=$URL_NVIDIA_GITHUB/nvidia-docker/gpgkey
+URL_NVIDIA_DOCKER=$URL_NVIDIA_GITHUB/nvidia-docker/$DISTRO/nvidia-docker
+if [ "$ID" = "ubuntu" ]; then
+    curl -fsSL $URL_NVIDIA_DOCKER.list | sudo tee -a $repo_file >/dev/null
+else
+    curl -fsSL $URL_NVIDIA_DOCKER.repo | sudo tee -a $repo_file >/dev/null
+fi
+
+daemon_json_bak=
+if [ -f /etc/docker/daemon.json ]; then
+    cp -f /etc/docker/daemon.json /etc/docker/daemon.json~
+    daemon_json_bak=yes
+fi
+
+if [ "$ID" = "ubuntu" ]; then
+    curl -fsSL $URL_NVIDIA_CUDA_KEY | sudo apt-key add -
+    curl -fsSL $URL_NVIDIA_GITHUB_KEY | sudo apt-key add -
+    sudo apt-get -y update
+    sudo apt-get -y install cuda nvidia-docker2
+else
+    sudo yum -y install cuda nvidia-docker2
+fi
+
+if [ -n "$daemon_json_bak" ]; then
+    echo "Previous /etc/docker/daemon.json was copied to /etc/docker/daemon.json~"
+    echo "nvidia-docker2 package may have overwritten it"
+fi
+
+echo "Setting default docker runtime to: nvidia"
+cat /etc/docker/daemon.json | jq '."default-runtime" = "nvidia"' | \
+    tee /etc/docker/daemon.json
+
+CUDA_RUN_ARCH=
+[ "$ARCH" != "x86_64" ] && CUDA_RUN_ARCH="-$ARCH"
+cat <<EOF
+NVIDIA docker and it's dependencies have been installed.  Please reboot to
+load the NVIDIA drivers.  After reboot, execute the following to validate:
+sudo docker run --rm nvidia/cuda$CUDA_RUN_ARCH:9.0-base nvidia-smi
+EOF
+
