@@ -49,9 +49,9 @@ jarvice-master/jarvice 	2.0.18-1.20190105.2358	2.0.18     	JARVICE cloud platfor
 
 ### Configure kubernetes CPU management policies:
 
-Enterprise JARVICE installations will want kubelets that are configured to use
-a `static` CPU managment policy on the JARVICE worker nodes.  This policy can
-be set with the arguments given to a worker node's kublet on startup.
+**WARNING:** `static` CPU policy, at the time of this writing, is known to interfere with NVIDIA GPU operations in the container environment.  While this setting can be used to more accurately implement "Guaranteed" QoS for fractional node CPU allocation, **it may not be stable enough for many usecases!**
+
+If appropriate, `static` CPU policy can be set with the arguments given to a worker node's kublet on startup.  
 
 The default CPU management policy is `none`.  If CPU management policy wasn't
 set to `static` at JARVICE worker node install time, it will be necessary
