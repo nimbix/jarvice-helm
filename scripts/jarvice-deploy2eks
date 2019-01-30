@@ -301,7 +301,7 @@ function eks_cf_stack_delete {
 function eks_nodegroup_stacks_get {
     nodegroup_ids=$($AWS --region $aws_region cloudformation \
         describe-stacks | \
-        $JQ -r ".Stacks[] | select(.Parameters[].ParameterValue==\"eksctl-$eks_cluster_name-cluster\").Parameters[] | select(.ParameterKey==\"NodeGroupID\").ParameterValue" | \
+        $JQ -r ".Stacks[] | select(.Parameters!=null) | select(.Parameters[].ParameterValue==\"eksctl-$eks_cluster_name-cluster\").Parameters[] | select(.ParameterKey==\"NodeGroupID\").ParameterValue" | \
             sort)
     echo -e "ID\tnode_type\tmin_nodes\tmax_nodes\tvol_size"
     echo -e "--\t---------\t---------\t---------\t--------"
@@ -344,7 +344,7 @@ function eks_nodegroup_stack_add_update {
             $JQ ".TemplateBody")
         nodegroup_id=$($AWS --region $aws_region cloudformation \
             describe-stacks | \
-            $JQ -r ".Stacks[] | select(.Parameters[].ParameterValue==\"eksctl-$eks_cluster_name-cluster\").Parameters[] | select(.ParameterKey==\"NodeGroupID\").ParameterValue" | \
+            $JQ -r ".Stacks[] | select(.Parameters!=null) | select(.Parameters[].ParameterValue==\"eksctl-$eks_cluster_name-cluster\").Parameters[] | select(.ParameterKey==\"NodeGroupID\").ParameterValue" | \
             sort | tail -n 1)
         nodegroup_id=$((nodegroup_id+1))
         stack_name="eksctl-$eks_cluster_name-nodegroup-$nodegroup_id"
@@ -413,7 +413,7 @@ EOF
     echo "* Updating aws-auth ConfigMap..."
     role_arns=$($AWS --region $aws_region cloudformation \
         describe-stacks | \
-        $JQ -r ".Stacks[] | select(.Parameters[].ParameterValue==\"eksctl-$eks_cluster_name-cluster\").Outputs[].OutputValue")
+        $JQ -r ".Stacks[] | select(.Parameters!=null) | select(.Parameters[].ParameterValue==\"eksctl-$eks_cluster_name-cluster\").Outputs[].OutputValue")
         configmap_yaml=$(cat <<EOF
 apiVersion: v1
 kind: ConfigMap
@@ -470,7 +470,7 @@ if [ -n "$eks_cluster_delete" ]; then
 
     nodegroup_stacks=$($AWS --region $aws_region cloudformation \
         describe-stacks | \
-        $JQ -r ".Stacks[] | select(.Parameters[].ParameterValue==\"eksctl-$eks_cluster_name-cluster\").StackName")
+        $JQ -r ".Stacks[] | select(.Parameters!=null) | select(.Parameters[].ParameterValue==\"eksctl-$eks_cluster_name-cluster\").StackName")
     for nodegroup_stack in $nodegroup_stacks; do
         eks_cf_stack_delete "$nodegroup_stack"
     done
