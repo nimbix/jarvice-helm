@@ -1,0 +1,83 @@
+apiVersion: eksctl.io/v1alpha4
+kind: ClusterConfig
+
+# JARVICE deploy config
+jarvice:
+  imagePullSecret:
+    username:
+    password:
+  JARVICE_LICENSE_LIC:
+  JARVICE_REMOTE_USER:
+  JARVICE_REMOTE_APIKEY:
+  JARVICE_JOBS_LB_SERVICE: true  # Set to false if using JARVICE_JOBS_DOMAIN
+  JARVICE_JOBS_DOMAIN:
+  ingress:  # Traefik is used for ingress
+    cert_file: # Optional, provide path to SSL certificate file
+    key_file: # Optional, provide path to SSL key file
+    loadBalancerIP: # Optional, provide a load balancer IP
+
+# EKS cluster deploy config
+metadata:
+  name: jarvice
+  region: us-west-2
+
+# To put nodes in a single availability zone, configure nodeGroups below
+#availabilityZones: ["us-west-2a", "us-west-2b", "us-west-2c"]
+
+nodeGroups:
+  # jarvice-system
+  - name: ng-jarvice-system-0
+    labels: {node-role.jarvice.io/jarvice-system: ""}
+    instanceType: c5.9xlarge  # https://aws.amazon.com/ec2/instance-types/
+    minSize: 3
+    maxSize: 3
+    desiredCapacity: 3
+    volumeSize: 100
+    volumeType: gp2
+    availabilityZones: ["us-west-2a"]
+    allowSSH: true
+    sshPublicKeyPath: ~/.ssh/id_rsa.pub
+    #sshPublicKeyName: <aws-ssh-key-name>
+
+  # jarvice-compute nodes use overrideBootstrapCommand to disable
+  # hyper-threading. Visit the following link for details:
+  # https://aws.amazon.com/blogs/compute/disabling-intel-hyper-threading-technology-on-amazon-linux/
+
+  # jarvice-compute - non-GPU node group
+  - name: ng-jarvice-compute-0
+    labels: {node-role.jarvice.io/jarvice-compute: ""}
+    instanceType: c5.9xlarge  # https://aws.amazon.com/ec2/instance-types/
+    minSize: 4
+    maxSize: 4
+    desiredCapacity: 4
+    volumeSize: 100
+    volumeType: gp2
+    availabilityZones: ["us-west-2a"]
+    allowSSH: true
+    sshPublicKeyPath: ~/.ssh/id_rsa.pub
+    #sshPublicKeyName: <aws-ssh-key-name>
+    overrideBootstrapCommand: |
+        for cpunum in $(cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list | cut -s -d, -f2- | sed 's/,/ /g'); do echo 0 > /sys/devices/system/cpu/cpu$cpunum/online; done;
+        echo "NODE_IP=$(curl --silent http://169.254.169.254/latest/meta-data/local-ipv4)" > /etc/eksctl/kubelet.local.env;
+        echo "INSTANCE_ID=$(curl --silent http://169.254.169.254/latest/meta-data/instance-id)" >> /etc/eksctl/kubelet.local.env;
+        systemctl daemon-reload; systemctl enable kubelet; systemctl start kubelet
+
+  # jarvice-compute - GPU node group
+  #- name: ng-jarvice-compute-gpu-0
+  #  labels: {node-role.jarvice.io/jarvice-compute: ""}
+  #  instanceType: p2.xlarge  # https://aws.amazon.com/ec2/instance-types/
+  #  minSize: 4
+  #  maxSize: 4
+  #  desiredCapacity: 4
+  #  volumeSize: 100
+  #  volumeType: gp2
+  #  availabilityZones: ["us-west-2a"]
+  #  allowSSH: true
+  #  sshPublicKeyPath: ~/.ssh/id_rsa.pub
+  #  #sshPublicKeyName: <aws-ssh-key-name>
+  #  overrideBootstrapCommand: |
+  #      for cpunum in $(cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list | cut -s -d, -f2- | sed 's/,/ /g'); do echo 0 > /sys/devices/system/cpu/cpu$cpunum/online; done;
+  #      echo "NODE_IP=$(curl --silent http://169.254.169.254/latest/meta-data/local-ipv4)" > /etc/eksctl/kubelet.local.env;
+  #      echo "INSTANCE_ID=$(curl --silent http://169.254.169.254/latest/meta-data/instance-id)" >> /etc/eksctl/kubelet.local.env;
+  #      systemctl daemon-reload; systemctl enable kubelet; systemctl start kubelet
+
