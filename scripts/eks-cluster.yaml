@@ -10,7 +10,7 @@ jarvice:
   JARVICE_REMOTE_USER:
   JARVICE_REMOTE_APIKEY:
   JARVICE_JOBS_LB_SERVICE: true  # Set to false if using JARVICE_JOBS_DOMAIN
-  JARVICE_JOBS_DOMAIN:
+  JARVICE_JOBS_DOMAIN: # Set this if using ingress
   ingress:  # Traefik is used for ingress
     cert_file: # Optional, provide path to SSL certificate file
     key_file: # Optional, provide path to SSL key file
