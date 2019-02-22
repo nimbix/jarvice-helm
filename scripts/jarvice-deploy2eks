@@ -7,90 +7,38 @@ if [ "$(arch)" != "x86_64" ]; then
     exit 1
 fi
 
-eks_cluster_name=jarvice
 eks_cluster_delete=
-eks_node_type=c5.9xlarge
 install_nvidia_plugin=
 install_dashboard=
-eks_nodes=4
-eks_nodes_max=0
-eks_nodes_vol_size=100
-aws_region=us-west-2
-aws_zones=
 helm_name=jarvice
 helm_namespace=jarvice-system
-eks_stack_add=
-eks_stack_update=
-eks_stack_delete=
 database_vol_delete=
 vault_vols_delete=
+
+jarvice_chart_dir=$(realpath $(dirname $0)/..)
+config_file=$(realpath $(dirname $0)/eks-cluster.yaml)
 
 function jarvice_deploy2eks_usage {
     cat <<EOF
 Usage:
-  $0 [deploy_options] [eks_cluster_options]
-  $0 --eks-stack-add [eks_cluster_options]
-  $0 --eks-stack-update <number> [eks_cluster_options]
-  $0 --eks-stack-delete <number> \\
-        [--eks-cluster-name <name>] [--aws-region <aws_region>]
-  $0 --eks-stack-get <number> \\
-        [--eks-cluster-name <name>] [--aws-region <aws_region>]
-  $0 --eks-cluster-delete <name> \\
-        [--aws-region <aws_region>] \\
-        [--database-vol-delete] [--vault-vols-delete]
+  $0 [global_options] [deploy_or_delete_options]
 
-Available [deploy_options]:
-  --registry-username <username>    Docker registry username for JARVICE system
-                                    images
-  --registry-password <password>    Docker registry password for JARVICE system
-                                    images
-  --jarvice-license <license_key>   JARVICE license key
-  --jarvice-username <username>     JARVICE platform username for app
-                                    synchronization
-  --jarvice-apikey <apikey>         JARVICE platform apikey for app
-                                    synchronization
+Available [global_options]:
   --jarvice-chart-dir <path>        Alternative JARVICE helm chart directory
-                                    (optional)
-  --install-dashboard               Install kubernetes dashboard into cluster
-                                    (optional)
+                                    (Default: $jarvice_chart_dir)
+  --config-file <filename>          Alternative cluster config file
+                                    (Default: $config_file)
 
-Available [eks_cluster_options]:
-  --aws-region <aws_region>         AWS region for EKS cluster
-                                    (default: $aws_region)
-  --aws-zones <aws_zone_list>       Comma separated zone list for --aws-region
-                                    (initial deploy only, optional)
-  --eks-cluster-name <name>         EKS cluster name
-                                    (default: $eks_cluster_name)
-  --eks-node-type <node_type>       EC2 instance types for EKS nodes
-                                    (default: $eks_node_type)
-  --eks-nodes <number>              Number of EKS cluster nodes
-                                    (default: $eks_nodes)
-  --eks-nodes-max <number>          Autoscale up to maximum number of nodes
-                                    (must be greater than --eks-nodes)
-  --eks-nodes-vol-size <number>     Size of the nodes' EBS volume in GB
-                                    (default: $eks_nodes_vol_size)
-
-See the following link for available EC2 instance types (--eks-node-type):
-https://aws.amazon.com/ec2/instance-types/
-
-Example (minimal) deploy command:
-\$ $0 \\
-    --registry-username <username> \\
-    --registry-password <password> \\
-    --jarvice-license <license_key> \\
-    --jarvice-username <username> \\
-    --jarvice-apikey <apikey>
-
-Example (minimal) delete command (must explicitly supply cluster name):
-\$ $0 --eks-cluster-delete <name>
+Available [delete_options]:
+  --eks-cluster-delete              Delete the EKS cluster
+  --database-vol-delete             Delete the database volume on cluster delete
+  --vault-vols-delete               Delete the vault volumes on cluster delete
 
 EOF
-# Hide these for now.  Not sure these options make sense in a singular cluster.
-#  --helm-name <app_release_name>    Helm app release name
-#                                    (default: $helm_name)
-#  --helm-namespace <k8s_namespace>  Cluster namepace to install release into
-#                                    (default: $helm_namespace)
 }
+#Available [deploy_options]:
+#  --install-dashboard               Install kubernetes dashboard into cluster
+
 
 while [ $# -gt 0 ]; do
     case $1 in
@@ -98,41 +46,21 @@ while [ $# -gt 0 ]; do
             jarvice_deploy2eks_usage
             exit 0
             ;;
-        --registry-username)
-            registry_username=$2
-            shift; shift
-            ;;
-        --registry-password)
-            registry_password=$2
-            shift; shift
-            ;;
-        --jarvice-license)
-            jarvice_license=$2
-            shift; shift
-            ;;
-        --jarvice-username)
-            jarvice_username=$2
-            shift; shift
-            ;;
-        --jarvice-apikey)
-            jarvice_apikey=$2
-            shift; shift
-            ;;
         --jarvice-chart-dir)
             jarvice_chart_dir=$2
+            shift; shift
+            ;;
+        --config-file)
+            config_file=$2
             shift; shift
             ;;
         --install-dashboard)
             install_dashboard=y
             shift
             ;;
-        --eks-cluster-name)
-            eks_cluster_name=$2
-            shift; shift
-            ;;
         --eks-cluster-delete)
-            eks_cluster_delete=$2
-            shift; shift
+            eks_cluster_delete=y
+            shift
             ;;
         --database-vol-delete)
             database_vol_delete=y
@@ -142,60 +70,20 @@ while [ $# -gt 0 ]; do
             vault_vols_delete=y
             shift
             ;;
-        --eks-node-type)
-            eks_node_type=$2
-            shift; shift
-            ;;
-        --eks-nodes)
-            eks_nodes=$2
-            shift; shift
-            ;;
-        --eks-nodes-max)
-            eks_nodes_max=$2
-            shift; shift
-            ;;
-        --eks-nodes-vol-size)
-            eks_nodes_vol_size=$2
-            shift; shift
-            ;;
-        --aws-region)
-            aws_region=$2
-            shift; shift
-            ;;
-        --aws-zones)
-            aws_zones=$2
-            shift; shift
-            ;;
-        --helm-name)
-            helm_name=$2
-            shift; shift
-            ;;
-        --helm-namespace)
-            helm_namespace=$2
-            shift; shift
-            ;;
-        --eks-stacks-get)
-            eks_stacks_get=y
-            shift
-            ;;
-        --eks-stack-add)
-            eks_stack_add=y
-            shift
-            ;;
-        --eks-stack-update)
-            eks_stack_update=$2
-            shift; shift
-            ;;
-        --eks-stack-delete)
-            eks_stack_delete=$2
-            shift; shift
-            ;;
         *)
             jarvice_deploy2eks_usage
             exit 1
             ;;
     esac
 done
+
+echo
+echo "* Using cluster configuration file $config_file..."
+if [ ! -f "$config_file" ]; then
+    echo "Cannot find cluster config file $config_file.  Cannot continue."
+    exit 1
+fi
+
 
 # If "Accelerate Computing" NVIDIA type found, auto install NVIDIA plugin
 # See: https://aws.amazon.com/ec2/instance-types/
@@ -211,9 +99,10 @@ HELM=$(type -p helm)
 CURL=$(type -p curl)
 UNZIP=$(type -p unzip)
 JQ=$(type -p jq)
+SHYAML=$(type -p shyaml)
 
 KUBECTL_VER_REQ=1.10
-EKSCTL_VER_REQ=0.1.2
+EKSCTL_VER_REQ=0.1.22
 
 if [ -z "$KUBECONFIG" ]; then
     KUBECONFIG=~/.kube/config
@@ -242,6 +131,10 @@ function check_deps {
             echo "jq command not found...  Installing..."
             install_pkgs+="jq "
         fi
+        if [ -z "$SHYAML" ]; then
+            echo "shyaml command not found...  Installing..."
+            sudo -H pip install shyaml
+        fi
         if [ -n "$install_pkgs" ]; then
             if [ -e /etc/redhat-release ]; then
                 sudo yum -y install $install_pkgs
@@ -259,6 +152,12 @@ function get_json_value {
     echo "$json" | \
         python -c "import json,sys;obj=json.load(sys.stdin);print obj$key;" \
         2>/dev/null || /bin/true
+}
+
+function get_yaml_value {
+    key=$1
+    cat $config_file | \
+        $SHYAML -q get-value $key | grep -v ^None || /bin/true
 }
 
 function strict_version {
@@ -298,150 +197,21 @@ function eks_cf_stack_delete {
     fi
 }
 
-function eks_nodegroup_stacks_get {
-    nodegroup_ids=$($AWS --region $aws_region cloudformation \
-        describe-stacks | \
-        $JQ -r ".Stacks[] | select(.Parameters!=null) | select(.Parameters[].ParameterValue==\"eksctl-$eks_cluster_name-cluster\").Parameters[] | select(.ParameterKey==\"NodeGroupID\").ParameterValue" | \
-            sort)
-    echo -e "ID\tnode_type\tmin_nodes\tmax_nodes\tvol_size"
-    echo -e "--\t---------\t---------\t---------\t--------"
-    for nodegroup_id in $nodegroup_ids; do
-        stack_name="eksctl-$eks_cluster_name-nodegroup-$nodegroup_id"
-        template_body=$($AWS --region $aws_region cloudformation \
-            get-template \
-            --stack-name $stack_name 2>/dev/null | \
-            $JQ ".TemplateBody")
-        echo "$template_body" >/tmp/tbody.json
-        node_type=$(echo "$template_body" | \
-            $JQ -r ".Resources.NodeLaunchConfig.Properties.InstanceType")
-        min_size=$(echo "$template_body" | \
-            $JQ -r ".Resources.NodeGroup.Properties.MinSize")
-        max_size=$(echo "$template_body" | \
-            $JQ -r ".Resources.NodeGroup.Properties.MaxSize")
-        vol_size=$(echo "$template_body" | \
-            $JQ -r ".Resources.NodeLaunchConfig.Properties.BlockDeviceMappings[0].Ebs.VolumeSize")
-        echo -e "$nodegroup_id\t$node_type\t\t$min_size\t\t$max_size\t$vol_size GB"
-    done
-}
-
-function eks_nodegroup_stack_add_update {
-    nodegroup_id=$1
-
-    stack_name=
-    # Get template body of previous node stack if updating
-    if [ -n "$nodegroup_id" ]; then
-        command=update-stack
-        stack_name="eksctl-$eks_cluster_name-nodegroup-$nodegroup_id"
-        template_body=$($AWS --region $aws_region cloudformation \
-            get-template \
-            --stack-name $stack_name 2>/dev/null | \
-            $JQ ".TemplateBody")
-    else
-        command=create-stack
-        template_body=$($AWS --region $aws_region cloudformation \
-            get-template \
-            --stack-name eksctl-$eks_cluster_name-nodegroup-0 | \
-            $JQ ".TemplateBody")
-        nodegroup_id=$($AWS --region $aws_region cloudformation \
-            describe-stacks | \
-            $JQ -r ".Stacks[] | select(.Parameters!=null) | select(.Parameters[].ParameterValue==\"eksctl-$eks_cluster_name-cluster\").Parameters[] | select(.ParameterKey==\"NodeGroupID\").ParameterValue" | \
-            sort | tail -n 1)
-        nodegroup_id=$((nodegroup_id+1))
-        stack_name="eksctl-$eks_cluster_name-nodegroup-$nodegroup_id"
-    fi
-
-    map=$(cat <<EOF
-{
-    "DeviceName": "/dev/xvda",
-    "Ebs": {
-        "VolumeSize": "$eks_nodes_vol_size",
-        "VolumeType": "gp2",
-        "DeleteOnTermination": true,
-    }
-}
-EOF
-)
-    [ $eks_nodes_max -eq 0 ] && eks_nodes_max=$eks_nodes
-    template_body=$(echo "$template_body" | \
-        $JQ ".Resources.NodeLaunchConfig.Properties.BlockDeviceMappings = [$map]" | \
-        $JQ ".Resources.NodeLaunchConfig.Properties.InstanceType = \"$eks_node_type\"" | \
-        $JQ ".Resources.NodeGroup.Properties.DesiredCapacity = \"$eks_nodes\"" | \
-        $JQ ".Resources.NodeGroup.Properties.MinSize = \"$eks_nodes\"" | \
-        $JQ ".Resources.NodeGroup.Properties.MaxSize = \"$eks_nodes_max\"")
-
-    if [ "$command" = "update-stack" ]; then
-        echo
-        echo "* Updating CloudFormation stack '$stack_name'..."
-    else
-        echo
-        echo "* Adding CloudFormation stack '$stack_name'..."
-    fi
-
-    $AWS --region $aws_region cloudformation \
-        $command \
-        --stack-name $stack_name \
-        --capabilities CAPABILITY_IAM \
-        --template-body "$template_body" \
-        --tags \
-            Key=eksctl.cluster.k8s.io/v1alpha1/cluster-name,Value=$eks_cluster_name \
-            Key=eksctl.cluster.k8s.io/v1alpha1/nodegroup-id,Value=$nodegroup_id \
-        --parameters \
-            ParameterKey=ClusterName,ParameterValue=$eks_cluster_name \
-            ParameterKey=ClusterStackName,ParameterValue=eksctl-$eks_cluster_name-cluster \
-            ParameterKey=NodeGroupID,ParameterValue=$nodegroup_id >/dev/null
-
-    base_status="CREATE_IN_PROGRESS"
-    [ "$command" = "update-stack" ] && base_status="UPDATE_IN_PROGRESS"
-    status=$base_status
-    while [ "$status" = "$base_status" ]; do
-        echo -n "."
-        sleep 5
-        status=$($AWS --region $aws_region cloudformation \
-            describe-stacks \
-            --stack-name $stack_name --output=json \
-            2>/dev/null || /bin/true)
-        status=$(get_json_value "$status" "['Stacks'][0]['StackStatus']")
-        status_reason=$(get_json_value "$status" "['Stacks'][0]['StackStatusReason']")
-    done
-    echo "$status"
-    if [ -n "$status_reason" ]; then
-        echo "$status_reason"
-        return
-    fi
-
-    echo
-    echo "* Updating aws-auth ConfigMap..."
-    role_arns=$($AWS --region $aws_region cloudformation \
-        describe-stacks | \
-        $JQ -r ".Stacks[] | select(.Parameters!=null) | select(.Parameters[].ParameterValue==\"eksctl-$eks_cluster_name-cluster\").Outputs[].OutputValue")
-        configmap_yaml=$(cat <<EOF
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: aws-auth
-  namespace: kube-system
-data:
-  mapRoles: |
-EOF
-)
-    for role_arn in $role_arns; do
-        configmap_yaml=$(cat <<EOF
-$configmap_yaml
-    - rolearn: $role_arn
-      username: system:node:{{EC2PrivateDNSName}}
-      groups:
-        - system:bootstrappers
-        - system:nodes
-EOF
-)
-    done
-    echo "$configmap_yaml" | $KUBECTL --namespace kube-system apply -f - >/dev/null 2>&1
-}
-
 ###############################################################################
 
+# EKS config options
+eks_cluster_name=$(get_yaml_value "metadata.name")
+aws_region=$(get_yaml_value "metadata.region")
+aws_zones=$(get_yaml_value "availabilityZones")
+
+# JARVICE config options
+registry_username=$(get_yaml_value "jarvice.imagePullSecret.username")
+registry_password=$(get_yaml_value "jarvice.imagePullSecret.password")
+jarvice_license=$(get_yaml_value "jarvice.JARVICE_LICENSE_LIC")
+jarvice_username=$(get_yaml_value "jarvice.JARVICE_REMOTE_USER")
+jarvice_apikey=$(get_yaml_value "jarvice.JARVICE_REMOTE_APIKEY")
+
 if [ -n "$eks_cluster_delete" ]; then
-    eks_cluster_name=$eks_cluster_delete
     set -e
     check_deps
 
@@ -468,12 +238,10 @@ if [ -n "$eks_cluster_delete" ]; then
             --load-balancer-name=$elb_name
     done
 
-    nodegroup_stacks=$($AWS --region $aws_region cloudformation \
-        describe-stacks | \
-        $JQ -r ".Stacks[] | select(.Parameters!=null) | select(.Parameters[].ParameterValue==\"eksctl-$eks_cluster_name-cluster\").StackName")
-    for nodegroup_stack in $nodegroup_stacks; do
-        eks_cf_stack_delete "$nodegroup_stack"
-    done
+    echo
+    echo "* Deleting EKS cluster '$eks_cluster_name' in region" \
+        "'$aws_region'..."
+    $EKSCTL delete cluster --wait --config-file $config_file
 
     AWS_ELB_SEC_GROUP_IDS=$($AWS --region $aws_region ec2 \
         describe-security-groups --no-paginate --output=text \
@@ -487,20 +255,6 @@ if [ -n "$eks_cluster_delete" ]; then
             --group-id=$group_id
     done
 
-    eks_cf_stack_delete "eksctl-$eks_cluster_name-cluster"
-
-    #echo "* Deleting EKS cluster '$eks_cluster_name' in region" \
-    #    "'$aws_region'..."
-    #$EKSCTL delete cluster --name $eks_cluster_name --region $aws_region
-    #echo
-    #echo "EKS cluster '$eks_cluster_name' is in the process of being" \
-    #    "deleted from '$aws_region'..."
-    #echo
-
-    #filters="Name=tag-key,Values=kubernetes.io/cluster/$eks_cluster_name"
-    #vol_ids=$($AWS --region $aws_region ec2 \
-    #    describe-volumes --no-paginate --output=json --filters $filters | \
-    #    $JQ -r '.Volumes[] | select(contains({Tags: [{Key: "kubernetes.io/created-for/pvc/name"},{Value: "jarvice-db-pvc"}] }) | not).VolumeId | select(.!=null)')
     filters="Name=tag-key,Values=kubernetes.io/cluster/$eks_cluster_name"
     filters+=" Name=tag:kubernetes.io/created-for/pvc/namespace,Values=$helm_namespace-jobs"
     filters+=" Name=status,Values=available"
@@ -551,94 +305,34 @@ if [ -n "$eks_cluster_delete" ]; then
         echo "** Preserved EBS volume containing the JARVICE database:  $vol_id"
         echo
         echo "* EBS volume for the JARVICE database may be deleted by executing:"
-        echo "\$ $0 --eks-cluster-delete $eks_cluster_name --aws-region $aws_region --database-vol-delete"
+        echo "\$ $0 --eks-cluster-delete --config-file $config_file --database-vol-delete"
     fi
     if [ -z "$vault_vols_delete" ]; then
         echo
         echo "** Preserved EBS volumes containing user vaults."
         echo
         echo "* EBS user vault volumes may be deleted by executing:"
-        echo "\$ $0 --eks-cluster-delete $eks_cluster_name --aws-region $aws_region --vault-vols-delete"
+        echo "\$ $0 --eks-cluster-delete --config-file $config_file --vault-vols-delete"
     fi
     if [ -z "$database_vol_delete" -o -z "$vault_vols_delete" ]; then
         echo
         echo "** Preserved volumes will be reused if another '$eks_cluster_name' cluster is created in the '$aws_region' region."
     fi
     echo
-    exit 0
-fi
-
-if [ $eks_nodes_max -gt 0 -a $eks_nodes_max -le $eks_nodes ]; then
-    echo "--eks-nodes-max must be greater than --eks-nodes in order to" \
-        "enable node auto scaling."
-    exit 1
-fi
-
-if [ -n "$eks_stacks_get" ]; then
-    set -e
-    check_deps
-
-    if [ -z "$eks_cluster_name" ]; then
-        jarvice_deploy2eks_usage
-    fi
-    eks_nodegroup_stacks_get
-
-    exit 0
-fi
-
-if [ -n "$eks_stack_add" ]; then
-    set -e
-    check_deps
-
-    if [ -z "$eks_cluster_name" ]; then
-        jarvice_deploy2eks_usage
-    fi
-    eks_nodegroup_stack_add_update
-    if [ -n "$install_nvidia_plugin" ]; then
-        kubectl_install_nvidia_plugin
-    fi
-    exit 0
-fi
-
-if [ -n "$eks_stack_update" ]; then
-    set -e
-    check_deps
-
-    if [ -z "$eks_cluster_name" ]; then
-        jarvice_deploy2eks_usage
-    fi
-    eks_nodegroup_stack_add_update $eks_stack_update
-    if [ -n "$install_nvidia_plugin" ]; then
-        kubectl_install_nvidia_plugin
-    fi
-    exit 0
-fi
-
-if [ -n "$eks_stack_delete" ]; then
-    set -e
-    check_deps
-
-    if [ "$eks_stack_delete" = "0" ]; then
-        echo "Nodegroup 0 may only be updated, not deleted."
-        exit 1
-    fi
-
-    if [ -z "$eks_cluster_name" ]; then
-        jarvice_deploy2eks_usage
-    fi
-    stack_name="eksctl-$eks_cluster_name-nodegroup-$eks_stack_delete"
-    eks_cf_stack_delete "$stack_name"
-
+    echo "It may take a few more minutes for the deletion to complete."
+    echo "Status can be viewed here:"
+    echo "https://us-west-2.console.aws.amazon.com/cloudformation/home#/stacks"
+    echo
     exit 0
 fi
 
 if [ -z "$registry_username" -o -z "$registry_password" -o -z "$jarvice_license" -o -z "$jarvice_username" -o -z "$jarvice_apikey" ]; then
     echo "Missing credentials and/or license.  Cannot continue."
+    echo "Please update the configuration file: $config_file"
     jarvice_deploy2eks_usage
 fi
 
 # Assumes helm chart basedir is one level up from this script
-[ -z "$jarvice_chart_dir" ] && jarvice_chart_dir=$(dirname $(dirname $0))
 echo "Verifying helm chart directory '$jarvice_chart_dir'..."
 CHART_NAME=$(grep '^name: jarvice' $jarvice_chart_dir/Chart.yaml 2>/dev/null)
 if [ -z "$CHART_NAME" ]; then
@@ -722,8 +416,10 @@ if [ -z "$EKSCTL" ]; then
     sudo chown root.root $EKSCTL
     sudo chmod 755 $EKSCTL
 else
-    EKSCTL_VER=$($EKSCTL version | sed -e 's/.*{/{/')
-    EKSCTL_VER=$(echo "$EKSCTL_VER" | $JQ -r '.gitTag')
+    EKSCTL_VER=$($EKSCTL version)
+    EKSCTL_VER=$(echo "$EKSCTL_VER" | sed -e 's/.*{/{/')
+    EKSCTL_VER=$(echo "$EKSCTL_VER" | sed -e 's/.*GitTag:"\(.*\)".*/\1/' | \
+        awk -F- '{print $1}')
     echo "Found $EKSCTL... Version: $EKSCTL_VER"
 
     if [ "$(strict_version $EKSCTL_VER $EKSCTL_VER_REQ)" != "True" ]; then
@@ -753,40 +449,23 @@ OLD_CONTEXT=$($KUBECTL config current-context 2>/dev/null || /bin/true)
 
 echo
 echo "* Running $EKSCTL to create EKS cluster..."
-#num_nodes="--nodes $eks_nodes"
-#[ $eks_nodes_max -gt $eks_nodes ] && \
-#    num_nodes="--nodes-min $eks_nodes --nodes-max $eks_nodes_max"
-#$EKSCTL create cluster --name $eks_cluster_name \
-#    --region $aws_region ${aws_zones:+--zones=$aws_zones} \
-#    --node-type $eks_node_type $num_nodes
-$EKSCTL create cluster --name $eks_cluster_name \
-    --region $aws_region ${aws_zones:+--zones=$aws_zones} \
-    --node-type $eks_node_type --nodes 0
+$EKSCTL create cluster --config-file $config_file
 
 echo
-echo "* Updating nodegroup stack..."
-eks_nodegroup_stack_add_update 0
-
-echo
-echo "* Waiting for minimum number of nodes to be ready..."
-ready_nodes=0
-echo "$ready_nodes of $eks_nodes are ready..."
-while [ $ready_nodes -lt $eks_nodes ]; do
-    sleep 5
-    echo -n "."
-    ready_count=$(kubectl get nodes 2>/dev/null | \
-        grep --count Ready || /bin/true)
-    if [ $ready_count -gt $ready_nodes ]; then
-        ready_nodes=$ready_count
-        echo; echo "$ready_nodes of $eks_nodes are ready..."
-    fi
+echo "* Labeling and tainting nodes..."
+roles="jarvice-system jarvice-dockerbuild jarvice-dockerpull jarvice-compute"
+for role in $roles; do
+    $KUBECTL label nodes -l node-role.jarvice.io/$role= \
+        node-role.kubernetes.io/$role=
+    $KUBECTL taint nodes -l node-role.kubernetes.io/$role= \
+        node-role.kubernetes.io/$role=:NoSchedule
 done
 
-if [ -n "$install_weave_plugin" ]; then
-    echo
-    echo "* Installing Weave Net network plugin into cluster..."
-    $KUBECTL apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
-fi
+#if [ -n "$install_weave_plugin" ]; then
+#    echo
+#    echo "* Installing Weave Net network plugin into cluster..."
+#    $KUBECTL apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+#fi
 
 JARVICE_MACHINES_ADD='[{"mc_name":"n0", "mc_description":"2 core, 16GB RAM (CPU only)", "mc_cores":"2", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"16", "mc_swap":"8", "mc_scratch":"64", "mc_devices":"", "mc_properties":"", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"16", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
 JARVICE_MACHINES_ADD+=', {"mc_name":"n1", "mc_description":"4 core, 32GB RAM (CPU Only)", "mc_cores":"4", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"32", "mc_swap":"16", "mc_scratch":"100", "mc_devices":"", "mc_properties":"", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"32", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
@@ -828,6 +507,8 @@ EOF
 )
 echo "$tiller_sa_yaml" | $KUBECTL --namespace kube-system create -f -
 $HELM init --upgrade --service-account tiller
+$KUBECTL -n kube-system patch deployment tiller-deploy \
+    -p '{"spec": {"template":{"spec":{"tolerations":[{"key": "node-role.kubernetes.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}]}}}}'
 sleep 1
 
 echo
@@ -838,31 +519,16 @@ $KUBECTL --namespace kube-system rollout status \
 if [ -n "$install_dashboard" ]; then
     echo
     echo "* Installing kubernetes-dashboard..."
-    $HELM install --namespace kube-system \
-        --name kubernetes-dashboard stable/kubernetes-dashboard
+    $HELM install \
+        --set tolerations[0].effect=NoSchedule \
+        --set tolerations[0].key=node-role.kubernetes.io/jarvice-system \
+        --set tolerations[0].operator=Exists \
+        --namespace kube-system \
+        --name kubernetes-dashboard \
+        stable/kubernetes-dashboard
     $KUBECTL --namespace kube-system expose deployment kubernetes-dashboard \
         --type=LoadBalancer --name kubernetes-dashboard-lb
 fi
-
-echo
-echo "* Creating 'gp2' StorageClass..."
-storage_class_yaml=$(cat <<EOF
-kind: StorageClass
-apiVersion: storage.k8s.io/v1
-metadata:
-  name: gp2
-provisioner: kubernetes.io/aws-ebs
-parameters:
-  type: gp2
-reclaimPolicy: Retain
-mountOptions:
-  - debug
-EOF
-)
-echo "$storage_class_yaml" | $KUBECTL --namespace kube-system create -f -
-echo
-echo "* Setting 'gp2' StorageClass as the default..."
-$KUBECTL patch storageclass gp2 -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 
 echo
 echo "* Creating 'jarvice-db' StorageClass..."
@@ -920,7 +586,8 @@ else
     echo "No previous EBS volume was found."
 fi
 
-# TODO: revert replicaCount once we sort out the load balancer issue
+jarvice_jobs_domain=$(get_yaml_value "jarvice.JARVICE_JOBS_DOMAIN")
+jarvice_jobs_lb_service=$(get_yaml_value "jarvice.JARVICE_JOBS_LB_SERVICE")
 echo
 echo "* Running helm to deploy JARVICE into cluster..."
 $HELM install --debug \
@@ -929,12 +596,47 @@ $HELM install --debug \
     --set jarvice.JARVICE_LICENSE_LIC="$jarvice_license" \
     --set jarvice.JARVICE_REMOTE_USER="$jarvice_username" \
     --set jarvice.JARVICE_REMOTE_APIKEY="$jarvice_apikey" \
+    --set jarvice.JARVICE_JOBS_DOMAIN="$jarvice_jobs_domain" \
+    --set jarvice.JARVICE_JOBS_LB_SERVICE="$jarvice_jobs_lb_service" \
     --set jarvice_db.persistence.enabled="true" \
-    --set jarvice_mc_portal.replicaCount=1 \
-    --set jarvice_dal.replicaCount=1 \
     --set jarvice_dal.env.JARVICE_MACHINES_ADD="$(echo "$JARVICE_MACHINES_ADD" | sed -e 's#\([]{}",[/]\)#\\\1#g')" \
     --name $helm_name --namespace $helm_namespace $jarvice_chart_dir
 sleep 1
+
+echo
+echo "* Installing LXCFS daemonset..."
+$KUBECTL --namespace kube-system create \
+    -f https://raw.githubusercontent.com/nimbix/lxcfs-initializer/master/lxcfs-daemonset.yaml
+
+echo
+echo "* Installing Traefik ingress controller..."
+cert_file=$(get_yaml_value "jarvice.ingress.cert_file")
+key_file=$(get_yaml_value "jarvice.ingress.key_file")
+traefik_lb_ip=$(get_yaml_value "jarvice.ingress.loadBalancerIP")
+
+[ -n "$cert_file" ] && default_cert="$(cat $cert_file | base64 -w 0)" && \
+    default_cert="--set ssl.defaultCert=$default_cert"
+[ -n "$key_file" ] && default_key="$(cat $key_file | base64 -w 0)" && \
+    default_key="--set ssl.defaultKey=$default_key"
+[ -n "$traefik_lb_ip" ] && lb_ip="--set loadBalancerIP=$traefik_lb_ip"
+
+$HELM install --debug \
+    --set nodeSelector."node-role\.kubernetes\.io/jarvice-system"="" \
+    --set tolerations[0]."key"="node-role\.kubernetes\.io/jarvice-system" \
+    --set tolerations[0]."effect"="NoSchedule" \
+    --set tolerations[0]."operator"="Exists" \
+    --set rbac.enabled=true \
+    --set ssl.enabled=true \
+    --set ssl.enforced=true \
+    --set ssl.permanentRedirect=true \
+    --set ssl.insecureSkipVerify=true \
+    --set replicas=3 \
+    --set memoryRequest=1Gi --set memoryLimit=1Gi \
+    --set cpuRequest=1 --set cpuLimit=1 \
+    $default_cert $default_key $lb_ip \
+    --namespace kube-system --name traefik stable/traefik
+#    --set dashboard.enabled=true \
+#    --set dashboard.domain=traefik-dashboard.<domain> \
 
 filters="Name=tag-key,Values=kubernetes.io/cluster/$eks_cluster_name"
 filters+=" Name=tag:kubernetes.io/created-for/pvc/namespace,Values=$helm_namespace-jobs"
@@ -994,6 +696,7 @@ EOF
 )
     echo "$pvc_yaml" | $KUBECTL --namespace $helm_namespace-jobs create -f -
 done
+
 if [ -z "$vol_ids" ]; then
     echo "No previous EBS user vault volumes were found."
 fi
@@ -1014,7 +717,7 @@ echo
 echo "JARVICE is deployed and ready!"
 echo
 echo "This EKS cluster may be deleted by executing:"
-echo "\$ $0 --eks-cluster-delete $eks_cluster_name --aws-region $aws_region"
+echo "\$ $0 --eks-cluster-delete --config-file $config_file"
 
 if [ -n "$OLD_CONTEXT" ]; then
     echo
@@ -1024,34 +727,35 @@ if [ -n "$OLD_CONTEXT" ]; then
 fi
 
 API_HOST=$($KUBECTL --namespace $helm_namespace \
-    get services jarvice-api-lb \
-    -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+    describe services jarvice-api-lb | \
+    grep Ingress | awk '{print $3}')
 PORTAL_HOST=$($KUBECTL --namespace $helm_namespace \
-    get services jarvice-mc-portal-lb \
-    -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-[ -z "$API_HOST" ] && API_HOST=$($KUBECTL --namespace $helm_namespace \
-    get services jarvice-api-lb \
-    -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-[ -z "$PORTAL_HOST" ] && PORTAL_HOST=$($KUBECTL --namespace $helm_namespace \
-    get services jarvice-mc-portal-lb \
-    -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+    describe services jarvice-mc-portal-lb | \
+    grep Ingress | awk '{print $3}')
 
 if [ -n "$install_dashboard" ]; then
-    DASHBOARD_HOST=$($KUBECTL --namespace kube-system \
-        get services kubernetes-dashboard-lb \
-        -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
-    [ -z "$DASHBOARD_HOST" ] && \
-        DASHBOARD_HOST=$($KUBECTL --namespace kube-system \
-        get services kubernetes-dashboard-lb \
-        -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+    DASHBOARD_HOST=$($KUBECTL --namespace $helm_namespace \
+        describe services kubernetes-dashboard-lb | \
+        grep Ingress | awk '{print $3}')
     echo
     echo "Kubernetes dashbaord is available at:"
     echo "https://$DASHBOARD_HOST:8443/"
 fi
+TRAEFIK_HOST=$($KUBECTL --namespace kube-system \
+    describe services traefik | \
+    grep Ingress | awk '{print $3}')
+
+
 echo
 echo "JARVICE API endpoint is available at:"
 echo "https://$API_HOST/"
 echo
 echo "JARVICE portal is available at:"
 echo "https://$PORTAL_HOST/"
+echo
+echo "Optionally, set up DNS for Traefik ingress available at:"
+echo "$TRAEFIK_HOST"
+echo
+echo "Use '$EKSCTL get/scale/create/delete nodegroup --cluster $eks_cluster_name' to modify cluster nodes."
+echo
 
