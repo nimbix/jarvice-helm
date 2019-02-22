@@ -28,11 +28,11 @@ nodeGroups:
   # jarvice-system
   - name: ng-jarvice-system-0
     labels: {node-role.jarvice.io/jarvice-system: ""}
-    instanceType: c5.9xlarge  # https://aws.amazon.com/ec2/instance-types/
+    instanceType: m5.4xlarge  # https://aws.amazon.com/ec2/instance-types/
     minSize: 3
     maxSize: 3
     desiredCapacity: 3
-    volumeSize: 100
+    volumeSize: 10
     volumeType: gp2
     availabilityZones: ["us-west-2a"]
     allowSSH: true
