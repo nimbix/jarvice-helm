@@ -46,7 +46,7 @@ nodeGroups:
   # jarvice-compute - non-GPU node group
   - name: ng-jarvice-compute-0
     labels: {node-role.jarvice.io/jarvice-compute: ""}
-    instanceType: c5.9xlarge  # https://aws.amazon.com/ec2/instance-types/
+    instanceType: c5.18xlarge  # https://aws.amazon.com/ec2/instance-types/
     minSize: 4
     maxSize: 4
     desiredCapacity: 4
