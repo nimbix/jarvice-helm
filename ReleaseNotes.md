@@ -45,6 +45,7 @@
 * (1572) Active Directory documentation updates (see [Active Directory Authentication Best Practices](ActiveDirectory.md))
 * (1573) Automatic schema migration for containerized DALs
 * (1582) System administrator-controlled resource limits (phase 1) by billing code range, with payer override
+* (1590) Experimental support for Google Kubernetes Engine (GKE)
 * (1592) Hide pricing in web portal if not set
 
 ## 3.0.0-1.20190222.1004
