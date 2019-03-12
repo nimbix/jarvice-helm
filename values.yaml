@@ -181,10 +181,6 @@ jarvice_dal:
     JARVICE_USER_REGISTRY_VERIFY: False
     JARVICE_ROOT_USER_VAULT: # default-BLOCK-1GB
     JARVICE_ROOT_USER_VAULT_SIZE: # 1
-    JARVICE_PVC_VAULT_NAME:
-    JARVICE_PVC_VAULT_STORAGECLASS:
-    JARVICE_PVC_VAULT_ACCESSMODES:  # e.g. "ReadWriteMany,ReadOnlyMany"
-    JARVICE_PVC_VAULT_SIZE:         # gigabytes
     JARVICE_MACHINES_ADD: '[{"mc_name":"n0", "mc_description":"2 core, 16GB RAM (CPU only)", "mc_cores":"2", "mc_slots":"2", "mc_gpus":"0", "mc_ram":"16", "mc_swap":"8", "mc_scratch":"64", "mc_devices":"", "mc_properties":"", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"16", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}, {"mc_name":"n1", "mc_description":"4 core, 32GB RAM (CPU Only)", "mc_cores":"4", "mc_slots":"4", "mc_gpus":"0", "mc_ram":"32", "mc_swap":"16", "mc_scratch":"100", "mc_devices":"", "mc_properties":"", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"32", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}, {"mc_name":"n3", "mc_description":"16 core, 128GB RAM (CPU Only)", "mc_cores":"16", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"128", "mc_swap":"64", "mc_scratch":"500", "mc_devices":"", "mc_properties":"", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"128", "mc_scale_min":"1", "mc_scale_max":"256", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}]'
     JARVICE_CFG_NETWORK: |
         [global]

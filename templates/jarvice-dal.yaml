@@ -98,6 +98,18 @@ spec:
         env:
           - name: JARVICE_SYSTEM_K8S
             value: "true"
+          - name: JARVICE_JOBS_NAMESPACE
+{{- if empty .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
+            value: {{ .Release.Namespace }}-jobs
+{{- else }}
+            value: {{ .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
+{{- end }}
+          - name: JARVICE_SYSTEM_NAMESPACE
+{{- if empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+            value: {{ .Release.Namespace }}
+{{- else }}
+            value: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+{{- end }}
           - name: JARVICE_DAL_HTTPS
             value: "enable"
           - name: JARVICE_DAL_HTTPS_PORT
@@ -145,6 +157,14 @@ spec:
             value: "{{ .Values.jarvice_dal.env.JARVICE_ROOT_USER_VAULT }}"
           - name: JARVICE_ROOT_USER_VAULT_SIZE
             value: "{{ .Values.jarvice_dal.env.JARVICE_ROOT_USER_VAULT_SIZE }}"
+          - name: JARVICE_PVC_VAULT_NAME
+            value: "{{ .Values.jarvice.JARVICE_PVC_VAULT_NAME }}"
+          - name: JARVICE_PVC_VAULT_STORAGECLASS
+            value: "{{ .Values.jarvice.JARVICE_PVC_VAULT_STORAGECLASS }}"
+          - name: JARVICE_PVC_VAULT_ACCESSMODES
+            value: "{{ .Values.jarvice.JARVICE_PVC_VAULT_ACCESSMODES }}"
+          - name: JARVICE_PVC_VAULT_SIZE
+            value: "{{ .Values.jarvice.JARVICE_PVC_VAULT_SIZE }}"
           - name: JARVICE_MACHINES_ADD
             value: '{{ .Values.jarvice_dal.env.JARVICE_MACHINES_ADD }}'
           - name: JARVICE_CFG_NETWORK
