@@ -16,6 +16,13 @@ jarvice:
     key_file: # Optional, provide path to SSL key file
     loadBalancerIP: # Optional, provide a load balancer IP
 
+  # default is to give new user signups 10GB of standard block storage;
+  # unset any of these values to prevent that altogether;
+  JARVICE_PVC_VAULT_SIZE: 10
+  JARVICE_PVC_VAULT_NAME: persistent
+  JARVICE_PVC_VAULT_STORAGECLASS: gp2
+  JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
+
 # EKS cluster deploy config
 metadata:
   name: jarvice
