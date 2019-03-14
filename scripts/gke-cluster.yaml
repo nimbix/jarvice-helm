@@ -16,7 +16,7 @@ jarvice:
   # unset any of these values to prevent that altogether;
   JARVICE_PVC_VAULT_SIZE: 10
   JARVICE_PVC_VAULT_NAME: persistent
-  JARVICE_PVC_VAULT_STORAGECLASS: standard
+  JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
   JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
 
 # Flags for gcloud container clusters create
