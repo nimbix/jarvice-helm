@@ -171,10 +171,10 @@ function kubectl_install_nvidia_plugin {
 
 # gcloud flags
 gcloud_global_flags=$(cat $config_file | \
-                shyaml get-values gcloud.global_flags 2>/dev/null | \
+                $SHYAML get-values gcloud.global_flags 2>/dev/null | \
                 sed -r 's/None//g')
 gcloud_create_flags=$(cat $config_file | \
-                shyaml get-values gcloud.create_flags 2>/dev/null | \
+                $SHYAML get-values gcloud.create_flags 2>/dev/null | \
                 sed -r 's/None//g')
 # Cluster config options
 cluster_name=$(get_yaml_value "gcloud.metadata.name")
@@ -346,16 +346,39 @@ OLD_CONTEXT=$($KUBECTL config current-context 2>/dev/null || /bin/true)
 
 echo
 echo "* Running $GCLOUD to create cluster..."
+    #--no-enable-basic-auth \
+    #--enable-ip-alias \
+    #--issue-client-certificate \
 $GCLOUD container clusters create \
+    --scopes gke-default,compute-rw,storage-ro \
+    --metadata disable-legacy-endpoints=true \
     $gcloud_global_flags $gcloud_create_flags $cluster_name
-#$GCLOUD container clusters create --flags-file=$config_file jarvice
 
-gcloud_node_pool_flags=$(cat $config_file | \
-                shyaml get-values gcloud.node_pools 2>/dev/null | \
+node_pools=$(cat $config_file | $SHYAML keys gcloud.node_pools)
+for pool in $node_pools; do
+    echo "* Adding node pool '$pool'..."
+    node_pool_flags=$(cat $config_file | \
+                $SHYAML get-values gcloud.node_pools.$pool 2>/dev/null | \
                 sed -r 's/None//g')
-pool_name=compute_pool
-#$GCLOUD container node-pools create $pool_name $gcloud_global_flags \
-#    $gcloud_node_pool_flags --cluster $cluster_name
+    $GCLOUD container node-pools create $pool \
+        --scopes gke-default,compute-rw,storage-ro \
+        --metadata disable-legacy-endpoints=true \
+        $gcloud_global_flags $node_pool_flags --cluster $cluster_name
+done
+
+echo
+echo "* Waiting for kubernetes master to come back online..."
+# Strangely, the master does not go offline immediately, so a sleep is needed
+[ -n "$node_pools" ] && sleep 90
+set +e
+while ! $KUBECTL get nodes >/dev/null 2>&1; do
+    echo -n "."
+    sleep 5
+done
+set -e
+echo; echo
+echo "* Cluster nodes are ready..."
+$KUBECTL get nodes
 
 echo
 echo "* Installing cluster autoscaler..."
@@ -365,8 +388,6 @@ echo
 echo "* Tainting nodes..."
 roles="jarvice-system jarvice-dockerbuild jarvice-dockerpull jarvice-compute"
 for role in $roles; do
-    #$KUBECTL label nodes -l node-role.jarvice.io/$role= \
-    #    node-role.kubernetes.io/$role=
     $KUBECTL taint nodes -l node-role.kubernetes.io/$role= \
         node-role.kubernetes.io/$role=:NoSchedule
 done
@@ -455,7 +476,7 @@ parameters:
   type: pd-standard
   replication-type: none
   #replication-type: regional-pd
-reclaimPolicy: Retain
+reclaimPolicy: Delete
 mountOptions:
   - debug
 EOF
@@ -471,6 +492,7 @@ vol_size=$(echo "$dbpv" | $JQ -r ".sizeGb")
 pd_name=$(echo "$dbpv" | $JQ -r ".name")
 
 # See: https://kubernetes.io/docs/concepts/storage/volumes/#gcepersistentdisk
+echo
 echo "* Creating 'jarvice-db-pv' PersistentVolume with pdName '$pd_name'..."
 pv_yaml=$(cat <<EOF
 apiVersion: v1
@@ -495,6 +517,10 @@ echo "$pv_yaml" | $KUBECTL --namespace kube-system create -f -
 
 jarvice_jobs_domain=$(get_yaml_value "jarvice.JARVICE_JOBS_DOMAIN")
 jarvice_jobs_lb_service=$(get_yaml_value "jarvice.JARVICE_JOBS_LB_SERVICE")
+jarvice_pvc_vault_size=$(get_yaml_value "jarvice.JARVICE_PVC_VAULT_SIZE")
+jarvice_pvc_vault_name=$(get_yaml_value "jarvice.JARVICE_PVC_VAULT_NAME")
+jarvice_pvc_vault_storageclass=$(get_yaml_value "jarvice.JARVICE_PVC_VAULT_STORAGECLASS")
+jarvice_pvc_vault_accessmodes=$(get_yaml_value "jarvice.JARVICE_PVC_VAULT_ACCESSMODES")
 echo
 echo "* Running helm to deploy JARVICE into cluster..."
 $HELM install --debug \
@@ -505,6 +531,10 @@ $HELM install --debug \
     --set jarvice.JARVICE_REMOTE_APIKEY="$jarvice_apikey" \
     --set jarvice.JARVICE_JOBS_DOMAIN="$jarvice_jobs_domain" \
     --set jarvice.JARVICE_JOBS_LB_SERVICE="$jarvice_jobs_lb_service" \
+    --set jarvice.JARVICE_PVC_VAULT_SIZE="$jarvice_pvc_vault_size" \
+    --set jarvice.JARVICE_PVC_VAULT_NAME="$jarvice_pvc_vault_name" \
+    --set jarvice.JARVICE_PVC_VAULT_STORAGECLASS="$jarvice_pvc_vault_storageclass" \
+    --set jarvice.JARVICE_PVC_VAULT_ACCESSMODES="$jarvice_pvc_vault_accessmodes" \
     --set jarvice_db.persistence.enabled="true" \
     --set jarvice_dal.env.JARVICE_MACHINES_ADD="$(echo "$JARVICE_MACHINES_ADD" | sed -e 's#\([]{}",[/]\)#\\\1#g')" \
     --name $helm_name --namespace $helm_namespace $jarvice_chart_dir
@@ -610,6 +640,8 @@ if [ -z "$user_disks" ]; then
     echo "No previous user disks were found."
 fi
 
+echo
+echo "* Waiting for rollout of JARVICE components..."
 DEPLOYMENTS="jarvice-dal jarvice-scheduler jarvice-api"
 DEPLOYMENTS+=" jarvice-mc-portal jarvice-appsync"
 for deployment in $DEPLOYMENTS; do
