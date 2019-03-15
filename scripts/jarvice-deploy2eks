@@ -530,22 +530,25 @@ if [ -n "$install_dashboard" ]; then
         --type=LoadBalancer --name kubernetes-dashboard-lb
 fi
 
-echo
-echo "* Creating 'jarvice-db' StorageClass..."
-storage_class_yaml=$(cat <<EOF
+classes="jarvice-db jarvice-user"
+for class in $classes; do
+    echo
+    echo "* Creating '$class' StorageClass..."
+    storage_class_yaml=$(cat <<EOF
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
-  name: jarvice-db
+  name: $class
 provisioner: kubernetes.io/aws-ebs
 parameters:
   type: gp2
-reclaimPolicy: Retain
+reclaimPolicy: Delete
 mountOptions:
   - debug
 EOF
 )
-echo "$storage_class_yaml" | $KUBECTL --namespace kube-system create -f -
+    echo "$storage_class_yaml" | $KUBECTL --namespace kube-system create -f -
+done
 
 filters="Name=tag-key,Values=kubernetes.io/cluster/$eks_cluster_name"
 filters+=" Name=tag:kubernetes.io/created-for/pvc/namespace,Values=$helm_namespace"
