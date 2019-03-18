@@ -196,62 +196,33 @@ if [ -n "$cluster_delete" ]; then
     echo "* Using $KUBECONFIG for kubeconfig..."
 
     echo
-    echo "* Deleting cluster '$cluster_name' in zone '$cluster_zone'..."
-    $GCLOUD container clusters delete $cluster_name
+    echo "* Starting deletion of cluster '$cluster_name' in zone '$cluster_zone'..."
 
-    user_disks=$($GCLOUD compute disks list $gcloud_global_flags --format=json \
-        --filter="zone:$cluster_zone AND name ~ ^gke-$cluster_name-.+-pvc- AND description ~ '\"kubernetes.io/created-for/pvc/namespace\":\"jarvice-system-jobs\"' " | \
-        $JQ -r .[].name)
-    echo
     if [ -n "$vault_disks_delete" ]; then
-        echo "* Deleting user vault disks..."
+        echo; echo "* Deleting user vault disks..."
+        $KUBECTL -n $helm_namespace-jobs delete pods --all
+        $KUBECTL -n $helm_namespace-jobs delete pvc --all
     else
-        echo "* Preserving user vault disks..."
+        echo; echo "* Preserving user vault disks..."
     fi
-    for disk in $user_disks; do
-        echo "$disk"
-        if [ -n "$vault_disks_delete" ]; then
-            $GCLOUD compute disks delete $gcloud_global_flags \
-                --zone=$cluster_zone $disk
-        fi
-    done
 
-    dbpv=$($GCLOUD compute disks list $gcloud_global_flags --format=json \
-        --filter="zone:$cluster_zone AND name ~ ^gke-$cluster_name-.+-pvc- AND description ~ '\"kubernetes.io/created-for/pvc/name\":\"jarvice-db-pvc\"' " | \
-        $JQ .[0])
-    pd_name=$(echo "$dbpv" | $JQ -r ".name")
-    if [ -z "$pd_name" ]; then
-        echo
-        echo "* ERROR: Could not find disks containing JARVICE database!"
-        echo
-        exit 1
-    fi
     if [ -n "$database_disk_delete" ]; then
         echo
-        echo "* Deleting disk ('$pd_name') containing JARVICE database..."
-        $GCLOUD compute disks delete $gcloud_global_flags \
-            --zone=$cluster_zone $pd_name
+        echo "* Deleting disk containing JARVICE database..."
+        $KUBECTL -n $helm_namespace delete deployment jarvice-db
+        $KUBECTL -n $helm_namespace delete pvc jarvice-db-pvc
+    else
+        echo; echo "* Preserving disk containing the JARVICE database..."
     fi
+
+    echo
+    echo "* Deleting cluster '$cluster_name' in zone '$cluster_zone'..."
+    $GCLOUD container clusters delete --quiet $cluster_name
 
     echo
     echo "------------------------------------------------------------------------"
     echo
     echo "Succesfully deleted '$cluster_name' cluster is in the '$cluster_zone' zone."
-    echo
-    if [ -z "$database_disk_delete" ]; then
-        echo
-        echo "** Preserved disk containing the JARVICE database:  $pd_name"
-        echo
-        echo "* Disk for the JARVICE database may be deleted by executing:"
-        echo "\$ $0 --cluster-delete --config-file $config_file --database-disk-delete"
-    fi
-    if [ -z "$vault_disks_delete" ]; then
-        echo
-        echo "** Preserved disks containing user vaults."
-        echo
-        echo "* User vault disks may be deleted by executing:"
-        echo "\$ $0 --cluster-delete --config-file $config_file --vault-disks-delete"
-    fi
     if [ -z "$database_disk_delete" -o -z "$vault_disks_delete" ]; then
         echo
         echo "** Preserved disks will be reused if another '$cluster_name' cluster is created in the '$cluster_zone' zone."
@@ -350,6 +321,7 @@ echo "* Running $GCLOUD to create cluster..."
     #--enable-ip-alias \
     #--issue-client-certificate \
 $GCLOUD container clusters create \
+    --labels jarvice-cluster=$cluster_name \
     --scopes gke-default,compute-rw,storage-ro \
     --metadata disable-legacy-endpoints=true \
     $gcloud_global_flags $gcloud_create_flags $cluster_name
@@ -487,14 +459,15 @@ done
 dbpv=$($GCLOUD compute disks list $gcloud_global_flags --format=json \
     --filter="zone:$cluster_zone AND name ~ ^gke-$cluster_name-.+-pvc- AND description ~ '\"kubernetes.io/created-for/pvc/name\":\"jarvice-db-pvc\"' " | \
     $JQ .[0])
-    
+
 vol_size=$(echo "$dbpv" | $JQ -r ".sizeGb")
 pd_name=$(echo "$dbpv" | $JQ -r ".name")
+if [ "$pd_name" != "null" ]; then
 
-# See: https://kubernetes.io/docs/concepts/storage/volumes/#gcepersistentdisk
-echo
-echo "* Creating 'jarvice-db-pv' PersistentVolume with pdName '$pd_name'..."
-pv_yaml=$(cat <<EOF
+    # See: https://kubernetes.io/docs/concepts/storage/volumes/#gcepersistentdisk
+    echo
+    echo "* Creating 'jarvice-db-pv' PersistentVolume with pdName '$pd_name'..."
+    pv_yaml=$(cat <<EOF
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -513,7 +486,8 @@ spec:
     - debug
 EOF
 )
-echo "$pv_yaml" | $KUBECTL --namespace kube-system create -f -
+    echo "$pv_yaml" | $KUBECTL --namespace kube-system create -f -
+fi
 
 jarvice_jobs_domain=$(get_yaml_value "jarvice.JARVICE_JOBS_DOMAIN")
 jarvice_jobs_lb_service=$(get_yaml_value "jarvice.JARVICE_JOBS_LB_SERVICE")
