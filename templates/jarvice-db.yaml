@@ -33,6 +33,8 @@ metadata:
   name: jarvice-db
 spec:
   replicas: {{ .Values.jarvice_db.replicaCount }}
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       deployment: jarvice-db
