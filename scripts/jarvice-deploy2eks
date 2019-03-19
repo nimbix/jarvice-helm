@@ -578,7 +578,7 @@ spec:
     storage: ${vol_size}Gi
   accessModes:
     - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
+  persistentVolumeReclaimPolicy: Delete
   storageClassName: jarvice-db
   mountOptions:
     - debug
@@ -680,7 +680,7 @@ spec:
     storage: ${vol_size}Gi
   accessModes:
     - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
+  persistentVolumeReclaimPolicy: Delete
   storageClassName: $vol_type
   mountOptions:
     - debug
