@@ -591,6 +591,10 @@ fi
 
 jarvice_jobs_domain=$(get_yaml_value "jarvice.JARVICE_JOBS_DOMAIN")
 jarvice_jobs_lb_service=$(get_yaml_value "jarvice.JARVICE_JOBS_LB_SERVICE")
+jarvice_pvc_vault_size=$(get_yaml_value "jarvice.JARVICE_PVC_VAULT_SIZE")
+jarvice_pvc_vault_name=$(get_yaml_value "jarvice.JARVICE_PVC_VAULT_NAME")
+jarvice_pvc_vault_storageclass=$(get_yaml_value "jarvice.JARVICE_PVC_VAULT_STORAGECLASS")
+jarvice_pvc_vault_accessmodes=$(get_yaml_value "jarvice.JARVICE_PVC_VAULT_ACCESSMODES")
 echo
 echo "* Running helm to deploy JARVICE into cluster..."
 $HELM install --debug \
@@ -601,6 +605,10 @@ $HELM install --debug \
     --set jarvice.JARVICE_REMOTE_APIKEY="$jarvice_apikey" \
     --set jarvice.JARVICE_JOBS_DOMAIN="$jarvice_jobs_domain" \
     --set jarvice.JARVICE_JOBS_LB_SERVICE="$jarvice_jobs_lb_service" \
+    --set jarvice.JARVICE_PVC_VAULT_SIZE="$jarvice_pvc_vault_size" \
+    --set jarvice.JARVICE_PVC_VAULT_NAME="$jarvice_pvc_vault_name" \
+    --set jarvice.JARVICE_PVC_VAULT_STORAGECLASS="$jarvice_pvc_vault_storageclass" \
+    --set jarvice.JARVICE_PVC_VAULT_ACCESSMODES="$jarvice_pvc_vault_accessmodes" \
     --set jarvice_db.persistence.enabled="true" \
     --set jarvice_dal.env.JARVICE_MACHINES_ADD="$(echo "$JARVICE_MACHINES_ADD" | sed -e 's#\([]{}",[/]\)#\\\1#g')" \
     --name $helm_name --namespace $helm_namespace $jarvice_chart_dir
