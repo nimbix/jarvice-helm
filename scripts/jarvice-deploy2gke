@@ -336,6 +336,10 @@ for pool in $node_pools; do
 done
 
 echo
+echo "* Running NVIDIA driver installer..."
+$KUBECTL apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/ubuntu/daemonset-preloaded.yaml
+
+echo
 echo "* Waiting for kubernetes master to come back online..."
 # Strangely, the master does not go offline immediately, so a sleep is needed
 [ -n "$node_pools" ] && sleep 90
@@ -503,7 +507,7 @@ $HELM install --debug \
     --set jarvice.JARVICE_PVC_VAULT_STORAGECLASS="$jarvice_pvc_vault_storageclass" \
     --set jarvice.JARVICE_PVC_VAULT_ACCESSMODES="$jarvice_pvc_vault_accessmodes" \
     --set jarvice.daemonsets.lxcfs.enabled="true" \
-    --set jarvice.daemonsets.nvidia.enabled="true" \
+    --set jarvice.daemonsets.nvidia.enabled="false" \
     --set jarvice_db.persistence.enabled="true" \
     --set jarvice_dal.env.JARVICE_MACHINES_ADD="$(echo "$JARVICE_MACHINES_ADD" | sed -e 's#\([]{}",[/]\)#\\\1#g')" \
     --name $helm_name --namespace $helm_namespace $jarvice_chart_dir
