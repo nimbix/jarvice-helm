@@ -12,6 +12,13 @@ jarvice:
     key_file: # Optional, provide path to SSL key file
     loadBalancerIP: # Optional, provide a load balancer IP
 
+  # default is to give new user signups 10GB of standard block storage;
+  # unset any of these values to prevent that altogether;
+  JARVICE_PVC_VAULT_SIZE: 10
+  JARVICE_PVC_VAULT_NAME: persistent
+  JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
+  JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
+
 # Flags for gcloud container clusters create
 gcloud:
   metadata:
@@ -21,42 +28,39 @@ gcloud:
     --project: <gcloud-project-required>
   create_flags:
     --zone: us-west1-a
-    #--node-labels: node-role.kubernetes.io/jarvice-system=""
-    #--node-taints: node-role.kubernetes.io/jarvice-system=:NoSchedule
-    --machine-type: n1-standard-16
-    #--disk-size: 10
-    --disk-size: 100
+    --node-labels: node-role.kubernetes.io/jarvice-system=
+    --machine-type: n1-standard-8
+    --disk-size: 10
     --disk-type: pd-ssd
-    --enable-autoscaling:
     --min-nodes: 3
     --max-nodes: 3
     --num-nodes: 3
+    --enable-autoscaling:
+    --no-enable-autoupgrade:
     --addons: KubernetesDashboard
-  #node_pools:
-  #  compute_0:
-  #      --zone: us-west1-a
-  #      #--node-labels: node-role.kubernetes.io/jarvice-compute=""
-  #      #--node-taints: node-role.kubernetes.io/jarvice-compute=:NoSchedule
-  #      #--machine-type: n1-standard-64
-  #      --machine-type: n1-standard-16
-  #      --disk-size: 100
-  #      --disk-type: pd-ssd
-  #      --enable-autoscaling:
-  #      --min-nodes: 2
-  #      --max-nodes: 2
-  #      --num-nodes: 2
-  #      #--accelerator: type=nvidia-tesla-p100,count=4
-  #  compute_1:
-  #      --zone: us-west1-a
-  #      #--node-labels: node-role.kubernetes.io/jarvice-compute=""
-  #      #--node-taints: node-role.kubernetes.io/jarvice-compute=:NoSchedule
-  #      #--machine-type: n1-standard-64
-  #      --machine-type: n1-standard-16
-  #      --disk-size: 100
-  #      --disk-type: pd-ssd
-  #      --enable-autoscaling:
-  #      --min-nodes: 2
-  #      --max-nodes: 2
-  #      --num-nodes: 2
-  #      --accelerator: type=nvidia-tesla-p100,count=4
+  node_pools:
+    compute-0:
+        --zone: us-west1-a
+        --node-labels: node-role.kubernetes.io/jarvice-compute=
+        --machine-type: n1-standard-96
+        --disk-size: 100
+        --disk-type: pd-ssd
+        #--local-ssd-count: 1
+        --min-nodes: 2
+        --max-nodes: 4
+        --num-nodes: 4
+        --enable-autoscaling:
+        #--accelerator: type=nvidia-tesla-p100,count=4
+    #compute-1:
+    #    --zone: us-west1-a
+    #    --node-labels: node-role.kubernetes.io/jarvice-compute=
+    #    --machine-type: n1-standard-96
+    #    --disk-size: 100
+    #    --disk-type: pd-ssd
+    #    --local-ssd-count: 1
+    #    --min-nodes: 2
+    #    --max-nodes: 2
+    #    --num-nodes: 2
+    #    --enable-autoscaling:
+    #    --accelerator: type=nvidia-tesla-p100,count=4
 

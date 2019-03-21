@@ -8,7 +8,6 @@ if [ "$(arch)" != "x86_64" ]; then
 fi
 
 cluster_delete=
-install_nvidia_plugin=
 install_dashboard=
 helm_name=jarvice
 helm_namespace=jarvice-system
@@ -159,23 +158,17 @@ function strict_version {
     python -c "from distutils.version import StrictVersion;print StrictVersion('$ver') >= StrictVersion('$ver_req');"
 }
 
-function kubectl_install_nvidia_plugin {
-    echo
-    echo "* Installing Nvidia device plugin into cluster..."
-    SERVER_MAJOR=$($KUBECTL version | grep '^Server' | sed -E 's/.*Major:"([0-9]+)".*/\1/')
-    SERVER_MINOR=$($KUBECTL version | grep '^Server' | sed -E 's/.*Minor:"([0-9]+)\+*".*/\1/')
-    $KUBECTL create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v$SERVER_MAJOR.$SERVER_MINOR/nvidia-device-plugin.yml 2>/dev/null || /bin/true
-}
 
 ###############################################################################
 
 # gcloud flags
 gcloud_global_flags=$(cat $config_file | \
-                shyaml get-values gcloud.global_flags 2>/dev/null | \
+                $SHYAML get-values gcloud.global_flags 2>/dev/null | \
                 sed -r 's/None//g')
 gcloud_create_flags=$(cat $config_file | \
-                shyaml get-values gcloud.create_flags 2>/dev/null | \
+                $SHYAML get-values gcloud.create_flags 2>/dev/null | \
                 sed -r 's/None//g')
+
 # Cluster config options
 cluster_name=$(get_yaml_value "gcloud.metadata.name")
 cluster_zone=$(get_yaml_value "gcloud.create_flags.--zone")
@@ -196,62 +189,33 @@ if [ -n "$cluster_delete" ]; then
     echo "* Using $KUBECONFIG for kubeconfig..."
 
     echo
-    echo "* Deleting cluster '$cluster_name' in zone '$cluster_zone'..."
-    $GCLOUD container clusters delete $cluster_name
+    echo "* Starting deletion of cluster '$cluster_name' in zone '$cluster_zone'..."
 
-    user_disks=$($GCLOUD compute disks list $gcloud_global_flags --format=json \
-        --filter="zone:$cluster_zone AND name ~ ^gke-$cluster_name-.+-pvc- AND description ~ '\"kubernetes.io/created-for/pvc/namespace\":\"jarvice-system-jobs\"' " | \
-        $JQ -r .[].name)
-    echo
     if [ -n "$vault_disks_delete" ]; then
-        echo "* Deleting user vault disks..."
+        echo; echo "* Deleting user vault disks..."
+        $KUBECTL -n $helm_namespace-jobs delete pods --all
+        $KUBECTL -n $helm_namespace-jobs delete pvc --all
     else
-        echo "* Preserving user vault disks..."
+        echo; echo "* Preserving user vault disks..."
     fi
-    for disk in $user_disks; do
-        echo "$disk"
-        if [ -n "$vault_disks_delete" ]; then
-            $GCLOUD compute disks delete $gcloud_global_flags \
-                --zone=$cluster_zone $disk
-        fi
-    done
 
-    dbpv=$($GCLOUD compute disks list $gcloud_global_flags --format=json \
-        --filter="zone:$cluster_zone AND name ~ ^gke-$cluster_name-.+-pvc- AND description ~ '\"kubernetes.io/created-for/pvc/name\":\"jarvice-db-pvc\"' " | \
-        $JQ .[0])
-    pd_name=$(echo "$dbpv" | $JQ -r ".name")
-    if [ -z "$pd_name" ]; then
-        echo
-        echo "* ERROR: Could not find disks containing JARVICE database!"
-        echo
-        exit 1
-    fi
     if [ -n "$database_disk_delete" ]; then
         echo
-        echo "* Deleting disk ('$pd_name') containing JARVICE database..."
-        $GCLOUD compute disks delete $gcloud_global_flags \
-            --zone=$cluster_zone $pd_name
+        echo "* Deleting disk containing JARVICE database..."
+        $KUBECTL -n $helm_namespace delete deployment jarvice-db
+        $KUBECTL -n $helm_namespace delete pvc jarvice-db-pvc
+    else
+        echo; echo "* Preserving disk containing the JARVICE database..."
     fi
+
+    echo
+    echo "* Deleting cluster '$cluster_name' in zone '$cluster_zone'..."
+    $GCLOUD container clusters delete --quiet $cluster_name
 
     echo
     echo "------------------------------------------------------------------------"
     echo
     echo "Succesfully deleted '$cluster_name' cluster is in the '$cluster_zone' zone."
-    echo
-    if [ -z "$database_disk_delete" ]; then
-        echo
-        echo "** Preserved disk containing the JARVICE database:  $pd_name"
-        echo
-        echo "* Disk for the JARVICE database may be deleted by executing:"
-        echo "\$ $0 --cluster-delete --config-file $config_file --database-disk-delete"
-    fi
-    if [ -z "$vault_disks_delete" ]; then
-        echo
-        echo "** Preserved disks containing user vaults."
-        echo
-        echo "* User vault disks may be deleted by executing:"
-        echo "\$ $0 --cluster-delete --config-file $config_file --vault-disks-delete"
-    fi
     if [ -z "$database_disk_delete" -o -z "$vault_disks_delete" ]; then
         echo
         echo "** Preserved disks will be reused if another '$cluster_name' cluster is created in the '$cluster_zone' zone."
@@ -346,27 +310,55 @@ OLD_CONTEXT=$($KUBECTL config current-context 2>/dev/null || /bin/true)
 
 echo
 echo "* Running $GCLOUD to create cluster..."
-$GCLOUD container clusters create \
-    $gcloud_global_flags $gcloud_create_flags $cluster_name
-#$GCLOUD container clusters create --flags-file=$config_file jarvice
+    #--no-enable-basic-auth \
+    #--enable-ip-alias \
+    #--issue-client-certificate \
+$GCLOUD container clusters create $cluster_name \
+    --labels jarvice-cluster=$cluster_name \
+    --scopes gke-default,compute-rw,storage-ro \
+    --metadata disable-legacy-endpoints=true \
+    --image-type UBUNTU \
+    --min-cpu-platform "Intel Skylake" \
+    $gcloud_global_flags $gcloud_create_flags
 
-gcloud_node_pool_flags=$(cat $config_file | \
-                shyaml get-values gcloud.node_pools 2>/dev/null | \
+node_pools=$(cat $config_file | $SHYAML keys gcloud.node_pools)
+for pool in $node_pools; do
+    echo "* Adding node pool '$pool'..."
+    node_pool_flags=$(cat $config_file | \
+                $SHYAML get-values gcloud.node_pools.$pool 2>/dev/null | \
                 sed -r 's/None//g')
-pool_name=compute_pool
-#$GCLOUD container node-pools create $pool_name $gcloud_global_flags \
-#    $gcloud_node_pool_flags --cluster $cluster_name
+    $GCLOUD container node-pools create $pool \
+        --scopes gke-default,compute-rw,storage-ro \
+        --metadata disable-legacy-endpoints=true \
+        --image-type UBUNTU \
+        --min-cpu-platform "Intel Skylake" \
+        $gcloud_global_flags $node_pool_flags --cluster $cluster_name
+done
 
 echo
-echo "* Installing cluster autoscaler..."
-#$KUBECTL apply -f https://raw.githubusercontent.com/kubernetes/autoscaler/master/cluster-autoscaler/cloudprovider/aws/examples/cluster-autoscaler-autodiscover.yaml
+echo "* Running NVIDIA driver installer..."
+$KUBECTL apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/ubuntu/daemonset-preloaded.yaml
 
 echo
-echo "* Tainting nodes..."
+echo "* Waiting for kubernetes master to come back online..."
+# Strangely, the master does not go offline immediately, so a sleep is needed
+[ -n "$node_pools" ] && sleep 90
+set +e
+while ! $KUBECTL get nodes >/dev/null 2>&1; do
+    echo -n "."
+    sleep 5
+done
+set -e
+echo; echo
+echo "* Cluster nodes are ready..."
+$KUBECTL get nodes
+
+echo
+echo "* Updating node taints..."
+# GKE auto-adds taint for NVIDIA nodes.  We don't want that.  It's in the way.
+$KUBECTL taint nodes --all=true nvidia.com/gpu- || /bin/true
 roles="jarvice-system jarvice-dockerbuild jarvice-dockerpull jarvice-compute"
 for role in $roles; do
-    #$KUBECTL label nodes -l node-role.jarvice.io/$role= \
-    #    node-role.kubernetes.io/$role=
     $KUBECTL taint nodes -l node-role.kubernetes.io/$role= \
         node-role.kubernetes.io/$role=:NoSchedule
 done
@@ -377,15 +369,13 @@ done
 #    $KUBECTL apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 #fi
 
-JARVICE_MACHINES_ADD='[{"mc_name":"n0", "mc_description":"2 core, 16GB RAM (CPU only)", "mc_cores":"2", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"16", "mc_swap":"8", "mc_scratch":"64", "mc_devices":"", "mc_properties":"", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"16", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
-JARVICE_MACHINES_ADD+=', {"mc_name":"n1", "mc_description":"4 core, 32GB RAM (CPU Only)", "mc_cores":"4", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"32", "mc_swap":"16", "mc_scratch":"100", "mc_devices":"", "mc_properties":"", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"32", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
-JARVICE_MACHINES_ADD+=', {"mc_name":"n3", "mc_description":"16 core, 128GB RAM (CPU Only)", "mc_cores":"16", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"128", "mc_swap":"64", "mc_scratch":"500", "mc_devices":"", "mc_properties":"", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"128", "mc_scale_min":"1", "mc_scale_max":"256", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
-if [ -n "$install_nvidia_plugin" ]; then
-    kubectl_install_nvidia_plugin
-    JARVICE_MACHINES_ADD+=', {"mc_name":"ng0", "mc_description":"2 core, 16GB RAM with Nvidia GPU", "mc_cores":"2", "mc_slots":"16", "mc_gpus":"1", "mc_ram":"16", "mc_swap":"8", "mc_scratch":"64", "mc_devices":"", "mc_properties":"", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"16", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
-    JARVICE_MACHINES_ADD+=', {"mc_name":"ng1", "mc_description":"4 core, 32GB RAM with Nvidia GPU", "mc_cores":"4", "mc_slots":"16", "mc_gpus":"1", "mc_ram":"32", "mc_swap":"16", "mc_scratch":"100", "mc_devices":"", "mc_properties":"", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"32", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
-    JARVICE_MACHINES_ADD+=', {"mc_name":"ng3", "mc_description":"16 core, 128GB RAM with Nvidia GPU", "mc_cores":"16", "mc_slots":"16", "mc_gpus":"1", "mc_ram":"128", "mc_swap":"64", "mc_scratch":"500", "mc_devices":"", "mc_properties":"", "mc_slave_properties":"", "mc_slave_gpus":"1", "mc_slave_ram":"128", "mc_scale_min":"1", "mc_scale_max":"2", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
-fi
+JARVICE_MACHINES_ADD='[{"mc_name":"n0", "mc_description":"2 core, 16GB RAM (CPU only)", "mc_cores":"2", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"16", "mc_swap":"8", "mc_scratch":"64", "mc_devices":"", "mc_properties":"node-role.kubernetes.io/jarvice-compute=", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"16", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
+JARVICE_MACHINES_ADD+=', {"mc_name":"n1", "mc_description":"4 core, 32GB RAM (CPU Only)", "mc_cores":"4", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"32", "mc_swap":"16", "mc_scratch":"100", "mc_devices":"", "mc_properties":"node-role.kubernetes.io/jarvice-compute=", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"32", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
+JARVICE_MACHINES_ADD+=', {"mc_name":"n3", "mc_description":"16 core, 128GB RAM (CPU Only)", "mc_cores":"16", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"128", "mc_swap":"64", "mc_scratch":"500", "mc_devices":"", "mc_properties":"node-role.kubernetes.io/jarvice-compute=", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"128", "mc_scale_min":"1", "mc_scale_max":"256", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
+# Add GPU machine types
+JARVICE_MACHINES_ADD+=', {"mc_name":"ng0", "mc_description":"2 core, 16GB RAM with Nvidia GPU", "mc_cores":"2", "mc_slots":"16", "mc_gpus":"1", "mc_ram":"16", "mc_swap":"8", "mc_scratch":"64", "mc_devices":"gpu", "mc_properties":"node-role.kubernetes.io/jarvice-compute=", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"16", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
+JARVICE_MACHINES_ADD+=', {"mc_name":"ng1", "mc_description":"4 core, 32GB RAM with Nvidia GPU", "mc_cores":"4", "mc_slots":"16", "mc_gpus":"1", "mc_ram":"32", "mc_swap":"16", "mc_scratch":"100", "mc_devices":"gpu", "mc_properties":"node-role.kubernetes.io/jarvice-compute=", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"32", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
+JARVICE_MACHINES_ADD+=', {"mc_name":"ng3", "mc_description":"16 core, 128GB RAM with Nvidia GPU", "mc_cores":"16", "mc_slots":"16", "mc_gpus":"1", "mc_ram":"128", "mc_swap":"64", "mc_scratch":"500", "mc_devices":"gpu", "mc_properties":"node-role.kubernetes.io/jarvice-compute=", "mc_slave_properties":"", "mc_slave_gpus":"1", "mc_slave_ram":"128", "mc_scale_min":"1", "mc_scale_max":"2", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
 JARVICE_MACHINES_ADD+=']'
 
 echo
@@ -455,7 +445,7 @@ parameters:
   type: pd-standard
   replication-type: none
   #replication-type: regional-pd
-reclaimPolicy: Retain
+reclaimPolicy: Delete
 mountOptions:
   - debug
 EOF
@@ -466,13 +456,15 @@ done
 dbpv=$($GCLOUD compute disks list $gcloud_global_flags --format=json \
     --filter="zone:$cluster_zone AND name ~ ^gke-$cluster_name-.+-pvc- AND description ~ '\"kubernetes.io/created-for/pvc/name\":\"jarvice-db-pvc\"' " | \
     $JQ .[0])
-    
+
 vol_size=$(echo "$dbpv" | $JQ -r ".sizeGb")
 pd_name=$(echo "$dbpv" | $JQ -r ".name")
+if [ "$pd_name" != "null" ]; then
 
-# See: https://kubernetes.io/docs/concepts/storage/volumes/#gcepersistentdisk
-echo "* Creating 'jarvice-db-pv' PersistentVolume with pdName '$pd_name'..."
-pv_yaml=$(cat <<EOF
+    # See: https://kubernetes.io/docs/concepts/storage/volumes/#gcepersistentdisk
+    echo
+    echo "* Creating 'jarvice-db-pv' PersistentVolume with pdName '$pd_name'..."
+    pv_yaml=$(cat <<EOF
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -485,16 +477,21 @@ spec:
     storage: ${vol_size}Gi
   accessModes:
     - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
+  persistentVolumeReclaimPolicy: Delete
   storageClassName: jarvice-db
   mountOptions:
     - debug
 EOF
 )
-echo "$pv_yaml" | $KUBECTL --namespace kube-system create -f -
+    echo "$pv_yaml" | $KUBECTL --namespace kube-system create -f -
+fi
 
 jarvice_jobs_domain=$(get_yaml_value "jarvice.JARVICE_JOBS_DOMAIN")
 jarvice_jobs_lb_service=$(get_yaml_value "jarvice.JARVICE_JOBS_LB_SERVICE")
+jarvice_pvc_vault_size=$(get_yaml_value "jarvice.JARVICE_PVC_VAULT_SIZE")
+jarvice_pvc_vault_name=$(get_yaml_value "jarvice.JARVICE_PVC_VAULT_NAME")
+jarvice_pvc_vault_storageclass=$(get_yaml_value "jarvice.JARVICE_PVC_VAULT_STORAGECLASS")
+jarvice_pvc_vault_accessmodes=$(get_yaml_value "jarvice.JARVICE_PVC_VAULT_ACCESSMODES")
 echo
 echo "* Running helm to deploy JARVICE into cluster..."
 $HELM install --debug \
@@ -505,17 +502,18 @@ $HELM install --debug \
     --set jarvice.JARVICE_REMOTE_APIKEY="$jarvice_apikey" \
     --set jarvice.JARVICE_JOBS_DOMAIN="$jarvice_jobs_domain" \
     --set jarvice.JARVICE_JOBS_LB_SERVICE="$jarvice_jobs_lb_service" \
+    --set jarvice.JARVICE_PVC_VAULT_SIZE="$jarvice_pvc_vault_size" \
+    --set jarvice.JARVICE_PVC_VAULT_NAME="$jarvice_pvc_vault_name" \
+    --set jarvice.JARVICE_PVC_VAULT_STORAGECLASS="$jarvice_pvc_vault_storageclass" \
+    --set jarvice.JARVICE_PVC_VAULT_ACCESSMODES="$jarvice_pvc_vault_accessmodes" \
+    --set jarvice.daemonsets.lxcfs.enabled="true" \
+    --set jarvice.daemonsets.nvidia.enabled="false" \
     --set jarvice_db.persistence.enabled="true" \
     --set jarvice_dal.env.JARVICE_MACHINES_ADD="$(echo "$JARVICE_MACHINES_ADD" | sed -e 's#\([]{}",[/]\)#\\\1#g')" \
     --name $helm_name --namespace $helm_namespace $jarvice_chart_dir
     #--set jarvice_db.persistence.storageClass="-" \
     #--set jarvice_db.persistence.volumeName="jarvice-db-$cluster_name" \
 sleep 1
-
-echo
-echo "* Installing LXCFS daemonset..."
-$KUBECTL --namespace kube-system create \
-    -f https://raw.githubusercontent.com/nimbix/lxcfs-initializer/master/lxcfs-daemonset.yaml
 
 echo
 echo "* Installing Traefik ingress controller..."
@@ -577,7 +575,7 @@ spec:
     storage: ${vol_size}Gi
   accessModes:
     - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
+  persistentVolumeReclaimPolicy: Delete
   storageClassName: jarvice-user
   mountOptions:
     - debug
@@ -610,6 +608,8 @@ if [ -z "$user_disks" ]; then
     echo "No previous user disks were found."
 fi
 
+echo
+echo "* Waiting for rollout of JARVICE components..."
 DEPLOYMENTS="jarvice-dal jarvice-scheduler jarvice-api"
 DEPLOYMENTS+=" jarvice-mc-portal jarvice-appsync"
 for deployment in $DEPLOYMENTS; do

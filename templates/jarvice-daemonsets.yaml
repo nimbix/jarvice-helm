@@ -1,0 +1,137 @@
+{{- if .Values.jarvice.daemonsets.lxcfs.enabled }}
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: jarvice-lxcfs
+spec:
+  selector:
+    matchLabels:
+      component: jarvice-lxcfs
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-lxcfs
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ""
+    spec:
+{{- if (not (empty .Values.jarvice.daemonsets.lxcfs.tolerations)) }}
+      tolerations: {{ .Values.jarvice.daemonsets.lxcfs.tolerations }}
+{{- else if (not (empty .Values.jarvice.daemonsets.tolerations)) }}
+      tolerations: {{ .Values.jarvice.daemonsets.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice.daemonsets.lxcfs.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.daemonsets.lxcfs.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.daemonsets.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.daemonsets.nodeSelector }}
+{{- end }}
+      hostPID: true
+      volumes:
+        - name: rootfs
+          hostPath:
+            path: /
+      containers:
+      - name: jarvice-lxcfs
+        image: {{ .Values.jarvice.daemonsets.lxcfs.image }}
+        imagePullPolicy: Always
+        env:
+          - name: HOST_LXCFS_DIR
+            value: "/var/lib/lxcfs"
+          - name: HOST_LXCFS_INSTALL_DIR
+            value: "/usr/local/lxcfs-daemonset"
+        volumeMounts:
+          - name: rootfs
+            mountPath: /host
+        securityContext:
+          privileged: true
+---
+{{- end }}
+{{- if .Values.jarvice.daemonsets.nvidia.enabled }}
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: jarvice-nvidia-device-plugin
+spec:
+  selector:
+    matchLabels:
+      component: jarvice-nvidia-device-plugin
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-nvidia-device-plugin
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ""
+    spec:
+{{- if (not (empty .Values.jarvice.daemonsets.nvidia.tolerations)) }}
+      tolerations: {{ .Values.jarvice.daemonsets.nvidia.tolerations }}
+{{- else if (not (empty .Values.jarvice.daemonsets.tolerations)) }}
+      tolerations: {{ .Values.jarvice.daemonsets.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice.daemonsets.nvidia.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.daemonsets.nvidia.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.daemonsets.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.daemonsets.nodeSelector }}
+{{- end }}
+      volumes:
+        - name: device-plugins
+          hostPath:
+            path: /var/lib/kubelet/device-plugins
+      containers:
+      - name: jarvice-nvidia-device-plugin
+        image: {{ .Values.jarvice.daemonsets.nvidia.image }}
+        imagePullPolicy: Always
+        volumeMounts:
+          - name: device-plugins
+            mountPath: /var/lib/kubelet/device-plugins
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+---
+{{- end }}
+{{- if .Values.jarvice.daemonsets.rdma.enabled }}
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: jarvice-rdma-device-plugin
+spec:
+  selector:
+    matchLabels:
+      component: jarvice-rdma-device-plugin
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-rdma-device-plugin
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ""
+    spec:
+      hostNetwork: true
+{{- if (not (empty .Values.jarvice.daemonsets.rdma.tolerations)) }}
+      tolerations: {{ .Values.jarvice.daemonsets.rdma.tolerations }}
+{{- else if (not (empty .Values.jarvice.daemonsets.tolerations)) }}
+      tolerations: {{ .Values.jarvice.daemonsets.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice.daemonsets.rdma.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.daemonsets.rdma.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.daemonsets.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.daemonsets.nodeSelector }}
+{{- end }}
+      volumes:
+        - name: device-plugins
+          hostPath:
+            path: /var/lib/kubelet/device-plugins
+      containers:
+      - name: jarvice-rdma-device-plugin
+        image: {{ .Values.jarvice.daemonsets.rdma.image }}
+        imagePullPolicy: Always
+        volumeMounts:
+          - name: device-plugins
+            mountPath: /var/lib/kubelet/device-plugins
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+---
+{{- end }}
