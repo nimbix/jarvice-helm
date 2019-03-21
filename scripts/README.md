@@ -61,8 +61,9 @@ GKE clusters, it will be necessary to add a user and
 set the appropriate permissions for the indented GCP project here:
 https://console.cloud.google.com/iam-admin/iam
 
-Before using this script, it may be desirable to set the default `gcloud`
-`account`, `project`, and compute `zone`:
+After using this script (it automatically installs the `gcloud` binary), it
+may be desirable to set the default `gcloud` `account`, `project`,
+and compute `zone`:
 
 ```bash
 $ gcloud config set account <gcloud_account>
