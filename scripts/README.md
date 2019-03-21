@@ -1,6 +1,10 @@
 # JARVICE Helm chart deployment scripts
 
 This directory contains helper scripts for JARVICE Helm chart deployments.
+Helper scripts are avalable to deploy JARVICE to a
+Google Kubernetes Engine (GKE) cluster on Google Cloud Platform (GCP) and to a
+Elastic Container Service for Kubernetes (EKS) cluster
+on Amazon Web Services (AWS).
 
 See README.md in the top level of this repository for more in depth details
 on JARVICE Helm chart installations:
@@ -16,10 +20,119 @@ It is first necessary to clone this git repository to a client machine:
 $ git clone https://github.com/nimbix/jarvice-helm.git
 ```
 
+## `jarvice-deploy2gke`
+
+The `jarvice-deploy2gke` script can be used to quickly deploy JARVICE into
+a GKE cluster on GCP with a single command line.
+
+It will first verify and, if needed, install software components needed for
+interacting with GCP and GKE.  Subsequently, it will create and initialize
+a GKE cluster.  That process will take approximately 5 minutes.  That may
+vary depending on the settings chosen for the number of GKE nodes and the
+accompanying disk sizes.
+
+Next, it will install kubernetes plugins and initialize/configure Tiller
+to enable installation of the JARVICE helm chart into the cluster.  Lastly,
+it will `helm install` the JARVICE chart and print out URLs for accessing
+the JARVICE installation.  It will take around five minutes for the JARVICE
+installation and deployment rollout.  The entire process combined,
+from start to finish, will be approximately 10 minutes.
+
+Execute `jarvice-deploy2gke` with `--help` to see all of the current command
+line options:
+```bash
+Usage:
+  ./scripts/jarvice-deploy2gke [global_options] [deploy_or_delete_options]
+
+Available [global_options]:
+  --jarvice-chart-dir <path>        Alternative JARVICE helm chart directory
+  --config-file <filename>          Alternative cluster config file
+
+Available [delete_options]:
+  --cluster-delete                  Delete the cluster
+  --database-disk-delete            Delete the database disk on cluster delete
+  --vault-disks-delete              Delete the vault disks on cluster delete
+```
+
+### GCP Credentials
+
+If you don't already have a GCP user with the appropriate permissions to create
+GKE clusters, it will be necessary to add a user and
+set the appropriate permissions for the indented GCP project here:
+https://console.cloud.google.com/iam-admin/iam
+
+Before using this script, it may be desirable to set the default `gcloud`
+`account`, `project`, and compute `zone`:
+
+```bash
+$ gcloud config set account <gcloud_account>
+$ gcloud config set project <gcloud_project>
+$ gcloud config set compute/zone <gcloud_compute_zone>
+```
+
+See the following link for more details:
+https://cloud.google.com/sdk/gcloud/reference/config/set
+
+### KUBECONFIG
+
+`jarvice-deploy2gke` will use `~/.kube/config` as the default kubeconfig file.
+Set the `KUBECONFIG` environment variable to change the default:
+```bash
+$ export KUBECONFIG=~/.kube/config.gke
+```
+
+If the kubeconfig file exists, a new context for the GKE cluster will be added
+to it.  If the kubeconfig file doesn't exist, it will be created.
+
+### Cluster configuration file
+
+`jarvice-deploy2gke` will use `./scripts/gke-cluster.yaml` as the default
+GKE cluster configuration file.  The `--config-file` option can be used to
+select another configuration file.
+
+At a minimum, to bring up an GKE cluster with JARVICE, it will be necessary
+to use an edited configuration so as to provide credentials in the `jarvice`
+stanza.
+
+### Execution example
+
+After copying and editing the default configuration file, a cluster can be
+brought up with a simple command line:
+```bash
+$ ./scripts/jarvice-deploy2gke --config-file ./scripts/jarvice-cluster.yaml
+```
+
+### Cluster removal
+
+In order to remove the GKE cluster, use the `--cluster-delete` flag:
+```bash
+$ ./scripts/jarvice-deploy2gke --config-file ./scripts/jarvice-cluster.yaml \
+    --cluster-delete
+```
+
+To delete the JARVICE database and/or user vault GCP disks along with the
+cluster, the `--database-disk-delete` and/or `--vault-disks-delete` flags must
+be explicitly provided:
+```bash
+$ ./scripts/jarvice-deploy2gke --config-file ./scripts/jarvice-cluster.yaml \
+    --cluster-delete --database-disk-delete --vault-disks-delete
+```
+Note:  Preserved JARVICE database and user vault GCP disks will be reused
+if an GKE cluster of the same name is recreated in the same GKE region and
+availability zone.
+
+If you had a previous kubeconfig file, the installation will have changed the
+`current-context`.  Use `kubectl config get-contexts` to see the available
+contexts in the kubeconfig.  Then, if desired, revert the `current-context`
+with the following command:
+```bash
+$ kubectl config set current-context <context_name>
+```
+
 ## `jarvice-deploy2eks`
 
 The `jarvice-deploy2eks` script can be used to quickly deploy JARVICE into
-an Amazon EKS cluster with a single command line.
+an EKS cluster on AWS with a single command line.
 
 It will first verify and, if needed, install software components needed for
 interacting with AWS and EKS.  Subsequently, it will create and initialize
@@ -42,9 +155,7 @@ Usage:
 
 Available [global_options]:
   --jarvice-chart-dir <path>        Alternative JARVICE helm chart directory
-                                    (Default: .)
   --config-file <filename>          Alternative cluster config file
-                                    (Default: ./eks-cluster.yaml)
 
 Available [delete_options]:
   --eks-cluster-delete              Delete the EKS cluster

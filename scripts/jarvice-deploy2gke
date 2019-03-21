@@ -8,7 +8,6 @@ if [ "$(arch)" != "x86_64" ]; then
 fi
 
 cluster_delete=
-install_nvidia_plugin=
 install_dashboard=
 helm_name=jarvice
 helm_namespace=jarvice-system
@@ -159,13 +158,6 @@ function strict_version {
     python -c "from distutils.version import StrictVersion;print StrictVersion('$ver') >= StrictVersion('$ver_req');"
 }
 
-function kubectl_install_nvidia_plugin {
-    echo
-    echo "* Installing Nvidia device plugin into cluster..."
-    SERVER_MAJOR=$($KUBECTL version | grep '^Server' | sed -E 's/.*Major:"([0-9]+)".*/\1/')
-    SERVER_MINOR=$($KUBECTL version | grep '^Server' | sed -E 's/.*Minor:"([0-9]+)\+*".*/\1/')
-    $KUBECTL create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v$SERVER_MAJOR.$SERVER_MINOR/nvidia-device-plugin.yml 2>/dev/null || /bin/true
-}
 
 ###############################################################################
 
@@ -176,6 +168,7 @@ gcloud_global_flags=$(cat $config_file | \
 gcloud_create_flags=$(cat $config_file | \
                 $SHYAML get-values gcloud.create_flags 2>/dev/null | \
                 sed -r 's/None//g')
+
 # Cluster config options
 cluster_name=$(get_yaml_value "gcloud.metadata.name")
 cluster_zone=$(get_yaml_value "gcloud.create_flags.--zone")
@@ -320,11 +313,13 @@ echo "* Running $GCLOUD to create cluster..."
     #--no-enable-basic-auth \
     #--enable-ip-alias \
     #--issue-client-certificate \
-$GCLOUD container clusters create \
+$GCLOUD container clusters create $cluster_name \
     --labels jarvice-cluster=$cluster_name \
     --scopes gke-default,compute-rw,storage-ro \
     --metadata disable-legacy-endpoints=true \
-    $gcloud_global_flags $gcloud_create_flags $cluster_name
+    --image-type UBUNTU \
+    --min-cpu-platform "Intel Skylake" \
+    $gcloud_global_flags $gcloud_create_flags
 
 node_pools=$(cat $config_file | $SHYAML keys gcloud.node_pools)
 for pool in $node_pools; do
@@ -335,6 +330,8 @@ for pool in $node_pools; do
     $GCLOUD container node-pools create $pool \
         --scopes gke-default,compute-rw,storage-ro \
         --metadata disable-legacy-endpoints=true \
+        --image-type UBUNTU \
+        --min-cpu-platform "Intel Skylake" \
         $gcloud_global_flags $node_pool_flags --cluster $cluster_name
 done
 
@@ -353,11 +350,9 @@ echo "* Cluster nodes are ready..."
 $KUBECTL get nodes
 
 echo
-echo "* Installing cluster autoscaler..."
-#$KUBECTL apply -f https://raw.githubusercontent.com/kubernetes/autoscaler/master/cluster-autoscaler/cloudprovider/aws/examples/cluster-autoscaler-autodiscover.yaml
-
-echo
-echo "* Tainting nodes..."
+echo "* Updating node taints..."
+# GKE auto-adds taint for NVIDIA nodes.  We don't want that.  It's in the way.
+$KUBECTL taint nodes --all=true nvidia.com/gpu- || /bin/true
 roles="jarvice-system jarvice-dockerbuild jarvice-dockerpull jarvice-compute"
 for role in $roles; do
     $KUBECTL taint nodes -l node-role.kubernetes.io/$role= \
@@ -370,15 +365,13 @@ done
 #    $KUBECTL apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 #fi
 
-JARVICE_MACHINES_ADD='[{"mc_name":"n0", "mc_description":"2 core, 16GB RAM (CPU only)", "mc_cores":"2", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"16", "mc_swap":"8", "mc_scratch":"64", "mc_devices":"", "mc_properties":"", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"16", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
-JARVICE_MACHINES_ADD+=', {"mc_name":"n1", "mc_description":"4 core, 32GB RAM (CPU Only)", "mc_cores":"4", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"32", "mc_swap":"16", "mc_scratch":"100", "mc_devices":"", "mc_properties":"", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"32", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
-JARVICE_MACHINES_ADD+=', {"mc_name":"n3", "mc_description":"16 core, 128GB RAM (CPU Only)", "mc_cores":"16", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"128", "mc_swap":"64", "mc_scratch":"500", "mc_devices":"", "mc_properties":"", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"128", "mc_scale_min":"1", "mc_scale_max":"256", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
-if [ -n "$install_nvidia_plugin" ]; then
-    kubectl_install_nvidia_plugin
-    JARVICE_MACHINES_ADD+=', {"mc_name":"ng0", "mc_description":"2 core, 16GB RAM with Nvidia GPU", "mc_cores":"2", "mc_slots":"16", "mc_gpus":"1", "mc_ram":"16", "mc_swap":"8", "mc_scratch":"64", "mc_devices":"", "mc_properties":"", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"16", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
-    JARVICE_MACHINES_ADD+=', {"mc_name":"ng1", "mc_description":"4 core, 32GB RAM with Nvidia GPU", "mc_cores":"4", "mc_slots":"16", "mc_gpus":"1", "mc_ram":"32", "mc_swap":"16", "mc_scratch":"100", "mc_devices":"", "mc_properties":"", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"32", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
-    JARVICE_MACHINES_ADD+=', {"mc_name":"ng3", "mc_description":"16 core, 128GB RAM with Nvidia GPU", "mc_cores":"16", "mc_slots":"16", "mc_gpus":"1", "mc_ram":"128", "mc_swap":"64", "mc_scratch":"500", "mc_devices":"", "mc_properties":"", "mc_slave_properties":"", "mc_slave_gpus":"1", "mc_slave_ram":"128", "mc_scale_min":"1", "mc_scale_max":"2", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
-fi
+JARVICE_MACHINES_ADD='[{"mc_name":"n0", "mc_description":"2 core, 16GB RAM (CPU only)", "mc_cores":"2", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"16", "mc_swap":"8", "mc_scratch":"64", "mc_devices":"", "mc_properties":"node-role.kubernetes.io/jarvice-compute=", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"16", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
+JARVICE_MACHINES_ADD+=', {"mc_name":"n1", "mc_description":"4 core, 32GB RAM (CPU Only)", "mc_cores":"4", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"32", "mc_swap":"16", "mc_scratch":"100", "mc_devices":"", "mc_properties":"node-role.kubernetes.io/jarvice-compute=", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"32", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
+JARVICE_MACHINES_ADD+=', {"mc_name":"n3", "mc_description":"16 core, 128GB RAM (CPU Only)", "mc_cores":"16", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"128", "mc_swap":"64", "mc_scratch":"500", "mc_devices":"", "mc_properties":"node-role.kubernetes.io/jarvice-compute=", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"128", "mc_scale_min":"1", "mc_scale_max":"256", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
+# Add GPU machine types
+JARVICE_MACHINES_ADD+=', {"mc_name":"ng0", "mc_description":"2 core, 16GB RAM with Nvidia GPU", "mc_cores":"2", "mc_slots":"16", "mc_gpus":"1", "mc_ram":"16", "mc_swap":"8", "mc_scratch":"64", "mc_devices":"", "mc_properties":"node-role.kubernetes.io/jarvice-compute=", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"16", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
+JARVICE_MACHINES_ADD+=', {"mc_name":"ng1", "mc_description":"4 core, 32GB RAM with Nvidia GPU", "mc_cores":"4", "mc_slots":"16", "mc_gpus":"1", "mc_ram":"32", "mc_swap":"16", "mc_scratch":"100", "mc_devices":"", "mc_properties":"node-role.kubernetes.io/jarvice-compute=", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"32", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
+JARVICE_MACHINES_ADD+=', {"mc_name":"ng3", "mc_description":"16 core, 128GB RAM with Nvidia GPU", "mc_cores":"16", "mc_slots":"16", "mc_gpus":"1", "mc_ram":"128", "mc_swap":"64", "mc_scratch":"500", "mc_devices":"", "mc_properties":"node-role.kubernetes.io/jarvice-compute=", "mc_slave_properties":"", "mc_slave_gpus":"1", "mc_slave_ram":"128", "mc_scale_min":"1", "mc_scale_max":"2", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
 JARVICE_MACHINES_ADD+=']'
 
 echo
@@ -480,7 +473,7 @@ spec:
     storage: ${vol_size}Gi
   accessModes:
     - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
+  persistentVolumeReclaimPolicy: Delete
   storageClassName: jarvice-db
   mountOptions:
     - debug
@@ -509,17 +502,14 @@ $HELM install --debug \
     --set jarvice.JARVICE_PVC_VAULT_NAME="$jarvice_pvc_vault_name" \
     --set jarvice.JARVICE_PVC_VAULT_STORAGECLASS="$jarvice_pvc_vault_storageclass" \
     --set jarvice.JARVICE_PVC_VAULT_ACCESSMODES="$jarvice_pvc_vault_accessmodes" \
+    --set jarvice.daemonsets.lxcfs.enabled="true" \
+    --set jarvice.daemonsets.nvidia.enabled="true" \
     --set jarvice_db.persistence.enabled="true" \
     --set jarvice_dal.env.JARVICE_MACHINES_ADD="$(echo "$JARVICE_MACHINES_ADD" | sed -e 's#\([]{}",[/]\)#\\\1#g')" \
     --name $helm_name --namespace $helm_namespace $jarvice_chart_dir
     #--set jarvice_db.persistence.storageClass="-" \
     #--set jarvice_db.persistence.volumeName="jarvice-db-$cluster_name" \
 sleep 1
-
-echo
-echo "* Installing LXCFS daemonset..."
-$KUBECTL --namespace kube-system create \
-    -f https://raw.githubusercontent.com/nimbix/lxcfs-initializer/master/lxcfs-daemonset.yaml
 
 echo
 echo "* Installing Traefik ingress controller..."
@@ -581,7 +571,7 @@ spec:
     storage: ${vol_size}Gi
   accessModes:
     - ReadWriteOnce
-  persistentVolumeReclaimPolicy: Retain
+  persistentVolumeReclaimPolicy: Delete
   storageClassName: jarvice-user
   mountOptions:
     - debug

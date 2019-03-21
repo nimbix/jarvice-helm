@@ -29,7 +29,7 @@ gcloud:
   create_flags:
     --zone: us-west1-a
     --node-labels: node-role.kubernetes.io/jarvice-system=
-    --machine-type: n1-standard-16
+    --machine-type: n1-standard-8
     --disk-size: 10
     --disk-type: pd-ssd
     --min-nodes: 3
@@ -42,9 +42,10 @@ gcloud:
     compute-0:
         --zone: us-west1-a
         --node-labels: node-role.kubernetes.io/jarvice-compute=
-        --machine-type: n1-standard-64
+        --machine-type: n1-standard-96
         --disk-size: 100
         --disk-type: pd-ssd
+        #--local-ssd-count: 1
         --min-nodes: 2
         --max-nodes: 4
         --num-nodes: 4
@@ -53,9 +54,10 @@ gcloud:
     #compute-1:
     #    --zone: us-west1-a
     #    --node-labels: node-role.kubernetes.io/jarvice-compute=
-    #    --machine-type: n1-standard-64
+    #    --machine-type: n1-standard-96
     #    --disk-size: 100
     #    --disk-type: pd-ssd
+    #    --local-ssd-count: 1
     #    --min-nodes: 2
     #    --max-nodes: 2
     #    --num-nodes: 2

@@ -70,6 +70,28 @@ jarvice:
   JARVICE_BUILDS_NAMESPACE: # auto-set, should not need to be updated
   JARVICE_PULLS_NAMESPACE: # auto-set, should not need to be updated
 
+  # Optionally, quick enable DaemonSets here.  More details can be found at:
+  # https://github.com/nimbix/jarvice-helm#kubernetes-device-plugins
+  # https://github.com/nimbix/jarvice-helm#install-recommended-daemonsets
+  daemonsets:
+    tolerations: '[{"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}]'
+    nodeSelector: # '{"node-role.kubernetes.io/jarvice-compute": ""}'
+    lxcfs:
+      enabled: false
+      tolerations: #'[{"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}]'
+      nodeSelector: # '{"node-role.kubernetes.io/jarvice-compute": ""}'
+      image: nimbix/lxcfs:3.0.3-3
+    nvidia:
+      enabled: false
+      tolerations: #'[{"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}]'
+      nodeSelector: # '{"node-role.kubernetes.io/jarvice-compute": ""}'
+      image: nvidia/k8s-device-plugin:1.11
+    rdma:
+      enabled: false
+      tolerations: #'[{"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}]'
+      nodeSelector: # '{"node-role.kubernetes.io/jarvice-compute": ""}'
+      image: nimbix/k8s-rdma-device-plugin:1.10
+
 
 # Database server previously set up?  Set enabled to false.
 jarvice_db:
