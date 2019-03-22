@@ -9,7 +9,6 @@
 
 - Singularity containers are not supported; JARVICE can only refer to Docker containers on Kubernetes.  If the container runtime can pull from Docker registries and is OCI compliant, this should be transparent to JARVICE as well.
 - JARVICE and its applications refers to "CPU cores" but it can work with hyperthreading and SMT as well; in this case, treat the threads themselves as cores when configuring machine types, etc.  Note that many HPC applications explicitly recommend against using SMT, so consider setting up non-SMT nodes for these applications (they can be targeted with labels)
-- Currently vaults should be provisioned on a user-by-user basis from the web portal or via the ```jarvice-vaults``` command in a pod in the ```jarvice-dal``` deployment; support for dynamic provisioning of Kubernetes PersistentVolumes linked to user account signups will be available in a future release
 - The full JSON for all pods in a job can be downloaded via the *DOWNLOAD STDERR* button in the *Job data* for any given job in the *Jobs* view of the *Administration* tab; this should be used to troubleshoot failures by checking the actual Kubernetes status conditions.  Note that pods are deleted and garbage collected automatically once jobs end, so this is the only persistent record of what was specified and what the actual statuses were during the lifecycle.
 
 ---
@@ -38,6 +37,14 @@
 
 
 # Changelog
+
+## 3.0.0-1.20190321.2116
+
+* (1580) Support for automatic vault creation of dynamically provisioned Persistent Volumes (Kubernetes only) - see the `jarvice.JARVICE_PVC_VAULT_*` variables in [values.yaml](values.yaml) for more information
+* (1583) Self-service resource limits and cost controls (phase 2) for team payers and team admins
+* (1596) Support for Google Kubernetes Engine (GKE) is now GA; see [JARVICE Helm chart deployment scripts](scripts/README.md) for details
+* (1603) Ability to control in-container web service URL via AppDef rather than just `/etc/NAE/url.txt`
+* (1610) Ability to secure in-container web services via GET URLs with machine-generated tokens; see [Jupyter Demo](https://github.com/nimbix/jupyter-demo) for an example application illustrating this functionality
 
 ## 3.0.0-1.20190308.1643
 
