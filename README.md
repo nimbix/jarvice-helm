@@ -886,12 +886,15 @@ $ kubectl --namespace jarvice-system \
 ```
 
 Reload jarvice-mc-portal pods (only to apply default.png, favicon.png,
-logo.png, palette.json, or eula.txt updates):
+logo.png, palette.json, eula.txt, admin_invite.mailtemplate,
+forgot_password.mailtemplate, signup_request_team.mailtemplate, or
+signup_success.mailtemplate updates):
 ```bash
 $ kubectl --namespace jarvice-system delete pods -l component=jarvice-mc-portal
 ```
 
-Reload jarvice-scheduler pods (only to apply mail.conf update):
+Reload jarvice-scheduler pods (only to apply mail.conf, email.head, or
+email.tail update):
 ```bash
 $ kubectl --namespace jarvice-system delete pods -l component=jarvice-scheduler
 ```

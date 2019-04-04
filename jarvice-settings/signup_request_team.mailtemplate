@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html;UTF-8"/>
+  </head>
+  <body style="margin:0px;background-color:#F4F3F4;font-family:Helvetica, Arial, sans-serif;font-size:12px;" text="#444444" bgcolor="#F4F3F4" link="#21759B" alink="#21759B" vlink="#21759B" marginheight="0" topmargin="0" marginwidth="0" leftmargin="0">
+    <table width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#F4F3F4" align="center">
+      <tbody>
+        <tr>
+          <td style="padding:15px;">
+          <div align='center'>
+            <table width="550" cellspacing="0" cellpadding="0" align="center" bgcolor="#FFFFFF">
+              <tbody>
+                <tr>
+                  <td align="left">
+                  <div style="border:1px solid #D9D9D9;">
+                    <table id="header" style="line-height: 1.6; font-size: 12px; font-family: Helvetica,Arial,sans-serif; border: 1px solid #ffffff; color: #444444;" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF">
+                      <tbody>
+                        <tr>
+                          <td colspan="2" style="color:#FFFFFF;" background="http://www.nimbix.net/_images/white-grad-active.png" height="30" valign="bottom">.</td>
+                        </tr>
+                        <tr>
+                            <td style="line-height:32px; padding-left:30px;" valign="baseline"><span style="font-size:32px;"><a style="text-decoration:none;" title="JARVICE" href="http://www.nimbix.net/platform/"><h1>JARVICE</h1></a></span></td>
+                          <td style="padding-right:30px;" align="right" valign="baseline"></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <table id="content" style="margin-top:15px; margin-right:30px; margin-left:30px; color:#444444; line-height:1.6; font-size:12px; font-family:Arial,sans-serif;" width="490" border="0" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF">
+                      <tbody>
+                        <tr>
+                          <td colspan="2" style="border-top:1px solid #D9D9D9;">
+                          <div style="padding:15px 0pt;">
+                            {{content}}
+                            <p>
+                              You are receiving this email to complete the signup procedure for your JARVICE account.  <b>{{payer.user_nicename}}</b> is inviting you to join a team.
+                            </p>
+                            <p>
+                              Please click <a href='{{link}}'>this link</a> to complete your registration.
+                            </p>
+                            <p>
+                              If you did not initiate this, please a system admin as soon as possible.
+                            </p>
+                            <p>
+                              Thank you for choosing JARVICE.
+                            </p>
+                            <p>
+                              Sincerely,
+                            </p>
+                            <p>
+                              Support
+                            </p>
+                          </div></td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <table id="footer" style="line-height:1.5; font-size:12px; font-family:Arial,sans-serif; margin-right:30px; margin-left:30px;" width="490" border="0" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF">
+                      <tbody>
+                        <tr style="font-size:11px; color:#999999;">
+                          <td colspan="2" style="border-top:1px solid #D9D9D9;">
+                          <div style="padding-top:28px; float:right;">
+                            <a href="http://twitter.com/"><img src="http://www.nimbix.net/wp-content/uploads/2014/06/twitterremailer.png" alt="twitter" width="16" height="16"/></a>&nbsp;<a href="http://www.linkedin.com/"><img src="http://www.nimbix.net/wp-content/uploads/2014/06/linkedinremailer.png" alt="linkedin" width="16" height="16"/></a>
+                          </div>
+                          <div style="padding-top:15px; padding-bottom:1px;"><img src="http://www.nimbix.net/wp-content/uploads/2014/06/date-button.gif" style="vertical-align: middle" alt="Date" width="13" height="13"/>&nbsp;Email sent {{datetime}}.
+                          </div>
+                          <div><img src="http://www.nimbix.net/wp-content/uploads/2014/06/comment-grey-bubble.png" style="vertical-align: middle;" alt="Contact" width="12" height="12"/><span>&nbsp;For any requests, please contact a system admin&nbsp;</span>
+                          </div></td>
+                        </tr>
+                        <tr>
+                          <td colspan="2" style="color:#FFFFFF;" height="15">.</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>
