@@ -1,0 +1,31 @@
+                              </div>
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                      <table id="footer" style="line-height: 1.5; font-size: 12px; font-family: Arial,sans-serif; margin-right: 30px; margin-left: 30px;" width="490" border="0" cellspacing="0" cellpadding="0" bgcolor="#ffffff">
+                        <tbody>
+                          <tr style="font-size: 11px; color: #999999;">
+                            <td style="border-top: 1px solid #d9d9d9;" colspan="2">
+                              <div style="padding-top: 28px; float: right;"><a href="http://twitter.com/"><img src="http://www.nimbix.net/wp-content/uploads/2014/06/twitterremailer.png" alt="twitter" width="16" height="16" /></a> <a href="http://www.linkedin.com/"><img src="http://www.nimbix.net/wp-content/uploads/2014/06/linkedinremailer.png" alt="linkedin" width="16" height="16" /></a></div>
+                              <div style="padding-top: 15px; padding-bottom: 1px;"><img style="vertical-align: middle;" src="http://www.nimbix.net/wp-content/uploads/2014/06/date-button.gif" alt="Date" width="13" height="13" /> Email sent %datetime%</div>
+                              <div><img style="vertical-align: middle;" src="http://www.nimbix.net/wp-content/uploads/2014/06/comment-grey-bubble.png" alt="Contact" width="12" height="12" /> For any requests, please contact a system admin</div>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td colspan="2" style="color: #ffffff;" height="15">.</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            </center></td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>
+
