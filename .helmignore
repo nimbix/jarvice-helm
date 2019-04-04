@@ -20,3 +20,7 @@
 .project
 .idea/
 *.tmproj
+# Extras
+extra/
+scripts/
+jarvice-settings/
