@@ -878,9 +878,15 @@ In `jarvice-helm/jarvice-settings-override`, it will only be necessary to
 create those files which are to be customized.  The defaults found in
 `jarvice-helm/jarvice-settings` may be copied and edited as desired.
 
-Load the new JARVICE settings by creating a ConfigMap:
+Load the new JARVICE settings by creating a ConfigMap in each of the 3 system namespaces:
 ```bash
 $ kubectl --namespace jarvice-system \
+    create configmap jarvice-settings \
+    --from-file=jarvice-helm/jarvice-settings-override
+$ kubectl --namespace jarvice-system-pulls \
+    create configmap jarvice-settings \
+    --from-file=jarvice-helm/jarvice-settings-override
+$ kubectl --namespace jarvice-system-builds \
     create configmap jarvice-settings \
     --from-file=jarvice-helm/jarvice-settings-override
 ```
