@@ -102,7 +102,7 @@ JQ=$(type -p jq)
 SHYAML=$(type -p shyaml)
 
 KUBECTL_VER_REQ=1.10
-EKSCTL_VER_REQ=0.1.22
+EKSCTL_VER_REQ=0.1.23
 
 if [ -z "$KUBECONFIG" ]; then
     KUBECONFIG=~/.kube/config
