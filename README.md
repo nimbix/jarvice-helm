@@ -878,20 +878,29 @@ In `jarvice-helm/jarvice-settings-override`, it will only be necessary to
 create those files which are to be customized.  The defaults found in
 `jarvice-helm/jarvice-settings` may be copied and edited as desired.
 
-Load the new JARVICE settings by creating a ConfigMap:
+Load the new JARVICE settings by creating a ConfigMap in each of the 3 system namespaces:
 ```bash
 $ kubectl --namespace jarvice-system \
+    create configmap jarvice-settings \
+    --from-file=jarvice-helm/jarvice-settings-override
+$ kubectl --namespace jarvice-system-pulls \
+    create configmap jarvice-settings \
+    --from-file=jarvice-helm/jarvice-settings-override
+$ kubectl --namespace jarvice-system-builds \
     create configmap jarvice-settings \
     --from-file=jarvice-helm/jarvice-settings-override
 ```
 
 Reload jarvice-mc-portal pods (only to apply default.png, favicon.png,
-logo.png, palette.json, or eula.txt updates):
+logo.png, palette.json, eula.txt, admin_invite.mailtemplate,
+forgot_password.mailtemplate, signup_request_team.mailtemplate, or
+signup_success.mailtemplate updates):
 ```bash
 $ kubectl --namespace jarvice-system delete pods -l component=jarvice-mc-portal
 ```
 
-Reload jarvice-scheduler pods (only to apply mail.conf update):
+Reload jarvice-scheduler pods (only to apply mail.conf, email.head, or
+email.tail update):
 ```bash
 $ kubectl --namespace jarvice-system delete pods -l component=jarvice-scheduler
 ```
@@ -929,10 +938,10 @@ Then use https://`$PORTAL_IP`/ to initialize and/or log into JARVICE.
 
 # Additional Resources
 
+- [Release Notes](ReleaseNotes.md)
 - [JARVICE System Configuration Notes](Configuration.md)
 - [Active Directory Authentication Best Practices](ActiveDirectory.md)
 - [In-container Identity Settings and Best Practices](Identity.md)
-- [Release Notes](ReleaseNotes.md)
 - [JARVICE Developer Documentation (jarvice.readthedocs.io)](https://jarvice.readthedocs.io)
 
 

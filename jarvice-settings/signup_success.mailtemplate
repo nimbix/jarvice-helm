@@ -1,0 +1,60 @@
+<table border="0" width="100%" cellspacing="0" cellpadding="0" align="center" bgcolor="#F4F3F4">
+<tbody>
+<tr>
+<td style="padding: 15px;" height="779">
+<div align="center">
+<table width="550" cellspacing="0" cellpadding="0" align="center" bgcolor="#FFFFFF">
+<tbody>
+<tr>
+<td align="left">
+<div style="border: 1px solid #D9D9D9;">
+<table id="header" style="line-height: 1.6; font-size: 13px; font-family: 'Roboto',Arial,sans-serif; border: 1px solid #ffffff; color: #444444;" border="0" width="100%" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF">
+<tbody>
+<tr>
+<td style="line-height: 32px; padding-left: 30px;" valign="absmiddle" bgcolor="#003268" height="76"><img src="https://www.nimbix.net/wp-content/uploads/2017/07/JARVICE.png" alt="JARVICE" width="71" height="76" /></td>
+<td style="padding-right: 30px;" align="right" valign="absmiddle" bgcolor="#003268"><a href="https://nimbix.net/platform/"><h1>JARVICE</h1></a></td>
+</tr>
+</tbody>
+</table>
+<table id="content" style="margin-top: 15px; margin-right: 30px; margin-left: 30px; color: #444444; line-height: 1.6; font-size: 13px; font-family: 'Roboto',sans-serif;" border="0" width="490" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF">
+<tbody>
+<tr>
+<td colspan="2" align="left">
+<div style="padding: 15px 0pt;">
+<p>Welcome to the JARVICE platform!</p>
+<p>Thank you for activating your account.</p>
+<p>JARVICE is the platform that delivers true HPC in the cloud. JARVICE is your personal supercomputer at the ready. Run your enterprise HPC applications in a browser or hand JARVICE a job via our API. JARVICE gets to work, crunches your data, wraps up your task and delivers your results.</p>
+<p>Your username: {{userid}}<br /> Using email: {{email}}</p>
+<p>If you forget your password please contact a system admin</p>
+<p>Sincerely,</p>
+<p>Support</p>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<table id="footer" style="line-height: 1.5; font-size: 13px; font-family: 'Roboto',sans-serif; margin-right: 30px; margin-left: 30px;" border="0" width="490" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF">
+<tbody>
+<tr style="font-size: 11px; color: #999999;">
+<td style="border-top: 1px solid #D9D9D9;" colspan="2">
+<div style="padding-top: 28px; float: right;"><a href="http://twitter.com/"><img src="http://www.nimbix.net/wp-content/uploads/2014/06/twitterremailer.png" alt="twitter" width="16" height="16" /></a>&nbsp;<a href="http://www.linkedin.com/"><img src="http://www.nimbix.net/wp-content/uploads/2014/06/linkedinremailer.png" alt="linkedin" width="16" height="16" /></a></div>
+<div style="padding-top: 15px; padding-bottom: 1px;"><img style="vertical-align: middle;" src="http://www.nimbix.net/wp-content/uploads/2014/06/date-button.gif" alt="Date" width="13" height="13" />&nbsp;Email sent {{datetime}}.</div>
+<div><img style="vertical-align: middle;" src="http://www.nimbix.net/wp-content/uploads/2014/06/comment-grey-bubble.png" alt="Contact" width="12" height="12" />&nbsp;For any requests, please contact a system admin&nbsp;
+</div>
+</td>
+</tr>
+<tr>
+<td style="color: #ffffff;" colspan="2" height="15">.</td>
+</tr>
+</tbody>
+</table>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
