@@ -43,6 +43,11 @@
 
 # Changelog
 
+## 3.0.0-1.20190409.1413
+
+* (1619) Fixed bug that prevented `/jarvice/pull` endpoint from working correctly in some configurations
+* (1644) Fixed bug where `USER` settings in Dockerfiles could prevent jobs from starting correctly; note that JARVICE ignores `USER` at runtime and instead performs its own identity management
+
 ## 3.0.0-1.20190405.1502
 
 * (1584) Job queuing at resource limits (phase 3)
