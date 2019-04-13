@@ -34,6 +34,25 @@
 - Resource limits should not currently be used at any level (administrator controlled or self-service) if Kubernetes cluter autoscaling is enabled, as nodes may scale up even if queued jobs are resource limited; this issue will be fixed in a future release.
 - Resource limit changes do not apply retroactively to jobs that are already queued; any queued jobs will be executed as soon as capacity becomes available.  Constraining resource limits after jobs are in the regular queue has no effect on them.  However, increasing resource limits will allow jobs that are being held due to account settings to move to regular queue if the new limits permit that.
 
+### PersistentVolume Vaults
+
+#### General
+
+- When using a PersistentVolume vault ("PVC" type), users will experience a slight delay when navigating file lists for file arguments in the task builder; on average this will a few seconds each time a directory is clicked.  This is becauase JARVICE cannot mount the storage directly and must instead schedule a pod to get file listings using a PersistentVolumeClaim.  As will all PVC vault types, JARVICE manages the PersistentVolumeClaim objects themselves.
+- Before an application with a file selection in the task builder can work, at least one job with the PVC vault attached must be run; typically this will be the *JARVICE File Manager*, which is used to transfer files to and from the storage.
+
+#### ReadWriteOnce PersistentVolumes
+
+- Persistent volumes with RWO access mode, such as block devices, are automatically fronted with a filer service that allows multiple pods (multiple jobs with one or more pods each) to share the device in a consistent way.  Note that the first consumer will experience latency in starting as the filer service must start first.  The filer service runs as a StatefulSet with a single pod.  Note that only 1 filer service will run at any given time regardless of how many jobs access it (since the storage access mode is RWO).
+- JARVICE calls the filer pod *`jarvice-<user>-<vault>-0`*, in the "jobs" namespace; for example, for the user `root` with a vault named `pvcdata`, the filer pod would be called `jarvice-root-pvcdata-0` in the "jobs" namespace.  The `-0` is actually generated automatically by Kubernetes as part of the StatefulSet.  Never delete this pod manually as it can lead to data corruption and certain job failure of any job consuming it.  It is garbage collected automatically when not used.
+- For information about resizing PersistentVolumes and related StorageClass configuration, please see [Resizing Persistent Volumes using Kubernetes](https://kubernetes.io/blog/2018/07/12/resizing-persistent-volumes-using-kubernetes/).  Note that JARVICE terminates the filer pod after all jobs of that storage complete.
+
+##### Advanced
+
+- JARVICE uses guaranteed QoS for filer pods.  By default it requests 1 CPU and 1 gigabyte of RAM.  The filer pod runs a userspace NFS service which may benefit from additional resources for larger deployments.  To adjust, set the environment variables `${JARVICE_UNFS_REQUEST_MEM}` and `${JARVICE_UNFS_REQUEST_CPU}` in the `jarvice-scheduler` deployment.  Note that the memory request is in standard Kubernetes resource format, so 1 Gigabyte is expressed as `1Gi`.
+- JARVICE runs filer pods with the node selector provided in `${JARVICE_UNFS_NODE_SELECTOR}`; when using the Helm chart, the values default to the "system" node selector(s), unless `jarvice_dal` has a node selector defined.
+
+
 ### Miscellaneous
 
 - Jobs that run for a very short period of time and fail may be shown as *Canceled* status versus *Completed with Error*; in rare cases jobs that complete successfully may also show up as *Canceled* if they run for a very short period of time (e.g. less than 1 second).
