@@ -131,10 +131,10 @@ spec:
             value: "{{ .Values.jarvice_scheduler.env.JARVICE_SCHED_PASS_INTERVAL }}"
 {{- if (not (empty .Values.jarvice_dal.nodeSelector)) }}
           - name: JARVICE_UNFS_NODE_SELECTOR
-            value: "{{ .Values.jarvice_dal.nodeSelector }}"
+            value: '{{ .Values.jarvice_dal.nodeSelector }}'
 {{- else if (not (empty .Values.jarvice.nodeSelector)) }}
           - name: JARVICE_UNFS_NODE_SELECTOR
-            value: "{{ .Values.jarvice.nodeSelector }}"
+            value: '{{ .Values.jarvice.nodeSelector }}'
 {{- end }}
 {{- if .Values.jarvice_pod_scheduler.enabled }}
           - name: JARVICE_POD_SCHED_USE
