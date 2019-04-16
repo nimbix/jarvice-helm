@@ -253,6 +253,9 @@ jarvice_scheduler:
         #server: localhost:25
         #;username: DoNotReply@localhost
         #;password: Pass1234
+    JARVICE_UNFS_REQUEST_MEM: 1Gi
+    JARVICE_UNFS_REQUEST_CPU: 1
+    JARVICE_UNFS_NODE_SELECTOR: # '{"node-role.kubernetes.io/jarvice-storage": ""}'
 
 jarvice_pod_scheduler:
   enabled: true
