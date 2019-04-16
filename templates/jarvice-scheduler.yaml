@@ -129,7 +129,14 @@ spec:
             value: "{{ .Values.jarvice_scheduler.env.JARVICE_K8S_ADMIN_CONF }}"
           - name: JARVICE_SCHED_PASS_INTERVAL
             value: "{{ .Values.jarvice_scheduler.env.JARVICE_SCHED_PASS_INTERVAL }}"
-{{- if (not (empty .Values.jarvice_dal.nodeSelector)) }}
+          - name: JARVICE_UNFS_REQUEST_MEM
+            value: "{{ .Values.jarvice_scheduler.env.JARVICE_UNFS_REQUEST_MEM }}"
+          - name: JARVICE_UNFS_REQUEST_CPU
+            value: "{{ .Values.jarvice_scheduler.env.JARVICE_UNFS_REQUEST_CPU }}"
+{{- if (not (empty .Values.jarvice_scheduler.JARVICE_UNFS_NODE_SELECTOR)) }}
+          - name: JARVICE_UNFS_NODE_SELECTOR
+            value: '{{ .Values.jarvice_scheduler.JARVICE_UNFS_NODE_SELECTOR }}'
+{{- else if (not (empty .Values.jarvice_dal.nodeSelector)) }}
           - name: JARVICE_UNFS_NODE_SELECTOR
             value: '{{ .Values.jarvice_dal.nodeSelector }}'
 {{- else if (not (empty .Values.jarvice.nodeSelector)) }}
