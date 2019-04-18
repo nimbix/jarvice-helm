@@ -8,10 +8,12 @@ metadata:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-db
 spec:
+{{- if (not (empty .Values.jarvice_db.persistence.persistentVolumeClaim.claimName)) }}
   volumes:
     - name: jarvice-db-pvc
       persistentVolumeClaim:
-        claimName: jarvice-db-pv
+        claimName: "{{ .Values.jarvice_db.persistence.persistentVolumeClaim.claimName }}"
+{{- end }}
   accessModes:
     - {{ .Values.jarvice_db.persistence.accessMode }}
   volumeMode: Filesystem

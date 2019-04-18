@@ -15,7 +15,7 @@ jarvice:
 
   JARVICE_SYSTEM_REGISTRY: quay.io
   JARVICE_SYSTEM_REPO_BASE: nimbix
-  JARVICE_IMAGES_TAG: jarvice-master
+  JARVICE_IMAGES_TAG: jarvice-testing
   JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
   JARVICE_SYSTEM_ARCH: amd64
 
@@ -106,6 +106,9 @@ jarvice_db:
   image: mysql:5.6.41
   persistence:
     enabled: false
+    # Use empty claimName for dynamic provisioning based upon storageClass
+    persistentVolumeClaim:
+      claimName: "jarvice-db-pv"
     # storageClass: "-"
     storageClass: "jarvice-db"
     accessMode: ReadWriteOnce
@@ -250,6 +253,9 @@ jarvice_scheduler:
         #server: localhost:25
         #;username: DoNotReply@localhost
         #;password: Pass1234
+    JARVICE_UNFS_REQUEST_MEM: 1Gi
+    JARVICE_UNFS_REQUEST_CPU: 1
+    JARVICE_UNFS_NODE_SELECTOR: # '{"node-role.kubernetes.io/jarvice-storage": ""}'
 
 jarvice_pod_scheduler:
   enabled: true
