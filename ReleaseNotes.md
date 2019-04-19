@@ -62,6 +62,12 @@
 
 # Changelog
 
+## 3.0.0-1.20190418.2203
+
+* (1448) Support for application-defined minimum window resolution
+* (1576) Support for transparent block storage sharing (ReadWriteOnce Persistent Volumes on Kubernetes)
+* (1614) Support for team members sharing vaults with other team members (entire team)
+
 ## 3.0.0-1.20190409.1413
 
 * (1619) Fixed bug that prevented `/jarvice/pull` endpoint from working correctly in some configurations
