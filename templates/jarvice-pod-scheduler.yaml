@@ -24,9 +24,9 @@ spec:
       tolerations: {{ .Values.jarvice.tolerations }}
 {{- end }}
 {{- if (not (empty .Values.jarvice_pod_scheduler.nodeSelector)) }}
-      nodeSelector: '{{ .Values.jarvice_pod_scheduler.nodeSelector }}'
+      nodeSelector: {{ .Values.jarvice_pod_scheduler.nodeSelector }}
 {{- else if (not (empty .Values.jarvice.nodeSelector)) }}
-      nodeSelector: '{{ .Values.jarvice.nodeSelector }}'
+      nodeSelector: {{ .Values.jarvice.nodeSelector }}
 {{- end }}
       imagePullSecrets:
       - name: jarvice-docker
