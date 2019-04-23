@@ -32,7 +32,7 @@ spec:
       - name: jarvice-docker
       containers:
       - name: jarvice-appsync
-        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-appsync:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}{{- include "jarvice.version" . -}}-{{ .Values.jarvice.JARVICE_SYSTEM_ARCH }}
+        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-appsync:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}{{- include "jarvice.version" . -}}
         imagePullPolicy: Always
         readinessProbe:
           exec:

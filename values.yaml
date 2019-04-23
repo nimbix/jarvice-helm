@@ -1,7 +1,6 @@
 jarvice:
-  imagePullSecret:
-    username:
-    password:
+  # imagePullSecret is base64 encoded.
+  imagePullSecret: # echo "_json_key:$(cat gcr.io.json)" | base64 -w 0
   JARVICE_LICENSE_LIC:
 
   # JARVICE_REMOTE_* settings are used for application synchronization
@@ -13,11 +12,10 @@ jarvice:
   JARVICE_LOCAL_REGISTRY: # jarvice-registry:443
   JARVICE_LOCAL_REPO_BASE: jarvice
 
-  JARVICE_SYSTEM_REGISTRY: quay.io
-  JARVICE_SYSTEM_REPO_BASE: nimbix
+  JARVICE_SYSTEM_REGISTRY: gcr.io
+  JARVICE_SYSTEM_REPO_BASE: jarvice-system
   JARVICE_IMAGES_TAG: jarvice-testing
   JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
-  JARVICE_SYSTEM_ARCH: amd64
 
   JARVICE_JOBS_DOMAIN:
   JARVICE_JOBS_LB_SERVICE: false
@@ -25,8 +23,7 @@ jarvice:
   # jarvice.tolerations applies to all of the jarvice_* components below.
   # This can be overridden by updating tolerations in each jarvice_* stanza.
   tolerations: '[{"key": "node-role.kubernetes.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}]'
-  #nodeSelector: # '{"node-role.kubernetes.io/jarvice-system": ""}'
-  nodeSelector: '{"beta.kubernetes.io/arch": "amd64"}'
+  nodeSelector: # '{"node-role.kubernetes.io/jarvice-system": ""}'
 
   # JARVICE_DBHOST and JARVICE_DBUSER only need to change if using a database
   # not provided by this helm chart
