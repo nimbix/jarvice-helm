@@ -23,7 +23,6 @@ jarvice:
   # jarvice.tolerations applies to all of the jarvice_* components below.
   # This can be overridden by updating tolerations in each jarvice_* stanza.
   tolerations: '[{"key": "node-role.kubernetes.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}]'
-  #nodeSelector: # '{"node-role.kubernetes.io/jarvice-system": ""}'
   nodeSelector: # '{"node-role.kubernetes.io/jarvice-system": ""}'
 
   # JARVICE_DBHOST and JARVICE_DBUSER only need to change if using a database
