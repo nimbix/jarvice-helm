@@ -222,12 +222,11 @@ https://kubernetes.io/docs/concepts/storage/persistent-volumes/
 
 ### JARVICE license and credentials:
 
-A JARVICE license and user/password credentials will need to be obtained from
-Nimbix sales (`sales@nimbix.net`) and/or support (`support@nimbix.net`).  The
-license and credentials will be used for the following settings:
+A JARVICE license and container registry credentials will need to be obtained
+from Nimbix sales (`sales@nimbix.net`) and/or support (`support@nimbix.net`).
+The license and credentials will be used for the following settings:
 
-    - jarvice.imagePullSecret.username=<jarvice_quay_io_user>
-    - jarvice.imagePullSecret.password=<jarvice_quay_io_pass>
+    - jarvice.imagePullSecret=<jarvice_base64_encoded_registry_creds>
     - jarvice.JARVICE_LICENSE_LIC=<jarvice_license_key>
     - jarvice.JARVICE_REMOTE_USER=<jarvice_upstream_user>
     - jarvice.JARVICE_REMOTE_APIKEY=<jarvice_upstream_user_apikey>
@@ -506,8 +505,7 @@ Once cloned, JARVICE can be quickly installed via the following `helm` command:
 
 ```bash
 $ helm install \
-    --set jarvice.imagePullSecret.username="<jarvice_quay_io_user>" \
-    --set jarvice.imagePullSecret.password="<jarvice_quay_io_pass>" \
+    --set jarvice.imagePullSecret="$(echo "_json_key:$(cat jarvice-reg-creds.json)" | base64 -w 0)" \
     --set jarvice.JARVICE_LICENSE_LIC="<jarvice_license_key>" \
     --namespace jarvice-system --name jarvice ./jarvice-helm
 ```
@@ -520,8 +518,7 @@ Alternatively, in order to install and get the application catalog
 synchronized, use the following `helm` command:
 ```bash
 $ helm install \
-    --set jarvice.imagePullSecret.username="<jarvice_quay_io_user>" \
-    --set jarvice.imagePullSecret.password="<jarvice_quay_io_pass>" \
+    --set jarvice.imagePullSecret="$(echo "_json_key:$(cat jarvice-reg-creds.json)" | base64 -w 0)" \
     --set jarvice.JARVICE_LICENSE_LIC="<jarvice_license_key>" \
     --set jarvice.JARVICE_REMOTE_USER="<jarvice_upstream_user>" \
     --set jarvice.JARVICE_REMOTE_APIKEY="<jarvice_upstream_user_apikey>" \
@@ -575,8 +572,7 @@ Expanding upon the previous quick installation command, the following command
 could then be used to install JARVICE with persistence enabled:
 ```bash
 $ helm install \
-    --set jarvice.imagePullSecret.username="<jarvice_quay_io_user>" \
-    --set jarvice.imagePullSecret.password="<jarvice_quay_io_pass>" \
+    --set jarvice.imagePullSecret="$(echo "_json_key:$(cat jarvice-reg-creds.json)" | base64 -w 0)" \
     --set jarvice.JARVICE_LICENSE_LIC="<jarvice_license_key>" \
     --set jarvice.JARVICE_REMOTE_USER="<jarvice_upstream_user>" \
     --set jarvice.JARVICE_REMOTE_APIKEY="<jarvice_upstream_user_apikey>" \
