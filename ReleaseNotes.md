@@ -62,6 +62,10 @@
 
 # Changelog
 
+## 3.0.0-1.20190424.1834
+
+* (1674) gcr.io conversion for system services
+
 ## 3.0.0-1.20190423.1852
 
 * (1679) Docker registry v2 fixes
