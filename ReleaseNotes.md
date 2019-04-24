@@ -62,6 +62,10 @@
 
 # Changelog
 
+## 3.0.0-1.20190423.1852
+
+* (1679) Docker registry v2 fixes
+
 ## 3.0.0-1.20190418.2203
 
 * (1448) Support for application-defined minimum window resolution
