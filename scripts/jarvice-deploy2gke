@@ -175,8 +175,7 @@ cluster_zone=$(get_yaml_value "gcloud.create_flags.--zone")
 #aws_region=$(get_yaml_value "metadata.region")
 
 # JARVICE config options
-registry_username=$(get_yaml_value "jarvice.imagePullSecret.username")
-registry_password=$(get_yaml_value "jarvice.imagePullSecret.password")
+jarvice_image_pull_secret=$(get_yaml_value "jarvice.imagePullSecret")
 jarvice_license=$(get_yaml_value "jarvice.JARVICE_LICENSE_LIC")
 jarvice_username=$(get_yaml_value "jarvice.JARVICE_REMOTE_USER")
 jarvice_apikey=$(get_yaml_value "jarvice.JARVICE_REMOTE_APIKEY")
@@ -224,7 +223,7 @@ if [ -n "$cluster_delete" ]; then
     exit 0
 fi
 
-if [ -z "$registry_username" -o -z "$registry_password" -o -z "$jarvice_license" -o -z "$jarvice_username" -o -z "$jarvice_apikey" ]; then
+if [ -z "$jarvice_image_pull_secret" -o -z "$registry_password" -o -z "$jarvice_license" -o -z "$jarvice_username" -o -z "$jarvice_apikey" ]; then
     echo "Missing credentials and/or license.  Cannot continue."
     echo "Please update the configuration file: $config_file"
     jarvice_deploy2usage
@@ -495,8 +494,7 @@ jarvice_pvc_vault_accessmodes=$(get_yaml_value "jarvice.JARVICE_PVC_VAULT_ACCESS
 echo
 echo "* Running helm to deploy JARVICE into cluster..."
 $HELM install --debug \
-    --set jarvice.imagePullSecret.username="$registry_username" \
-    --set jarvice.imagePullSecret.password="$registry_password" \
+    --set jarvice.imagePullSecret="$jarvice_image_pull_secret" \
     --set jarvice.JARVICE_LICENSE_LIC="$jarvice_license" \
     --set jarvice.JARVICE_REMOTE_USER="$jarvice_username" \
     --set jarvice.JARVICE_REMOTE_APIKEY="$jarvice_apikey" \

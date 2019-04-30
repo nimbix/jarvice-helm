@@ -1,7 +1,6 @@
 jarvice:
-  imagePullSecret:
-    username: <registry-username-required>
-    password: <registry-password-required>
+  # imagePullSecret is base64 encoded.
+  imagePullSecret: # echo "_json_key:$(cat gcr.io.json)" | base64 -w 0
   JARVICE_LICENSE_LIC: <jarvice-license-required>
   JARVICE_REMOTE_USER: <jarvice-user-required>
   JARVICE_REMOTE_APIKEY: <jarvice-apikey-required>
