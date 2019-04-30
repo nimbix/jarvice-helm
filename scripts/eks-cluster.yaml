@@ -3,9 +3,8 @@ kind: ClusterConfig
 
 # JARVICE deploy config
 jarvice:
-  imagePullSecret:
-    username:
-    password:
+  # imagePullSecret is base64 encoded.
+  imagePullSecret: # echo "_json_key:$(cat gcr.io.json)" | base64 -w 0
   JARVICE_LICENSE_LIC:
   JARVICE_REMOTE_USER:
   JARVICE_REMOTE_APIKEY:
