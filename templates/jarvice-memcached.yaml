@@ -100,4 +100,23 @@ spec:
   selector:
     deployment: jarvice-memcached
 ---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: jarvice-memcached
+spec:
+  podSelector:
+    matchLabels:
+      deployment: jarvice-memcached
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: {{ .Release.Namespace }}
+    ports:
+    - protocol: TCP
+      port: 11211
+---
 {{- end }}

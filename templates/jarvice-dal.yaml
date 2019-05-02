@@ -202,4 +202,47 @@ spec:
   selector:
     deployment: jarvice-dal
 ---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: jarvice-dal
+spec:
+  podSelector:
+    matchLabels:
+      deployment: jarvice-dal
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: {{ .Release.Namespace }}
+    ports:
+    - protocol: TCP
+      port: 8443
+    - protocol: TCP
+      port: 8000
+  - from:
+    - namespaceSelector:
+        matchLabels:
+{{- if empty .Values.jarvice.JARVICE_BUILDS_NAMESPACE }}
+          name: {{ .Release.Namespace }}-builds
+{{- else }}
+          name: {{ .Values.jarvice.JARVICE_BUILDS_NAMESPACE }}
+{{- end }}
+    ports:
+    - protocol: TCP
+      port: 8443
+  - from:
+    - namespaceSelector:
+        matchLabels:
+{{- if empty .Values.jarvice.JARVICE_PULLS_NAMESPACE }}
+          name: {{ .Release.Namespace }}-pulls
+{{- else }}
+          name: {{ .Values.jarvice.JARVICE_PULLS_NAMESPACE }}
+{{- end }}
+    ports:
+    - protocol: TCP
+      port: 8443
+---
 {{- end }}
