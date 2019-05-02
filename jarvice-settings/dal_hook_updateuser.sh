@@ -12,8 +12,5 @@
 #       process of updating a user at the caller level
 #
 
-#
-#   insert custom code following this comment
-#
 exec /bin/sh /usr/lib/jarvice/etc/$(basename $0) "$@"
 

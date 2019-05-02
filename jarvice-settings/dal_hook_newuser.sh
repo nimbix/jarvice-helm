@@ -14,9 +14,5 @@
 #       process of creating a new user at the caller level
 #
 
-#
-#   default is to create a vault named 'ephemeral' for end users, since most
-#   apps need at least some sort of file store
-#
 exec /bin/sh /usr/lib/jarvice/etc/$(basename $0) "$@"
 

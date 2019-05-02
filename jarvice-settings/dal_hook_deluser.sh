@@ -13,10 +13,5 @@
 #       process of deleting a user at the caller level
 #
 
-#
-#   delete the ephemeral vault that was created in the newuser hook; if you
-#   changed the newuser hook, you should change this one to correspond to avoid
-#   account deletion errors
-#
 exec /bin/sh /usr/lib/jarvice/etc/$(basename $0) "$@"
 
