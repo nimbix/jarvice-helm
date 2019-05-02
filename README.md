@@ -901,7 +901,7 @@ email.tail update):
 $ kubectl --namespace jarvice-system delete pods -l component=jarvice-scheduler
 ```
 
-Reload jarvice-dal pods (only to apply cfg.network update):
+Reload jarvice-dal pods (only to apply cfg.network, dal_hook\*.sh update):
 ```bash
 $ kubectl --namespace jarvice-system delete pods -l component=jarvice-dal
 ```
