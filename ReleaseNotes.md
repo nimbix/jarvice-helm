@@ -62,6 +62,14 @@
 
 # Changelog
 
+## 3.0.0-1.20190503.1831
+
+* (1636) Applied NetworkPolicy to JARVICE services to prevent jobs from unauthorized access to internal system components
+* (1658) Ability to override DAL user account hooks via `jarvice-settings` ConfigMap
+* (1659) Delayed garbage collection for shared block storage services; timeout, in seconds, controllable by `${JARVICE_UNFS_EXPIRE_SECS}` in the `jarvice-scheduler` deployment; default is 90 seconds
+* (1660) Added ability for vault owners to decide which team members can access their vaults, if any
+* (1663) Added extended resource request view underneath node slider in task builder
+
 ## 3.0.0-1.20190424.1834
 
 * (1674) gcr.io conversion for system services
