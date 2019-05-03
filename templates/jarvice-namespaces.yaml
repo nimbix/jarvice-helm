@@ -10,6 +10,11 @@ metadata:
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-system
+{{- if empty .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
+    name: {{ .Release.Namespace }}-jobs
+{{- else }}
+    name: {{ .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
+{{- end }}
 ---
 {{- end }}
 {{- if .Values.jarvice_api.enabled }}
@@ -24,6 +29,11 @@ metadata:
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-system
+{{- if empty .Values.jarvice.JARVICE_BUILDS_NAMESPACE }}
+    name: {{ .Release.Namespace }}-builds
+{{- else }}
+    name: {{ .Values.jarvice.JARVICE_BUILDS_NAMESPACE }}
+{{- end }}
 ---
 apiVersion: v1
 kind: Namespace
@@ -36,5 +46,10 @@ metadata:
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-system
+{{- if empty .Values.jarvice.JARVICE_PULLS_NAMESPACE }}
+    name: {{ .Release.Namespace }}-pulls
+{{- else }}
+    name: {{ .Values.jarvice.JARVICE_PULLS_NAMESPACE }}
+{{- end }}
 ---
 {{- end }}

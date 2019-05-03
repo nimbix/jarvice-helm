@@ -133,6 +133,8 @@ spec:
             value: "{{ .Values.jarvice_scheduler.env.JARVICE_UNFS_REQUEST_MEM }}"
           - name: JARVICE_UNFS_REQUEST_CPU
             value: "{{ .Values.jarvice_scheduler.env.JARVICE_UNFS_REQUEST_CPU }}"
+          - name: JARVICE_UNFS_EXPIRE_SECS
+            value: "{{ .Values.jarvice_scheduler.env.JARVICE_UNFS_EXPIRE_SECS }}"
 {{- if (not (empty .Values.jarvice_scheduler.JARVICE_UNFS_NODE_SELECTOR)) }}
           - name: JARVICE_UNFS_NODE_SELECTOR
             value: '{{ .Values.jarvice_scheduler.JARVICE_UNFS_NODE_SELECTOR }}'
@@ -186,5 +188,24 @@ spec:
     name: https
   selector:
     deployment: jarvice-scheduler
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: jarvice-scheduler
+spec:
+  podSelector:
+    matchLabels:
+      deployment: jarvice-scheduler
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: {{ .Release.Namespace }}
+    ports:
+    - protocol: TCP
+      port: 9443
 ---
 {{- end }}

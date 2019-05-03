@@ -213,6 +213,25 @@ spec:
   selector:
     deployment: jarvice-api
 ---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: jarvice-api
+spec:
+  podSelector:
+    matchLabels:
+      deployment: jarvice-api
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 7443
+    - protocol: TCP
+      port: 7080
+---
 {{- if (empty .Values.jarvice_api.ingressHost) }}
 apiVersion: v1
 kind: Service
