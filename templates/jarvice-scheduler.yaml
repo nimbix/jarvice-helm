@@ -133,6 +133,8 @@ spec:
             value: "{{ .Values.jarvice_scheduler.env.JARVICE_UNFS_REQUEST_MEM }}"
           - name: JARVICE_UNFS_REQUEST_CPU
             value: "{{ .Values.jarvice_scheduler.env.JARVICE_UNFS_REQUEST_CPU }}"
+          - name: JARVICE_UNFS_EXPIRE_SECS
+            value: "{{ .Values.jarvice_scheduler.env.JARVICE_UNFS_EXPIRE_SECS }}"
 {{- if (not (empty .Values.jarvice_scheduler.JARVICE_UNFS_NODE_SELECTOR)) }}
           - name: JARVICE_UNFS_NODE_SELECTOR
             value: '{{ .Values.jarvice_scheduler.JARVICE_UNFS_NODE_SELECTOR }}'
