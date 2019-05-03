@@ -66,7 +66,7 @@ node kubelets on Ubuntu systems:
 # Set KUBELET_EXTRA_ARGS=--cpu-manager-policy=static --kube-reserved cpu=0.1
 # Then restart kublet
 cmd=$(cat <<EOF
-sudo systemctl stop kublet;
+sudo systemctl stop kubelet;
 sudo rm -f /var/lib/kubelet/cpu_manager_state;
 sudo sed -i -e 's/^KUBELET_.*/KUBELET_EXTRA_ARGS=--cpu-manager-policy=static --kube-reserved cpu=0.1/' /etc/default/kubelet;
 sudo systemctl start kubelet
@@ -74,7 +74,7 @@ EOF
 )
 
 nodes=$(kubectl get nodes -o name | awk -F/ '{print $2}')
-for n in nodes; do
+for n in $nodes; do
     kubectl drain --ignore-daemonsets --delete-local-data --force $n
     ssh sudo-user@$n "$cmd"
     kubectl uncordon $n
