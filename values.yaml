@@ -320,8 +320,8 @@ jarvice_appsync:
   # If JARVICE_SYSTEM_REGISTRY and/or JARVICE_SYSTEM_REPO_BASE are not set in
   # jarvice_appsync.env, they will be set via the global jarvice stanza above.
   env:
-    JARVICE_SYSTEM_REGISTRY: # quay.io
-    JARVICE_SYSTEM_REPO_BASE: # nimbix
+    JARVICE_SYSTEM_REGISTRY: # gcr.io
+    JARVICE_SYSTEM_REPO_BASE: jarvice-apps
     JARVICE_APPSYNC_INTERVAL: 3600
   livenessProbe:
     periodSeconds: 900
