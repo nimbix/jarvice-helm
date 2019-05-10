@@ -66,13 +66,20 @@ jarvice:
   JARVICE_JOBS_NAMESPACE: # auto-set, should not need to be updated
   JARVICE_BUILDS_NAMESPACE: # auto-set, should not need to be updated
   JARVICE_PULLS_NAMESPACE: # auto-set, should not need to be updated
+  JARVICE_DAEMONSETS_NAMESPACE: # auto-set, should not need to be updated
 
   # Optionally, quick enable DaemonSets here.  More details can be found at:
   # https://github.com/nimbix/jarvice-helm#kubernetes-device-plugins
   # https://github.com/nimbix/jarvice-helm#install-recommended-daemonsets
+  # If running multiple JARVICE deployments, enable daemonsets for only one.
   daemonsets:
     tolerations: '[{"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}]'
     nodeSelector: # '{"node-role.kubernetes.io/jarvice-compute": ""}'
+    cache_pull:
+      enabled: false
+      tolerations: #'[{"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}]'
+      nodeSelector: # '{"node-role.kubernetes.io/jarvice-compute": ""}'
+      image: nimbix/jarvice-cache-pull:latest
     lxcfs:
       enabled: false
       tolerations: #'[{"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}]'
