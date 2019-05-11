@@ -36,6 +36,8 @@ spec:
       labels:
         {{- include "jarvice.release_labels" . | indent 8 }}
         component: jarvice-cache-pull
+      annotations: 
+        deployment-date: {{ now | quote }}
     spec:
 {{- if (not (empty .Values.jarvice.daemonsets.cache_pull.tolerations)) }}
       tolerations: {{ .Values.jarvice.daemonsets.cache_pull.tolerations }}
@@ -187,6 +189,8 @@ spec:
       labels:
         {{- include "jarvice.release_labels" . | indent 8 }}
         component: jarvice-lxcfs
+      annotations: 
+        deployment-date: {{ now | quote }}
     spec:
 {{- if (not (empty .Values.jarvice.daemonsets.lxcfs.tolerations)) }}
       tolerations: {{ .Values.jarvice.daemonsets.lxcfs.tolerations }}
@@ -243,6 +247,8 @@ spec:
       labels:
         {{- include "jarvice.release_labels" . | indent 8 }}
         component: jarvice-nvidia-device-plugin
+      annotations: 
+        deployment-date: {{ now | quote }}
     spec:
 {{- if (not (empty .Values.jarvice.daemonsets.nvidia.tolerations)) }}
       tolerations: {{ .Values.jarvice.daemonsets.nvidia.tolerations }}
@@ -295,6 +301,8 @@ spec:
       labels:
         {{- include "jarvice.release_labels" . | indent 8 }}
         component: jarvice-xilinx-fpga-device-plugin
+      annotations: 
+        deployment-date: {{ now | quote }}
     spec:
 {{- if (not (empty .Values.jarvice.daemonsets.xilinx_fpga.tolerations)) }}
       tolerations: {{ .Values.jarvice.daemonsets.xilinx_fpga.tolerations }}
@@ -352,6 +360,8 @@ spec:
       labels:
         {{- include "jarvice.release_labels" . | indent 8 }}
         component: jarvice-rdma-device-plugin
+      annotations: 
+        deployment-date: {{ now | quote }}
     spec:
       hostNetwork: true
 {{- if (not (empty .Values.jarvice.daemonsets.rdma.tolerations)) }}
