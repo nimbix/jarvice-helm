@@ -378,9 +378,6 @@ spec:
         - name: device-plugins
           hostPath:
             path: /var/lib/kubelet/device-plugins
-        - name: devinfiniband
-          hostPath:
-            path: /dev/infiniband
       containers:
       - name: jarvice-rdma-device-plugin
         image: {{ .Values.jarvice.daemonsets.rdma.image }}
@@ -391,8 +388,6 @@ spec:
         volumeMounts:
           - name: device-plugins
             mountPath: /var/lib/kubelet/device-plugins
-          - name: devinfiniband
-            mountPath: /dev/infiniband
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
