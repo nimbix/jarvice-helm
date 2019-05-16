@@ -98,7 +98,7 @@ jarvice:
       image: xilinxatg/xilinx_k8s_fpga_plugin:latest
     rdma:
       enabled: false
-      tolerations: #'[{"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
+      tolerations: '[{"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}, {"key": "jarvice.com/rdma", "operator": "Exists",  "effect": "NoSchedule"}]'
       nodeSelector: # '{"node-role.kubernetes.io/jarvice-compute": ""}'
         image: jarvice/k8s-rdma-device:1.0.0
 
