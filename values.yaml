@@ -100,7 +100,7 @@ jarvice:
       enabled: false
       tolerations: #'[{"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeSelector: # '{"node-role.kubernetes.io/jarvice-compute": ""}'
-      image: nimbix/k8s-rdma-device-plugin:1.10
+        image: jarvice/k8s-rdma-device:1.0.0
 
 
 # Database server previously set up?  Set enabled to false.
