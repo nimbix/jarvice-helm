@@ -378,16 +378,23 @@ spec:
         - name: device-plugins
           hostPath:
             path: /var/lib/kubelet/device-plugins
+        - name: devinfiniband
+          hostPath:
+            path: /dev/infiniband
+        - name: devknem
+          hostPath:
+            path: /dev/knem
       containers:
       - name: jarvice-rdma-device-plugin
         image: {{ .Values.jarvice.daemonsets.rdma.image }}
         imagePullPolicy: Always
-        args:
-          - -log-level
-          - debug
         volumeMounts:
           - name: device-plugins
             mountPath: /var/lib/kubelet/device-plugins
+          - name: devinfiniband
+            mountPath: /dev/infiniband
+          - name: devknem
+            mountPath: /dev/knem
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
