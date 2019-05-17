@@ -83,7 +83,7 @@ The *JARVICE* column below refers to the value to populate in the "devices" fiel
 
 JARVICE|K8S Resource request/behavior|Notes
 ---|---|---
-```ibrdma[:n]```|```tencent.com/rdma```: ```<n>```|Requests RDMA over InfiniBand - requires the Nimbix-forked [k8s-rdma-device-plugin](https://github.com/nimbix/k8s-rdma-device-plugin) unless/until the original applies the fixes; set *n* to the number of devices to request, which defaults to 1 if not specified
+```ibrdma```|```jarvice.com/rdma:1```|Requests RDMA over InfiniBand (may also support RoCE but this is not tested) - requires the [jarvice-k8s-rdma](https://github.com/nimbix/jarvice-k8s-rdma) plugin, which passes through all RDMA devices to the container when requested; regardless of how many devices are on the system, this plugin will always present ```1``` available (meaning "all"), or ```0``` if none are present; the main use case is for HPC which should assume use of all resources on each system
 ```lxcfs```|Applies ```lxcfs``` FUSE mounts in ```/proc``` for the container, to present ```cpuinfo```, ```meminfo```, etc. to reflect the ```cgroup``` values|Requires the [Kubernetes Initializer for LXCFS](https://github.com/nimbix/lxcfs-initializer) DaemonSet deployed on the cluster, or ```lxcfs``` installed and started on the host, and ```cpuinfo``` won't work correctly unless ```static``` CPU manger policy is used - but see above warning about this policy!
 ```fpga-xilinx-<*>[:n]```|```xilinx.com/fpga-xilinx-<*>[:n]```|Requests Xilinx FPGA of a specific type and DSA, where *<*>* defines the type and DSA (Xilinx-specific) and *n* specifies the number of devices to request, which defaults to 1 if not specified; requires a DaemonSet that deploys the [xilinxatg/xilinx_k8s_fpga_plugin](https://hub.docker.com/r/xilinxatg/xilinx_k8s_fpga_plugin/) container
 ```/<host-path>=<container-path>[:ro\|:rw]```|Applies *VolumeMount* to pod of a *HostPath* volume|Specifies an absolute path on the host (*host-path*) to bind into the container in *container-path* with either read/only (*:ro*) or read/write (*:rw*) permissions; if permissions are not specified, the default is read/only; note that commas cannot be used in either path
@@ -91,14 +91,14 @@ JARVICE|K8S Resource request/behavior|Notes
 
 ### Examples
 
-#### Requests 2 RDMA devices, and maps a public data set mounted on the host
+#### Requests all RDMA devices, and maps a public data set mounted on the host
 
 ```
-ibrdma:2,/mnt/dataset=/mnt/dataset:ro
+ibrdma,/mnt/dataset=/mnt/dataset:ro
 ```
 (Note that the ```:ro``` is optional since this is the default)
 
-#### Requets LXCFS, a single RDMA device, a public data set mounted on the host, and shared scratch mounted on the host
+#### Requets LXCFS, all RDMA devices, a public data set mounted on the host, and shared scratch mounted on the host
 ```
 ibrdma,lxcfs,/mnt/dataset=/mnt/dataset,/mnt/scratch=/scratch:rw
 ```

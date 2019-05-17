@@ -53,3 +53,22 @@ metadata:
 {{- end }}
 ---
 {{- end }}
+{{- if or .Values.jarvice.daemonsets.cache_pull.enabled .Values.jarvice.daemonsets.lxcfs.enabled .Values.jarvice.daemonsets.nvidia.enabled .Values.jarvice.daemonsets.rdma.enabled }}
+apiVersion: v1
+kind: Namespace
+metadata:
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+  name: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+  name: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-system
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+    name: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+    name: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
+---
+{{- end }}

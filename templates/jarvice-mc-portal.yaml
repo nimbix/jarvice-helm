@@ -24,6 +24,7 @@ spec:
         {{- include "jarvice.release_labels" . | indent 8 }}
         component: jarvice-mc-portal
         deployment: jarvice-mc-portal
+        jarvice-system: core
       annotations:
         deployment-date: {{ now | quote }}
     spec:

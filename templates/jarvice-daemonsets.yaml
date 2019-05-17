@@ -1,8 +1,185 @@
+{{- if or .Values.jarvice.daemonsets.cache_pull.enabled .Values.jarvice.daemonsets.lxcfs.enabled .Values.jarvice.daemonsets.nvidia.enabled .Values.jarvice.daemonsets.rdma.enabled }}
+apiVersion: scheduling.k8s.io/v1beta1
+kind: PriorityClass
+metadata:
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+  name: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+  name: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+  namespace: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+  namespace: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
+value: 1000000000
+globalDefault: false
+description: "This priority class is for JARVICE DaemonSet pods."
+---
+{{- end }}
+{{- if .Values.jarvice.daemonsets.cache_pull.enabled }}
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: jarvice-cache-pull
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+  namespace: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+  namespace: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
+spec:
+  selector:
+    matchLabels:
+      component: jarvice-cache-pull
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-cache-pull
+      annotations: 
+        deployment-date: {{ now | quote }}
+    spec:
+{{- if (not (empty .Values.jarvice.daemonsets.cache_pull.tolerations)) }}
+      tolerations: {{ .Values.jarvice.daemonsets.cache_pull.tolerations }}
+{{- else if (not (empty .Values.jarvice.daemonsets.tolerations)) }}
+      tolerations: {{ .Values.jarvice.daemonsets.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice.daemonsets.cache_pull.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.daemonsets.cache_pull.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.daemonsets.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.daemonsets.nodeSelector }}
+{{- end }}
+      volumes:
+      - name: config-volume
+        configMap:
+          name: jarvice-cache-pull
+          optional: true
+      - name: docker-sock
+        hostPath:
+          path: /var/run/docker.sock
+      - name: jarvice-docker
+        secret:
+          secretName: jarvice-docker
+          items:
+          - key: ".dockerconfigjson"
+            path: config.json
+      containers:
+      - name: jarvice-lxcfs
+        image: {{ .Values.jarvice.daemonsets.cache_pull.image }}
+        imagePullPolicy: Always
+        command:
+          - /usr/local/bin/jarvice-cache-pull.sh
+        env:
+          - name: PULL_INTERVAL
+            valueFrom:
+              configMapKeyRef:
+                name: jarvice-cache-pull
+                key: interval
+        volumeMounts:
+          - name: config-volume
+            mountPath: /etc/config
+            readOnly: true
+          - name: docker-sock
+            mountPath: /var/run/docker.sock
+          - name: jarvice-docker
+            mountPath: /root/.docker/jarvice-docker/config.json
+            subPath: config.json
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+      priorityClassName: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+      priorityClassName: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jarvice-cache-pull
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+  namespace: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+  namespace: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
+  annotations:
+    "helm.sh/hook": post-install
+data:
+  image.config: |
+    [
+        {
+            "ref": "base-centos7-realvnc:7.5",
+            "registry": "gcr.io",
+            "private": true,
+            "config": "jarvice-docker",
+            "arch": {
+                "amd64": "gcr.io/jarvice-apps/base-centos7-realvnc:7.5"
+            }
+        },
+        {
+            "ref": "base-centos7-realvnc:7.4",
+            "registry": "gcr.io",
+            "private": true,
+            "config": "jarvice-docker",
+            "arch": {
+                "amd64": "gcr.io/jarvice-apps/base-centos7-realvnc:7.4"
+            }
+        },
+        {
+            "ref": "app-filemanager",
+            "registry": "docker.io",
+            "private": false,
+            "arch": {
+                "amd64": "docker.io/jarvice/app-filemanager:latest"
+            }
+        },
+        {
+            "ref": "ubuntu:bionic",
+            "registry": "docker.io",
+            "private": false,
+            "arch": {
+                "amd64": "docker.io/ubuntu:bionic",
+                "ppc64le": "docker.io/ubuntu:bionic"
+            }
+        },
+        {
+            "ref": "ubuntu:xenial",
+            "registry": "docker.io",
+            "private": false,
+            "arch": {
+                "amd64": "docker.io/ubuntu:xenial",
+                "ppc64le": "docker.io/ubuntu:xenial"
+            }
+        },
+        {
+            "ref": "centos:8",
+            "registry": "docker.io",
+            "private": false,
+            "arch": {
+                "amd64": "docker.io/centos:8",
+                "ppc64le": "docker.io/centos:8"
+            }
+        },
+        {
+            "ref": "centos:7",
+            "registry": "docker.io",
+            "private": false,
+            "arch": {
+                "amd64": "docker.io/centos:7",
+                "ppc64le": "docker.io/centos:7"
+            }
+        }
+    ]
+  interval: "300"
+---
+{{- end }}
 {{- if .Values.jarvice.daemonsets.lxcfs.enabled }}
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
   name: jarvice-lxcfs
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+  namespace: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+  namespace: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
 spec:
   selector:
     matchLabels:
@@ -12,8 +189,8 @@ spec:
       labels:
         {{- include "jarvice.release_labels" . | indent 8 }}
         component: jarvice-lxcfs
-      annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ""
+      annotations: 
+        deployment-date: {{ now | quote }}
     spec:
 {{- if (not (empty .Values.jarvice.daemonsets.lxcfs.tolerations)) }}
       tolerations: {{ .Values.jarvice.daemonsets.lxcfs.tolerations }}
@@ -44,6 +221,11 @@ spec:
             mountPath: /host
         securityContext:
           privileged: true
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+      priorityClassName: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+      priorityClassName: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
 ---
 {{- end }}
 {{- if .Values.jarvice.daemonsets.nvidia.enabled }}
@@ -51,6 +233,11 @@ apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
   name: jarvice-nvidia-device-plugin
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+  namespace: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+  namespace: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
 spec:
   selector:
     matchLabels:
@@ -60,8 +247,8 @@ spec:
       labels:
         {{- include "jarvice.release_labels" . | indent 8 }}
         component: jarvice-nvidia-device-plugin
-      annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ""
+      annotations: 
+        deployment-date: {{ now | quote }}
     spec:
 {{- if (not (empty .Values.jarvice.daemonsets.nvidia.tolerations)) }}
       tolerations: {{ .Values.jarvice.daemonsets.nvidia.tolerations }}
@@ -88,6 +275,70 @@ spec:
           allowPrivilegeEscalation: false
           capabilities:
             drop: ["ALL"]
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+      priorityClassName: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+      priorityClassName: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
+---
+{{- end }}
+{{- if .Values.jarvice.daemonsets.xilinx_fpga.enabled }}
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: jarvice-xilinx-fpga-device-plugin
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+  namespace: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+  namespace: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
+spec:
+  selector:
+    matchLabels:
+      component: jarvice-xilinx-fpga-device-plugin
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-xilinx-fpga-device-plugin
+      annotations: 
+        deployment-date: {{ now | quote }}
+    spec:
+{{- if (not (empty .Values.jarvice.daemonsets.xilinx_fpga.tolerations)) }}
+      tolerations: {{ .Values.jarvice.daemonsets.xilinx_fpga.tolerations }}
+{{- else if (not (empty .Values.jarvice.daemonsets.tolerations)) }}
+      tolerations: {{ .Values.jarvice.daemonsets.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice.daemonsets.xilinx_fpga.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.daemonsets.xilinx_fpga.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.daemonsets.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.daemonsets.nodeSelector }}
+{{- end }}
+      volumes:
+        - name: device-plugins
+          hostPath:
+            path: /var/lib/kubelet/device-plugins
+        - name: dev
+          hostPath:
+            path: /dev
+      containers:
+      - name: jarvice-xilinx-fpga-device-plugin
+        image: {{ .Values.jarvice.daemonsets.xilinx_fpga.image }}
+        imagePullPolicy: Always
+        volumeMounts:
+          - name: device-plugins
+            mountPath: /var/lib/kubelet/device-plugins
+          - name: dev
+            mountPath: /dev
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+      priorityClassName: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+      priorityClassName: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
 ---
 {{- end }}
 {{- if .Values.jarvice.daemonsets.rdma.enabled }}
@@ -95,6 +346,11 @@ apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
   name: jarvice-rdma-device-plugin
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+  namespace: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+  namespace: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
 spec:
   selector:
     matchLabels:
@@ -104,8 +360,8 @@ spec:
       labels:
         {{- include "jarvice.release_labels" . | indent 8 }}
         component: jarvice-rdma-device-plugin
-      annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ""
+      annotations: 
+        deployment-date: {{ now | quote }}
     spec:
       hostNetwork: true
 {{- if (not (empty .Values.jarvice.daemonsets.rdma.tolerations)) }}
@@ -122,6 +378,12 @@ spec:
         - name: device-plugins
           hostPath:
             path: /var/lib/kubelet/device-plugins
+        - name: devinfiniband
+          hostPath:
+            path: /dev/infiniband
+        - name: devknem
+          hostPath:
+            path: /dev/knem
       containers:
       - name: jarvice-rdma-device-plugin
         image: {{ .Values.jarvice.daemonsets.rdma.image }}
@@ -129,9 +391,18 @@ spec:
         volumeMounts:
           - name: device-plugins
             mountPath: /var/lib/kubelet/device-plugins
+          - name: devinfiniband
+            mountPath: /dev/infiniband
+          - name: devknem
+            mountPath: /dev/knem
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
             drop: ["ALL"]
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+      priorityClassName: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+      priorityClassName: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
 ---
 {{- end }}

@@ -66,7 +66,7 @@ node kubelets on Ubuntu systems:
 # Set KUBELET_EXTRA_ARGS=--cpu-manager-policy=static --kube-reserved cpu=0.1
 # Then restart kublet
 cmd=$(cat <<EOF
-sudo systemctl stop kublet;
+sudo systemctl stop kubelet;
 sudo rm -f /var/lib/kubelet/cpu_manager_state;
 sudo sed -i -e 's/^KUBELET_.*/KUBELET_EXTRA_ARGS=--cpu-manager-policy=static --kube-reserved cpu=0.1/' /etc/default/kubelet;
 sudo systemctl start kubelet
@@ -74,7 +74,7 @@ EOF
 )
 
 nodes=$(kubectl get nodes -o name | awk -F/ '{print $2}')
-for n in nodes; do
+for n in $nodes; do
     kubectl drain --ignore-daemonsets --delete-local-data --force $n
     ssh sudo-user@$n "$cmd"
     kubectl uncordon $n
@@ -190,21 +190,29 @@ be run directly with the following command line:
 $ curl https://raw.githubusercontent.com/nimbix/jarvice-helm/master/scripts/nvidia-docker-install | bash
 ```
 
-For further details on installing the NVIDIA device plugin itself,
-please see the following link for plugin installation details:
+In order to enable the NVIDIA device plugin DaemonSet provided in this helm
+chart, add the following `--set` flag to the helm install/upgrade command:
+```bash
+--set jarvice.daemonsets.nvidia.enabled="true"
+```
+
+For further details on the NVIDIA device plugin itself,
+please see the following link:
 https://github.com/NVIDIA/k8s-device-plugin
 
 #### RDMA device plugin
 
 If the cluster nodes have RDMA capable devices installed, it will be necessary
-to install the device plugin in order for JARVICE to make use of them.  Please
-see the following link for plugin installation details:
-https://github.com/nimbix/k8s-rdma-device-plugin
+to install the device plugin in order for JARVICE to make use of them.
 
-To quickly install the RDMA device plugin DaemonSet, execute the following:
+In order to enable the RDMA device plugin DaemonSet provided in this helm
+chart, add the following `--set` flag to the helm install/upgrade command:
 ```bash
-$ kubectl -n kube-system apply -f https://raw.githubusercontent.com/nimbix/k8s-rdma-device-plugin/master/rdma-device-plugin.yml
+--set jarvice.daemonsets.rdma.enabled="true"
 ```
+
+Please see the following link for plugin details:
+https://github.com/nimbix/k8s-rdma-device-plugin
 
 ### Kubernetes persistent volumes (for non-demo installation):
 
@@ -748,11 +756,12 @@ it's own configuration reference.
 #### LXCFS
 
 JARVICE utilizes LXCFS so that each Nimbix Application Environment (NAE) will
-properly reflect the resources requested for each job.  Please use the
-following to install:
+properly reflect the resources requested for each job.
+
+In order to enable the LXCFS DaemonSet provided in this helm
+chart, add the following `--set` flag to the helm install/upgrade command:
 ```bash
-$ kubectl --namespace kube-system create \
-    -f https://raw.githubusercontent.com/nimbix/lxcfs-initializer/master/lxcfs-daemonset.yaml
+--set jarvice.daemonsets.lxcfs.enabled="true"
 ```
 
 #### JARVICE Cache Pull
@@ -762,10 +771,27 @@ kubernetes worker nodes with the docker images used to run JARVICE
 appplications.  This can be used to speed up job startup times for the most
 used JARVICE applications.
 
-The `image-cache` ConfigMap is used to configure the interval at which images
-will be pulled along with which images to pull on certain architectures.  The
-ConfigMap can be created with commands similar to the following:
+In order to enable the cache pull DaemonSet provided in this helm
+chart, add the following `--set` flag to the helm install/upgrade command:
 ```bash
+--set jarvice.daemonsets.cache_pull.enabled="true"
+```
+
+During the initial helm installation, this will create the `jarvice-cache-pull`
+ConfigMap with a default configuration.  This can be edited with the following:
+```bash
+$ kubectl --namespace <jarvice-system-daemonsets> \
+    edit configmap jarvice-cache-pull
+```
+
+The `jarvice-cache-pull` ConfigMap is used to configure the interval at which
+images will be pulled along with which images to pull on certain architectures.
+
+In order to recreate this ConfigMap manually, use commands similar to the
+following:
+```bash
+$ kubectl --namespace <jarvice-system-daemonsets> delete configmap \
+    jarvice-cache-pull
 $ cat >image.config <<EOF
 [
     {
@@ -784,8 +810,8 @@ $ cat >image.config <<EOF
         "private": false,
         "config": "jarvice-docker",
         "arch": {
-            "amd64": "docker.io/library/centos:latest",
-            "ppc64le": "docker.io/ppc64le/centos:latest"
+            "amd64": "docker.io/library/centos:7",
+            "ppc64le": "docker.io/ppc64le/centos:7"
         }
     },
     {
@@ -794,18 +820,12 @@ $ cat >image.config <<EOF
         "private": true,
         "config": "jarvice-docker",
         "arch": {
-            "amd64": "quay.io/nimbix/base-centos7-realvnc:7.5"
+            "amd64": "gcr.io/nimbix/base-centos7-realvnc:7.5"
         }
     }
 EOF
-$ kubectl --namespace <jarvice-system> create \
-    configmap image-cache --from-literal interval=300 --from-file image.config
-```
-
-The correlating DaemonSet can be installed with the following command:
-```bash
-$ kubectl --namespace <jarvice-system> create \
-    -f https://raw.githubusercontent.com/nimbix/jarvice-cache-pull/master/jarvice-cache-pull.yaml
+$ kubectl --namespace <jarvice-system-daemonsets> create configmap \
+    jarvice-cache-pull --from-literal interval=300 --from-file image.config
 ```
 
 Please view the README.md for more detailed configuration information:
