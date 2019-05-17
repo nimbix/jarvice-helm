@@ -62,6 +62,16 @@
 
 # Changelog
 
+## 3.0.0-1.20190517.1346
+
+* (1509) Pod scheduler now respects most node taints; optimized for JARVICE-style taints such as:
+        node-role.kubernetes.io/jarvice-system:NoSchedule
+* (1662) Global max CPU concurrency available for all resource limits, supported with or without whitelisted machine types and scale
+* (1665) Support for impersonation of team user accounts by team admins (requires explicit opt-in from the *Account->Team* view)
+* (1680) Fixed potential orphaned resources on job submission failure
+* (1681) New [jarvice.com/rdma](https://github.com/nimbix/jarvice-k8s-rdma) plugin with optional automatic deployment from Helm chart; this mechanism replaces the previously recommended `tencent.com/rdma` one, and is more appropriate (and reliable) for high density/scale HPC using RDMA; certified using InfiniBand but may also support RoCE
+
+
 ## 3.0.0-1.20190503.1831
 
 * (1636) Applied NetworkPolicy to JARVICE services to prevent jobs from unauthorized access to internal system components
