@@ -66,7 +66,7 @@
 
 * (1509) Pod scheduler now respects most node taints; optimized for JARVICE-style taints such as:
 
-    node-role.kubernetes.io/jarvice-system:NoSchedule
+        node-role.kubernetes.io/jarvice-system:NoSchedule
 
 * (1662) Global max CPU concurrency available for all resource limits, supported with or without whitelisted machine types and scale
 * (1665) Support for impersonation of team user accounts by team admins (requires explicit opt-in from the *Account->Team* view)
