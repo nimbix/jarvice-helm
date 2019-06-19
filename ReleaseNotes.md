@@ -62,6 +62,13 @@
 
 # Changelog
 
+## 3.0.0-1.20190619.1923
+
+* (1712) Job utilization metrics via API endpoint [/jarvice/metrics](https://jarvice.readthedocs.io/en/latest/api/#jarvicemetrics)
+* (1738) Fixed bug where jobs queuing for a long time would show negative runtimes in the portal
+* (1739) Fixed bug where cloning a job with a machine type that is no longer available would cause the web portal to hang
+
+
 ## 3.0.0-1.20190517.1346
 
 * (1509) Pod scheduler now respects most node taints; optimized for JARVICE-style taints such as:
