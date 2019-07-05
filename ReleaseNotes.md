@@ -62,6 +62,10 @@
 
 # Changelog
 
+## 3.0.0-1.20190703.1553
+
+* (1741) Presentation of job utilization metrics in portal; real-time CPU and memory usage are available for running jobs as a summary, and as a click-through per-node representation using the details button.  On Kubernetes, this requires the deployment of [metrics-server](https://github.com/kubernetes-incubator/metrics-server) 0.3.x or newer.
+
 ## 3.0.0-1.20190619.1923
 
 * (1712) Job utilization metrics via API endpoint [/jarvice/metrics](https://jarvice.readthedocs.io/en/latest/api/#jarvicemetrics)
