@@ -62,6 +62,10 @@
 
 # Changelog
 
+## 3.0.0-1.20190711.1435
+
+* (1830) Prevent application of a global CPU limit below the smallest machine size possible, in terms of cores; for example, if the limit is 1, and the smallest machine defined has 2 for its `mc_cores` value, JARVICE will enforce the limit as 2 concurrent CPUs.  This applies to all levels of limits.
+
 ## 3.0.0-1.20190703.1553
 
 * (1741) Presentation of job utilization metrics in portal; real-time CPU and memory usage are available for running jobs as a summary, and as a click-through per-node representation using the details button.  On Kubernetes, this requires the deployment of [metrics-server](https://github.com/kubernetes-incubator/metrics-server) 0.3.x or newer.
