@@ -1,0 +1,247 @@
+{{- if .Values.jarvice_mc_portal_experimental.enabled }}
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: jarvice-mc-portal-experimental
+spec:
+  selector:
+    matchLabels:
+      deployment: jarvice-mc-portal-experimental
+  minAvailable: {{ .Values.jarvice_mc_portal.pdb.minAvailable }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jarvice-mc-portal-experimental
+spec:
+  replicas: {{ .Values.jarvice_mc_portal.replicaCount }}
+  selector:
+    matchLabels:
+      deployment: jarvice-mc-portal-experimental
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-mc-portal-experimental
+        deployment: jarvice-mc-portal-experimental
+        jarvice-system: core
+      annotations:
+        deployment-date: {{ now | quote }}
+    spec:
+{{- if (not (empty .Values.jarvice_mc_portal.tolerations)) }}
+      tolerations: {{ .Values.jarvice_mc_portal.tolerations }}
+{{- else if (not (empty .Values.jarvice.tolerations)) }}
+      tolerations: {{ .Values.jarvice.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice_mc_portal.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice_mc_portal.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.nodeSelector }}
+{{- end }}
+      affinity:
+        podAntiAffinity:
+        {{- if eq .Values.jarvice_mc_portal.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                deployment: jarvice-mc-portal-experimental
+        {{- else if eq .Values.jarvice_mc_portal.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  deployment: jarvice-mc-portal-experimental
+        {{- end }}
+      imagePullSecrets:
+      - name: jarvice-docker
+      volumes:
+        - name: jarvice-settings
+          configMap:
+            name: {{ .Values.jarvice.settings.configMap }}
+            optional: true
+        - name: jarvice-secrets
+          secret:
+            secretName: jarvice-secrets
+            optional: true
+      containers:
+      - name: jarvice-mc-portal-experimental
+        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-mc-portal:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}{{- include "jarvice.version" . }}-experimental
+        imagePullPolicy: Always
+        ports:
+          - name: http
+            containerPort: 80
+        readinessProbe:
+          httpGet:
+            scheme: HTTP
+            port: http
+            path: /ready
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            scheme: HTTP
+            port: http
+            path: /live
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+        env:
+          - name: JARVICE_SYSTEM_K8S
+            value: "true"
+          - name: JARVICE_DAL_URL
+            value: "https://jarvice-dal:8443"
+          - name: JARVICE_API_URL
+            value: "https://jarvice-api:7443"
+          - name: JARVICE_USER_DEFAULT_ENABLED
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_USER_DEFAULT_ENABLED }}"
+          - name: JARVICE_USER_DEFAULT_DEVELOPER
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_USER_DEFAULT_DEVELOPER }}"
+{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_WEB_HOST)) }}
+          - name: JARVICE_PORTAL_WEB_HOST
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_WEB_HOST }}"
+{{- else if (not (empty .Values.jarvice_mc_portal.ingressHost)) }}
+          - name: JARVICE_PORTAL_WEB_HOST
+            value: "https://{{ .Values.jarvice_mc_portal.ingressHost }}"
+{{- end }}
+          - name: JARVICE_PORTAL_MEMCACHED_LOCATIONS
+{{- if and .Values.jarvice_memcached.enabled (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MEMCACHED_LOCATIONS) }}
+            {{- $memcachedCount := .Values.jarvice_memcached.replicaCount }}
+            value: "
+              {{- range $i, $none := until (int $memcachedCount) }}
+                {{- if gt $i 0}},{{- end }}jarvice-memcached-{{ $i }}.jarvice-memcached:11211
+              {{- end }}"
+{{- else }}
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MEMCACHED_LOCATIONS }}"
+{{- end }}
+          - name: JARVICE_PORTAL_APP_OWNERS
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_APP_OWNERS }}"
+          - name: JARVICE_PORTAL_MAIL_FROM
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_FROM }}"
+          - name: JARVICE_PORTAL_MAIL_SUBJECT
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_SUBJECT }}"
+          - name: JARVICE_PORTAL_MAIL_SERVER
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_SERVER }}"
+          - name: JARVICE_PORTAL_MAIL_USERNAME
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_USERNAME }}"
+{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_PASSWORD)) }}
+          - name: JARVICE_PORTAL_MAIL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-mc-portal
+                key: JARVICE_PORTAL_MAIL_PASSWORD
+{{- end }}
+          - name: JARVICE_PORTAL_MAIL_ADMINS
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_ADMINS }}"
+          - name: JARVICE_PORTAL_DBHOST
+{{- if empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DBHOST }}
+            value: "{{ .Values.jarvice.JARVICE_DBHOST }}"
+{{- else }}
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DBHOST }}"
+{{- end }}
+          - name: JARVICE_PORTAL_DBUSER
+{{- if empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DBUSER }}
+            value: "{{ .Values.jarvice.JARVICE_DBUSER }}"
+{{- else }}
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DBUSER }}"
+{{- end }}
+          - name: JARVICE_PORTAL_DBPASSWD
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-db
+{{- if empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DBPASSWD }}
+                key: JARVICE_DBPASSWD
+{{- else }}
+                key: JARVICE_PORTAL_DBPASSWD
+{{- end }}
+        volumeMounts:
+        - name: jarvice-settings
+          mountPath: /etc/jarvice/settings/jarvice-mc-portal
+          readOnly: true
+        - name: jarvice-secrets
+          mountPath: /etc/jarvice/secrets/jarvice-mc-portal
+          readOnly: true
+        resources:
+{{- if .Values.jarvice_mc_portal.resources }}
+{{ toYaml .Values.jarvice_mc_portal.resources | indent 10 }}
+{{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-mc-portal-experimental
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-mc-portal-experimental
+spec:
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+    name: http
+  selector:
+    deployment: jarvice-mc-portal-experimental
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: jarvice-mc-portal-experimental
+spec:
+  podSelector:
+    matchLabels:
+      deployment: jarvice-mc-portal-experimental
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 80
+---
+{{- if (empty .Values.jarvice_mc_portal_experimental.ingressHost) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-mc-portal-experimental-lb
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-mc-portal-experimental
+spec:
+  type: LoadBalancer
+  loadBalancerIP: {{ .Values.jarvice_mc_portal_experimental.loadBalancerIP }}
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+    name: http
+  selector:
+    deployment: jarvice-mc-portal
+---
+{{- else }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: jarvice-mc-portal-experimental
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-mc-portal
+spec:
+  rules:
+  - host: {{ .Values.jarvice_mc_portal_experimental.ingressHost }}
+    http:
+      paths:
+      - backend:
+          serviceName: jarvice-mc-portal-experimental
+          servicePort: http
+---
+{{- end }}
+{{- end }}
