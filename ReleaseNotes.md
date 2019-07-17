@@ -62,6 +62,11 @@
 
 # Changelog
 
+## 3.0.0-1.20190717.1614
+
+* (1785) Support for running experimental version of web portal, which will become standard after more testing (Kubernetes only)
+* Experimental web portal fix for apps with `NONE` vault type specification in AppDef
+
 ## 3.0.0-1.20190711.1435
 
 * (1830) Prevent application of a global CPU limit below the smallest machine size possible, in terms of cores; for example, if the limit is 1, and the smallest machine defined has 2 for its `mc_cores` value, JARVICE will enforce the limit as 2 concurrent CPUs.  This applies to all levels of limits.
