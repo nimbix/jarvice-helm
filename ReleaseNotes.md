@@ -63,6 +63,12 @@
 
 # Changelog
 
+## 3.0.0-1.20190731.1533
+
+* (1792) Report on average queue times per machine in the *Administration->Stats* view
+* (1836) Fix for *Administration->Users->Vaults*  user interface hanging when there is an invalid vault defined for a user - see [Known Issues, Anomalies, and Caveats](#known-issues-anomalies-and-caveats) for details on what vaults are not valid on Kubernetes systems
+* (1841) Validation of experimental web portal fix for apps with `NONE` vault type specification in AppDef; confirmed fixed
+
 ## 3.0.0-1.20190717.1614
 
 * (1785) Support for running experimental version of web portal, which will become standard after more testing (Kubernetes only)
