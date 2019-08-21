@@ -246,7 +246,7 @@ spec:
     - protocol: TCP
       port: 8443
 {{/*
-Enabling ingressHost for this service is dangerous.
+WARNING: Enabling ingressHost for this service is dangerous.
 DO NOT enable it here without understanding the security implications!
 */}}
 {{- if (not (empty .Values.jarvice_dal.ingressHost)) }}
