@@ -63,6 +63,11 @@
 
 # Changelog
 
+## 3.0.0-1.20190830.1317
+
+* (1911) Kubernetes events associated with pods captured in job error output; from the *Administration->Jobs* view, clicking on a job and then clicking *DOWNLOAD STDERR* produces JSON data for each Kubernetes pod in a job; the new `events` key contains a list of events associated with each pod
+* (1945) Job label, if applicable, added to job status emails
+
 ## 3.0.0-1.20190731.1533
 
 * (1792) Report on average queue times per machine in the *Administration->Stats* view
