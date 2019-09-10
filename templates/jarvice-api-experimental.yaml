@@ -1,0 +1,247 @@
+{{- if .Values.jarvice_api_experimental.enabled }}
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: jarvice-api-experimental
+spec:
+  selector:
+    matchLabels:
+      deployment: jarvice-api-experimental
+  minAvailable: {{ .Values.jarvice_api.pdb.minAvailable }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jarvice-api-experimental
+spec:
+  replicas: {{ .Values.jarvice_api.replicaCount }}
+  selector:
+    matchLabels:
+      deployment: jarvice-api-experimental
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-api-experimental
+        deployment: jarvice-api-experimental
+        jarvice-system: core
+      annotations:
+        deployment-date: {{ now | quote }}
+    spec:
+      serviceAccountName: jarvice-system
+{{- if (not (empty .Values.jarvice_api.tolerations)) }}
+      tolerations: {{ .Values.jarvice_api.tolerations }}
+{{- else if (not (empty .Values.jarvice.tolerations)) }}
+      tolerations: {{ .Values.jarvice.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice_api.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice_api.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.nodeSelector }}
+{{- end }}
+      affinity:
+        podAntiAffinity:
+        {{- if eq .Values.jarvice_api.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                deployment: jarvice-api-experimental
+        {{- else if eq .Values.jarvice_api.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  deployment: jarvice-api-experimental
+        {{- end }}
+      imagePullSecrets:
+      - name: jarvice-docker
+      containers:
+      - name: jarvice-api-experimental
+        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-api:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}{{- include "jarvice.version" . }}-experimental
+        imagePullPolicy: Always
+        ports:
+          - name: http
+            containerPort: 8080
+        readinessProbe:
+          httpGet:
+            scheme: HTTP
+            port: http
+            path: /ready
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            scheme: HTTP
+            port: http
+            path: /live
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+        env:
+          - name: JARVICE_SYSTEM_K8S
+            value: "true"
+          - name: JARVICE_DAL_URL
+{{- if empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+            value: "https://jarvice-dal.{{ .Release.Namespace }}:8443"
+{{- else }}
+            value: "https://jarvice-dal.{{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}:8443"
+{{- end }}
+          - name: JARVICE_API_URL
+{{- if empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+            value: "http://jarvice-api-experimental.{{ .Release.Namespace }}:8080"
+{{- else }}
+            value: "http://jarvice-api-experimental.{{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}:8080"
+{{- end }}
+          - name: JARVICE_SCHED_URL
+            value: "https://jarvice-scheduler:9443"
+          - name: JARVICE_JOBS_NAMESPACE
+{{- if empty .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
+            value: {{ .Release.Namespace }}-jobs
+{{- else }}
+            value: {{ .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
+{{- end }}
+          - name: JARVICE_BUILDS_NAMESPACE
+{{- if empty .Values.jarvice.JARVICE_BUILDS_NAMESPACE }}
+            value: {{ .Release.Namespace }}-builds
+{{- else }}
+            value: {{ .Values.jarvice.JARVICE_BUILDS_NAMESPACE }}
+{{- end }}
+          - name: JARVICE_PULLS_NAMESPACE
+{{- if empty .Values.jarvice.JARVICE_PULLS_NAMESPACE }}
+            value: {{ .Release.Namespace }}-pulls
+{{- else }}
+            value: {{ .Values.jarvice.JARVICE_PULLS_NAMESPACE }}
+{{- end }}
+          - name: JARVICE_SYSTEM_NAMESPACE
+{{- if empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+            value: {{ .Release.Namespace }}
+{{- else }}
+            value: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+{{- end }}
+          - name: JARVICE_SYSTEM_REGISTRY
+            value: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}
+          - name: JARVICE_SYSTEM_REPO_BASE
+            value: {{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}
+          - name: JARVICE_IMAGES_TAG
+            value: {{ .Values.jarvice.JARVICE_IMAGES_TAG }}{{- include "jarvice.version" . }}
+          - name: JARVICE_LOCAL_REGISTRY
+            value: {{ .Values.jarvice.JARVICE_LOCAL_REGISTRY }}
+          - name: JARVICE_LOCAL_REPO_BASE
+            value: {{ .Values.jarvice.JARVICE_LOCAL_REPO_BASE }}
+{{- if (not (empty .Values.jarvice_dockerbuild.tolerations)) }}
+          - name: JARVICE_BUILD_NODE_TOLERATIONS
+            value: '{{ .Values.jarvice_dockerbuild.tolerations }}'
+{{- else if (not (empty .Values.jarvice.tolerations)) }}
+          - name: JARVICE_BUILD_NODE_TOLERATIONS
+            value: '{{ .Values.jarvice.tolerations }}'
+{{- end }}
+{{- if (not (empty .Values.jarvice_dockerpull.tolerations)) }}
+          - name: JARVICE_PULL_NODE_TOLERATIONS
+            value: '{{ .Values.jarvice_dockerpull.tolerations }}'
+{{- else if (not (empty .Values.jarvice.tolerations)) }}
+          - name: JARVICE_PULL_NODE_TOLERATIONS
+            value: '{{ .Values.jarvice.tolerations }}'
+{{- end }}
+{{- if (not (empty .Values.jarvice_dockerbuild.nodeSelector)) }}
+          - name: JARVICE_BUILD_NODE_SELECTOR
+            value: '{{ .Values.jarvice_dockerbuild.nodeSelector }}'
+{{- else if (not (empty .Values.jarvice.nodeSelector)) }}
+          - name: JARVICE_BUILD_NODE_SELECTOR
+            value: '{{ .Values.jarvice.nodeSelector }}'
+{{- end }}
+{{- if (not (empty .Values.jarvice_dockerpull.nodeSelector)) }}
+          - name: JARVICE_PULL_NODE_SELECTOR
+            value: '{{ .Values.jarvice_dockerpull.nodeSelector }}'
+{{- else if (not (empty .Values.jarvice.nodeSelector)) }}
+          - name: JARVICE_PULL_NODE_SELECTOR
+            value: '{{ .Values.jarvice.nodeSelector }}'
+{{- end }}
+          - name: JARVICE_MAIL_CONF
+{{- if empty .Values.jarvice_api.env.JARVICE_MAIL_CONF }}
+            value: {{ toYaml .Values.jarvice.JARVICE_MAIL_CONF | indent 12 }}
+{{- else }}
+            value: {{ toYaml .Values.jarvice_api.env.JARVICE_MAIL_CONF | indent 12 }}
+{{- end }}
+        resources:
+{{ toYaml .Values.jarvice_api.resources | indent 10 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-api-experimental
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-api-experimental
+spec:
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+    name: http
+  selector:
+    deployment: jarvice-api-experimental
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: jarvice-api-experimental
+spec:
+  podSelector:
+    matchLabels:
+      deployment: jarvice-api-experimental
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 8080
+---
+{{- if (empty .Values.jarvice_api_experimental.ingressHost) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-api-experimental-lb
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-api-experimental
+spec:
+  type: LoadBalancer
+  loadBalancerIP: {{ .Values.jarvice_api_experimental.loadBalancerIP }}
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+    name: http
+  selector:
+    deployment: jarvice-api-experimental
+---
+{{- else }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: jarvice-api-experimental
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-api-experimental
+spec:
+  rules:
+  - host: {{ .Values.jarvice_api_experimental.ingressHost }}
+    http:
+      paths:
+      - backend:
+          serviceName: jarvice-api-experimental
+          servicePort: http
+---
+{{- end }}
+{{- end }}

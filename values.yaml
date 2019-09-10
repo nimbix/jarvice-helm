@@ -371,6 +371,11 @@ jarvice_mc_portal:
     JARVICE_PORTAL_DBUSER: # root
     JARVICE_PORTAL_DBPASSWD: # Pass1234
 
+jarvice_api_experimental:
+  enabled: false
+  loadBalancerIP:
+  ingressHost: # jarvice-api.my-domain.com
+
 jarvice_mc_portal_experimental:
   enabled: false
   loadBalancerIP:
