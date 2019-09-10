@@ -69,7 +69,7 @@ spec:
           httpGet:
             scheme: HTTP
             port: http
-            path: /ready
+            path: /jarvice/ready
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 1
@@ -79,7 +79,7 @@ spec:
           httpGet:
             scheme: HTTP
             port: http
-            path: /live
+            path: /jarvice/live
           initialDelaySeconds: 30
           periodSeconds: 30
           timeoutSeconds: 1
