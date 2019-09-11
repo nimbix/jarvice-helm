@@ -63,6 +63,12 @@
 
 # Changelog
 
+## 3.0.0-1.20190911.1715
+
+* (1976) Fixed bug in portal where cloning jobs would result in erroneous values for different workflows
+* (1989) Audit logging for end user actions, and the ability for team admins to query and filter the logs via the *Account->Team Logs* view
+* (2032) Minor adjustment to container pull policy for `jarvice-dockerpull` and `jarvice-dockerbuild` containers, triggered via `/jarvice/pull` and `/jarvice/build` API endpoints, respectively
+
 ## 3.0.0-1.20190830.1317
 
 * (1911) Kubernetes events associated with pods captured in job error output; from the *Administration->Jobs* view, clicking on a job and then clicking *DOWNLOAD STDERR* produces JSON data for each Kubernetes pod in a job; the new `events` key contains a list of events associated with each pod
