@@ -208,5 +208,32 @@ spec:
     ports:
     - protocol: TCP
       port: 9443
+{{/*
+WARNING: Enabling ingressHost for this service is dangerous.
+DO NOT enable it here without understanding the security implications!
+*/}}
+{{- if (not (empty .Values.jarvice_scheduler.ingressHost)) }}
+  - from:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 9443
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: jarvice-scheduler
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-scheduler
+spec:
+  rules:
+  - host: {{ .Values.jarvice_scheduler.ingressHost }}
+    http:
+      paths:
+      - backend:
+          serviceName: jarvice-scheduler
+          servicePort: https
+{{- end }}
 ---
 {{- end }}
