@@ -63,6 +63,11 @@
 
 # Changelog
 
+## 3.0.0-1.20190913.2114
+
+* (1910) Detect `CreateContainerError` condition on job startup and fail job appropriately; this prevents resources being held when container creation fails upon job startup
+* (2034) Proper handling of job termination and cleanup when its pod(s) are deleted outside of JARVICE (e.g. using `kubectl delete pod`)
+
 ## 3.0.0-1.20190911.1715
 
 * (1976) Fixed bug in portal where cloning jobs would result in erroneous values for different workflows
