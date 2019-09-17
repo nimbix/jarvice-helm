@@ -63,6 +63,10 @@
 
 # Changelog
 
+## 3.0.0-1.20190917.1813
+
+* (2068) Fixed regression in job termination option when locking user accounts; jobs were not being terminated
+
 ## 3.0.0-1.20190913.2114
 
 * (1910) Detect `CreateContainerError` condition on job startup and fail job appropriately; this prevents resources being held when container creation fails upon job startup
