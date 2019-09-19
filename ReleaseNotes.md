@@ -63,6 +63,10 @@
 
 # Changelog
 
+## 3.0.0-1.20190918.2053
+
+* (2034) Fixed regression introduced by original fix in release `3.0.0-1.20190913.2114` where job termination and completion emails were not being sent properly
+
 ## 3.0.0-1.20190917.1813
 
 * (2068) Fixed regression in job termination option when locking user accounts; jobs were not being terminated
