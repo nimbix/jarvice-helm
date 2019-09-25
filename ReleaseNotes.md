@@ -64,6 +64,12 @@
 
 # Changelog
 
+## 3.0.0-1.20190925.1914
+
+* (1986) Allow non-admin users on teams to optionally see usage and job summary for entire respective team; this must be enabled by a team payer or admin in the *Account->Summary* view; non-admin members then have visibility into an abbreviated version of *Account->Summary* for viewing current resource usage and team jobs only
+* (1990) Additional audit logging for user actions via API (`/jarvice/submit`, `/jarvice/shutdown`, and `/jarvice/terminate`)
+* (2029) Improved performance of server-side appsync functionality by parallelizing `/jarvice/apps` API endpoint
+
 ## 3.0.0-1.20190918.2053
 
 * (2034) Fixed regression introduced by original fix in release `3.0.0-1.20190913.2114` where job termination and completion emails were not being sent properly
