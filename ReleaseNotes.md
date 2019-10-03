@@ -33,7 +33,6 @@
 
 ### Resource Limits and Cost Controls
 
-- Resource limits should not currently be used at any level (administrator controlled or self-service) if Kubernetes cluter autoscaling is enabled, as nodes may scale up even if queued jobs are resource limited; this issue will be fixed in a future release.
 - Resource limit changes do not apply retroactively to jobs that are already queued; any queued jobs will be executed as soon as capacity becomes available.  Constraining resource limits after jobs are in the regular queue has no effect on them.  However, increasing resource limits will allow jobs that are being held due to account settings to move to regular queue if the new limits permit that.
 
 ### PersistentVolume Vaults
