@@ -63,6 +63,12 @@
 
 # Changelog
 
+## 3.0.0-1.20191011.1301
+
+* (1664) Self-service app management, allowing team admins to restrict what catalog apps _non-administrative_ team users have access to; available in the *Account->Team Apps* view;
+* (2072) Improved appsync mechanism to not trigger deletion of local apps immediately if there are intermittent failures on authorizing remote Docker repositories due to timeouts or other HTTP errors
+
+
 ## 3.0.0-1.20191003.1943
 
 * (2071) Fixed bug where `/jarvice/teamjobs` API call was not returning all team jobs when authenticating as a non-payer team admin user
