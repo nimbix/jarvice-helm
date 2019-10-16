@@ -57,6 +57,8 @@ nodeGroups:
   - name: ng-jarvice-compute-0
     labels:
         node-role.kubernetes.io/jarvice-compute: ""
+    taints:
+        node-role.kubernetes.io/jarvice-compute: ":NoSchedule"
     tags:
       k8s.io/cluster-autoscaler/enabled: "true"
       k8s.io/cluster-autoscaler/jarvice: "owned"  # Matches metadata.name
@@ -85,6 +87,8 @@ nodeGroups:
   #- name: ng-jarvice-compute-gpu-0
   #  labels:
   #      node-role.kubernetes.io/jarvice-compute: ""
+  #  taints:
+  #      node-role.kubernetes.io/jarvice-compute: ":NoSchedule"
   #  tags:
   #    k8s.io/cluster-autoscaler/enabled: "true"
   #    k8s.io/cluster-autoscaler/jarvice: "owned"  # Matches metadata.name

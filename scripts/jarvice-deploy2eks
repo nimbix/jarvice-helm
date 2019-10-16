@@ -398,12 +398,9 @@ echo "* Running $EKSCTL to create EKS cluster..."
 $YQ d $config_file jarvice | $EKSCTL create cluster --config-file -
 
 echo
-echo "* Tainting nodes..."
-roles="jarvice-system jarvice-dockerbuild jarvice-dockerpull jarvice-compute"
-for role in $roles; do
-    $KUBECTL taint nodes -l node-role.kubernetes.io/$role= \
-        node-role.kubernetes.io/$role=:NoSchedule
-done
+echo "* Tainting jarvice-system nodes..."
+$KUBECTL taint nodes -l node-role.kubernetes.io/jarvice-system= \
+    node-role.kubernetes.io/jarvice-system=:NoSchedule
 
 #if [ -n "$install_weave_plugin" ]; then
 #    echo
