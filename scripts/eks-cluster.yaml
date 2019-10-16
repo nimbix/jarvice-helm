@@ -1,4 +1,4 @@
-apiVersion: eksctl.io/v1alpha4
+apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
 
 # JARVICE deploy config
@@ -24,8 +24,9 @@ jarvice:
 
 # EKS cluster deploy config
 metadata:
-  name: jarvice
+  name: jarvice  # Name matches "owned" tag name in jarvice-compute node groups
   region: us-west-2
+  #version: "1.14"
 
 # To put nodes in a single availability zone, configure nodeGroups below
 #availabilityZones: ["us-west-2a", "us-west-2b", "us-west-2c"]
@@ -33,57 +34,69 @@ metadata:
 nodeGroups:
   # jarvice-system
   - name: ng-jarvice-system-0
-    labels: {node-role.jarvice.io/jarvice-system: ""}
-    instanceType: m5.4xlarge  # https://aws.amazon.com/ec2/instance-types/
+    labels:
+        node-role.kubernetes.io/jarvice-system: ""
+    instanceType: m5.2xlarge  # https://aws.amazon.com/ec2/instance-types/
     minSize: 3
     maxSize: 3
     desiredCapacity: 3
     volumeSize: 10
     volumeType: gp2
-    availabilityZones: ["us-west-2a"]
-    allowSSH: true
-    sshPublicKeyPath: ~/.ssh/id_rsa.pub
-    #sshPublicKeyName: <aws-ssh-key-name>
-
-  # jarvice-compute nodes use overrideBootstrapCommand to disable
-  # hyper-threading. Visit the following link for details:
-  # https://aws.amazon.com/blogs/compute/disabling-intel-hyper-threading-technology-on-amazon-linux/
+    availabilityZones:
+        - us-west-2a
+        #- us-west-2b
+        #- us-west-2c
+    ssh:
+        publicKeyPath: ~/.ssh/id_rsa.pub
+        #publicKeyName: <aws-ssh-key-name>
 
   # jarvice-compute - non-GPU node group
   - name: ng-jarvice-compute-0
-    labels: {node-role.kubernetes.io/jarvice-compute: ""}
+    labels:
+        node-role.kubernetes.io/jarvice-compute: ""
+    tags:
+      k8s.io/cluster-autoscaler/enabled: "true"
+      k8s.io/cluster-autoscaler/jarvice: "owned"  # Matches metadata.name
     instanceType: c5.18xlarge  # https://aws.amazon.com/ec2/instance-types/
-    minSize: 4
-    maxSize: 4
+    minSize: 3
+    maxSize: 5
     desiredCapacity: 4
     volumeSize: 100
     volumeType: gp2
-    availabilityZones: ["us-west-2a"]
-    allowSSH: true
-    sshPublicKeyPath: ~/.ssh/id_rsa.pub
-    #sshPublicKeyName: <aws-ssh-key-name>
-    overrideBootstrapCommand: |
-        for cpunum in $(cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list | cut -s -d, -f2- | sed 's/,/ /g'); do echo 0 > /sys/devices/system/cpu/cpu$cpunum/online; done;
-        echo "NODE_IP=$(curl --silent http://169.254.169.254/latest/meta-data/local-ipv4)" > /etc/eksctl/kubelet.local.env;
-        echo "INSTANCE_ID=$(curl --silent http://169.254.169.254/latest/meta-data/instance-id)" >> /etc/eksctl/kubelet.local.env;
-        systemctl daemon-reload; systemctl enable kubelet; systemctl start kubelet
+    availabilityZones:
+        - us-west-2a
+        #- us-west-2b
+        #- us-west-2c
+    ssh:
+        publicKeyPath: ~/.ssh/id_rsa.pub
+        #publicKeyName: <aws-ssh-key-name>
+    preBootstrapCommands:
+        # Disable hyper-threading.  Visit the following link for details:
+        # https://aws.amazon.com/blogs/compute/disabling-intel-hyper-threading-technology-on-amazon-linux/
+        - "for n in $(cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list | cut -s -d, -f2- | tr ',' '\n' | sort -un); do echo 0 > /sys/devices/system/cpu/cpu${n}/online; done"
 
   # jarvice-compute - GPU node group
   #- name: ng-jarvice-compute-gpu-0
-  #  labels: {node-role.kubernetes.io/jarvice-compute: ""}
+  #  labels:
+  #      node-role.kubernetes.io/jarvice-compute: ""
+  #  tags:
+  #    k8s.io/cluster-autoscaler/enabled: "true"
+  #    k8s.io/cluster-autoscaler/jarvice: "owned"  # Matches metadata.name
   #  instanceType: p2.xlarge  # https://aws.amazon.com/ec2/instance-types/
-  #  minSize: 4
-  #  maxSize: 4
+  #  minSize: 3
+  #  maxSize: 5
   #  desiredCapacity: 4
   #  volumeSize: 100
   #  volumeType: gp2
-  #  availabilityZones: ["us-west-2a"]
-  #  allowSSH: true
-  #  sshPublicKeyPath: ~/.ssh/id_rsa.pub
-  #  #sshPublicKeyName: <aws-ssh-key-name>
-  #  overrideBootstrapCommand: |
-  #      for cpunum in $(cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list | cut -s -d, -f2- | sed 's/,/ /g'); do echo 0 > /sys/devices/system/cpu/cpu$cpunum/online; done;
-  #      echo "NODE_IP=$(curl --silent http://169.254.169.254/latest/meta-data/local-ipv4)" > /etc/eksctl/kubelet.local.env;
-  #      echo "INSTANCE_ID=$(curl --silent http://169.254.169.254/latest/meta-data/instance-id)" >> /etc/eksctl/kubelet.local.env;
-  #      systemctl daemon-reload; systemctl enable kubelet; systemctl start kubelet
+  #  availabilityZones:
+  #      - us-west-2a
+  #      #- us-west-2b
+  #      #- us-west-2c
+  #  ssh:
+  #      publicKeyPath: ~/.ssh/id_rsa.pub
+  #      #publicKeyName: <aws-ssh-key-name>
+  #  preBootstrapCommands:
+  #      # Disable hyper-threading.  Visit the following link for details:
+  #      # https://aws.amazon.com/blogs/compute/disabling-intel-hyper-threading-technology-on-amazon-linux/
+  #    - "for n in $(cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list | cut -s -d, -f2- | tr ',' '\n' | sort -un); do echo 0 > /sys/devices/system/cpu/cpu${n}/online; done"
 

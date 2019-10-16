@@ -91,18 +91,18 @@ if [[ $eks_node_type == p2.* ]] || [[ $eks_node_type == p3.* ]]; then
     install_nvidia_plugin=y
 fi
 
-KUBECTL=$(type -p kubectl)
-AWS=$(type -p aws)
-AWS_IAM_AUTH=$(type -p aws-iam-authenticator)
-EKSCTL=$(type -p eksctl)
-HELM=$(type -p helm)
-CURL=$(type -p curl)
-UNZIP=$(type -p unzip)
-JQ=$(type -p jq)
-SHYAML=$(type -p shyaml)
+[ -z "$KUBECTL" ] && KUBECTL=$(type -p kubectl)
+[ -z "$AWS" ] && AWS=$(type -p aws)
+[ -z "$AWS_IAM_AUTH" ] && AWS_IAM_AUTH=$(type -p aws-iam-authenticator)
+[ -z "$EKSCTL" ] && EKSCTL=$(type -p eksctl)
+[ -z "$HELM" ] && HELM=$(type -p helm)
+[ -z "$CURL" ] && CURL=$(type -p curl)
+[ -z "$UNZIP" ] && UNZIP=$(type -p unzip)
+[ -z "$JQ" ] && JQ=$(type -p jq)
+[ -z "$YQ" ] && YQ=$(type -p yq)
 
 KUBECTL_VER_REQ=1.10
-EKSCTL_VER_REQ=0.1.23
+EKSCTL_VER_REQ=0.7.0
 
 if [ -z "$KUBECONFIG" ]; then
     KUBECONFIG=~/.kube/config
@@ -112,7 +112,7 @@ export KUBECONFIG
 ###############################################################################
 
 function check_deps {
-    if [ -z "$KUBECTL" -o -z "$AWS" -o -z "$AWS_IAM_AUTH" -o -z "$EKSCTL" -o -z "$HELM" -o -z "$JQ" ]; then
+    if [ -z "$KUBECTL" -o -z "$AWS" -o -z "$AWS_IAM_AUTH" -o -z "$EKSCTL" -o -z "$HELM" -o -z "$JQ" -o -z "$YQ" ]; then
         echo "Missing software needs to be installed.  Verifying sudo access..."
         SUID=$(sudo id -u)
         if [ "$SUID" != "0" ]; then
@@ -131,9 +131,10 @@ function check_deps {
             echo "jq command not found...  Installing..."
             install_pkgs+="jq "
         fi
-        if [ -z "$SHYAML" ]; then
-            echo "shyaml command not found...  Installing..."
-            sudo -H pip install shyaml
+        if [ -z "$YQ" ]; then
+            echo "yq command not found...  Installing..."
+            sudo curl --silent --location -o $INSTALL_DIR/bin/yq https://github.com/mikefarah/yq/releases/download/2.4.0/yq_linux_amd64
+            sudo chmod 755 $INSTALL_DIR/bin/yq
         fi
         if [ -n "$install_pkgs" ]; then
             if [ -e /etc/redhat-release ]; then
@@ -155,9 +156,9 @@ function get_json_value {
 }
 
 function get_yaml_value {
-    key=$1
-    cat $config_file | \
-        $SHYAML -q get-value $key | grep -v ^None || /bin/true
+    yaml_file=$1
+    key=$2
+    $YQ r $yaml_file $key | grep -v ^null || /bin/true
 }
 
 function strict_version {
@@ -174,41 +175,18 @@ function kubectl_install_nvidia_plugin {
     $KUBECTL create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v$SERVER_MAJOR.$SERVER_MINOR/nvidia-device-plugin.yml 2>/dev/null || /bin/true
 }
 
-function eks_cf_stack_delete {
-    stack_name="$1"
-
-    echo
-    echo "* Deleting CloudFormation stack '$stack_name'..."
-    $AWS --region $aws_region cloudformation \
-        delete-stack --stack-name $stack_name
-    status="DELETE_IN_PROGRESS"
-    while [ "$status" = "DELETE_IN_PROGRESS" ]; do
-        echo -n "."
-        sleep 5
-        status=$($AWS --region $aws_region cloudformation \
-            describe-stacks --stack-name $stack_name --output=json \
-            2>/dev/null || /bin/true)
-        status=$(get_json_value "$status" "['Stacks'][0]['StackStatus']")
-        status_reason=$(get_json_value "$status" "['Stacks'][0]['StackStatusReason']")
-    done
-    echo "$status"
-    if [ -n "$status_reason" ]; then
-        echo "$status_reason"
-    fi
-}
-
 ###############################################################################
 
 # EKS config options
-eks_cluster_name=$(get_yaml_value "metadata.name")
-aws_region=$(get_yaml_value "metadata.region")
-aws_zones=$(get_yaml_value "availabilityZones")
+eks_cluster_name=$(get_yaml_value $config_file "metadata.name")
+aws_region=$(get_yaml_value $config_file "metadata.region")
+aws_zones=$(get_yaml_value $config_file "availabilityZones")
 
 # JARVICE config options
-jarvice_image_pull_secret=$(get_yaml_value "jarvice.imagePullSecret")
-jarvice_license=$(get_yaml_value "jarvice.JARVICE_LICENSE_LIC")
-jarvice_username=$(get_yaml_value "jarvice.JARVICE_REMOTE_USER")
-jarvice_apikey=$(get_yaml_value "jarvice.JARVICE_REMOTE_APIKEY")
+jarvice_image_pull_secret=$(get_yaml_value $config_file "jarvice.imagePullSecret")
+jarvice_license=$(get_yaml_value $config_file "jarvice.JARVICE_LICENSE_LIC")
+jarvice_username=$(get_yaml_value $config_file "jarvice.JARVICE_REMOTE_USER")
+jarvice_apikey=$(get_yaml_value $config_file "jarvice.JARVICE_REMOTE_APIKEY")
 
 if [ -n "$eks_cluster_delete" ]; then
     set -e
@@ -220,39 +198,7 @@ if [ -n "$eks_cluster_delete" ]; then
     echo
     echo "* Deleting EKS cluster '$eks_cluster_name' in region" \
         "'$aws_region'..."
-
-    # eksctl doesn't delete EC2 load balancers and ELB security groups
-    # associated with it.  So we're doing it the hard way..
-    TAG_KEY_VAL="kubernetes.io/cluster/$eks_cluster_name"
-    AWS_ELB_SEC_GROUP_NAMES=$($AWS --region $aws_region ec2 \
-        describe-security-groups --no-paginate --output=text \
-        --filters Name=tag-key,Values=$TAG_KEY_VAL \
-        --query "SecurityGroups[*].{Name:GroupName}" | grep '^k8s-elb-' \
-        || /bin/true)
-    AWS_ELB_NAMES=$(echo "$AWS_ELB_SEC_GROUP_NAMES" | sed -e 's/k8s-elb-//')
-    echo
-    for elb_name in $AWS_ELB_NAMES; do
-        echo "* Deleting AWS elastic load balancer '$elb_name'..."
-        $AWS --region $aws_region elb delete-load-balancer \
-            --load-balancer-name=$elb_name
-    done
-
-    echo
-    echo "* Deleting EKS cluster '$eks_cluster_name' in region" \
-        "'$aws_region'..."
-    $EKSCTL delete cluster --wait --config-file $config_file
-
-    AWS_ELB_SEC_GROUP_IDS=$($AWS --region $aws_region ec2 \
-        describe-security-groups --no-paginate --output=text \
-        --filters Name=tag-key,Values=$TAG_KEY_VAL \
-        --query "SecurityGroups[*].{ID:GroupId}")
-
-    echo
-    for group_id in $AWS_ELB_SEC_GROUP_IDS; do
-        echo "* Deleting AWS EC2 security group '$group_id'..."
-        $AWS --region $aws_region ec2 delete-security-group \
-            --group-id=$group_id
-    done
+    $YQ d $config_file jarvice | $EKSCTL delete cluster --wait --config-file -
 
     filters="Name=tag-key,Values=kubernetes.io/cluster/$eks_cluster_name"
     filters+=" Name=tag:kubernetes.io/created-for/pvc/namespace,Values=$helm_namespace-jobs"
@@ -325,10 +271,11 @@ if [ -n "$eks_cluster_delete" ]; then
     exit 0
 fi
 
-if [ -z "$jarvice_image_pull_secret" -o -z "$registry_password" -o -z "$jarvice_license" -o -z "$jarvice_username" -o -z "$jarvice_apikey" ]; then
+if [ -z "$jarvice_image_pull_secret" -o -z "$jarvice_license" -o -z "$jarvice_username" -o -z "$jarvice_apikey" ]; then
     echo "Missing credentials and/or license.  Cannot continue."
     echo "Please update the configuration file: $config_file"
     jarvice_deploy2eks_usage
+    exit 1
 fi
 
 # Assumes helm chart basedir is one level up from this script
@@ -355,8 +302,8 @@ if [ -z "$KUBECTL" ]; then
     sudo chown root.root $KUBECTL
     sudo chmod 755 $KUBECTL
 else
-    KUBECTL_MAJOR=$($KUBECTL version | grep '^Client' | sed -E 's/.*Major:"([0-9]+)".*/\1/')
-    KUBECTL_MINOR=$($KUBECTL version | grep '^Client' | sed -E 's/.*Minor:"([0-9]+)\+*".*/\1/')
+    KUBECTL_MAJOR=$($KUBECTL version 2>/dev/null | grep '^Client' | sed -E 's/.*Major:"([0-9]+)".*/\1/')
+    KUBECTL_MINOR=$($KUBECTL version 2>/dev/null | grep '^Client' | sed -E 's/.*Minor:"([0-9]+)\+*".*/\1/')
     KUBECTL_VER="$KUBECTL_MAJOR.$KUBECTL_MINOR"
     echo "Found $KUBECTL... Version: $KUBECTL_VER"
     if [ "$(strict_version $KUBECTL_VER $KUBECTL_VER_REQ)" != "True" ]; then
@@ -448,14 +395,12 @@ OLD_CONTEXT=$($KUBECTL config current-context 2>/dev/null || /bin/true)
 
 echo
 echo "* Running $EKSCTL to create EKS cluster..."
-$EKSCTL create cluster --config-file $config_file
+$YQ d $config_file jarvice | $EKSCTL create cluster --config-file -
 
 echo
-echo "* Labeling and tainting nodes..."
+echo "* Tainting nodes..."
 roles="jarvice-system jarvice-dockerbuild jarvice-dockerpull jarvice-compute"
 for role in $roles; do
-    $KUBECTL label nodes -l node-role.jarvice.io/$role= \
-        node-role.kubernetes.io/$role=
     $KUBECTL taint nodes -l node-role.kubernetes.io/$role= \
         node-role.kubernetes.io/$role=:NoSchedule
 done
@@ -588,12 +533,13 @@ else
     echo "No previous EBS volume was found."
 fi
 
-jarvice_jobs_domain=$(get_yaml_value "jarvice.JARVICE_JOBS_DOMAIN")
-jarvice_jobs_lb_service=$(get_yaml_value "jarvice.JARVICE_JOBS_LB_SERVICE")
-jarvice_pvc_vault_size=$(get_yaml_value "jarvice.JARVICE_PVC_VAULT_SIZE")
-jarvice_pvc_vault_name=$(get_yaml_value "jarvice.JARVICE_PVC_VAULT_NAME")
-jarvice_pvc_vault_storageclass=$(get_yaml_value "jarvice.JARVICE_PVC_VAULT_STORAGECLASS")
-jarvice_pvc_vault_accessmodes=$(get_yaml_value "jarvice.JARVICE_PVC_VAULT_ACCESSMODES")
+jarvice_jobs_domain=$(get_yaml_value $config_file "jarvice.JARVICE_JOBS_DOMAIN")
+jarvice_jobs_lb_service=$(get_yaml_value $config_file "jarvice.JARVICE_JOBS_LB_SERVICE")
+jarvice_pvc_vault_size=$(get_yaml_value $config_file "jarvice.JARVICE_PVC_VAULT_SIZE")
+jarvice_pvc_vault_name=$(get_yaml_value $config_file "jarvice.JARVICE_PVC_VAULT_NAME")
+jarvice_pvc_vault_storageclass=$(get_yaml_value $config_file "jarvice.JARVICE_PVC_VAULT_STORAGECLASS")
+jarvice_pvc_vault_accessmodes=$(get_yaml_value $config_file "jarvice.JARVICE_PVC_VAULT_ACCESSMODES")
+jarvice_machines_add_env="$(echo "$JARVICE_MACHINES_ADD" | sed -e 's#\([]{}",[/]\)#\\\1#g')"
 echo
 echo "* Running helm to deploy JARVICE into cluster..."
 $HELM install --debug \
@@ -608,7 +554,7 @@ $HELM install --debug \
     --set jarvice.JARVICE_PVC_VAULT_STORAGECLASS="$jarvice_pvc_vault_storageclass" \
     --set jarvice.JARVICE_PVC_VAULT_ACCESSMODES="$jarvice_pvc_vault_accessmodes" \
     --set jarvice_db.persistence.enabled="true" \
-    --set jarvice_dal.env.JARVICE_MACHINES_ADD="$(echo "$JARVICE_MACHINES_ADD" | sed -e 's#\([]{}",[/]\)#\\\1#g')" \
+    --set jarvice_dal.env.JARVICE_MACHINES_ADD="$jarvice_machines_add_env" \
     --name $helm_name --namespace $helm_namespace $jarvice_chart_dir
 sleep 1
 
@@ -618,10 +564,23 @@ $KUBECTL --namespace kube-system create \
     -f https://raw.githubusercontent.com/nimbix/lxcfs-initializer/master/lxcfs-daemonset.yaml
 
 echo
+echo "* Installing cluster-autoscaler..."
+$HELM install --debug \
+    --set nodeSelector."node-role\.kubernetes\.io/jarvice-system"="" \
+    --set tolerations[0]."key"="node-role\.kubernetes\.io/jarvice-system" \
+    --set tolerations[0]."effect"="NoSchedule" \
+    --set tolerations[0]."operator"="Exists" \
+    --set rbac.create=true \
+    --set cloudProvider="aws" \
+    --set awsRegion="$aws_region" \
+    --set autoDiscovery.clusterName="$eks_cluster_name" \
+    --namespace kube-system --name cluster-autoscaler stable/cluster-autoscaler
+
+echo
 echo "* Installing Traefik ingress controller..."
-cert_file=$(get_yaml_value "jarvice.ingress.cert_file")
-key_file=$(get_yaml_value "jarvice.ingress.key_file")
-traefik_lb_ip=$(get_yaml_value "jarvice.ingress.loadBalancerIP")
+cert_file=$(get_yaml_value $config_file "jarvice.ingress.cert_file")
+key_file=$(get_yaml_value $config_file "jarvice.ingress.key_file")
+traefik_lb_ip=$(get_yaml_value $config_file "jarvice.ingress.loadBalancerIP")
 
 [ -n "$cert_file" ] && default_cert="$(cat $cert_file | base64 -w 0)" && \
     default_cert="--set ssl.defaultCert=$default_cert"
@@ -644,6 +603,7 @@ $HELM install --debug \
     --set cpuRequest=1 --set cpuLimit=1 \
     $default_cert $default_key $lb_ip \
     --namespace kube-system --name traefik stable/traefik
+
 #    --set dashboard.enabled=true \
 #    --set dashboard.domain=traefik-dashboard.<domain> \
 
