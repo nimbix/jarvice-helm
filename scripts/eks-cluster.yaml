@@ -49,6 +49,9 @@ nodeGroups:
     ssh:
         publicKeyPath: ~/.ssh/id_rsa.pub
         #publicKeyName: <aws-ssh-key-name>
+    iam:
+        withAddonPolicies:
+            autoScaler: true
 
   # jarvice-compute - non-GPU node group
   - name: ng-jarvice-compute-0
@@ -74,6 +77,9 @@ nodeGroups:
         # Disable hyper-threading.  Visit the following link for details:
         # https://aws.amazon.com/blogs/compute/disabling-intel-hyper-threading-technology-on-amazon-linux/
         - "for n in $(cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list | cut -s -d, -f2- | tr ',' '\n' | sort -un); do echo 0 > /sys/devices/system/cpu/cpu${n}/online; done"
+    iam:
+        withAddonPolicies:
+            autoScaler: true
 
   # jarvice-compute - GPU node group
   #- name: ng-jarvice-compute-gpu-0
@@ -99,4 +105,7 @@ nodeGroups:
   #      # Disable hyper-threading.  Visit the following link for details:
   #      # https://aws.amazon.com/blogs/compute/disabling-intel-hyper-threading-technology-on-amazon-linux/
   #    - "for n in $(cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list | cut -s -d, -f2- | tr ',' '\n' | sort -un); do echo 0 > /sys/devices/system/cpu/cpu${n}/online; done"
+  #  iam:
+  #      withAddonPolicies:
+  #          autoScaler: true
 
