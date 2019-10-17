@@ -223,7 +223,7 @@ if [ -n "$cluster_delete" ]; then
     exit 0
 fi
 
-if [ -z "$jarvice_image_pull_secret" -o -z "$registry_password" -o -z "$jarvice_license" -o -z "$jarvice_username" -o -z "$jarvice_apikey" ]; then
+if [ -z "$jarvice_image_pull_secret" -o -z "$jarvice_license" -o -z "$jarvice_username" -o -z "$jarvice_apikey" ]; then
     echo "Missing credentials and/or license.  Cannot continue."
     echo "Please update the configuration file: $config_file"
     jarvice_deploy2usage
