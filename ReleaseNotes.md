@@ -74,6 +74,16 @@ None
 
 # Changelog
 
+## 3.0.0-1.20191026.1506
+
+* (1932) Allow side loading of AppDefs in *PushToCompute* view's create or edit feature; note that when pulling a container that embeds `/etc/NAE/AppDef.json`, this will automatically replace any sideloaded AppDef
+* (1934) Allow side loading of AppDefs for app owners when clicking on an app; button appears in the bottom right hand corner of the large app card; note that when pulling a container that embeds `/etc/NAE/screenshot.png`, this will automatically replace any sideloaded screenshot
+* (2037) Minor audit log cosmetic improvements for system and team admins
+* (2077) PushToCompute app change refresh fixes
+* (2113) Support for user account email addresses with long TLD's (up to 63 characters)
+* (2116) Fixed bug with automatic creation of PersistentVolumeClaims in PVC vaults for users with underscores in their username
+* (2117) Runtime security fix for Xilinx FPGA machine types in older versions of JARVICE
+
 ## 3.0.0-1.20191011.1301
 
 * (1664) Self-service app management, allowing team admins to restrict what catalog apps _non-administrative_ team users have access to; available in the *Account->Team Apps* view;
