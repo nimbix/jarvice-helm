@@ -377,13 +377,17 @@ JARVICE_MACHINES_ADD+=', {"mc_name":"ng1", "mc_description":"4 core, 32GB RAM wi
 JARVICE_MACHINES_ADD+=', {"mc_name":"ng3", "mc_description":"16 core, 128GB RAM with Nvidia GPU", "mc_cores":"16", "mc_slots":"16", "mc_gpus":"1", "mc_ram":"128", "mc_swap":"64", "mc_scratch":"500", "mc_devices":"", "mc_properties":"node-role.kubernetes.io/jarvice-compute=", "mc_slave_properties":"", "mc_slave_gpus":"1", "mc_slave_ram":"128", "mc_scale_min":"1", "mc_scale_max":"2", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
 JARVICE_MACHINES_ADD+=']'
 
-echo
-echo "* Initializing helm and installing Tiller into cluster..."
-$HELM init
+HELM2=$($HELM version 2>/dev/null | grep '^Client' || /bin/true)
+if [ -n "$HELM2" ]; then
+    echo
+    echo "* Using Helm ($HELM) v2 client..."
+    echo
+    echo "* Initializing helm and installing Tiller into cluster..."
+    $HELM init
 
-echo
-echo "* Creating/setting service account and cluster role binding for Tiller..."
-tiller_sa_yaml=$(cat <<EOF
+    echo
+    echo "* Creating/setting service account and cluster role binding for Tiller..."
+    tiller_sa_yaml=$(cat <<EOF
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -404,27 +408,39 @@ subjects:
     namespace: kube-system
 EOF
 )
-echo "$tiller_sa_yaml" | $KUBECTL --namespace kube-system create -f -
-$HELM init --upgrade --service-account tiller
-$KUBECTL -n kube-system patch deployment tiller-deploy \
-    -p '{"spec": {"template":{"spec":{"tolerations":[{"key": "node-role.kubernetes.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}]}}}}'
-sleep 1
+    echo "$tiller_sa_yaml" | $KUBECTL --namespace kube-system create -f -
+    $HELM init --upgrade --service-account tiller
+    $KUBECTL -n kube-system patch deployment tiller-deploy \
+        -p '{"spec": {"template":{"spec":{"tolerations":[{"key": "node-role.kubernetes.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}]}}}}'
+    sleep 1
+
+    echo
+    echo -n "* "
+    $KUBECTL --namespace kube-system rollout status \
+        deployment tiller-deploy --watch=true
+fi
+
+helm_stable_repo=$($HELM repo list 2>/dev/null | grep ^stable)
+if [ -z "$helm_stable_repo" ]; then
+    echo
+    echo "* Adding helm chart repository for stable..."
+    $HELM repo add stable https://kubernetes-charts.storage.googleapis.com/
+fi
 
 echo
-echo -n "* "
-$KUBECTL --namespace kube-system rollout status \
-    deployment tiller-deploy --watch=true
+echo "* Updating helm chart repositories..."
+$HELM repo update
 
 if [ -n "$install_dashboard" ]; then
+    HELM_NAME_CHART="traefik stable/kubernetes-dashboard"
+    [ -n "$HELM2" ] && HELM_NAME_CHART="stable/kubernetes-dashboard --name kubernetes-dashboard"
     echo
     echo "* Installing kubernetes-dashboard..."
-    $HELM install \
+    $HELM install $HELM_NAME_CHART --namespace kube-system \
         --set tolerations[0].effect=NoSchedule \
         --set tolerations[0].key=node-role.kubernetes.io/jarvice-system \
-        --set tolerations[0].operator=Exists \
-        --namespace kube-system \
-        --name kubernetes-dashboard \
-        stable/kubernetes-dashboard
+        --set tolerations[0].operator=Exists
+
     $KUBECTL --namespace kube-system expose deployment kubernetes-dashboard \
         --type=LoadBalancer --name kubernetes-dashboard-lb
 fi
@@ -491,9 +507,13 @@ jarvice_pvc_vault_size=$(get_yaml_value "jarvice.JARVICE_PVC_VAULT_SIZE")
 jarvice_pvc_vault_name=$(get_yaml_value "jarvice.JARVICE_PVC_VAULT_NAME")
 jarvice_pvc_vault_storageclass=$(get_yaml_value "jarvice.JARVICE_PVC_VAULT_STORAGECLASS")
 jarvice_pvc_vault_accessmodes=$(get_yaml_value "jarvice.JARVICE_PVC_VAULT_ACCESSMODES")
+jarvice_machines_add_env="$(echo "$JARVICE_MACHINES_ADD" | sed -e 's#\([]{}",[/]\)#\\\1#g')"
 echo
 echo "* Running helm to deploy JARVICE into cluster..."
-$HELM install --debug \
+HELM_NAME_CHART="$helm_name $jarvice_chart_dir"
+[ -n "$HELM2" ] && HELM_NAME_CHART="$jarvice_chart_dir --name $helm_name"
+$KUBECTL create namespace $helm_namespace
+$HELM install $HELM_NAME_CHART --namespace $helm_namespace --debug \
     --set jarvice.imagePullSecret="$jarvice_image_pull_secret" \
     --set jarvice.JARVICE_LICENSE_LIC="$jarvice_license" \
     --set jarvice.JARVICE_REMOTE_USER="$jarvice_username" \
@@ -507,8 +527,8 @@ $HELM install --debug \
     --set jarvice.daemonsets.lxcfs.enabled="true" \
     --set jarvice.daemonsets.nvidia.enabled="false" \
     --set jarvice_db.persistence.enabled="true" \
-    --set jarvice_dal.env.JARVICE_MACHINES_ADD="$(echo "$JARVICE_MACHINES_ADD" | sed -e 's#\([]{}",[/]\)#\\\1#g')" \
-    --name $helm_name --namespace $helm_namespace $jarvice_chart_dir
+    --set jarvice_dal.env.JARVICE_MACHINES_ADD="$jarvice_machines_add_env"
+
     #--set jarvice_db.persistence.storageClass="-" \
     #--set jarvice_db.persistence.volumeName="jarvice-db-$cluster_name" \
 sleep 1
@@ -526,7 +546,9 @@ traefik_lb_ip=$(get_yaml_value "jarvice.ingress.loadBalancerIP")
 [ -n "$traefik_lb_ip" ] && lb_ip="--set loadBalancerIP=$traefik_lb_ip"
 
     #--set nodeSelector."node-role\.kubernetes\.io/jarvice-system"="" \
-$HELM install --debug \
+HELM_NAME_CHART="traefik stable/traefik"
+[ -n "$HELM2" ] && HELM_NAME_CHART="stable/traefik --name traefik"
+$HELM install $HELM_NAME_CHART --namespace kube-system --debug \
     --set tolerations[0]."key"="node-role\.kubernetes\.io/jarvice-system" \
     --set tolerations[0]."effect"="NoSchedule" \
     --set tolerations[0]."operator"="Exists" \
@@ -538,8 +560,8 @@ $HELM install --debug \
     --set replicas=3 \
     --set memoryRequest=1Gi --set memoryLimit=1Gi \
     --set cpuRequest=1 --set cpuLimit=1 \
-    $default_cert $default_key $lb_ip \
-    --namespace kube-system --name traefik stable/traefik
+    $default_cert $default_key $lb_ip
+
 #    --set dashboard.enabled=true \
 #    --set dashboard.domain=traefik-dashboard.<domain> \
 
