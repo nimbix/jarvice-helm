@@ -74,6 +74,10 @@ None
 
 # Changelog
 
+## 3.0.0-1.20191029.1917
+
+* (2190) Support for shared PVC's across multiple users as vaults; can be enabled with both a storage class name and volume name at PVC vault creation time, and allows multiple users to share the same storage (EXPERIMENTAL)
+
 ## 3.0.0-1.20191026.1506
 
 * (1932) Allow side loading of AppDefs in *PushToCompute* view's create or edit feature; note that when pulling a container that embeds `/etc/NAE/AppDef.json`, this will automatically replace any sideloaded AppDef
