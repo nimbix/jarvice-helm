@@ -49,6 +49,11 @@ jarvice:
       ;username: DoNotReply@localhost
       ;password: Pass1234
 
+  # Global setting for enabling a secure NetworkPolicy for all JARVICE services
+  # The global setting can be overridden within individual services below
+  networkPolicy:
+    enabled: true
+
   # Review the following for more information on "skinning" JARVICE with
   # the optional jarvice.settings.configMap:
   # https://github.com/nimbix/jarvice-helm#customize-jarvice-files-via-a-configmap
@@ -94,7 +99,7 @@ jarvice:
       enabled: false
       tolerations: #'[{"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       # Xilinx FPGA only support amd64 arch
-      nodeSelector: '{"beta.kubernetes.io/arch": "amd64"}'  # '{"node-role.kubernetes.io/jarvice-compute": "", "beta.kubernetes.io/arch": "amd64"}'
+      nodeSelector: '{"kubernetes.io/arch": "amd64"}'  # '{"node-role.kubernetes.io/jarvice-compute": "", "kubernetes.io/arch": "amd64"}'
       image: xilinxatg/xilinx_k8s_fpga_plugin:latest
     rdma:
       enabled: false
@@ -113,6 +118,8 @@ jarvice_db:
       memory: 2Gi
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-db", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.kubernetes.io/jarvice-db": ""}'
+  networkPolicy:
+    enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   image: mysql:5.6.41
   persistence:
     enabled: false
@@ -151,6 +158,8 @@ jarvice_memcached:
       memory: 512Mi
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-memcached", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.kubernetes.io/jarvice-memcached": ""}'
+  networkPolicy:
+    enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   image: memcached:1.5
   maxItemMemory: 64
   verbosity: v
@@ -170,6 +179,8 @@ jarvice_registry:
       memory: 512Mi
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-registry", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.kubernetes.io/jarvice-registry": ""}'
+  networkPolicy:
+    enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   image: registry:2
   persistence:
     enabled: false
@@ -201,6 +212,8 @@ jarvice_dal:
   hostNetwork: false
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-dal", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.kubernetes.io/jarvice-dal": ""}'
+  networkPolicy:
+    enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   # jarvice.settings.configMap takes precedence over environment settings
   # for JARVICE_CFG_NETWORK
   # JARVICE_SITE_DBHOST inherits from jarvice.JARVICE_DBHOST if unset
@@ -250,6 +263,8 @@ jarvice_scheduler:
       memory: 4Gi
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-scheduler", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.kubernetes.io/jarvice-scheduler": ""}'
+  networkPolicy:
+    enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   # jarvice.settings.configMap takes precedence over environnment settings
   # for JARVICE_MAIL_CONF
   env:
@@ -296,6 +311,8 @@ jarvice_api:
       memory: 512Mi
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-api", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.kubernetes.io/jarvice-api": ""}'
+  networkPolicy:
+    enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   env:
     JARVICE_MAIL_CONF: #|
         #[mail]
@@ -349,6 +366,8 @@ jarvice_mc_portal:
       memory: 2Gi
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-mc-portal", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.kubernetes.io/jarvice-mc-portal": ""}'
+  networkPolicy:
+    enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   # JARVICE_PORTAL_DBHOST inherits from jarvice.JARVICE_DBHOST if unset
   # JARVICE_PORTAL_DBPASSWD inherits from jarvice.JARVICE_DBPASSWD if unset
   # JARVICE_PORTAL_DBUSER inherits from jarvice.JARVICE_DBUSER if unset

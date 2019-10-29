@@ -203,6 +203,7 @@ spec:
   selector:
     deployment: jarvice-dal
 ---
+{{- if or (and (not (empty .Values.jarvice_dal.networkPolicy.enabled)) .Values.jarvice_dal.networkPolicy.enabled) (and (empty .Values.jarvice_dal.networkPolicy.enabled) .Values.jarvice.networkPolicy.enabled) }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -258,6 +259,7 @@ DO NOT enable it here without understanding the security implications!
     - protocol: TCP
       port: 8000
 ---
+{{- end }}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:

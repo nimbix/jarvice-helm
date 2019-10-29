@@ -100,6 +100,7 @@ spec:
   selector:
     deployment: jarvice-memcached
 ---
+{{- if or (and (not (empty .Values.jarvice_memcached.networkPolicy.enabled)) .Values.jarvice_memcached.networkPolicy.enabled) (and (empty .Values.jarvice_memcached.networkPolicy.enabled) .Values.jarvice.networkPolicy.enabled) }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -119,4 +120,5 @@ spec:
     - protocol: TCP
       port: 11211
 ---
+{{- end }}
 {{- end }}
