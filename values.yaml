@@ -33,6 +33,7 @@ jarvice:
 
   JARVICE_PVC_VAULT_NAME:
   JARVICE_PVC_VAULT_STORAGECLASS:
+  JARVICE_PVC_VAULT_VOLUMENAME:   # do not use with dynamic provisioning
   JARVICE_PVC_VAULT_ACCESSMODES:  # e.g. "ReadWriteMany,ReadOnlyMany"
   JARVICE_PVC_VAULT_SIZE:         # gigabytes
 

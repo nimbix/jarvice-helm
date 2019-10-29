@@ -11,6 +11,18 @@
 - JARVICE and its applications refers to "CPU cores" but it can work with hyperthreading and SMT as well; in this case, treat the threads themselves as cores when configuring machine types, etc.  Note that many HPC applications explicitly recommend against using SMT, so consider setting up non-SMT nodes for these applications (they can be targeted with labels)
 - The full JSON for all pods in a job can be downloaded via the *DOWNLOAD STDERR* button in the *Job data* for any given job in the *Jobs* view of the *Administration* tab; this should be used to troubleshoot failures by checking the actual Kubernetes status conditions.  Note that pods are deleted and garbage collected automatically once jobs end, so this is the only persistent record of what was specified and what the actual statuses were during the lifecycle.
 
+### Kubernetes Support
+
+The following assumes the latest version of JARVICE is in use; this version will appear at the top of the [Changelog](#changelog), while version-specific items will be noted in their respective sections.
+
+#### Latest Version Supported
+
+Kubernetes **1.14**; newer versions are not explicitly supported.  Using the latest patch release of each version is recommended but not required.
+
+#### Previous Version(s) Supported
+
+None
+
 ---
 ## Known Issues, Anomalies, and Caveats
 
@@ -24,7 +36,6 @@
 - The *Nodes* view in *Administration* should not be used in this version of JARVICE
 - It is not currently possible to add users via the web portal without sending them an email to complete a registration; the cluster should be configured to send email and users should have real email addresses.  If this is not possible, you can still create users manually from the shell in any `jarvice-dal-*` pod in the JARVICE system namespace by running the command `/usr/lib/jarvice/bin/create-user` (run without arguments for usage).
 - When creating vaults for users, do not use the *SINGLE VOLUME BLOCK* and *BLOCK VOLUME ARRAY* types, as these are not supported and can result in bad vaults that can't be deleted.  Use *FILE SYSTEM VAULT* for `ceph` filesystem mounts only, *NFS* for `nfs` mounts, and *PVC* for everything else (via `PersistentVolume` class and/or name)
-- When editing a PushToCompute application's details, such as name, author, or category, it's necessary to do a page refresh in your web browser in order for the portal to reflect the changes after they are saved.
 
 ### PushToCompute
 

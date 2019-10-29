@@ -162,6 +162,8 @@ spec:
             value: "{{ .Values.jarvice.JARVICE_PVC_VAULT_NAME }}"
           - name: JARVICE_PVC_VAULT_STORAGECLASS
             value: "{{ .Values.jarvice.JARVICE_PVC_VAULT_STORAGECLASS }}"
+          - name: JARVICE_PVC_VAULT_VOLUMENAME
+            value: "{{ .Values.jarvice.JARVICE_PVC_VAULT_VOLUMENAME }}"
           - name: JARVICE_PVC_VAULT_ACCESSMODES
             value: "{{ .Values.jarvice.JARVICE_PVC_VAULT_ACCESSMODES }}"
           - name: JARVICE_PVC_VAULT_SIZE
