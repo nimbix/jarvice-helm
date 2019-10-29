@@ -190,6 +190,7 @@ spec:
   selector:
     deployment: jarvice-scheduler
 ---
+{{- if or .Values.jarvice_scheduler.networkPolicy.enabled (and (empty (.Values.jarvice_scheduler.networkPolicy.enabled | toStrings)) .Values.jarvice.networkPolicy.enabled) }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -218,7 +219,14 @@ DO NOT enable it here without understanding the security implications!
     ports:
     - protocol: TCP
       port: 9443
+{{- end }}
 ---
+{{- end }}
+{{/*
+WARNING: Enabling ingressHost for this service is dangerous.
+DO NOT enable it here without understanding the security implications!
+*/}}
+{{- if (not (empty .Values.jarvice_scheduler.ingressHost)) }}
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
@@ -234,6 +242,6 @@ spec:
       - backend:
           serviceName: jarvice-scheduler
           servicePort: https
-{{- end }}
 ---
+{{- end }}
 {{- end }}
