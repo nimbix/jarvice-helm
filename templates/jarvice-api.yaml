@@ -214,7 +214,7 @@ spec:
   selector:
     deployment: jarvice-api
 ---
-{{- if .Values.jarvice.networkPolicy.enabled }}
+{{- if or .Values.jarvice_api.networkPolicy.enabled (and (eq "<nil>" (toString .Values.jarvice_api.networkPolicy.enabled)) .Values.jarvice.networkPolicy.enabled) }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
