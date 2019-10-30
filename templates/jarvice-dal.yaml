@@ -214,7 +214,6 @@ spec:
   podSelector:
     matchLabels:
       deployment: jarvice-dal
-      test: "{{ toString .Values.jarvice_dal.networkPolicy.enabled }}"
   policyTypes:
   - Ingress
   ingress:
