@@ -8,8 +8,8 @@ metadata:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-db
 {{- if eq .Values.jarvice_db.persistence.resourcePolicy "keep" }}
-    annotations:
-      helm.sh/resource-policy: keep
+  annotations:
+    helm.sh/resource-policy: keep
 {{- end }}
 spec:
   accessModes:
