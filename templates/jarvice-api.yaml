@@ -259,7 +259,7 @@ spec:
     deployment: jarvice-api
 ---
 {{- else }}
-apiVersion: extensions/v1beta1
+apiVersion: {{ template "apiVersion.ingress" . }}
 kind: Ingress
 metadata:
   name: jarvice-api

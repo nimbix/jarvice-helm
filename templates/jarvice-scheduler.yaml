@@ -227,7 +227,7 @@ WARNING: Enabling ingressHost for this service is dangerous.
 DO NOT enable it here without understanding the security implications!
 */}}
 {{- if (not (empty .Values.jarvice_scheduler.ingressHost)) }}
-apiVersion: extensions/v1beta1
+apiVersion: {{ template "apiVersion.ingress" . }}
 kind: Ingress
 metadata:
   name: jarvice-scheduler

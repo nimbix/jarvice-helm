@@ -262,7 +262,7 @@ DO NOT enable it here without understanding the security implications!
       port: 8000
 ---
 {{- end }}
-apiVersion: extensions/v1beta1
+apiVersion: {{ template "apiVersion.ingress" . }}
 kind: Ingress
 metadata:
   name: jarvice-dal

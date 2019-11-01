@@ -168,7 +168,7 @@ spec:
     deployment: {{ template "jarvice.name" . }}-registry
 ---
 {{- else }}
-apiVersion: extensions/v1beta1
+apiVersion: {{ template "apiVersion.ingress" . }}
 kind: Ingress
 metadata:
   name: jarvice-registry
