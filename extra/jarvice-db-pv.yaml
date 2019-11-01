@@ -35,7 +35,7 @@ spec:
 #      name: ceph-secret 
 #    fsType: ext4 
 #    readOnly: false
-#---
+---
 #  Do the following to create ceph-secret (or comment out YAML below)
 #  $ kubectl create secret generic ceph-secret --type="kubernetes.io/rbd" \
 #     --from-literal=key='<ceph-secret>' --namespace=<jarvice-system-namespace>
@@ -51,4 +51,22 @@ spec:
 #  # $ echo -n "<ceph-secret>" | base64
 #  key: <base64-encoded-ceph-secret>
 #  namespace: <jarvice-system-namespace>
+#---
+# Optionally, use the YAML below to manually create a PVC for jarvice-db.
+# If going the manually route, it will be necessary to set the existing claim
+# option jarvice_db.persistence.existingClaimName during helm install/upgrade.
+#
+#apiVersion: v1
+#kind: PersistentVolumeClaim
+#metadata:
+#  name: jarvice-db-pvc
+#  namespace: <jarvice-system-namespace>
+#spec:
+#  accessModes:
+#    - ReadWriteOnce
+#  volumeMode: Filesystem
+#  resources:
+#    requests:
+#      storage: 8Gi
+#  storageClassName: "jarvice-db"
 #---
