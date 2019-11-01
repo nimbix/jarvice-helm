@@ -1,5 +1,5 @@
 {{- if or .Values.jarvice.daemonsets.cache_pull.enabled .Values.jarvice.daemonsets.lxcfs.enabled .Values.jarvice.daemonsets.nvidia.enabled .Values.jarvice.daemonsets.rdma.enabled }}
-apiVersion: scheduling.k8s.io/v1beta1
+apiVersion: {{ template "apiVersion.priorityClass" . }}
 kind: PriorityClass
 metadata:
 {{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
@@ -18,7 +18,7 @@ description: "This priority class is for JARVICE DaemonSet pods."
 ---
 {{- end }}
 {{- if .Values.jarvice.daemonsets.cache_pull.enabled }}
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: jarvice-cache-pull
@@ -171,7 +171,7 @@ data:
 ---
 {{- end }}
 {{- if .Values.jarvice.daemonsets.lxcfs.enabled }}
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: jarvice-lxcfs
@@ -229,7 +229,7 @@ spec:
 ---
 {{- end }}
 {{- if .Values.jarvice.daemonsets.nvidia.enabled }}
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: jarvice-nvidia-device-plugin
@@ -283,7 +283,7 @@ spec:
 ---
 {{- end }}
 {{- if .Values.jarvice.daemonsets.xilinx_fpga.enabled }}
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: jarvice-xilinx-fpga-device-plugin
@@ -342,7 +342,7 @@ spec:
 ---
 {{- end }}
 {{- if .Values.jarvice.daemonsets.rdma.enabled }}
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: jarvice-rdma-device-plugin

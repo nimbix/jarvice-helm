@@ -1,5 +1,5 @@
 {{- if .Values.jarvice_db.enabled }}
-{{- if .Values.jarvice_db.persistence.enabled }}
+{{- if and .Values.jarvice_db.persistence.enabled (empty .Values.jarvice_db.persistence.existingClaimName) }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -7,6 +7,10 @@ metadata:
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-db
+{{- if eq .Values.jarvice_db.persistence.resourcePolicy "keep" }}
+  annotations:
+    helm.sh/resource-policy: keep
+{{- end }}
 spec:
   accessModes:
     - {{ .Values.jarvice_db.persistence.accessMode }}
@@ -106,7 +110,11 @@ spec:
       volumes:
         - name: db-data-vol
           persistentVolumeClaim:
+{{- if (empty .Values.jarvice_db.persistence.existingClaimName) }}
             claimName: jarvice-db-pvc
+{{- else }}
+            claimName: {{ .Values.jarvice_db.persistence.existingClaimName }}
+{{- end }}
 {{- end }}
 ---
 apiVersion: v1
@@ -126,7 +134,7 @@ spec:
   selector:
     deployment: jarvice-db
 ---
-{{- if .Values.jarvice.networkPolicy.enabled }}
+{{- if or .Values.jarvice_db.networkPolicy.enabled (and (eq "<nil>" (toString .Values.jarvice_db.networkPolicy.enabled)) .Values.jarvice.networkPolicy.enabled) }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:

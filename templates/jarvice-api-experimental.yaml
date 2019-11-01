@@ -190,7 +190,7 @@ spec:
   selector:
     deployment: jarvice-api-experimental
 ---
-{{- if .Values.jarvice.networkPolicy.enabled }}
+{{- if or .Values.jarvice_api.networkPolicy.enabled (and (eq "<nil>" (toString .Values.jarvice_api.networkPolicy.enabled)) .Values.jarvice.networkPolicy.enabled) }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -229,7 +229,7 @@ spec:
     deployment: jarvice-api-experimental
 ---
 {{- else }}
-apiVersion: extensions/v1beta1
+apiVersion: {{ template "apiVersion.ingress" . }}
 kind: Ingress
 metadata:
   name: jarvice-api-experimental

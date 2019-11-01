@@ -124,9 +124,10 @@ jarvice_db:
   image: mysql:5.6.41
   persistence:
     enabled: false
-    # Use empty claimName for dynamic provisioning based upon storageClass
-    persistentVolumeClaim:
-      claimName: "jarvice-db-pv"
+    # Set to "keep" to prevent removal or jarvice-db-pvc on helm delete
+    resourcePolicy: ""  # "keep"
+    # Use empty existingClaimName for dynamic provisioning via storageClass
+    existingClaimName: # "jarvice-db-pvc"
     # storageClass: "-"
     storageClass: "jarvice-db"
     accessMode: ReadWriteOnce
@@ -185,6 +186,10 @@ jarvice_registry:
   image: registry:2
   persistence:
     enabled: false
+    # Set to "keep" to prevent removal or jarvice-registry-pvc on helm delete
+    resourcePolicy: ""  # "keep"
+    # Use empty existingClaimName for dynamic provisioning via storageClass
+    existingClaimName: # "jarvice-registry-pvc"
     # storageClass: "-"
     storageClass: "jarvice-registry"
     accessMode: ReadWriteOnce
