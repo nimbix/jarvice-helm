@@ -74,6 +74,11 @@ None
 
 # Changelog
 
+## 3.0.0-1.20191101.2014
+
+* (2159) Updated Helm chart for API deprecation and Kubernetes 1.14+
+* (2205) Support for home directories searched by `jarvice-idmapper` using `sAMAccountName` rather than just UPN; this allows ID mapping in containers if the Linux username mappings are for legacy logons - both are supported (EXPERIMENTAL)
+
 ## 3.0.0-1.20191029.1917
 
 * (2190) Support for shared PVC's across multiple users as vaults; can be enabled with both a storage class name and volume name at PVC vault creation time, and allows multiple users to share the same storage (EXPERIMENTAL)
