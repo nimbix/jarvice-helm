@@ -125,7 +125,7 @@ jarvice_db:
   persistence:
     enabled: false
     # Set to "keep" to prevent removal or jarvice-db-pvc on helm delete
-    resourcePolicy: # "keep"
+    resourcePolicy: ""  # "keep"
     # Use empty existingClaimName for dynamic provisioning via storageClass
     existingClaimName: # "jarvice-db-pvc"
     # storageClass: "-"
@@ -187,7 +187,7 @@ jarvice_registry:
   persistence:
     enabled: false
     # Set to "keep" to prevent removal or jarvice-registry-pvc on helm delete
-    resourcePolicy: # "keep"
+    resourcePolicy: ""  # "keep"
     # Use empty existingClaimName for dynamic provisioning via storageClass
     existingClaimName: # "jarvice-registry-pvc"
     # storageClass: "-"
