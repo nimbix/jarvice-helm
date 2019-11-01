@@ -1,5 +1,5 @@
 {{- if .Values.jarvice_registry.enabled }}
-{{- if .Values.jarvice_registry.persistence.enabled }}
+{{- if and .Values.jarvice_registry.persistence.enabled (empty .Values.jarvice_registry.persistence.existingClaimName) }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -7,6 +7,10 @@ metadata:
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-registry
+{{- if eq .Values.jarvice_registry.persistence.resourcePolicy "keep" }}
+    annotations:
+      helm.sh/resource-policy: keep
+{{- end }}
 spec:
   accessModes:
     - {{ .Values.jarvice_registry.persistence.accessMode }}
@@ -75,7 +79,11 @@ spec:
 {{- if .Values.jarvice_registry.persistence.enabled }}
         - name: registry-data-vol
           persistentVolumeClaim:
+{{- if (empty .Values.jarvice_registry.persistence.existingClaimName) }}
             claimName: jarvice-registry-pvc
+{{- else }}
+            claimName: {{ .Values.jarvice_registry.persistence.existingClaimName }}
+{{- end }}
 {{- end }}
       containers:
       - name: jarvice-registry
