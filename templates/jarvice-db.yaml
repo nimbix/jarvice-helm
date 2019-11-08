@@ -116,6 +116,11 @@ spec:
             claimName: {{ .Values.jarvice_db.persistence.existingClaimName }}
 {{- end }}
 {{- end }}
+{{- if .Values.jarvice_db.securityContext.enabled }}
+      securityContext:
+        fsGroup: {{ .Values.jarvice_db.securityContext.fsGroup }}
+        runAsUser: {{ .Values.jarvice_db.securityContext.runAsUser }}
+{{- end }}
 ---
 apiVersion: v1
 kind: Service
