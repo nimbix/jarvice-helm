@@ -21,7 +21,7 @@
 .idea/
 *.tmproj
 # Extras
-extra/
-scripts/
-jarvice-settings/
-tmp/
+extra*/
+scripts*/
+jarvice-settings*/
+tmp*/
