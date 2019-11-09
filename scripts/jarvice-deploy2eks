@@ -381,7 +381,7 @@ if [ -z "$HELM" ]; then
     HELM=$HELM_INSTALL_DIR/helm
     echo "helm command not found...  Installing to $HELM..."
     curl --silent https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get >/tmp/get_helm.sh
-    sudo --preserve-env=PATH,HELM_INSTALL_DIR bash /tmp/get_helm.sh >/dev/null
+    sudo --preserve-env bash /tmp/get_helm.sh >/dev/null
     rm -f /tmp/get_helm.sh
 else
     echo "Found $HELM..."
