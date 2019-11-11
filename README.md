@@ -18,7 +18,7 @@ This is the Helm chart for installation of JARVICE into a kubernetes cluster.
 * [JARVICE Quick Installation](#jarvice-quick-installation-demo-without-persistence)
     - [Code repository of the JARVICE helm chart](#code-repository-of-the-jarvice-helm-chart)
     - [Quick install command with helm](#quick-install-command-with-helm)
-    - [Quick install to Amazon EKS](#quick-install-to-amazon-eks-with-jarvice-deploy2eks-script
+    - [Quick install to Amazon EKS](#quick-install-to-amazon-eks-with-jarvice-deploy2eks-script)
 * [JARVICE Standard Installation](#jarvice-standard-installation)
     - [Persistent volumes](#persistent-volumes)
     - [Selecting external, load balancer IP addresses](#selecting-external-load-balancer-ip-address)
