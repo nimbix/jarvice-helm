@@ -46,7 +46,7 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-[ -z "$ssh_user" -o -z "$policy" ] && usage
+[ -z "$ssh_user" -o -z "$policy" ] && usage && exit 1
 
 . $kubelet_args_file
 if [ "$policy" = "static" ]; then
@@ -54,7 +54,7 @@ if [ "$policy" = "static" ]; then
 elif [ "$policy" = "none" ]; then
     KUBELET_EXTRA_ARGS=$(echo $KUBELET_EXTRA_ARGS | sed -e "s/ $STATIC_CPU_POLICY_ARGS//")
 else
-    usage
+    usage && exit 1
 fi
 
 # Set KUBELET_EXTRA_ARGS, restart kubelet, display kubelet process args
