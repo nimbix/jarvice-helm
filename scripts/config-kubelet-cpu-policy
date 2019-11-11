@@ -19,8 +19,6 @@ ssh_user=
 policy=
 nodes=
 
-kubelet_args_file=/etc/default/kubelet
-
 while [ $# -gt 0 ]; do
     case $1 in
         --help)
@@ -47,24 +45,20 @@ while [ $# -gt 0 ]; do
 done
 
 [ -z "$ssh_user" -o -z "$policy" ] && usage && exit 1
-
-. $kubelet_args_file
-if [ "$policy" = "static" ]; then
-    KUBELET_EXTRA_ARGS+=" $STATIC_CPU_POLICY_ARGS"
-elif [ "$policy" = "none" ]; then
-    KUBELET_EXTRA_ARGS=$(echo $KUBELET_EXTRA_ARGS | sed -e "s/$STATIC_CPU_POLICY_ARGS//")
-else
-    usage && exit 1
-fi
+[ "$policy" != "static" -a "$policy" != "none" ] && usage && exit 1
 
 # Set KUBELET_EXTRA_ARGS, restart kubelet, display kubelet process args
 state_file=/var/lib/kubelet/cpu_manager_state
+kubelet_args_file=/etc/default/kubelet
 cmd=$(cat <<EOF
 sudo systemctl stop kubelet;
-sudo rm -f $state_file
-sudo sed -i -e 's/^KUBELET_EXTRA_ARGS=.*/KUBELET_EXTRA_ARGS="$KUBELET_EXTRA_ARGS"/' $kubelet_args_file;
-sudo systemctl start kubelet
-sudo ps ww -C kubelet
+sudo rm -f $state_file;
+. $kubelet_args_file;
+[ "$policy" = "static" ] && KUBELET_EXTRA_ARGS+=" $STATIC_CPU_POLICY_ARGS";
+[ "$policy" = "none" ] && KUBELET_EXTRA_ARGS=\$(echo \$KUBELET_EXTRA_ARGS | sed -e "s/$STATIC_CPU_POLICY_ARGS//");
+sudo sed -i -e "s/^KUBELET_EXTRA_ARGS=.*/KUBELET_EXTRA_ARGS=\"\$KUBELET_EXTRA_ARGS\"/" $kubelet_args_file;
+sudo systemctl start kubelet;
+sudo ps ww -C kubelet;
 EOF
 )
 
