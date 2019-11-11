@@ -6,18 +6,40 @@ This is the Helm chart for installation of JARVICE into a kubernetes cluster.
 
 * [Prerequisites for JARVICE Installation](#prerequisites-for-jarvice-installation)
     - [Helm package manager for kubernetes](#helm-package-manager-for-kubernetes-httpshelmsh)
+    - [Configure kubernetes CPU management policies](#configure-kubernetes-cpu-management-policies)
+    - [Kubernetes network plugin](#kubernetes-network-plugin)
+    - [Kubernetes load balancer](#kubernetes-load-balancer)
+    - [Kubernetes ingress controller](#kubernetes-ingress-controller)
+    - [Kubernetes device plugins](#kubernetes-device-plugins)
+    - [Kubernetes persistent volumes (for non-demo installation)](#kubernetes-persistent-volumes-for-non-demo-installation)
+    - [JARVICE license and credentials](#jarvice-license-and-credentials)
 * [Installation Recommendations](#installation-recommendations)
+    - [Kubernetes Cluster Shaping](#kubernetes-cluster-shaping)
 * [JARVICE Quick Installation](#jarvice-quick-installation-demo-without-persistence)
+    - [Code repository of the JARVICE helm chart](#code-repository-of-the-jarvice-helm-chart)
+    - [Quick install command with helm](#quick-install-command-with-helm)
+    - [Quick install to Amazon EKS](#quick-install-to-amazon-eks-with-jarvice-deploy2eks-script
 * [JARVICE Standard Installation](#jarvice-standard-installation)
+    - [Persistent volumes](#persistent-volumes)
+    - [Selecting external, load balancer IP addresses](#selecting-external-load-balancer-ip-address)
+    - [Using an Ingress controller for jobs](#using-an-ingress-controller-for-jobs)
+    - [Site specific configuration](#site-specific-configuration)
+    - [Updating configuration (or upgrading to newer JARVICE chart version)](#updating-configuration-or-upgrading-to-newer-jarvice-chart-version)
+    - [Non-JARVICE specific services](#non-jarvice-specific-services)
 * [JARVICE Configuration Values Reference](#jarvice-configuration-values-reference)
 * [JARVICE Post Installation](#jarvice-post-installation)
+    - [Install recommended DaemonSets](#install-recommended-daemonsets)
+    - [Set up database backups](#set-up-database-backups)
+    - [Customize JARVICE files via a ConfigMap](#customize-jarvice-files-via-a-configmap)
+    - [View status of the installed kubernetes objects](#view-status-of-the-installed-kubernetes-objects)
+    - [Retreive IP addresses for accessing JARVICE](#retreive-ip-addresses-for-accessing-jarvice)
 * [Additional Resources](#additional-resources)
 
 ------------------------------------------------------------------------------
 
 ## Prerequisites for JARVICE Installation
 
-### Helm package manager for kubernetes (https://helm.sh/):
+### Helm package manager for kubernetes (https://helm.sh/)
 
 The installation requires that the helm command line be installed on a client
 machine and that Tiller is installed/initialized in the target kubernetes
@@ -58,7 +80,7 @@ jarvice-master/jarvice 	2.0.18-1.20190105.2358	2.0.18     	JARVICE cloud platfor
 ```
 -->
 
-### Configure kubernetes CPU management policies:
+### Configure kubernetes CPU management policies
 
 **WARNING:** `static` CPU policy, at the time of this writing, is known to interfere with NVIDIA GPU operations in the container environment.  While this setting can be used to more accurately implement "Guaranteed" QoS for fractional node CPU allocation, **it may not be stable enough for many usecases!**
 
@@ -96,7 +118,7 @@ Please see the following link for for more information on kubernetes CPU
 management policies:
 https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/
 
-### Kubernetes network plugin:
+### Kubernetes network plugin
 
 As of this writing, Weave is the only known plugin to work out-of-the-box
 on multiple architectures (amd64, ppc64le, arm64).  As such, it is recommended
@@ -106,7 +128,7 @@ a multiarch environment.
 If running on a managed kubernetes service, such as Amazon EKS, a network
 plugin has likely been set up for the cluster.
 
-### Kubernetes load balancer:
+### Kubernetes load balancer
 
 If running on a managed kubernetes service, such as Amazon EKS, a load balancer
 has likely been set up for the cluster.  If running a private kubernetes
@@ -124,7 +146,7 @@ installation:
 $ helm inspect stable/metallb
 ```
 
-### Kubernetes ingress controller:
+### Kubernetes ingress controller
 
 An ingress controller is required for making the JARVICE services and jobs
 externally available/accessible from outside of the kubernetes cluster via
@@ -181,7 +203,7 @@ The full details of a site specific Traefik deployment are beyond the scope of
 this document.  Please start here for more in depth information on Traefik:
 https://github.com/containous/traefik
 
-### Kubernetes device plugins:
+### Kubernetes device plugins
 
 #### NVIDIA device plugin
 
@@ -223,7 +245,7 @@ chart, add the following `--set` flag to the helm install/upgrade command:
 Please see the following link for plugin details:
 https://github.com/nimbix/k8s-rdma-device-plugin
 
-### Kubernetes persistent volumes (for non-demo installation):
+### Kubernetes persistent volumes (for non-demo installation)
 
 For those sites that do not wish to separately install/maintain a MySQL
 database and docker registry, this helm chart provides installations for them
@@ -237,7 +259,7 @@ persistent volumes in kubernetes is beyond the scope of this document.
 Please see the kubernetes documentation for more details:
 https://kubernetes.io/docs/concepts/storage/persistent-volumes/
 
-### JARVICE license and credentials:
+### JARVICE license and credentials
 
 A JARVICE license and container registry credentials will need to be obtained
 from Nimbix sales (`sales@nimbix.net`) and/or support (`support@nimbix.net`).
@@ -255,7 +277,7 @@ See the commands below for more detail on how to set and use these values.
 ## Installation Recommendations
 
 <!--
-### kubernetes-dashboard:
+### kubernetes-dashboard
 
 While not required, to ease the monitoring of JARVICE in the kubernetes
 cluster, it is recommended that the `kubernetes-dashboard` be installed into
@@ -894,7 +916,7 @@ Instead of editing the `jarvice_dal.env.JARVICE_CFG_NETWORK` and
 it may be preferable to override them with the `cfg.network` and `mail.conf`
 files respectively.
 
-#### Step-by-step customization procedure for the aforementioned JARVICE settings:
+#### Step-by-step customization procedure for the aforementioned JARVICE settings
 
 Create directory for setting the JARVICE customizations:
 ```bash
@@ -963,7 +985,7 @@ Then use https://`$PORTAL_IP`/ to initialize and/or log into JARVICE.
 
 ------------------------------------------------------------------------------
 
-# Additional Resources
+## Additional Resources
 
 - [Release Notes](ReleaseNotes.md)
 - [JARVICE System Configuration Notes](Configuration.md)
