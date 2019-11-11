@@ -5,6 +5,7 @@ This is the Helm chart for installation of JARVICE into a kubernetes cluster.
 ------------------------------------------------------------------------------
 
 * [Prerequisites for JARVICE Installation](#prerequisites-for-jarvice-installation)
+    - [Helm package manager for kubernetes](#helm-package-manager-for-kubernetes-httpshelmsh)
 * [Installation Recommendations](#installation-recommendations)
 * [JARVICE Quick Installation](#jarvice-quick-installation-demo-without-persistence)
 * [JARVICE Standard Installation](#jarvice-standard-installation)
@@ -16,7 +17,7 @@ This is the Helm chart for installation of JARVICE into a kubernetes cluster.
 
 ## Prerequisites for JARVICE Installation
 
-### Helm (with Tiller) package manager for kubernetes (https://helm.sh/):
+### Helm package manager for kubernetes (https://helm.sh/):
 
 The installation requires that the helm command line be installed on a client
 machine and that Tiller is installed/initialized in the target kubernetes
@@ -156,8 +157,6 @@ $ helm upgrade --install \
     --set ssl.insecureSkipVerify=true \
     --set ssl.defaultCert="$(base64 -w 0 <site-domain>.pem)" \
     --set ssl.defaultKey="$(base64 -w 0 <site-domain>.key)" \
-    --set dashboard.enabled=true \
-    --set dashboard.domain=traefik-dashboard.<site-domain> \
     --set loadBalancerIP=<static-ip> \
     --set memoryRequest=1Gi \
     --set memoryLimit=1Gi \
@@ -255,6 +254,7 @@ See the commands below for more detail on how to set and use these values.
 
 ## Installation Recommendations
 
+<!--
 ### kubernetes-dashboard:
 
 While not required, to ease the monitoring of JARVICE in the kubernetes
@@ -320,6 +320,7 @@ $ kubectl --namespace kube-system describe $secret | grep '^token:' \
 ```
 
 Use `https://$DASHBOARD_IP:8443/` to log into the dashboard.
+-->
 
 ### Kubernetes Cluster Shaping
 
