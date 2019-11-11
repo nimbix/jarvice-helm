@@ -26,7 +26,7 @@ This is the Helm chart for installation of JARVICE into a kubernetes cluster.
     - [Quick install to Amazon EKS](#quick-install-to-amazon-eks-with-jarvice-deploy2eks-script)
 * [JARVICE Standard Installation](#jarvice-standard-installation)
     - [Persistent volumes](#persistent-volumes)
-    - [Selecting external, load balancer IP addresses](#selecting-external-load-balancer-ip-address)
+    - [Selecting external, load balancer IP addresses](#selecting-external-load-balancer-ip-addresses)
     - [Using an Ingress controller for jobs](#using-an-ingress-controller-for-jobs)
     - [Site specific configuration](#site-specific-configuration)
     - [Updating configuration (or upgrading to newer JARVICE chart version)](#updating-configuration-or-upgrading-to-newer-jarvice-chart-version)
