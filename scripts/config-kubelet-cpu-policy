@@ -1,0 +1,79 @@
+#!/bin/bash
+
+STATIC_CPU_POLICY_ARGS="--cpu-manager-policy=static --kube-reserved cpu=0.1"
+
+function usage {
+    cat <<EOF
+Usage:
+    $0 [options]
+
+Options:
+    --ssh-user              SSH user with sudo access on nodes (required)
+    --policy [static|none]  Set/unset static CPU manager policy (required)
+    --nodes "<hostnames>"   Nodes to set policy on (optional)
+                            (Default: all nodes labeled for jarvice-compute)
+EOF
+}
+
+ssh_user=
+policy=
+nodes=
+
+kubelet_args_file=/etc/default/kubelet
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        --help)
+            usage
+            exit 0
+            ;;
+        --ssh-user)
+            ssh_user=$2
+            shift; shift
+            ;;
+        --policy)
+            policy=$2
+            shift; shift
+            ;;
+        --nodes)
+            nodes=$2
+            shift; shift
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+[ -z "$ssh_user" -o -z "$policy" ] && usage
+
+. $kubelet_args_file
+if [ "$policy" = "static" ]; then
+    KUBELET_EXTRA_ARGS+=" $STATIC_CPU_POLICY_ARGS"
+elif [ "$policy" = "none" ]; then
+    KUBELET_EXTRA_ARGS=$(echo $KUBELET_EXTRA_ARGS | sed -e "s/ $STATIC_CPU_POLICY_ARGS//")
+else
+    usage
+fi
+
+# Set KUBELET_EXTRA_ARGS, restart kubelet, display kubelet process args
+state_file=/var/lib/kubelet/cpu_manager_state
+cmd=$(cat <<EOF
+sudo systemctl stop kubelet;
+sudo rm -f $state_file
+sudo sed -i -e 's/^KUBELET_EXTRA_ARGS=.*/KUBELET_EXTRA_ARGS="$KUBELET_EXTRA_ARGS"/' $kubelet_args_file;
+sudo systemctl start kubelet
+sudo ps ww -C kubelet
+EOF
+)
+
+[ -z "$nodes" ] && nodes=$(kubectl get nodes -l node-role.kubernetes.io/jarvice-compute= -o name | awk -F/ '{print $2}')
+[ -z "$nodes" ] && echo "Cannot find any nodes to set CPU policy for!" && exit 1
+for n in $nodes; do
+    kubectl drain --ignore-daemonsets --delete-local-data --force $n
+    ssh $ssh_user@$n "$cmd"
+    kubectl uncordon $n
+done
+```
+
