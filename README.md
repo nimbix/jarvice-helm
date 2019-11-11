@@ -23,7 +23,7 @@ This is the Helm chart for installation of JARVICE into a kubernetes cluster.
 * [JARVICE Quick Installation](#jarvice-quick-installation-demo-without-persistence)
     - [Code repository of the JARVICE helm chart](#code-repository-of-the-jarvice-helm-chart)
     - [Quick install command with helm](#quick-install-command-with-helm)
-    - [Quick install to Amazon EKS](#quick-install-to-amazon-eks-with-jarvice-deploy2eks-script)
+    - [Quick install to Amazon EKS or Google GKE](#quick-install-to-amazon-eks-or-google-gke)
 * [JARVICE Standard Installation](#jarvice-standard-installation)
     - [Persistent volumes](#persistent-volumes)
     - [Selecting external, load balancer IP addresses](#selecting-external-load-balancer-ip-addresses)
@@ -31,6 +31,9 @@ This is the Helm chart for installation of JARVICE into a kubernetes cluster.
     - [Site specific configuration](#site-specific-configuration)
     - [Updating configuration (or upgrading to newer JARVICE chart version)](#updating-configuration-or-upgrading-to-newer-jarvice-chart-version)
     - [Non-JARVICE specific services](#non-jarvice-specific-services)
+        - [MySQL database (jarvice-db)](#mysql-database-jarvice-db)
+        - [Memcached (jarvice-memcached)](#memcached-jarvice-memcached)
+        - [Docker registry (jarvice-registry)](#docker-registry-jarvice-registry)
 * [JARVICE Configuration Values Reference](#jarvice-configuration-values-reference)
 * [JARVICE Post Installation](#jarvice-post-installation)
     - [Install recommended DaemonSets](#install-recommended-daemonsets)
@@ -577,10 +580,11 @@ $ helm install \
 
 **NOTE:** `jarvice.JARVICE_APPSYNC_USERONLY=true` can be set to only synchronize application catalog items owned by the user set in `jarvice.JARVICE_REMOTE_USER`; this is a simple way to restrict the applications that get synchronized from the upstream service catalog.
 
-### Quick install to Amazon EKS with `jarvice-deploy2eks` script
+### Quick install to Amazon EKS or Google GKE
 
 If a kubernetes cluster is not readily available, JARVICE can be quickly
-deployed and demoed using the Amazon EKS managed kubernetes service on AWS.
+deployed and demoed using the Amazon EKS managed kubernetes service on AWS
+or the Google GKE managed service on GCP.
 See the following link for details:
 
 https://github.com/nimbix/jarvice-helm/tree/master/scripts
