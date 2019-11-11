@@ -52,7 +52,7 @@ done
 if [ "$policy" = "static" ]; then
     KUBELET_EXTRA_ARGS+=" $STATIC_CPU_POLICY_ARGS"
 elif [ "$policy" = "none" ]; then
-    KUBELET_EXTRA_ARGS=$(echo $KUBELET_EXTRA_ARGS | sed -e "s/ $STATIC_CPU_POLICY_ARGS//")
+    KUBELET_EXTRA_ARGS=$(echo $KUBELET_EXTRA_ARGS | sed -e "s/$STATIC_CPU_POLICY_ARGS//")
 else
     usage && exit 1
 fi
