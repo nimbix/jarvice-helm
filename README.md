@@ -4,6 +4,16 @@ This is the Helm chart for installation of JARVICE into a kubernetes cluster.
 
 ------------------------------------------------------------------------------
 
+* [Prerequisites for JARVICE Installation](#prerequisites-for-jarvice-installation)
+* [Installation Recommendations](#installation-recommendations)
+* [JARVICE Quick Installation](#jarvice-quick-installation-demo-without-persistence)
+* [JARVICE Standard Installation](#jarvice-standard-installation)
+* [JARVICE Configuration Values Reference](#jarvice-configuration-values-reference)
+* [JARVICE Post Installation](#jarvice-post-installation)
+* [Additional Resources](#additional-resources)
+
+------------------------------------------------------------------------------
+
 ## Prerequisites for JARVICE Installation
 
 ### Helm (with Tiller) package manager for kubernetes (https://helm.sh/):
