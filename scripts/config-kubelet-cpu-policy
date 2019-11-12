@@ -64,10 +64,17 @@ EOF
 
 [ -z "$nodes" ] && nodes=$(kubectl get nodes -l node-role.kubernetes.io/jarvice-compute= -o name | awk -F/ '{print $2}')
 [ -z "$nodes" ] && echo "Cannot find any nodes to set CPU policy for!" && exit 1
+echo "Will set kubelet CPU management policy for the following nodes:  $nodes"
 for n in $nodes; do
+    echo "Setting kubelet CPU management policy on node:  $n"
     kubectl drain --ignore-daemonsets --delete-local-data --force $n
     ssh $ssh_user@$n "$cmd"
+    ssh_exit_code=$?
     kubectl uncordon $n
+    if [ "$ssh_exit_code" != "0" ]; then
+        echo "Error setting policy on node:  $n"
+        echo "Will not continue.  Exiting..."
+        exit 1
+    fi
 done
-```
 
