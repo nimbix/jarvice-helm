@@ -22,7 +22,7 @@ Users can also share vaults with other users on their team, via the *Vaults* vie
 
 ### Sharing Large Volumes Among Multiple Users
 
-While this is not a desirable cloud pattern, it may be useful for sites where alarge "projects" share exists and users share files and run workflows from that data.  In this case the end users manage the directories and hierarchy of this share themselves.  This is common in traditional HPC environments.  Note that this is different than user home directories, which are ephemeral in JARVICE unless `jarvice-idmapper` is used as described in [In-container Identity Settings and Best Practices](Identity.md).
+While this is not a desirable cloud pattern, it may be useful for sites where a large "projects" share exists and users share files and run workflows from that data.  In this case the end users manage the directories and hierarchy of this share themselves.  This is common in traditional HPC environments.  Note that this is different than user home directories, which are ephemeral in JARVICE unless `jarvice-idmapper` is used as described in [In-container Identity Settings and Best Practices](Identity.md).
 
 The recommended way to share large volumes among multiple users in JARVICE is to use a *PVC* vault that specifies both a storage class and a volume name.  This way a single *PersistentVolume* can be defined in Kubernetes to map to that storage, and it can be shared by multiple users.  Note that JARVICE supports all access modes and performs sharing transparently in the case where only *ReadWriteOnce* is supported, for instance (see above).
 
