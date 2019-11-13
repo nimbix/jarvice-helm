@@ -1,8 +1,7 @@
 # JARVICE cloud platform
 
 This is the Helm chart for installation of JARVICE into a kubernetes cluster.
-
-This git repository can be cloned with the following command:
+The chart's git repository can be cloned with the following command:
 
 ```bash
 $ git clone https://github.com/nimbix/jarvice-helm.git
@@ -66,7 +65,7 @@ If you will be installing your own kubernetes cluster, please see the
 
 ### Helm package manager for kubernetes (https://helm.sh/)
 
-The installation requires that the `helm` executable be installed on a client
+Installing JARVICE requires that the `helm` executable be installed on a client
 machine which has access to a kubernetes cluster.
 The `install-helm` shell script included in the `scripts`
 directory of this helm chart can be used to install `helm`.
@@ -83,11 +82,13 @@ $ helm repo update
 Please seee the Helm Quickstart Guide for more details:
 https://helm.sh/docs/intro/quickstart/
 
-**NOTE:** This documentation assumes that Helm version 3.0 or newer is being
-used with the kubernetes cluster.  Older versions of Helm can be used, but
-migration to Helm v3 is highly recommended:
+**NOTE:**  This documentation assumes that Helm version 3.0 or newer is being
+used with the kubernetes cluster.  Older versions of Helm can be used, but the
+`helm` command examples documented here assume that Helm v3 is installed.
+If an older version of Helm was previously being used with the target
+kubernetes cluster, migration to Helm v3 is highly recommended:
 https://helm.sh/blog/migrate-from-helm-v2-to-helm-v3/
- 
+
 <!--  Comment: helm repo not yet enabled
 After helm is installed, add the `jarvice-master` chart repository:
 ```bash
