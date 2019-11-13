@@ -13,6 +13,7 @@ $ git clone https://github.com/nimbix/jarvice-helm.git
 ## Table of Contents
 
 * [Prerequisites for JARVICE Installation](#prerequisites-for-jarvice-installation)
+    - [Kubernetes cluster](#kubernetes-cluster)
     - [Helm package manager for kubernetes](#helm-package-manager-for-kubernetes-httpshelmsh)
     - [Configure kubernetes CPU management policies](#configure-kubernetes-cpu-management-policies)
     - [Kubernetes network plugin](#kubernetes-network-plugin)
@@ -55,16 +56,37 @@ $ git clone https://github.com/nimbix/jarvice-helm.git
 
 ## Prerequisites for JARVICE Installation
 
+### Kubernetes cluster
+
+If you do not already have access to a kubernetes cluster and will not be
+using a managed kubernetes cluster service (e.g. Amazon EKS on AWS or
+Google GKE on GCP), it will be necessary to install your own cluster.
+If you will be installing your own kubernetes cluster, please see the
+[Kubernetes Install](KubernetesInstall.md) documentation for more information.
+
 ### Helm package manager for kubernetes (https://helm.sh/)
 
-The installation requires that the `helm` command line be installed on a client
+The installation requires that the `helm` executable be installed on a client
 machine which has access to a kubernetes cluster.
 The `install-helm` shell script included in the `scripts`
 directory of this helm chart can be used to install `helm`.
 Simply execute `./scripts/install-helm` to do so.
 
-This documentation assume that Helm version 3.0 or newer is being used with
-the kubernetes cluster.  If an older version of Helm is being used
+If `helm` was previously installed (without `install-helm`), it may be
+necessary to initialize and update the stable helm chart repository with the
+following commands:
+```bash
+$ helm repo add stable https://kubernetes-charts.storage.googleapis.com/
+$ helm repo update
+```
+
+Please seee the Helm Quickstart Guide for more details:
+https://helm.sh/docs/intro/quickstart/
+
+**NOTE:** This documentation assumes that Helm version 3.0 or newer is being
+used with the kubernetes cluster.  Older versions of Helm can be used, but
+migration to Helm v3 is highly recommended:
+https://helm.sh/blog/migrate-from-helm-v2-to-helm-v3/
  
 <!--  Comment: helm repo not yet enabled
 After helm is installed, add the `jarvice-master` chart repository:
@@ -578,8 +600,8 @@ $ helm install \
 ### Quick install to Amazon EKS or Google GKE
 
 If a kubernetes cluster is not readily available, JARVICE can be quickly
-deployed and demoed using the Amazon EKS managed kubernetes service on AWS
-or the Google GKE managed service on GCP.
+deployed and demoed using kubernetes cluster services such as
+Amazon EKS on AWS or Google GKE on GCP.
 See the following link for details:
 
 https://github.com/nimbix/jarvice-helm/tree/master/scripts
