@@ -1,7 +1,7 @@
 #!/bin/bash
 
 HELM=$(type -p helm)
-DESIRED_VERSION=v3.0.0-rc.3
+#DESIRED_VERSION=
 
 if [ -n "$HELM" ]; then
     echo "Found $HELM."
@@ -30,10 +30,13 @@ fi
 
 if [ -z "$(type -p curl)" -o -z "$(type -p openssl)" ]; then
     install_pkgs="curl openssl"
-    echo; echo "* Installing '$install_pkgs'..."
     if [ -e /etc/redhat-release ]; then
+        install_pkgs+=" which"
+        echo; echo "* Installing '$install_pkgs'..."
         $SUDO yum -y install $install_pkgs
     else
+        install_pkgs+=" debianutils"
+        echo; echo "* Installing '$install_pkgs'..."
         $SUDO apt-get -y update
         $SUDO apt-get -y install $install_pkgs
     fi
@@ -45,8 +48,8 @@ set -e
 HELM_INSTALL_DIR=$INSTALL_DIR/bin
 HELM=$HELM_INSTALL_DIR/helm
 echo; echo "* Installing helm..."
-curl --silent https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get >/tmp/get_helm.sh
-$SUDO bash /tmp/get_helm.sh --version $DESIRED_VERSION #>/dev/null
+curl --silent https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get-helm-3 >/tmp/get_helm.sh
+$SUDO bash /tmp/get_helm.sh # --version $DESIRED_VERSION #>/dev/null
 rm -f /tmp/get_helm.sh
 
 helm_stable_repo_url=https://kubernetes-charts.storage.googleapis.com/
