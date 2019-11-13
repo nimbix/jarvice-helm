@@ -2,7 +2,15 @@
 
 This is the Helm chart for installation of JARVICE into a kubernetes cluster.
 
+This git repository can be cloned with the following command:
+
+```bash
+$ git clone https://github.com/nimbix/jarvice-helm.git
+```
+
 ------------------------------------------------------------------------------
+
+## Table of Contents
 
 * [Prerequisites for JARVICE Installation](#prerequisites-for-jarvice-installation)
     - [Helm package manager for kubernetes](#helm-package-manager-for-kubernetes-httpshelmsh)
@@ -20,7 +28,7 @@ This is the Helm chart for installation of JARVICE into a kubernetes cluster.
         - [Utilizing jarvice-compute labels](#utilizing-jarvice-compute-labels)
         - [Node taints and pod tolerations](#node-taints-and-pod-tolerations)
         - [jarvice-compute taints and pod tolerations](#jarvice-compute-taints-and-pod-tolerations)
-* [JARVICE Quick Installation](#jarvice-quick-installation-demo-without-persistence)
+* [JARVICE Quick Installation (Demo without persistence)](#jarvice-quick-installation-demo-without-persistence)
     - [Code repository of the JARVICE helm chart](#code-repository-of-the-jarvice-helm-chart)
     - [Quick install command with helm](#quick-install-command-with-helm)
     - [Quick install to Amazon EKS or Google GKE](#quick-install-to-amazon-eks-or-google-gke)
@@ -49,21 +57,15 @@ This is the Helm chart for installation of JARVICE into a kubernetes cluster.
 
 ### Helm package manager for kubernetes (https://helm.sh/)
 
-The installation requires that the helm command line be installed on a client
-machine and that Tiller is installed/initialized in the target kubernetes
-cluster.  Please see the Helm Quickstart/Installation guide:
+The installation requires that the `helm` command line be installed on a client
+machine which has access to a kubernetes cluster.
+The `install-helm` shell script included in the `scripts`
+directory of this helm chart can be used to install `helm`.
+Simply execute `./scripts/install-helm` to do so.
 
-https://docs.helm.sh/using_helm/#quickstart-guide
-
-After Tiller is initialized, it may be necessary to create a tiller service
-account with a cluster-admin role binding.  The `tiller-sa.yaml` file can be
-used for this.  Modify as necessary for your cluster and issue the following
-commands:
-```bash
-$ kubectl --namespace kube-system create -f jarvice-helm/extra/tiller-sa.yaml
-$ helm init --upgrade --service-account tiller
-```
-
+This documentation assume that Helm version 3.0 or newer is being used with
+the kubernetes cluster.  If an older version of Helm is being used
+ 
 <!--  Comment: helm repo not yet enabled
 After helm is installed, add the `jarvice-master` chart repository:
 ```bash
@@ -99,27 +101,20 @@ set to `static` at JARVICE worker node install time, it will be necessary
 to drain each worker node and remove the previous `cpu_manager_state` file
 as a part of the process of restarting each worker node's kubelet.
 
-The following shell script is an example of how one might reconfigure worker
-node kubelets on Ubuntu systems:
+The `config-kubelet-cpu-policy` shell script included in the `scripts`
+directory of this helm chart can be used to set kubelet CPU management
+policies on remote compute nodes that run Ubuntu.
+Execute `config-kubelet-cpu-policy` with `--help` to see all of the current
+command line options:
 ```bash
-#!/bin/bash
+Usage:
+    ./scripts/config-kubelet-cpu-policy [options]
 
-# Set KUBELET_EXTRA_ARGS=--cpu-manager-policy=static --kube-reserved cpu=0.1
-# Then restart kublet
-cmd=$(cat <<EOF
-sudo systemctl stop kubelet;
-sudo rm -f /var/lib/kubelet/cpu_manager_state;
-sudo sed -i -e 's/^KUBELET_.*/KUBELET_EXTRA_ARGS=--cpu-manager-policy=static --kube-reserved cpu=0.1/' /etc/default/kubelet;
-sudo systemctl start kubelet
-EOF
-)
-
-nodes=$(kubectl get nodes -o name | awk -F/ '{print $2}')
-for n in $nodes; do
-    kubectl drain --ignore-daemonsets --delete-local-data --force $n
-    ssh sudo-user@$n "$cmd"
-    kubectl uncordon $n
-done
+Options:
+    --ssh-user              SSH user with sudo access on nodes (required)
+    --policy [static|none]  Set/unset static CPU manager policy (required)
+    --nodes "<hostnames>"   Nodes to set policy on (optional)
+                            (Default: all nodes labeled for jarvice-compute)
 ```
 
 Please see the following link for for more information on kubernetes CPU
