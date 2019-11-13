@@ -993,6 +993,7 @@ Then use https://`$PORTAL_IP`/ to initialize and/or log into JARVICE.
 
 - [Release Notes](ReleaseNotes.md)
 - [JARVICE System Configuration Notes](Configuration.md)
+- [User Storage Patterns and Configuration](Storage.md)
 - [Active Directory Authentication Best Practices](ActiveDirectory.md)
 - [In-container Identity Settings and Best Practices](Identity.md)
 - [JARVICE Developer Documentation (jarvice.readthedocs.io)](https://jarvice.readthedocs.io)
