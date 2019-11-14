@@ -88,7 +88,7 @@ spec:
             scheme: HTTP
             port: http
             path: /live
-          initialDelaySeconds: 30
+          initialDelaySeconds: 60
           periodSeconds: 30
           timeoutSeconds: 1
           successThreshold: 1

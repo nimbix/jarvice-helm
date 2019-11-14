@@ -65,7 +65,7 @@ If you will be installing your own kubernetes cluster, please see the
 
 ### Helm package manager for kubernetes (https://helm.sh/)
 
-Installing JARVICE requires that the `helm` executable be installed on a client
+Deploying JARVICE requires that the `helm` executable be installed on a client
 machine which has access to a kubernetes cluster.
 The `install-helm` shell script included in the `scripts`
 directory of this helm chart can be used to install `helm`.
