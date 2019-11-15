@@ -75,7 +75,7 @@ None
 
 # Changelog
 
-## 3.0.0-1.20191115.2123
+## 3.0.0-1.20191115.2245
 
 * (1936) Open source AppDef templates and tutorials available in [GitHub](https://github.com/nimbix/appdef-template)
 * (2193) Support for deploying database volume on root-squashed NFS storage (see `jarvice_db.securityContext` in [values.yaml](values.yaml))
