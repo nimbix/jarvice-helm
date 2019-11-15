@@ -75,6 +75,18 @@ None
 
 # Changelog
 
+## 3.0.0-1.20191115.2123
+
+* (1936) Open source AppDef templates and tutorials available in [GitHub](https://github.com/nimbix/appdef-template)
+* (2193) Support for deploying database volume on root-squashed NFS storage (see `jarvice_db.securityContext` in [values.yaml](values.yaml))
+* (2196) Documented [User Storage Patterns and Configuration](Storage.md)
+* (2197) Internal scheduler service updates for future capabilities
+* (2202) Fixed bug with leading and/or trailing whitespace in account variables
+* (2207) Updated documentation for Helm 3 and added comprehensive table of contents
+* (2219) Ability to remove and download screenshots and EULAs from large app card
+* (2221) Added new AppDef substitutions for command parameters - See examples in [GitHub](https://github.com/nimbix/appdef-template) for information on consuming these
+* (2256) Platform support for Xilinx XRT 2.3 in Nimbix Cloud
+
 ## 3.0.0-1.20191101.2014
 
 * (2159) Updated Helm chart for API deprecation and Kubernetes 1.14+
