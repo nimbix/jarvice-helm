@@ -132,6 +132,10 @@ jarvice_db:
     storageClass: "jarvice-db"
     accessMode: ReadWriteOnce
     size: 8Gi
+  securityContext:
+    enabled: false  # Enable when PersistentVolume is root squashed
+    fsGroup: 999
+    runAsUser: 999
   # MYSQL_ROOT_PASSWORD inherits from jarvice.JARVICE_DBPASSWD if unset
   # MYSQL_USER only inherits from jarvice.JARVICE_DBUSER if
   #     jarvice.JARVICE_DBUSER != 'root'

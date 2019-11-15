@@ -1,0 +1,125 @@
+#!/bin/bash
+
+default_cert_file=
+default_key_file=
+load_balancer_ip=
+namespace=kube-system
+
+set -e
+
+function usage {
+    cat <<EOF
+Usage:
+    $0 [options]
+
+Options:
+    --default-cert-file <filename>  TLS default certificate file (required)
+    --default-key-file <filename>   TLS default key file (required)
+    --load-balancer-ip <ip_addr>    Static IP for ingress controller (required)
+    --namespace <kube_namespace>    Kubernetes namespace to deploy to
+                                    (Default: $namespace)
+EOF
+}
+
+HELM=$(type -p helm)
+if [ -z "$HELM" ]; then
+    cat <<EOF
+Could not find 'helm' in PATH.  It may not be installed.
+Run 'install-helm' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+KUBECTL=$(type -p kubectl)
+if [ -z "$KUBECTL" ]; then
+    cat <<EOF
+Could not find 'kubectl' in PATH.  It may not be installed.
+Run 'install-kubectl' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        --help)
+            usage
+            exit 0
+            ;;
+        --default-cert-file)
+            default_cert_file=$2
+            shift; shift
+            ;;
+        --default-key-file)
+            default_key_file=$2
+            shift; shift
+            ;;
+        --load-balancer-ip)
+            load_balancer_ip=$2
+            shift; shift
+            ;;
+        --namespace)
+            namespace=$2
+            shift; shift
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+[ -z "$default_cert_file" -o -z "$default_key_file" -o -z "$load_balancer_ip" ] && usage && exit 1
+
+helm_stable_repo_url=https://kubernetes-charts.storage.googleapis.com/
+helm_stable_repo=$($HELM repo list 2>/dev/null | grep ^stable || /bin/true)
+if [ -z "$helm_stable_repo" ]; then
+    echo
+    echo "* Adding helm chart repository for stable..."
+    $HELM repo add stable $helm_stable_repo_url
+fi
+
+echo
+echo "* Updating helm chart repositories..."
+$HELM repo update
+
+echo
+echo "* Creating namespace: $namespace"
+$KUBECTL create namespace $namespace 2>/dev/null || /bin/true
+
+echo
+echo "* Deploying..."
+$HELM upgrade traefik stable/traefik \
+    --namespace $namespace --install --reset-values \
+    \
+    --set rbac.enabled=true \
+    \
+    --set nodeSelector."kubernetes\.io/arch"=amd64 \
+    --set nodeSelector."node-role\.kubernetes\.io/jarvice-system"="" \
+    \
+    --set tolerations[0]."key"="node-role\.kubernetes\.io/jarvice-system" \
+    --set tolerations[0]."effect"="NoSchedule" \
+    --set tolerations[0]."operator"="Exists" \
+    \
+    --set loadBalancerIP=$load_balancer_ip \
+    \
+    --set ssl.enabled=true \
+    --set ssl.enforced=true \
+    --set ssl.permanentRedirect=true \
+    --set ssl.insecureSkipVerify=true \
+    --set ssl.generateTLS=false \
+    --set ssl.defaultCert="$(cat $default_cert_file | base64 -w 0)" \
+    --set ssl.defaultKey="$(cat $default_key_file | base64 -w 0)" \
+    \
+    --set replicas=3 \
+    --set memoryRequest=1Gi \
+    --set memoryLimit=1Gi \
+    --set cpuRequest=1 \
+    --set cpuLimit=1
+
+echo
+echo "* Deployment successful..."
+
+echo
+echo "For advanced setup details, visit https://traefik.io/ and/or execute:"
+echo "$ helm inspect all stable/traefik"
+

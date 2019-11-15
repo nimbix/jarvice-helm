@@ -84,13 +84,13 @@ spec:
           periodSeconds: 5
           timeoutSeconds: 1
           successThreshold: 1
-          failureThreshold: 3
+          failureThreshold: 5
         livenessProbe:
           httpGet:
             scheme: HTTPS
             port: https
             path: /live
-          initialDelaySeconds: 30
+          initialDelaySeconds: 60
           periodSeconds: 30
           timeoutSeconds: 1
           successThreshold: 1

@@ -1,0 +1,66 @@
+#!/bin/bash
+
+HELM=$(type -p helm)
+#DESIRED_VERSION=
+
+if [ -n "$HELM" ]; then
+    echo "Found $HELM."
+    HELM2=$($HELM version 2>/dev/null | grep '^Client' || /bin/true)
+    [ -n "$HELM2" ] && cat <<EOF
+$HELM is not version 3 or newer.  Please migrate:
+https://helm.sh/blog/migrate-from-helm-v2-to-helm-v3/
+
+EOF
+    echo "Remove $HELM before re-installing it with this script."
+    exit 1
+fi
+
+SUDO=
+if [ "$EUID" != "0" ]; then
+    SUDO="sudo --preserve-env"
+    SUID=$($SUDO id -u)
+    if [ "$SUID" != "0" ]; then
+        echo "Could not verify sudo access.  Cannot continue."
+        echo "Please resolve sudo access before re-running this script."
+        exit 1
+    else
+        echo "* Verified sudo access..."
+    fi
+fi
+
+if [ -z "$(type -p curl)" -o -z "$(type -p openssl)" ]; then
+    install_pkgs="curl openssl"
+    if [ -e /etc/redhat-release ]; then
+        install_pkgs+=" which"
+        echo; echo "* Installing '$install_pkgs'..."
+        $SUDO yum -y install $install_pkgs
+    else
+        install_pkgs+=" debianutils"
+        echo; echo "* Installing '$install_pkgs'..."
+        $SUDO apt-get -y update
+        $SUDO apt-get -y install $install_pkgs
+    fi
+fi
+
+set -e
+
+[ -z "$INSTALL_DIR" ] && INSTALL_DIR=/usr/local
+HELM_INSTALL_DIR=$INSTALL_DIR/bin
+HELM=$HELM_INSTALL_DIR/helm
+echo; echo "* Installing helm..."
+curl --silent https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get-helm-3 >/tmp/get_helm.sh
+$SUDO bash /tmp/get_helm.sh # --version $DESIRED_VERSION #>/dev/null
+rm -f /tmp/get_helm.sh
+
+helm_stable_repo_url=https://kubernetes-charts.storage.googleapis.com/
+helm_stable_repo=$($HELM repo list 2>/dev/null | grep ^stable || /bin/true)
+if [ -z "$helm_stable_repo" ]; then
+    echo; echo "* Adding helm chart repository for stable..."
+    $HELM repo add stable $helm_stable_repo_url
+fi
+
+echo; echo "* Updating helm chart repositories..."
+$HELM repo update
+
+echo; echo "* Helm is ready for use..."
+
