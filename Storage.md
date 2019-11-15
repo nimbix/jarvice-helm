@@ -101,4 +101,4 @@ The above example creats a vault named `data` for each user that mounts from `nf
 |Ephemeral storage only|*default*|Default system configuration, no changes needed|
 |Private storage per user|All parameters set except `jarvice.JARVICE_PVC_VAULT_VOLUMENAME`|Requires dynamic provisioning for the storage class in Kubernetes|
 |Shared storage across all users|All parameters set, including `jarvice.JARVICE_PVC_VAULT_VOLUMENAME`|Statically provisioned *PersistentVolume* per namespace|
-|Custom|[DAL Hook](dal-hook)|Expert configuration with unlimited flexibility using scripting|
+|Custom|[DAL Hook](#dal-hook)|Expert configuration with unlimited flexibility using scripting|
