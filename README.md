@@ -63,13 +63,31 @@ Google GKE on GCP), it will be necessary to install your own cluster.
 If you will be installing your own kubernetes cluster, please see the
 [Kubernetes Install](KubernetesInstall.md) documentation for more information.
 
+#### kubectl
+
+Deploying JARVICE requires that the `kubectl` executable be installed on a
+client machine which has access to a kubernetes cluster.
+The `install-kubectl` shell script included in the `scripts`
+directory of this helm chart can be used to install `kubectl`.
+Simply execute `./scripts/install-kubectl` to do so.
+
+If the script does not support the client machine's operating system,
+specific operating system instructions can be found here:
+https://kubernetes.io/docs/tasks/tools/install-kubectl/
+
 ### Helm package manager for kubernetes (https://helm.sh/)
 
-Deploying JARVICE requires that the `helm` executable be installed on a client
-machine which has access to a kubernetes cluster.
+Deploying JARVICE requires that the `helm` executable be installed on a
+client machine which has access to a kubernetes cluster.
 The `install-helm` shell script included in the `scripts`
 directory of this helm chart can be used to install `helm`.
 Simply execute `./scripts/install-helm` to do so.
+
+If the script does not support the client machine's operating system,
+specific operating system instructions can be found here:
+https://github.com/helm/helm/releases
+
+#### Add `stable` helm chart repository
 
 If `helm` was previously installed (without `install-helm`), it may be
 necessary to initialize and update the stable helm chart repository with the
