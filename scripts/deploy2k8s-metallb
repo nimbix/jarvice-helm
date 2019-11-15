@@ -1,0 +1,123 @@
+#!/bin/bash
+
+addresses=
+version_tag=
+namespace=metallb-system
+
+set -e
+
+function usage {
+    cat <<EOF
+Usage:
+    $0 [options]
+
+Options:
+    --addresses <addresses>         IP addresses (required, multiple allowed)
+    --version-tag <tag>             MetalLB version (optional)
+    --namespace <kube_namespace>    Kubernetes namespace to deploy to
+                                    (Default: $namespace)
+
+Example:
+    $0 --addresses 192.168.1.210-192.168.1.220 --addresses 192.168.1.240-192.168.1.250
+EOF
+}
+
+HELM=$(type -p helm)
+if [ -z "$HELM" ]; then
+    cat <<EOF
+Could not find 'helm' in PATH.  It may not be installed.
+Run 'install-helm' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+KUBECTL=$(type -p kubectl)
+if [ -z "$KUBECTL" ]; then
+    cat <<EOF
+Could not find 'kubectl' in PATH.  It may not be installed.
+Run 'install-kubectl' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        --help)
+            usage
+            exit 0
+            ;;
+        --version-tag)
+            version_tag=$2
+            shift; shift
+            ;;
+        --addresses)
+            [ -z "$addresses" ] && addresses=$2 || addresses+=" $2"
+            shift; shift
+            ;;
+        --namespace)
+            namespace=$2
+            shift; shift
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+[ -z "$addresses" ] && usage && exit 1
+
+helm_stable_repo_url=https://kubernetes-charts.storage.googleapis.com/
+helm_stable_repo=$($HELM repo list 2>/dev/null | grep ^stable || /bin/true)
+if [ -z "$helm_stable_repo" ]; then
+    echo
+    echo "* Adding helm chart repository for stable..."
+    $HELM repo add stable $helm_stable_repo_url
+fi
+
+echo
+echo "* Updating helm chart repositories..."
+$HELM repo update
+
+set_addr=
+i=0
+for addr in $addresses; do
+    set_addr+="--set configInline.address-pools[0].addresses[$i]=$addr "
+    ((++i))
+done
+
+echo
+echo "* Creating namespace: $namespace"
+$KUBECTL create namespace $namespace 2>/dev/null || /bin/true
+
+echo
+echo "* Deploying..."
+$HELM upgrade metallb stable/metallb \
+    --namespace $namespace --install --reset-values \
+    \
+    ${version_tag:+--set controller.image.tag=$version_tag} \
+    ${version_tag:+--set speaker.image.tag=$version_tag} \
+    \
+    --set controller.tolerations[0]."key"="node-role\.kubernetes\.io/jarvice-system" \
+    --set controller.tolerations[0]."effect"="NoSchedule" \
+    --set controller.tolerations[0]."operator"="Exists" \
+    \
+    --set speaker.tolerations[0]."key"="node-role\.kubernetes\.io/jarvice-system" \
+    --set speaker.tolerations[0]."effect"="NoSchedule" \
+    --set speaker.tolerations[0]."operator"="Exists" \
+    \
+    --set speaker.tolerations[1]."key"="node-role\.kubernetes\.io/jarvice-compute" \
+    --set speaker.tolerations[1]."effect"="NoSchedule" \
+    --set speaker.tolerations[1]."operator"="Exists" \
+    \
+    --set configInline.address-pools[0].name=default \
+    --set configInline.address-pools[0].protocol=layer2 \
+    $set_addr
+
+echo
+echo "* Deployment successful..."
+
+echo
+echo "For advanced setup details, visit https://metallb.universe.tf/ and/or execute:"
+echo "$ helm inspect all stable/metallb"
+

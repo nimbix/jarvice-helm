@@ -1,0 +1,27 @@
+#!/bin/bash
+
+set -e
+
+KUBECTL=$(type -p kubectl)
+if [ -z "$KUBECTL" ]; then
+    cat <<EOF
+Could not find 'kubectl' in PATH.  It may not be installed.
+Run 'install-kubectl' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+echo "* Deploying..."
+$KUBECTL apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+#$KUBECTL apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&env.NO_MASQ_LOCAL=1"
+
+echo
+echo "* Deployment successful..."
+
+# The following should already be set on all worker nodes:
+# $ sysctl net.bridge.bridge-nf-call-iptables=1
+
+echo
+echo "For advanced configuration and troubleshooting, please see the official Weave Net setup guide:"
+echo "https://www.weave.works/docs/net/latest/kubernetes/kube-addon/"
+

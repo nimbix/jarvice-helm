@@ -163,13 +163,17 @@ externally available/accessible from outside of the kubernetes cluster.
 
 Currently, MetalLB (https://metallb.universe.tf/) is a good solution.  After
 installing helm, MetalLB can quickly be installed via helm commands.
-However, it will be necessary to configure MetalLB specifically for your
-cluster.
+The `deploy2k8s-metallb` shell script included in the `scripts`
+directory of this helm chart can be used to install this with `helm`.
+Simply execute `./scripts/deploy2k8s-metallb --help` to see it's usage.
 
-Please execute the following to get more details on MetalLB configuration and
+However, if a more complex configuration is needed for your cluster,
+it will be necessary to adjust the script or execute `helm` manually.
+Please visit the MetalLB web site (https://metallb.universe.tf/) and/or
+execute the following to get more details on MetalLB configuration and
 installation:
 ```bash
-$ helm inspect stable/metallb
+$ helm inspect all stable/metallb
 ```
 
 ### Kubernetes ingress controller
@@ -180,43 +184,24 @@ fixed, DNS host names.
 
 Currently, Traefik (https://traefik.io/) is the solution that is
 supported by JARVICE.  After installing helm, Traefik can quickly be 
-installed via helm commands.  However, it will be necessary to configure
-Traefik specifically for your cluster.
+installed via helm commands.
+The `deploy2k8s-traefik` shell script included in the `scripts`
+directory of this helm chart can be used to install this with `helm`.
+Simply execute `./scripts/deploy2k8s-traefik --help` to see it's usage.
 
+However, if a more complex configuration is needed for your cluster,
+it will be necessary to adjust the script or execute `helm` manually.
 Please visit https://github.com/helm/charts/tree/master/stable/traefik and/or
 execute the following to get more details on Traefik configuration and
 installation via helm:
 ```bash
-$ helm inspect stable/traefik
-```
-
-Here is an example command to install Traefik for use with JARVICE:
-```bash
-$ helm upgrade --install \
-    --set rbac.enabled=true \
-    --set nodeSelector."beta\.kubernetes\.io/arch"=amd64 \
-    --set nodeSelector."node-role\.kubernetes\.io/jarvice-system"="" \
-    --set tolerations[0].key="node-role.kubernetes.io/jarvice-system" \
-    --set tolerations[0].effect="NoSchedule" \
-    --set tolerations[0].operator="Exists" \
-    --set ssl.enabled=true \
-    --set ssl.enforced=true \
-    --set ssl.permanentRedirect=true \
-    --set ssl.insecureSkipVerify=true \
-    --set ssl.defaultCert="$(base64 -w 0 <site-domain>.pem)" \
-    --set ssl.defaultKey="$(base64 -w 0 <site-domain>.key)" \
-    --set loadBalancerIP=<static-ip> \
-    --set memoryRequest=1Gi \
-    --set memoryLimit=1Gi \
-    --set cpuRequest=1 \
-    --set cpuLimit=1 \
-    --set replicas=3 \
-    --namespace <kube-system> traefik stable/traefik
+$ helm inspect all stable/traefik
 ```
 
 There are a few things to note when installing Traefik for JARVICE.  In
 particular, the default resource setting for the helm chart are not sufficient
-for use with JARVICE.  It will be necessary to adjust the number of pod
+for use with JARVICE.  If deploying Traefik with `helm` manually,
+it will be necessary to adjust the number of pod
 replicas, cpu, and memory settings per site specifications.
 
 It will also be necessary to have a valid `loadBalancerIP` or `externalIP`
@@ -318,7 +303,7 @@ $ helm install --namespace kube-system \
 Please execute the following to get more details on dashboard configuration and
 installation:
 ```bash
-$ helm inspect stable/kubernetes-dashboard
+$ helm inspect all stable/kubernetes-dashboard
 ```
 
 After the dashboard is installed, it may be desirable to bind the
@@ -499,7 +484,7 @@ The following example shows how `--set` flags on the helm install/upgrade
 command line could be used to override the default tolerations for the
 `jarvice-api` component:
 ```bash
-$ helm install \
+$ helm upgrade jarvice ./jarvice-helm --namespace jarvice-system --install \
     --set jarvice_api.tolerations[0].effect=NoSchedule \
     --set jarvice_api.tolerations[0].key=node-role.kubernetes.io/jarvice-system \
     --set jarvice_api.tolerations[0].operator=Exists \
@@ -507,7 +492,6 @@ $ helm install \
     --set jarvice_api.tolerations[1].key=node-role.kubernetes.io/jarvice-api \
     --set jarvice_api.tolerations[1].operator=Exists
     ...
-    --namespace jarvice-system --name jarvice ./jarvice-helm
 ```
 
 For more information on assigning kubernetes taints and tolerations,
@@ -571,7 +555,8 @@ $ git clone https://github.com/nimbix/jarvice-helm.git
 Once cloned, JARVICE can be quickly installed via the following `helm` command:
 
 ```bash
-$ helm install \
+$ kubectl create namespace jarvice-system
+$ helm upgrade jarvice ./jarvice-helm --namespace jarvice-system --install \
     --set jarvice.imagePullSecret="$(echo "_json_key:$(cat jarvice-reg-creds.json)" | base64 -w 0)" \
     --set jarvice.JARVICE_LICENSE_LIC="<jarvice_license_key>" \
     --namespace jarvice-system --name jarvice ./jarvice-helm
@@ -584,15 +569,14 @@ $ helm install \
 Alternatively, in order to install and get the application catalog
 synchronized, use the following `helm` command:
 ```bash
-$ helm install \
+$ kubectl create namespace jarvice-system
+$ helm upgrade jarvice ./jarvice-helm --namespace jarvice-system --install \
     --set jarvice.imagePullSecret="$(echo "_json_key:$(cat jarvice-reg-creds.json)" | base64 -w 0)" \
     --set jarvice.JARVICE_LICENSE_LIC="<jarvice_license_key>" \
     --set jarvice.JARVICE_REMOTE_USER="<jarvice_upstream_user>" \
-    --set jarvice.JARVICE_REMOTE_APIKEY="<jarvice_upstream_user_apikey>" \
-    --namespace jarvice-system --name jarvice ./jarvice-helm
+    --set jarvice.JARVICE_REMOTE_APIKEY="<jarvice_upstream_user_apikey>"
 ```
 <!--
-    --namespace jarvice-system --name jarvice \
     --version <chart-version> jarvice-master/jarvice
 -->
 
@@ -639,7 +623,8 @@ https://kubernetes.io/docs/concepts/storage/persistent-volumes/
 Expanding upon the previous quick installation command, the following command
 could then be used to install JARVICE with persistence enabled:
 ```bash
-$ helm install \
+$ kubectl create namespace jarvice-system
+$ helm upgrade jarvice ./jarvice-helm --namespace jarvice-system --install \
     --set jarvice.imagePullSecret="$(echo "_json_key:$(cat jarvice-reg-creds.json)" | base64 -w 0)" \
     --set jarvice.JARVICE_LICENSE_LIC="<jarvice_license_key>" \
     --set jarvice.JARVICE_REMOTE_USER="<jarvice_upstream_user>" \
@@ -650,8 +635,7 @@ $ helm install \
     --set jarvice_registry.enabled=true \
     --set jarvice_registry.persistence.enabled=true \
     --set jarvice_registry.persistence.size=1000Gi \
-    --set jarvice.JARVICE_LOCAL_REGISTRY=jarvice-registry:443 \
-    --namespace jarvice-system --name jarvice jarvice-helm
+    --set jarvice.JARVICE_LOCAL_REGISTRY=jarvice-registry:443
 ```
 
 By default, the standard install already has `jarvice_db.enabled=true` and
@@ -701,8 +685,8 @@ a part of the helm installation command:
 
 ```bash
 $ cp jarvice-helm/values.yaml jarvice-helm/override.yaml
-$ helm install --values jarvice-helm/override.yaml \
-    --namespace jarvice-system --name jarvice ./jarvice-helm
+$ helm upgrade jarvice ./jarvice-helm --namespace jarvice-system --install \
+    --values jarvice-helm/override.yaml
 ```
 
 ### Updating configuration (or upgrading to newer JARVICE chart version)
@@ -714,15 +698,15 @@ command could be used to update the number of replicas/pods for the
 JARVICE DAL deployment:
 
 ```bash
-$ helm upgrade --reuse-values \
-    --set jarvice_dal.replicaCount=3 jarvice ./jarvice-helm
+$ helm upgrade jarvice ./jarvice-helm --namespace jarvice-system --install \
+    --reuse-values --set jarvice_dal.replicaCount=3
 ```
 
 This could also be done from an `override.yaml` file:
 
 ```bash
-$ helm upgrade --reuse-values \
-    --values jarvice-helm/override.yaml jarvice ./jarvice-helm
+$ helm upgrade jarvice ./jarvice-helm --namespace jarvice-system --install \
+    --reuse-values --values jarvice-helm/override.yaml
 ```
 
 ### Non-JARVICE specific services
@@ -738,7 +722,7 @@ If there is not an existing MySQL installation, but wish to maintain the
 database in kubernetes, but outside of the JARVICE helm chart, execute the
 following to get more details on using helm to perform the installation:
 ```bash
-$ helm inspect stable/mysql
+$ helm inspect all stable/mysql
 ```
 
 When using a database outside of the JARVICE helm chart, it will be necessary
@@ -762,7 +746,7 @@ If there is not an existing Memcached installation, but wish to maintain the
 one in kubernetes, but outside of the JARVICE helm chart, execute the
 following to get more details on using helm to perform the installation:
 ```bash
-$ helm inspect stable/memcached
+$ helm inspect all stable/memcached
 ```
 
 When using Memcached outside of the JARVICE helm chart, it will be necessary
@@ -796,7 +780,7 @@ in the kubernetes cluster which has a valid TLS certificate and key.
 There is also a docker-registry specific helm chart available for deployment.
 Use the helm inspect command for details:
 ```bash
-$ helm inspect stable/docker-registry
+$ helm inspect all stable/docker-registry
 ```
 
 ------------------------------------------------------------------------------

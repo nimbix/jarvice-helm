@@ -27,6 +27,16 @@ if [ -z "$HELM" ]; then
 Could not find 'helm' in PATH.  It may not be installed.
 Run 'install-helm' from the 'jarvice-helm/scripts' directory to install it.
 EOF
+    exit 1
+fi
+
+KUBECTL=$(type -p kubectl)
+if [ -z "$KUBECTL" ]; then
+    cat <<EOF
+Could not find 'kubectl' in PATH.  It may not be installed.
+Run 'install-kubectl' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
 fi
 
 while [ $# -gt 0 ]; do
@@ -47,6 +57,10 @@ while [ $# -gt 0 ]; do
             load_balancer_ip=$2
             shift; shift
             ;;
+        --namespace)
+            namespace=$2
+            shift; shift
+            ;;
         *)
             usage
             exit 1
@@ -54,7 +68,7 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-[ -z "$default_cert_file" -o -z "$default_key_file" -o -z "$load_balancer_ip" ] && usage
+[ -z "$default_cert_file" -o -z "$default_key_file" -o -z "$load_balancer_ip" ] && usage && exit 1
 
 helm_stable_repo_url=https://kubernetes-charts.storage.googleapis.com/
 helm_stable_repo=$($HELM repo list 2>/dev/null | grep ^stable || /bin/true)
@@ -68,6 +82,12 @@ echo
 echo "* Updating helm chart repositories..."
 $HELM repo update
 
+echo
+echo "* Creating namespace: $namespace"
+$KUBECTL create namespace $namespace 2>/dev/null || /bin/true
+
+echo
+echo "* Deploying..."
 $HELM upgrade traefik stable/traefik \
     --namespace $namespace --install --reset-values \
     \
@@ -95,4 +115,11 @@ $HELM upgrade traefik stable/traefik \
     --set memoryLimit=1Gi \
     --set cpuRequest=1 \
     --set cpuLimit=1
+
+echo
+echo "* Deployment successful..."
+
+echo
+echo "For advanced setup details, visit https://traefik.io/ and/or execute:"
+echo "$ helm inspect all stable/traefik"
 
