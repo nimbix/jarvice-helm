@@ -169,8 +169,16 @@ on multiple architectures (amd64, ppc64le, arm64).  As such, it is recommended
 that kubernetes installations use the Weave plugin if intending to run jobs in
 a multiarch environment.
 
-If running on a managed kubernetes service, such as Amazon EKS, a network
-plugin has likely been set up for the cluster.
+The `deploy2k8s-weave-net` shell script included in the `scripts`
+directory of this helm chart can be used to deploy it into the kubernetes
+cluster.
+Simply execute `./scripts/deploy2k8s-weave-net` to deploy it.
+
+Please see the Weave Net set-up guide for more details:
+https://www.weave.works/docs/net/latest/kube-addon/
+
+**NOTE:**  If running on a managed kubernetes service, such as Amazon EKS,
+a network plugin has likely been set up for the cluster.
 
 ### Kubernetes load balancer
 
