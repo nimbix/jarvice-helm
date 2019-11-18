@@ -1,0 +1,61 @@
+#!/bin/bash
+
+MAJOR_VER=19
+
+SUDO=
+if [ "$EUID" != "0" ]; then
+    SUDO=sudo
+    SUID=$($SUDO id -u)
+    if [ "$SUID" != "0" ]; then
+        echo "Could not verify sudo access.  Cannot continue."
+        echo "Please resolve sudo access before re-running this script."
+        exit 1
+    else
+        echo "* Verified sudo access..."
+    fi
+fi
+
+
+. /etc/os-release
+DISTRO="$ID$VERSION_ID"
+if [ "$ID" != "ubuntu" ] && [ "$ID" != "centos" ] && [ "$ID" != "rhel" ]; then
+    echo "This distro is not supported."
+    exit 1
+fi
+
+set -e
+
+install_pkgs="docker-ce docker-ce-cli"
+MAJOR_VER=$(echo $MAJOR_VER | sed -e "s/\./\\\./g")
+
+if [ "$ID" = "ubuntu" ]; then
+    $SUDO apt-get update && $SUDO apt-get install -y apt-transport-https curl ca-certificates gnupg-agent software-properties-common
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | $SUDO apt-key add -
+    $SUDO add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+    $SUDO apt-get update
+    ver=$(apt-cache show docker-ce | grep -i version | awk '{print $2}' | grep -P "^[\d+:]*$MAJOR_VER\." | head -1)
+    ver_install_pkgs=$(printf "%s=$ver " $install_pkgs)
+    $SUDO apt-mark unhold $install_pkgs containerd.io
+    $SUDO apt-get install -y $ver_install_pkgs containerd.io
+    $SUDO apt-mark hold $install_pkgs containerd.io
+else
+    $SUDO yum install -y device-mapper-persistent-data lvm2 # yum-utils
+    cat <<EOF >/etc/yum.repos.d/docker-ce.repo
+[docker-ce-stable]
+name=Docker CE Stable - \$basearch
+#baseurl=https://download.docker.com/linux/centos/$VERSION_ID/\$basearch/stable
+baseurl=https://download.docker.com/linux/centos/7/\$basearch/stable
+enabled=1
+gpgcheck=1
+gpgkey=https://download.docker.com/linux/centos/gpg
+# Prevent accidental package updates
+exclude=containerd.io docker-ce*
+EOF
+    ver=$(yum list -y --quiet --showduplicates --disableexcludes=docker-ce-stable docker-ce 2>/dev/null | grep ^docker-ce | awk '{print $2}' | sort -r | grep -P "^[\d+:]*$MAJOR_VER\." | head -1 | awk -F: '{print $2}')
+    ver_install_pkgs=$(printf "%s-$ver " $install_pkgs)
+    $SUDO yum install -y --disableexcludes=docker-ce-stable $ver_install_pkgs containerd.io
+
+    $SUDO systemctl enable docker
+    $SUDO systemctl start docker
+fi
+
