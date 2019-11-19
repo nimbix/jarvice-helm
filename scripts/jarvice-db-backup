@@ -46,6 +46,6 @@ pod=$(kubectl -n $namespace get pods \
         -o jsonpath={.items[0].metadata.name})
 cmd='mysqldump '
 cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
-cmd+=' --host="$JARVICE_SITE_DBHOST" --database=nimbix'
+cmd+=' --host="$JARVICE_SITE_DBHOST" nimbix'
 kubectl -n $namespace exec $pod -- bash -c "$cmd" >$file
 
