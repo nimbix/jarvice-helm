@@ -1,0 +1,51 @@
+#!/bin/bash
+
+namespace=
+file=
+
+function usage {
+    cat <<EOF
+Usage:
+    $0 [options]
+
+Options:
+    --namespace <kube_namespace>    Kubernetes namespace of JARVICE deployment
+    --file <sql_backup_file>        File backup to create
+
+Example:
+    $0 --namespace jarvice-system --file jarvice-db.sql
+EOF
+}
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        --help)
+            usage
+            exit 0
+            ;;
+        --namespace)
+            namespace=$2
+            shift; shift
+            ;;
+        --file)
+            file=$2
+            shift; shift
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+[ -z "$namespace" -o -z "$file" ] && usage && exit 1
+
+pod=$(kubectl -n $namespace get pods \
+        -l component=jarvice-dal \
+        --field-selector=status.phase=Running \
+        -o jsonpath={.items[0].metadata.name})
+cmd='mysqldump '
+cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
+cmd+=' --host="$JARVICE_SITE_DBHOST" --database=nimbix'
+kubectl -n $namespace exec $pod -- bash -c "$cmd" >$file
+

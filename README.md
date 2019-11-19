@@ -904,38 +904,15 @@ https://github.com/nimbix/jarvice-cache-pull
 ### Set up database backups
 
 It is recommended that JARVICE database backups be regularly scheduled.
-The following script could be executed from a cronjob to regularly dump
-the database:
-```bash
-#!/bin/bash
-
-namespace=jarvice-system
-pod=$(kubectl -n $namespace get pods \
-        -l component=jarvice-dal \
-        --field-selector=status.phase=Running \
-        -o jsonpath={.items[0].metadata.name})
-cmd='mysqldump '
-cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
-cmd+=' --host="$JARVICE_SITE_DBHOST" nimbix'
-kubectl -n $namespace exec $pod -- bash -c "$cmd" >jarvice-db.sql
-```
+The `jarvice-db-backup` shell script included in the `scripts`
+directory of this helm chart can be used to backup the JARVICE database.
+Simply execute `./scripts/jarvice-db-backup --help` to see it's usage.
 
 #### Restoring the database from backup
 
-The following script can be used to restore the database from the backup:
-```bash
-#!/bin/bash
-
-namespace=jarvice-system
-pod=$(kubectl -n $namespace get pods \
-        -l component=jarvice-dal \
-        --field-selector=status.phase=Running \
-        -o jsonpath={.items[0].metadata.name})
-cmd='mysql '
-cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
-cmd+=' --host="$JARVICE_SITE_DBHOST" --database=nimbix'
-kubectl -n $namespace exec --stdin $pod -- bash -c "$cmd" <jarvice-db.sql
-```
+The `jarvice-db-restore` shell script included in the `scripts`
+directory of this helm chart can be used to backup the JARVICE database.
+Simply execute `./scripts/jarvice-db-restore --help` to see it's usage.
 
 ### Customize JARVICE files via a ConfigMap
 
