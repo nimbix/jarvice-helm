@@ -1,7 +1,7 @@
 #!/bin/bash
 
-namespace=
-file=
+namespace=jarvice-system
+file=jarvice-db.sql
 
 function usage {
     cat <<EOF
@@ -10,7 +10,9 @@ Usage:
 
 Options:
     --namespace <kube_namespace>    Kubernetes namespace of JARVICE deployment
+                                    (Default: $namespace)
     --file <sql_backup_file>        Backup file to restore from
+                                    (Default: $file)
 
 Example:
     $0 --namespace jarvice-system --file jarvice-db.sql
@@ -46,8 +48,6 @@ while [ $# -gt 0 ]; do
             ;;
     esac
 done
-
-[ -z "$namespace" -o -z "$file" ] && usage && exit 1
 
 pod=$($KUBECTL -n $namespace get pods \
         -l component=jarvice-dal \
