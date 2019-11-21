@@ -17,6 +17,15 @@ Example:
 EOF
 }
 
+KUBECTL=$(type -p kubectl)
+if [ -z "$KUBECTL" ]; then
+    cat <<EOF
+Could not find 'kubectl' in PATH.  It may not be installed.
+Run 'install-kubectl' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
 while [ $# -gt 0 ]; do
     case $1 in
         --help)
@@ -40,12 +49,12 @@ done
 
 [ -z "$namespace" -o -z "$file" ] && usage && exit 1
 
-pod=$(kubectl -n $namespace get pods \
+pod=$($KUBECTL -n $namespace get pods \
         -l component=jarvice-dal \
         --field-selector=status.phase=Running \
         -o jsonpath={.items[0].metadata.name})
 cmd='mysqldump '
 cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
 cmd+=' --host="$JARVICE_SITE_DBHOST" nimbix'
-kubectl -n $namespace exec $pod -- bash -c "$cmd" >$file
+$KUBECTL -n $namespace exec $pod -- bash -c "$cmd" >$file
 
