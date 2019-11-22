@@ -244,6 +244,11 @@ spec:
       - backend:
           serviceName: jarvice-mc-portal-experimental
           servicePort: http
+        path: /portal
+      - backend:
+          serviceName: jarvice-mc-portal-experimental
+          servicePort: http
+        path: /
 ---
 {{- end }}
 {{- end }}

@@ -274,6 +274,13 @@ spec:
       - backend:
           serviceName: jarvice-api
           servicePort: http
+        path: /api
+{{- if (ne .Values.jarvice_api.ingressHost .Values.jarvice_mc_portal.ingressHost) }}
+      - backend:
+          serviceName: jarvice-api
+          servicePort: http
+        path: /
+{{- end }}
 ---
 {{- end }}
 {{- end }}

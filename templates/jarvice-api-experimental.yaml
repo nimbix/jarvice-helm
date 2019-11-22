@@ -244,6 +244,13 @@ spec:
       - backend:
           serviceName: jarvice-api-experimental
           servicePort: http
+        path: /api
+{{- if (ne .Values.jarvice_api_experimental.ingressHost .Values.jarvice_mc_portal_experimental.ingressHost) }}
+      - backend:
+          serviceName: jarvice-api-experimental
+          servicePort: http
+        path: /
+{{- end }}
 ---
 {{- end }}
 {{- end }}
