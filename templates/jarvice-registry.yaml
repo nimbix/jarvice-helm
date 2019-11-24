@@ -188,9 +188,17 @@ spec:
   - host: {{ .Values.jarvice_registry.ingressHost }}
     http:
       paths:
+{{- if (eq "/registry" .Values.jarvice_registry.ingressPath) }}
       - backend:
           serviceName: jarvice-registry
           servicePort: https
+        path: /registry
+{{- else }}
+      - backend:
+          serviceName: jarvice-registry
+          servicePort: https
+        path: /
+{{- end }}
 ---
 {{- end }}
 {{- end }}
