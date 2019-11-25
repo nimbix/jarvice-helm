@@ -17,8 +17,7 @@ jarvice:
   JARVICE_IMAGES_TAG: jarvice-testing
   JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
 
-  JARVICE_JOBS_DOMAIN:
-  JARVICE_JOBS_PATH: # "/job"  # Valid values are "/" (default) or "/job"
+  JARVICE_JOBS_DOMAIN: # jarvice-jobs.my-domain.com/job$
   JARVICE_JOBS_LB_SERVICE: false
 
   # jarvice.tolerations applies to all of the jarvice_* components below.

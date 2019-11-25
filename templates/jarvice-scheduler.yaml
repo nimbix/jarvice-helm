@@ -156,8 +156,6 @@ spec:
 {{- end }}
           - name: JARVICE_JOBS_DOMAIN
             value: "{{ .Values.jarvice.JARVICE_JOBS_DOMAIN }}"
-          - name: JARVICE_JOBS_PATH
-            value: "{{ .Values.jarvice.JARVICE_JOBS_PATH }}"
           - name: JARVICE_JOBS_LB_SERVICE
             value: "{{ .Values.jarvice.JARVICE_JOBS_LB_SERVICE }}"
           - name: JARVICE_MAIL_CONF
