@@ -39,7 +39,7 @@ JARVICE tag for images
 JARVICE version for images
 */}}
 {{- define "jarvice.version" -}}
-{{- if semverCompare "^0.1" .Chart.Version -}}
+{{- if semverCompare "^1.0" .Chart.Version -}}
 {{- if (not (empty .Values.jarvice.JARVICE_IMAGES_VERSION)) -}}
 {{- printf "-%s" .Values.jarvice.JARVICE_IMAGES_VERSION -}}
 {{- end -}}
