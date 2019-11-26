@@ -95,7 +95,7 @@ echo
 if [ "$generate_tls" = "true" ]; then
     echo "* Deploying with self signed certificate..."
 else
-    echo "* Deploying with provided certificate files..."
+    echo "* Deploying with the provided certificate files..."
 fi
 echo
 $HELM upgrade traefik stable/traefik \
