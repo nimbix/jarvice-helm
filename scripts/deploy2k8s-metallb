@@ -4,8 +4,6 @@ addresses=
 version_tag=
 namespace=metallb-system
 
-set -e
-
 function usage {
     cat <<EOF
 Usage:
@@ -66,6 +64,8 @@ while [ $# -gt 0 ]; do
 done
 
 [ -z "$addresses" ] && usage && exit 1
+
+set -e
 
 helm_stable_repo_url=https://kubernetes-charts.storage.googleapis.com/
 helm_stable_repo=$($HELM repo list 2>/dev/null | grep ^stable || /bin/true)

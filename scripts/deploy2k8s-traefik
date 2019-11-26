@@ -5,8 +5,6 @@ default_key_file=
 load_balancer_ip=
 namespace=kube-system
 
-set -e
-
 function usage {
     cat <<EOF
 Usage:
@@ -69,6 +67,8 @@ while [ $# -gt 0 ]; do
 done
 
 [ -z "$default_cert_file" -o -z "$default_key_file" -o -z "$load_balancer_ip" ] && usage && exit 1
+
+set -e
 
 helm_stable_repo_url=https://kubernetes-charts.storage.googleapis.com/
 helm_stable_repo=$($HELM repo list 2>/dev/null | grep ^stable || /bin/true)
