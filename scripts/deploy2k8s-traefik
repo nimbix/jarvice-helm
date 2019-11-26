@@ -1,8 +1,9 @@
 #!/bin/bash
 
+load_balancer_ip=
+generate_tls=true
 default_cert_file=
 default_key_file=
-load_balancer_ip=
 namespace=kube-system
 
 function usage {
@@ -11,9 +12,9 @@ Usage:
     $0 [options]
 
 Options:
-    --default-cert-file <filename>  TLS default certificate file (required)
-    --default-key-file <filename>   TLS default key file (required)
     --load-balancer-ip <ip_addr>    Static IP for ingress controller (required)
+    --default-cert-file <filename>  TLS default certificate file
+    --default-key-file <filename>   TLS default key file
     --namespace <kube_namespace>    Kubernetes namespace to deploy to
                                     (Default: $namespace)
 EOF
@@ -66,7 +67,11 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-[ -z "$default_cert_file" -o -z "$default_key_file" -o -z "$load_balancer_ip" ] && usage && exit 1
+[ -z "$load_balancer_ip" ] && usage && exit 1
+
+[ -n "$default_cert_file" ] && default_cert="$(cat $default_cert_file | base64 -w 0)"
+[ -n "$default_key_file" ] && default_key="$(cat $default_key_file | base64 -w 0)"
+[ -n "$default_cert_file" -a -n "$default_key_file" ] && generate_tls=false
 
 set -e
 
@@ -87,7 +92,12 @@ echo "* Creating namespace: $namespace"
 $KUBECTL create namespace $namespace 2>/dev/null || /bin/true
 
 echo
-echo "* Deploying..."
+if [ "$generate_tls" = "true" ]; then
+    echo "* Deploying with self signed certificate..."
+else
+    echo "* Deploying with provided certificate files..."
+fi
+echo
 $HELM upgrade traefik stable/traefik \
     --namespace $namespace --install --reset-values \
     \
@@ -106,9 +116,9 @@ $HELM upgrade traefik stable/traefik \
     --set ssl.enforced=true \
     --set ssl.permanentRedirect=true \
     --set ssl.insecureSkipVerify=true \
-    --set ssl.generateTLS=false \
-    --set ssl.defaultCert="$(cat $default_cert_file | base64 -w 0)" \
-    --set ssl.defaultKey="$(cat $default_key_file | base64 -w 0)" \
+    --set ssl.generateTLS=$generate_tls \
+    --set ssl.defaultCert="$default_cert" \
+    --set ssl.defaultKey="$default_key" \
     \
     --set replicas=3 \
     --set memoryRequest=1Gi \
