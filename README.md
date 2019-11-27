@@ -172,10 +172,30 @@ a multiarch environment.
 The `deploy2k8s-weave-net` shell script included in the `scripts`
 directory of this helm chart can be used to deploy it into the kubernetes
 cluster.
-Simply execute `./scripts/deploy2k8s-weave-net` to deploy it.
+Execute `./scripts/deploy2k8s-weave-net` wth `--help` to see all of the
+current command line options:
+```bash
+Usage:
+    ./scripts/deploy2k8s-weave-net [options]
+
+Options:
+    --ipalloc-range <ip_range>  IP address range used by Weave Net
+                                (Default: 10.32.0.0/12)
+
+Example:
+    ./scripts/deploy2k8s-weave-net --ipalloc-range 10.32.0.0/12
+```
 
 Please see the Weave Net set-up guide for more details:
-https://www.weave.works/docs/net/latest/kube-addon/
+https://www.weave.works/docs/net/latest/kubernetes/kube-addon/
+
+**NOTE:**  The default IP allocation range Weave Net uses is 10.32.0.0/12
+(10.32.0.1-10.47.255.254).  If this conflicts with disparate site networks
+which will be connecting to the kubernetes cluster, traffic may not be
+properly routed.  If your site has potential IP conflicts with this range,
+be sure to update the `--ipalloc-range` used by the Weave deployment script.
+Please see the following link for more details:
+https://www.weave.works/docs/net/latest/kubernetes/kube-addon/#configuration-options
 
 **NOTE:**  If running on a managed kubernetes service, such as Amazon EKS,
 a network plugin has likely been set up for the cluster.
