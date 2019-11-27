@@ -172,7 +172,7 @@ a multiarch environment.
 The `deploy2k8s-weave-net` shell script included in the `scripts`
 directory of this helm chart can be used to deploy it into the kubernetes
 cluster.
-Execute `./scripts/deploy2k8s-weave-net` wth `--help` to see all of the
+Execute `./scripts/deploy2k8s-weave-net` with `--help` to see all of the
 current command line options:
 ```bash
 Usage:
