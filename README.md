@@ -924,9 +924,9 @@ https://github.com/nimbix/jarvice-cache-pull
 ### Set up database backups
 
 It is recommended that JARVICE database backups be regularly scheduled.
-The `jarvice-db-backup` shell script included in the `scripts`
+The `jarvice-db-dump` shell script included in the `scripts`
 directory of this helm chart can be used to backup the JARVICE database.
-Simply execute `./scripts/jarvice-db-backup --help` to see it's usage.
+Simply execute `./scripts/jarvice-db-dump --help` to see it's usage.
 
 #### Restoring the database from backup
 
