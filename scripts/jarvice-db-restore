@@ -56,5 +56,5 @@ pod=$($KUBECTL -n $namespace get pods \
 cmd='mysql '
 cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
 cmd+=' --host="$JARVICE_SITE_DBHOST" --database=nimbix'
-$KUBECTL -n $namespace exec --stdin $pod -- bash -c "$cmd" <<<$(zcat $file)
+$KUBECTL -n $namespace exec --stdin $pod -- bash -c "$cmd" <<<"$(zcat $file)"
 
