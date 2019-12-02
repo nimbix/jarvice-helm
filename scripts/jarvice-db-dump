@@ -53,8 +53,11 @@ pod=$($KUBECTL -n $namespace get pods \
         -l component=jarvice-dal \
         --field-selector=status.phase=Running \
         -o jsonpath={.items[0].metadata.name})
+[ -z "$pod" ] && echo "* Could not find jarvice-dal pod in $namespace namespace...Exiting..." && exit 1
 cmd='mysqldump '
 cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
 cmd+=' --host="$JARVICE_SITE_DBHOST" nimbix'
+echo "* Dumping JARVICE database from $namespace namespace to $file..."
 $KUBECTL -n $namespace exec $pod -- bash -c "$cmd" | gzip >$file
+echo; echo "* Successfully dumped JARVICE database from $namespace namespace to $file..."
 
