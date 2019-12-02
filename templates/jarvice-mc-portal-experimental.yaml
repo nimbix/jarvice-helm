@@ -250,6 +250,10 @@ spec:
           serviceName: jarvice-mc-portal-experimental
           servicePort: http
         path: /static
+      - backend:
+          serviceName: jarvice-mc-portal-experimental
+          servicePort: http
+        path: /index.html
 {{- else }}
       - backend:
           serviceName: jarvice-mc-portal-experimental

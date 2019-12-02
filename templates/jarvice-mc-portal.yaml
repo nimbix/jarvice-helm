@@ -282,6 +282,10 @@ spec:
           serviceName: jarvice-mc-portal
           servicePort: https
         path: /static
+      - backend:
+          serviceName: jarvice-mc-portal
+          servicePort: https
+        path: /index.html
 {{- else }}
       - backend:
           serviceName: jarvice-mc-portal
