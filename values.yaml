@@ -180,7 +180,7 @@ jarvice_registry:
   replicaCount: 1
   loadBalancerIP:
   ingressHost: # jarvice-registry.my-domain.com
-  ingressPath: # "/registry"  # Valid values are "/" (default) or "/registry"
+  ingressPath: "/"  # Valid values are "/" (default) or "/registry"
   resources:
     limits:
       cpu: 250m
@@ -317,7 +317,7 @@ jarvice_api:
   antiAffinity: "soft"
   loadBalancerIP:
   ingressHost: # jarvice-api.my-domain.com
-  ingressPath: # "/api"  # Valid values are "/" (default) or "/api"
+  ingressPath: "/"  # Valid values are "/" (default) or "/api"
   resources:
     limits:
       cpu: 250m
@@ -373,7 +373,7 @@ jarvice_mc_portal:
   antiAffinity: "soft"
   loadBalancerIP:
   ingressHost: # jarvice.my-domain.com
-  ingressPath: # "/portal"  # Valid values are "/" (default) or "/portal"
+  ingressPath: "/"  # Valid values are "/" (default) or "/portal"
   resources:
     limits:
       cpu: 250m
@@ -408,11 +408,11 @@ jarvice_api_experimental:
   enabled: false
   loadBalancerIP:
   ingressHost: # jarvice-api.my-domain.com
-  ingressPath: # "/api"  # Valid values are "/" (default) or "/api"
+  ingressPath: "/"  # Valid values are "/" (default) or "/api"
 
 jarvice_mc_portal_experimental:
   enabled: false
   loadBalancerIP:
   ingressHost: # jarvice.my-domain.com
-  ingressPath: # "/portal"  # Valid values are "/" (default) or "/portal"
+  ingressPath: "/"  # Valid values are "/" (default) or "/portal"
 
