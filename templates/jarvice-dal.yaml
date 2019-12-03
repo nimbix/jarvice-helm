@@ -261,7 +261,6 @@ DO NOT enable it here without understanding the security implications!
     - protocol: TCP
       port: 8000
 ---
-{{- end }}
 apiVersion: {{ template "apiVersion.ingress" . }}
 kind: Ingress
 metadata:
@@ -277,6 +276,7 @@ spec:
       - backend:
           serviceName: jarvice-dal
           servicePort: https
+{{- end }}
 {{- end }}
 ---
 {{- end }}
