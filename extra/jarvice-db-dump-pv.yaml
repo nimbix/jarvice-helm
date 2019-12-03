@@ -29,7 +29,7 @@ spec:
 #      - 10.0.0.117:6789
 #      - 10.0.0.118:6789
 #    pool: kube
-#    image: jarvice
+#    image: jarvice-db-dump
 #    user: admin
 #    secretRef:
 #      name: ceph-secret 
