@@ -924,8 +924,26 @@ https://github.com/nimbix/jarvice-cache-pull
 ### Set up database backups
 
 It is recommended that JARVICE database backups be regularly scheduled.
+This helm chart includes an optional kubernetes CronJob which can be enabled
+to regularly back up the JARVICE database.
+It can be enabled either in an `override.yaml` file or via the helm
+command line with:
+
+`--set jarvice_db_dump.enabled=true`
+
+Use of the CronJob also requires a persistent volume in which to store the
+database dump files.  By default, it will attempt to use the `jarvice-db-dump`
+storage class and request 200GB of storage.  The
+`extra/jarvice-db-dump-pv.yaml` file is provided as a simple example for
+creating a persistent volume that can be used for persistent storage.
+
+Please review the `jarvice_db_dump` stanza found in `values.yaml` for more
+details on the CronJob settings for backups.
+
+#### Dumping the database with the `jarvice-db-dump` script
+
 The `jarvice-db-dump` shell script included in the `scripts`
-directory of this helm chart can be used to backup the JARVICE database.
+directory of this helm chart can also be used to backup the JARVICE database.
 Simply execute `./scripts/jarvice-db-dump --help` to see it's usage.
 
 #### Restoring the database from backup

@@ -148,6 +148,31 @@ jarvice_db:
     MYSQL_USER: # nimbix # optional, additional superuser
     MYSQL_PASSWORD: # Pass1234
 
+# Enable to use a kubernetes CronJob to regularly dump the JARVICE database
+jarvice_db_dump:
+  enabled: false
+  schedule: "0 4 * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  deleteOldBackups:
+    enabled: true
+    keep: 14  # Number of dumps to keep
+  tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-db", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeSelector: # '{"node-role.kubernetes.io/jarvice-db": ""}'
+  persistence:
+    # Set to "keep" to prevent removal or jarvice-db-dump-pvc on helm delete
+    resourcePolicy: ""  # "keep"
+    # Use empty existingClaimName for dynamic provisioning via storageClass
+    existingClaimName: # "jarvice-db-dump-pvc"
+    # storageClass: "-"
+    storageClass: "jarvice-db-dump"
+    accessMode: ReadWriteOnce
+    size: 200Gi
+  securityContext:
+    enabled: false  # Enable when PersistentVolume is root squashed
+    fsGroup: 999
+    runAsUser: 999
+
 # Memcached server previously set up?  Set jarvice_memcached.enabled to false.
 # Then, set JARVICE_PORTAL_MEMCACHED_LOCATIONS below in jarvice_mc_portal env.
 jarvice_memcached:
