@@ -98,7 +98,7 @@ Here is the command to get the appropriate string to use for
 `jarvice.imagePullSecret`:
 
 ```bash
-$ echo "_json_key:$(cat gcr.io.json)" | base64 -w 0
+$ echo "_json_key:$(cat file_path_to/gcr.io.json)" | base64 -w 0
 ```
 
 ### `jarvice-db` pod is in the `Pending` state
@@ -125,7 +125,7 @@ the `jarvice-db`:
 If `kubectl describe` of JARVICE system pods shows that kubernetes is
 unable find any nodes to place pods on due to node taints, please review
 the section on
-[Node taints and pod tolerations](README.md#node-taints-and-pod-tolerations)
+[Node taints and pod tolerations](README.md#node-taints-and-pod-tolerations).
 
 #### Insufficient resources available
 
@@ -136,7 +136,7 @@ for `jarvice-system` pods.  This could entail adding more physical/virtual
 nodes and/or modifying taints on nodes already joined to the cluster.
 
 If modifying taints on already existing nodes, please review the section on
-[Node taints and pod tolerations](README.md#node-taints-and-pod-tolerations)
+[Node taints and pod tolerations](README.md#node-taints-and-pod-tolerations).
 
 
 ### `jarvice-dal` pods are continually restarting
@@ -150,6 +150,8 @@ pod is in the `Running` state.
 If the above issues can be ruled out, it may be necessary to disable the
 NetworkPolicy for the `jarvice-db` pod and/or globally for all
 `jarvice-system` pods.
-This can be done by setting `jarvice_db.networkPolicy.enabled` and/or
-`jarvice.networkPolicy.enabled` to `false` respectively.
+This can be done by setting `jarvice_db.networkPolicy.enabled` to `false`
+and/or setting `jarvice.networkPolicy.enabled` to `false` respectively.
+
+------------------------------------------------------------------------------
 
