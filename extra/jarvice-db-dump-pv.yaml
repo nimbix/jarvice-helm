@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: jarvice-db-dump-pv
+spec:
+  capacity:
+    storage: 200Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: jarvice-db-dump
+  #
+  # Uncomment and edit the appropriate method below to set up the PV
+  #
+#  hostPath:
+#    path: /home/jarvice-db-dump
+#
+#  nfs:
+#    path: /home/jarvice-db-dump
+#    server: 10.20.0.144
+#  mountOptions:
+#    - hard
+#    - nfsvers=4.1
+#
+#  rbd:
+#    monitors: 
+#      - 10.0.0.116:6789
+#      - 10.0.0.117:6789
+#      - 10.0.0.118:6789
+#    pool: kube
+#    image: jarvice-db-dump
+#    user: admin
+#    secretRef:
+#      name: ceph-secret 
+#    fsType: ext4 
+#    readOnly: false
+---
+#  Do the following to create ceph-secret (or comment out YAML below)
+#  $ kubectl create secret generic ceph-secret --type="kubernetes.io/rbd" \
+#     --from-literal=key='<ceph-secret>' --namespace=<jarvice-system-namespace>
+#
+#apiVersion: v1
+#kind: Secret
+#metadata:
+#  name: ceph-secret
+#  namespace: <jarvice-system-namespace>
+#type: kubernetes.io/rbd
+#data:
+#  # Using the following command will create encoded string:
+#  # $ echo -n "<ceph-secret>" | base64
+#  key: <base64-encoded-ceph-secret>
+#  namespace: <jarvice-system-namespace>
+#---
+# Optionally, use the YAML below to manually create a PVC for jarvice-db-dump.
+# If going the manually route, it will be necessary to set the existing claim
+# option jarvice_db.persistence.existingClaimName during helm install/upgrade.
+#
+#apiVersion: v1
+#kind: PersistentVolumeClaim
+#metadata:
+#  name: jarvice-db-dump-pvc
+#  namespace: <jarvice-system-namespace>
+#spec:
+#  accessModes:
+#    - ReadWriteOnce
+#  volumeMode: Filesystem
+#  resources:
+#    requests:
+#      storage: 200Gi
+#  storageClassName: "jarvice-db-dump"
+#---

@@ -109,7 +109,7 @@ spec:
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_WEB_HOST }}"
 {{- else if (not (empty .Values.jarvice_mc_portal.ingressHost)) }}
           - name: JARVICE_PORTAL_WEB_HOST
-            value: "https://{{ .Values.jarvice_mc_portal.ingressHost }}"
+            value: "https://{{ .Values.jarvice_mc_portal.ingressHost }}{{ .Values.jarvice_mc_portal.ingressPath }}"
 {{- end }}
           - name: JARVICE_PORTAL_MEMCACHED_LOCATIONS
 {{- if and .Values.jarvice_memcached.enabled (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MEMCACHED_LOCATIONS) }}
@@ -241,9 +241,25 @@ spec:
   - host: {{ .Values.jarvice_mc_portal_experimental.ingressHost }}
     http:
       paths:
+{{- if (eq "/portal" .Values.jarvice_mc_portal_experimental.ingressPath) }}
       - backend:
           serviceName: jarvice-mc-portal-experimental
           servicePort: http
+        path: /portal
+      - backend:
+          serviceName: jarvice-mc-portal-experimental
+          servicePort: http
+        path: /static
+      - backend:
+          serviceName: jarvice-mc-portal-experimental
+          servicePort: http
+        path: /index.html
+{{- else }}
+      - backend:
+          serviceName: jarvice-mc-portal-experimental
+          servicePort: http
+        path: /
+{{- end }}
 ---
 {{- end }}
 {{- end }}

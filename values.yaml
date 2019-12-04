@@ -17,7 +17,8 @@ jarvice:
   JARVICE_IMAGES_TAG: jarvice-master
   JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
 
-  JARVICE_JOBS_DOMAIN:
+  # JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
+  JARVICE_JOBS_DOMAIN: # my-domain.com  # (host based ingress)
   JARVICE_JOBS_LB_SERVICE: false
 
   # jarvice.tolerations applies to all of the jarvice_* components below.
@@ -147,6 +148,31 @@ jarvice_db:
     MYSQL_USER: # nimbix # optional, additional superuser
     MYSQL_PASSWORD: # Pass1234
 
+# Enable to use a kubernetes CronJob to regularly dump the JARVICE database
+jarvice_db_dump:
+  enabled: false
+  schedule: "0 4 * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  deleteOldBackups:
+    enabled: true
+    keep: 14  # Number of dumps to keep
+  tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-db", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeSelector: # '{"node-role.kubernetes.io/jarvice-db": ""}'
+  persistence:
+    # Set to "keep" to prevent removal or jarvice-db-dump-pvc on helm delete
+    resourcePolicy: ""  # "keep"
+    # Use empty existingClaimName for dynamic provisioning via storageClass
+    existingClaimName: # "jarvice-db-dump-pvc"
+    # storageClass: "-"
+    storageClass: "jarvice-db-dump"
+    accessMode: ReadWriteOnce
+    size: 200Gi
+  securityContext:
+    enabled: false  # Enable when PersistentVolume is root squashed
+    fsGroup: 999
+    runAsUser: 999
+
 # Memcached server previously set up?  Set jarvice_memcached.enabled to false.
 # Then, set JARVICE_PORTAL_MEMCACHED_LOCATIONS below in jarvice_mc_portal env.
 jarvice_memcached:
@@ -179,6 +205,7 @@ jarvice_registry:
   replicaCount: 1
   loadBalancerIP:
   ingressHost: # jarvice-registry.my-domain.com
+  ingressPath: "/"  # Valid values are "/" (default) or "/registry"
   resources:
     limits:
       cpu: 250m
@@ -315,6 +342,7 @@ jarvice_api:
   antiAffinity: "soft"
   loadBalancerIP:
   ingressHost: # jarvice-api.my-domain.com
+  ingressPath: "/"  # Valid values are "/" (default) or "/api"
   resources:
     limits:
       cpu: 250m
@@ -370,6 +398,7 @@ jarvice_mc_portal:
   antiAffinity: "soft"
   loadBalancerIP:
   ingressHost: # jarvice.my-domain.com
+  ingressPath: "/"  # Valid values are "/" (default) or "/portal"
   resources:
     limits:
       cpu: 250m
@@ -381,11 +410,11 @@ jarvice_mc_portal:
   # JARVICE_PORTAL_DBHOST inherits from jarvice.JARVICE_DBHOST if unset
   # JARVICE_PORTAL_DBPASSWD inherits from jarvice.JARVICE_DBPASSWD if unset
   # JARVICE_PORTAL_DBUSER inherits from jarvice.JARVICE_DBUSER if unset
-  # JARVICE_PORTAL_WEB_HOST inherits from jarvice_mc_portal.ingressHost if unset
+  # JARVICE_PORTAL_WEB_HOST inherits from jarvice_mc_portal.ingressHost/jarvice_mc_portal.ingressPath if unset
   env:
     JARVICE_USER_DEFAULT_ENABLED: True
     JARVICE_USER_DEFAULT_DEVELOPER: True
-    JARVICE_PORTAL_WEB_HOST: # https://<jarvice_mc_portal.ingressHost>
+    JARVICE_PORTAL_WEB_HOST: # https://<jarvice_mc_portal.ingressHost><jarvice_mc_portal.ingressPath>
     # If null, JARVICE_PORTAL_MEMCACHED_LOCATIONS is auto-generated based on
     # jarvice_memcached.enabled/jarvice_memcached.replicaCount
     JARVICE_PORTAL_MEMCACHED_LOCATIONS: # jarvice-memcached-0.jarvice-memcached:11211,jarvice-memcached-1.jarvice-memcached:11211,jarvice-memcached-2.jarvice-memcached:11211
@@ -404,9 +433,11 @@ jarvice_api_experimental:
   enabled: false
   loadBalancerIP:
   ingressHost: # jarvice-api.my-domain.com
+  ingressPath: "/"  # Valid values are "/" (default) or "/api"
 
 jarvice_mc_portal_experimental:
   enabled: false
   loadBalancerIP:
   ingressHost: # jarvice.my-domain.com
+  ingressPath: "/"  # Valid values are "/" (default) or "/portal"
 

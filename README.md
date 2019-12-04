@@ -172,10 +172,30 @@ a multiarch environment.
 The `deploy2k8s-weave-net` shell script included in the `scripts`
 directory of this helm chart can be used to deploy it into the kubernetes
 cluster.
-Simply execute `./scripts/deploy2k8s-weave-net` to deploy it.
+Execute `./scripts/deploy2k8s-weave-net` with `--help` to see all of the
+current command line options:
+```bash
+Usage:
+    ./scripts/deploy2k8s-weave-net [options]
+
+Options:
+    --ipalloc-range <ip_range>  IP address range used by Weave Net
+                                (Default: 10.32.0.0/12)
+
+Example:
+    ./scripts/deploy2k8s-weave-net --ipalloc-range 10.32.0.0/12
+```
 
 Please see the Weave Net set-up guide for more details:
-https://www.weave.works/docs/net/latest/kube-addon/
+https://www.weave.works/docs/net/latest/kubernetes/kube-addon/
+
+**NOTE:**  The default IP allocation range Weave Net uses is 10.32.0.0/12
+(10.32.0.1-10.47.255.254).  If this conflicts with disparate site networks
+which will be connecting to the kubernetes cluster, traffic may not be
+properly routed.  If your site has potential IP conflicts with this range,
+be sure to update the `--ipalloc-range` used by the Weave deployment script.
+Please see the following link for more details:
+https://www.weave.works/docs/net/latest/kubernetes/kube-addon/#configuration-options
 
 **NOTE:**  If running on a managed kubernetes service, such as Amazon EKS,
 a network plugin has likely been set up for the cluster.
@@ -904,38 +924,33 @@ https://github.com/nimbix/jarvice-cache-pull
 ### Set up database backups
 
 It is recommended that JARVICE database backups be regularly scheduled.
-The following script could be executed from a cronjob to regularly dump
-the database:
-```bash
-#!/bin/bash
+This helm chart includes an optional kubernetes CronJob which can be enabled
+to regularly back up the JARVICE database.
+It can be enabled either in an `override.yaml` file or via the helm
+command line with:
 
-namespace=jarvice-system
-pod=$(kubectl -n $namespace get pods \
-        -l component=jarvice-dal \
-        --field-selector=status.phase=Running \
-        -o jsonpath={.items[0].metadata.name})
-cmd='mysqldump '
-cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
-cmd+=' --host="$JARVICE_SITE_DBHOST" nimbix'
-kubectl -n $namespace exec $pod -- bash -c "$cmd" >jarvice-db.sql
-```
+`--set jarvice_db_dump.enabled=true`
+
+Use of the CronJob also requires a persistent volume in which to store the
+database dump files.  By default, it will attempt to use the `jarvice-db-dump`
+storage class and request 200GB of storage.  The
+`extra/jarvice-db-dump-pv.yaml` file is provided as a simple example for
+creating a persistent volume that can be used for persistent storage.
+
+Please review the `jarvice_db_dump` stanza found in `values.yaml` for more
+details on the CronJob settings for backups.
+
+#### Dumping the database with the `jarvice-db-dump` script
+
+The `jarvice-db-dump` shell script included in the `scripts`
+directory of this helm chart can also be used to backup the JARVICE database.
+Simply execute `./scripts/jarvice-db-dump --help` to see it's usage.
 
 #### Restoring the database from backup
 
-The following script can be used to restore the database from the backup:
-```bash
-#!/bin/bash
-
-namespace=jarvice-system
-pod=$(kubectl -n $namespace get pods \
-        -l component=jarvice-dal \
-        --field-selector=status.phase=Running \
-        -o jsonpath={.items[0].metadata.name})
-cmd='mysql '
-cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
-cmd+=' --host="$JARVICE_SITE_DBHOST" --database=nimbix'
-kubectl -n $namespace exec --stdin $pod -- bash -c "$cmd" <jarvice-db.sql
-```
+The `jarvice-db-restore` shell script included in the `scripts`
+directory of this helm chart can be used to backup the JARVICE database.
+Simply execute `./scripts/jarvice-db-restore --help` to see it's usage.
 
 ### Customize JARVICE files via a ConfigMap
 
@@ -1029,6 +1044,7 @@ Then use https://`$PORTAL_IP`/ to initialize and/or log into JARVICE.
 - [User Storage Patterns and Configuration](Storage.md)
 - [Active Directory Authentication Best Practices](ActiveDirectory.md)
 - [In-container Identity Settings and Best Practices](Identity.md)
+- [JARVICE Troubleshooting Guide](Troubleshooting.md)
 - [JARVICE Developer Documentation (jarvice.readthedocs.io)](https://jarvice.readthedocs.io)
 
 

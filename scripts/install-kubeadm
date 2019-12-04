@@ -1,0 +1,73 @@
+#!/bin/bash
+
+MAJOR_VER=1.14
+
+DOCKER=$(type -p docker)
+if [ "$(basename $0)" = "install-kubeadm" -a -z "$DOCKER" ]; then
+    cat <<EOF
+Could not find 'docker' in PATH.  It may not be installed.
+Run 'install-docker' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+SUDO=
+if [ "$EUID" != "0" ]; then
+    SUDO=sudo
+    SUID=$($SUDO id -u)
+    if [ "$SUID" != "0" ]; then
+        echo "Could not verify sudo access.  Cannot continue."
+        echo "Please resolve sudo access before re-running this script."
+        exit 1
+    else
+        echo "* Verified sudo access..."
+    fi
+fi
+
+
+. /etc/os-release
+DISTRO="$ID$VERSION_ID"
+if [ "$ID" != "ubuntu" ] && [ "$ID" != "centos" ] && [ "$ID" != "rhel" ]; then
+    echo "This distro is not supported."
+    exit 1
+fi
+
+set -e
+
+install_pkgs="kubelet kubeadm kubectl"
+[ "$(basename $0)" = "install-kubectl" ] && install_pkgs=kubectl
+MAJOR_VER=$(echo $MAJOR_VER | sed -e "s/\./\\\./g")
+
+if [ "$ID" = "ubuntu" ]; then
+    $SUDO apt-get update && $SUDO apt-get install -y apt-transport-https curl ca-certificates gnupg-agent software-properties-common
+    curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | $SUDO apt-key add -
+    cat <<EOF | $SUDO tee /etc/apt/sources.list.d/kubernetes.list
+#deb https://apt.kubernetes.io/ kubernetes-$VERSION_CODENAME main
+deb https://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+    $SUDO apt-get update
+    ver=$(apt-cache show kubectl | grep -i version | awk '{print $2}' | grep "^$MAJOR_VER\." | head -1)
+    ver_install_pkgs=$(printf "%s=$ver " $install_pkgs)
+    $SUDO apt-mark unhold $install_pkgs
+    $SUDO apt-get install -y $ver_install_pkgs
+    $SUDO apt-mark hold $install_pkgs
+else
+    cat <<EOF >/etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+#baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el$VERSION_ID-$(arch)
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-$(arch)
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+# Prevent accidental package updates
+exclude=kube*
+EOF
+    ver=$(yum list -y --quiet --showduplicates --disableexcludes=kubernetes kubectl 2>/dev/null | grep ^kubectl | awk '{print $2}' | sort -r | grep "^$MAJOR_VER\." | head -1)
+    ver_install_pkgs=$(printf "%s-$ver " $install_pkgs)
+    $SUDO yum install -y --disableexcludes=kubernetes $ver_install_pkgs
+
+    #[ "$(basename $0)" = "install-kubeadm" ] && $SUDO systemctl enable kubelet || /bin/true
+fi
+

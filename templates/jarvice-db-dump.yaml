@@ -1,0 +1,154 @@
+{{- if .Values.jarvice_db_dump.enabled }}
+{{- if (empty .Values.jarvice_db_dump.persistence.existingClaimName) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jarvice-db-dump-pvc
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-db-dump
+{{- if eq .Values.jarvice_db_dump.persistence.resourcePolicy "keep" }}
+  annotations:
+    helm.sh/resource-policy: keep
+{{- end }}
+spec: 
+  accessModes:
+    - {{ .Values.jarvice_db_dump.persistence.accessMode }}
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: {{ .Values.jarvice_db_dump.persistence.size }}
+{{- if .Values.jarvice_db_dump.persistence.storageClass }}
+{{- if (eq "-" .Values.jarvice_db_dump.persistence.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: "{{ .Values.jarvice_db_dump.persistence.storageClass }}"
+{{- end }}
+{{- end }}
+--- 
+{{- end }}
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: jarvice-db-dump
+spec:
+  schedule: "{{ .Values.jarvice_db_dump.schedule }}"
+  failedJobsHistoryLimit: {{ .Values.jarvice_db_dump.failedJobsHistoryLimit }}
+  successfulJobsHistoryLimit: {{ .Values.jarvice_db_dump.successfulJobsHistoryLimit }}
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            {{- include "jarvice.release_labels" . | indent 12 }}
+            component: jarvice-db-dump
+            cronjob: jarvice-db-dump
+          annotations:
+            deployment-date: {{ now | quote }}
+        spec:
+          restartPolicy: Never
+{{- if (not (empty .Values.jarvice_dal.tolerations)) }}
+          tolerations: {{ .Values.jarvice_dal.tolerations }}
+{{- else if (not (empty .Values.jarvice.tolerations)) }}
+          tolerations: {{ .Values.jarvice.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice_dal.nodeSelector)) }}
+          nodeSelector: {{ .Values.jarvice_dal.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.nodeSelector)) }}
+          nodeSelector: {{ .Values.jarvice.nodeSelector }}
+{{- end }}
+          imagePullSecrets:
+          - name: jarvice-docker
+          volumes:
+            - name: jarvice-db-dump-dir
+              persistentVolumeClaim:
+{{- if (empty .Values.jarvice_db_dump.persistence.existingClaimName) }}
+                claimName: jarvice-db-dump-pvc
+{{- else }}
+                claimName: {{ .Values.jarvice_db_dump.persistence.existingClaimName }}
+{{- end }}
+            - name: jarvice-db-dump
+              configMap:
+                name: jarvice-db-dump
+                optional: false
+          containers:
+          - name: jarvice-db-dump
+            image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-dal:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}{{- include "jarvice.version" . }}
+            imagePullPolicy: Always
+            command:
+            - /bin/bash
+            - /opt/bin/jarvice-db-dump
+            env:
+              - name: JARVICE_SYSTEM_NAMESPACE
+{{- if empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+                value: {{ .Release.Namespace }}
+{{- else }}
+                value: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+{{- end }}
+              - name: JARVICE_SITE_DBHOST
+{{- if empty .Values.jarvice_dal.env.JARVICE_SITE_DBHOST }}
+                value: "{{ .Values.jarvice.JARVICE_DBHOST }}"
+{{- else }}
+                value: "{{ .Values.jarvice_dal.env.JARVICE_SITE_DBHOST }}"
+{{- end }}
+              - name: JARVICE_SITE_DBUSER
+{{- if empty .Values.jarvice_dal.env.JARVICE_SITE_DBUSER }}
+                value: "{{ .Values.jarvice.JARVICE_DBUSER }}"
+{{- else }}
+                value: "{{ .Values.jarvice_dal.env.JARVICE_SITE_DBUSER }}"
+{{- end }}
+              - name: JARVICE_SITE_DBPASSWD
+                valueFrom:
+                  secretKeyRef:
+                    name: jarvice-db
+{{- if empty .Values.jarvice_dal.env.JARVICE_SITE_DBPASSWD }}
+                    key: JARVICE_DBPASSWD
+{{- else }}
+                    key: JARVICE_SITE_DBPASSWD
+{{- end }}
+            volumeMounts:
+            - name: jarvice-db-dump-dir
+              mountPath: /jarvice-db-dump
+            - name: jarvice-db-dump
+              mountPath: /opt/bin
+              readOnly: true
+{{- if .Values.jarvice_db_dump.securityContext.enabled }}
+            securityContext:
+              fsGroup: {{ .Values.jarvice_db_dump.securityContext.fsGroup }}
+              runAsUser: {{ .Values.jarvice_db_dump.securityContext.runAsUser }}
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jarvice-db-dump
+data:
+  jarvice-db-dump: |
+    #!/bin/bash
+    set -e
+    dump_dir=/jarvice-db-dump
+    file=$dump_dir/$JARVICE_SYSTEM_NAMESPACE-$(date +%Y%m%d%H%M%S).sql.gz
+    echo "* Dumping JARVICE database from $JARVICE_SYSTEM_NAMESPACE namespace to $file..."
+    mysqldump --verbose \
+        --user="$JARVICE_SITE_DBUSER" \
+        --password="$JARVICE_SITE_DBPASSWD" \
+        --host="$JARVICE_SITE_DBHOST" nimbix | gzip >$file
+    echo; echo "* Successfully dumped JARVICE database from $JARVICE_SYSTEM_NAMESPACE namespace to $file..."
+{{- if .Values.jarvice_db_dump.deleteOldBackups.enabled }}
+    set +e
+    rmfiles=$(ls -1 -d -t -r $dump_dir/$JARVICE_SYSTEM_NAMESPACE-*.sql.gz \
+                2>/dev/null | \
+                head --lines=-{{ .Values.jarvice_db_dump.deleteOldBackups.keep }})
+    if [ -n "$rmfiles" ]; then
+        set -e
+        echo; echo "* Cleaning up old backups..."
+        rm -vf $rmfiles
+        echo; echo "* Finished cleaning up old backups..."
+    fi
+{{- end }}
+    exit 0
+---
+{{- end }}
+
