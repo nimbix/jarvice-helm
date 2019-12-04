@@ -9,7 +9,7 @@ This guide can be used to troubleshoot basic issues with a JARVICE deployment.
 * [Checking status of JARVICE system pods](#checking-status-of-jarvice-system-pods)
     - [Describe the pod(s) that are not in the Running state](#describe-the-pods-that-are-not-in-the-running-state)
     - [Pod status showing `ImagePullBackOff`](#pod-status-showing-imagepullbackoff)
-    - [`jarvice-db` pod is in the `Pending` state](#jarvice-db-pods-is-in-the-pending-state)
+    - [`jarvice-db` pod is in the `Pending` state](#jarvice-db-pod-is-in-the-pending-state)
     - [Multiple JARVICE system pods are in the `Pending` state](#multiple-jarvice-system-pods-are-in-the-pending-state)
         - [Check kubernetes node labels and taints](#check-kubernetes-node-labels-and-taints)
         - [Insufficient resources available](#insufficient-resources-available)
