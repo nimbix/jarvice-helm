@@ -1044,6 +1044,7 @@ Then use https://`$PORTAL_IP`/ to initialize and/or log into JARVICE.
 - [User Storage Patterns and Configuration](Storage.md)
 - [Active Directory Authentication Best Practices](ActiveDirectory.md)
 - [In-container Identity Settings and Best Practices](Identity.md)
+- [JARVICE Troubleshooting Guide](Troubleshooting.md)
 - [JARVICE Developer Documentation (jarvice.readthedocs.io)](https://jarvice.readthedocs.io)
 
 
