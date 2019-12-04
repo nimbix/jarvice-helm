@@ -36,6 +36,7 @@ None
 - The *Nodes* view in *Administration* should not be used in this version of JARVICE
 - It is not currently possible to add users via the web portal without sending them an email to complete a registration; the cluster should be configured to send email and users should have real email addresses.  If this is not possible, you can still create users manually from the shell in any `jarvice-dal-*` pod in the JARVICE system namespace by running the command `/usr/lib/jarvice/bin/create-user` (run without arguments for usage).
 - When creating vaults for users, do not use the *SINGLE VOLUME BLOCK* and *BLOCK VOLUME ARRAY* types, as these are not supported and can result in bad vaults that can't be deleted.  Use *FILE SYSTEM VAULT* for `ceph` filesystem mounts only, *NFS* for `nfs` mounts, and *PVC* for everything else (via `PersistentVolume` class and/or name)
+- Login events are logged in team audit logs even when a logged in user refreshes the page in the browser, resulting in multiple entries in the log
 
 ### PushToCompute
 
@@ -74,6 +75,20 @@ None
 
 
 # Changelog
+
+## 3.0.0-1.201912042137
+
+* (1938) Updated open source AppDef templates and tutorials available in [GitHub](https://github.com/nimbix/appdef-template)
+* (2192) Initial [JARVICE Troubleshooting Guide](Troubleshooting.md)
+* (2195) Added `ping` and `telnet` utilities to aid in pod-to-pod network troubleshooting in all system containers
+* (2206) Internal scheduler service updates for future capabilities
+* (2220) Experimental path-based ingress support (see `ingressPath` and `JARVICE_JOBS_DOMAIN` settings in [values.yaml](values.yaml)); note that this may not be compatible with all workflows
+* (2258) Fixed bug where the portal was expanding wildcards in the `machines` key in the AppDef JSON when editing a target in the *PushToCompute* view
+* (2271) Added real-time search box to file picker in the task builder for applications with file arguments
+* (2274) Expanded width of user account variables editor in the *Administrator->Users* view, to better support long account variable names without wrapping
+* (2276) Fixed minimum browser window "inner-height" to be 722 pixels, which is equivalent to 1920x1080 maximized browser window at 125% zoom; note that using higher zoom levels, lower resolution screens, or smaller browser windows may truncate some advanced interfaces (e.g. app editing in the *PushToCompute* view)
+* (2277) Added veritcal scrollbar where needed on both side drawers rather than truncating options
+* (2288) Added user login and logout events in team and system audit logs
 
 ## 3.0.0-1.20191115.2245
 
