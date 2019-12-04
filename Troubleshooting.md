@@ -6,9 +6,18 @@ This guide can be used to troubleshoot basic issues with a JARVICE deployment.
 
 ## Table of Contents
 
+* [Checking status of JARVICE system pods](#checking-status-of-jarvice-system-pods)
+    - [Describe the pod(s) that are not in the Running state](#describe-the-pods-that-are-not-in-the-running-state)
+    - [Pod status showing `ImagePullBackOff`](#pod-status-showing-imagepullbackoff)
+    - [`jarvice-db` pod is in the `Pending` state](#jarvice-db-pods-is-in-the-pending-state)
+    - [Multiple JARVICE system pods are in the `Pending` state](#multiple-jarvice-system-pods-are-in-the-pending-state)
+        - [Check kubernetes node labels and taints](#check-kubernetes-node-labels-and-taints)
+        - [Insufficient resources available](#insufficient-resources-available)
+    - [`jarvice-dal` pods are continually restarting](#jarvice-dal-pods-are-continually-restarting)
+
 ------------------------------------------------------------------------------
 
-## Checking JARVICE system pods' status
+## Checking status of JARVICE system pods
 
 When JARVICE does not appear to be operating correctly, the status of the
 JARVICE system pods is the first thing to check.  This can be done with the
@@ -114,20 +123,19 @@ the `jarvice-db`:
 #### Check kubernetes node labels and taints
 
 If `kubectl describe` of JARVICE system pods shows that kubernetes is
-unable find any nodes to place the pods on due to node taints, please review
+unable find any nodes to place pods on due to node taints, please review
 the section on
 [Node taints and pod tolerations](README.md#node-taints-and-pod-tolerations)
 
 #### Insufficient resources available
 
 If `kubectl describe` of JARVICE system pods shows that kubernetes is
-unable find any nodes to place the pods on due to insufficient memory or CPU
+unable find any nodes to place pods on due to insufficient memory or CPU
 resources, it will be necessary to add another node to the kubernetes cluster
 for `jarvice-system` pods.  This could entail adding more physical/virtual
 nodes and/or modifying taints on nodes already joined to the cluster.
 
-The solution is to add more capacity to the cluster and/or to review the
-section on
+If modifying taints on already existing nodes, please review the section on
 [Node taints and pod tolerations](README.md#node-taints-and-pod-tolerations)
 
 
