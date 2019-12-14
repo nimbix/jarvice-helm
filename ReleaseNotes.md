@@ -63,7 +63,7 @@ None
 
 - JARVICE uses guaranteed QoS for filer pods.  By default it requests 1 CPU and 1 gigabyte of RAM.  The filer pod runs a userspace NFS service which may benefit from additional resources for larger deployments.  To adjust, set the environment variables `${JARVICE_UNFS_REQUEST_MEM}` and `${JARVICE_UNFS_REQUEST_CPU}` in the `jarvice-scheduler` deployment.  Note that the memory request is in standard Kubernetes resource format, so 1 Gigabyte is expressed as `1Gi`.
 - JARVICE runs filer pods with the node selector provided in `${JARVICE_UNFS_NODE_SELECTOR}`; when using the Helm chart, the values default to the "system" node selector(s), unless `jarvice_dal` has a node selector defined.
-
+- In the case where a statically provisioned volume is shared across multiple users, this must be done using the default vault mechanisms in the Helm chart rather than explicitly sharing vaults across users in the JARVICE portal.  A current known issue is that if one user shares a vault with a second user, the second user's vault will produce a different name for the claim and will fail to bind to the same persistent volume as intended.  The claim name is derived from the vault name, not the volume or storage class name in the vault definition itself.  Vault names change when one user tries to access another user's shared vault.  This is a known issue that will be corrected in the future.
 
 ### Miscellaneous
 
