@@ -41,12 +41,34 @@ The following values can be set either in YAML or `helm` command line:
 |`jarvice.JARVICE_PVC_VAULT_VOLUMENAME`|Kubernetes `volumeName`|if set at the Helm Chart level, provisions the same volume for all users; see [Sharing Large Volumes Among Multiple Users](#sharing-large-volumes-among-multiple-users); leave blank if using dynamic provisioning
 |`jarvice.JARVICE_PVC_VAULT_ACCESSMODES`|`ReadWriteOnce`, `ReadOnlyOnce`, or `ReadWriteMany`|Kubernetes access mode for volume (*PersistentVolume* dependent)
 |`jarvice.JARVICE_PVC_VAULT_SIZE`|integer, in gigabytes (*Gi*)|size of volume to request (*PersistentVolume* dependent)
+|`jarvice.JARVICE_PVC_VAULT_SUBPATH`|optional filesystem path relative to top of volume|if set, makes this the `subpath` for the volume mount mapping to `/data` in application containers; also supports substitutions to give each user a unique directory (see below)
 
 (Note that in `values.yaml`, these parameters are in the `jarvice` section rather than containing the `jarvice.` prefix - e.g. `jarvice.JARVICE_PVC_VAULT_NAME` is `JARVICE_PVC_VAULT_NAME` in the `jarvice` section.)
 
 The above parameters will cause JARVICE to create a *PersistentVolumeClaim* per user on account creation, and describe it as a vault in their inventory.  Note that in order for this to happen, all parameters must be specified with the exception of `jarvice.JARVICE_PVC_VAULT_VOLUMENAME`, which is used only for statically provisioned volumes.  No vault is created for new user accounts if the 4 required parameters are not all set.
 
-In the case where static provisioning is used, only 1 *PersistentVolumeClaim* per jobs namespace is created.  This is in line with binding rules in Kubernetes.
+In the case where static provisioning is used, only 1 *PersistentVolumeClaim* per jobs namespace is created.  This is in line with binding rules in Kubernetes.  Note that the vault's name is used to derive the *PersistentVolumeClaim* name, so this should be the same for all users who share the volume.
+
+#### Substitution support for `jarvice.JARVICE_PVC_VAULT_SUBPATH`
+
+In the case where each user has a unique subdirectory in a volume, JARVICE supports substitutions to assign the subpath automatically via the `jarvice.JARVICE_PVC_VAULT_SUBPATH` parameter.  The best practice is to have a volume with these directories created ahead of time, otherwise Kubernetes will attempt to create the directory at container start time and may fail due to volume export permissions.  The following table explains the permitted substitutions.  Note that the substitution variables are case sensitive and must be expressed in uppercase (and between percent signs) as shown below.  They may appear anywhere in the subpath value.
+
+|**Name**|**Description**|**Notes**
+|---|---|---|
+|`%USER%`|the JARVICE login user name|
+|`%UPN%`|the Active Directory *userPrincipalName*, without the realm suffix|when used, the user must have be an Active Directory user, otherwise JARVICE will fail the job at launch|
+|`%SAM%`|the Active Directory *sAMAccountName*|when used, the user must have be an Active Directory user, otherwise JARVICE will fail the job at launch
+|`%IDUSER%`|the derived user for in-container identity|Determined dynamically (see table below)|
+
+##### `%IDUSER%` substitution logic
+
+|**Condititon**|**Value**|
+|---|---|
+|The user is not an Active Directory user|the JARVICE login name (same as if `%USER%` is used)
+|The user is an Active Directory user and `jarvice-idmapper` is not used|The *userPrincipalName* from Active Directory, minus the realm suffix (same as if `%UPN%` is used)
+|The user is an Active Directory user and `jarvice-idmapper` is used|either the *userPrincipalName* minus the realm suffix, or the *sAMAccountName*, depending on what `jarvice-idmapper` discovers dynamically from the home directory volume it examines
+
+The best practice is to use `%IDUSER%` when mixing Active Directory and non-Active Directory users, since JARVICE will not always determine a suitable substitution.  Note that subdirectory names should still be globally unique within the volume to avoid mapping the files from one user to another.  For best results, use this only when mixing non-AD team payer accounts with AD team user accounts to reduce the likelihood of conflict, and choose user names for team payer accounts that are known not to conflict with Active Directory UPNs or sAMAccountNames.
 
 #### Example 1: YAML values for dynamically provisioned block volumes
 
@@ -73,6 +95,19 @@ jarvice:
 
 The above values would provision a mount from a shared volume (e.g. NFS) where users exchange project data.  Note that this assumes a Kubernetes *PersistentVolume* exists with the name `projects-volume` and storage class `projects-class`.  Also note that the size may not be relevant in these types of volumes, but the best practice is to set it to the approximate size of the entire volume.
 
+#### Example 3: Variation of Example 2 with per-user subdirectories
+
+```
+jarvice:
+  JARVICE_PVC_VAULT_NAME: projects
+  JARVICE_PVC_VAULT_STORAGE_CLASS: projects-class
+  JARVICE_PVC_VAULT_VOLUME_NAME: projects-volume
+  JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteMany
+  JARVICE_PVC_VAULT_SIZE: 100
+  JARVICE_PVC_VAULT_SUBPATH: /users/%IDUSER%
+```
+
+See [%IDUSER% substitution logic](#iduser-substitution-logic) above for details on the subpath substitution used.
 
 ### DAL Hook
 
@@ -101,4 +136,5 @@ The above example creats a vault named `data` for each user that mounts from `nf
 |Ephemeral storage only|*default*|Default system configuration, no changes needed|
 |Private storage per user|All parameters set except `jarvice.JARVICE_PVC_VAULT_VOLUMENAME`|Requires dynamic provisioning for the storage class in Kubernetes|
 |Shared storage across all users|All parameters set, including `jarvice.JARVICE_PVC_VAULT_VOLUMENAME`|Statically provisioned *PersistentVolume* per namespace|
+|Shared storage volume for all users but with unique per-user subdirectories|All parameters set, including `jarvice.JARVICE_PVC_VAULT_VOLUMENAME` and `jarvice.JARVICE_PVC_VAULT_SUBPATH` using substitutions|Statically provisioned *PersistentVolume* per namespace, with each user getting their own subdirectory in the volume|
 |Custom|[DAL Hook](#dal-hook)|Expert configuration with unlimited flexibility using scripting|
