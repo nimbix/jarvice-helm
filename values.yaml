@@ -37,6 +37,7 @@ jarvice:
   JARVICE_PVC_VAULT_VOLUMENAME:   # do not use with dynamic provisioning
   JARVICE_PVC_VAULT_ACCESSMODES:  # e.g. "ReadWriteMany,ReadOnlyMany"
   JARVICE_PVC_VAULT_SIZE:         # gigabytes
+  JARVICE_PVC_VAULT_SUBPATH:      # optional subpath (supports substitutions)
 
   JARVICE_POD_SCHED_LOGLEVEL: 30
 
