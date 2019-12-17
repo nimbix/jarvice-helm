@@ -107,7 +107,7 @@ jarvice:
       enabled: false
       tolerations: #'[{"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}, {"key": "jarvice.com/rdma", "operator": "Exists",  "effect": "NoSchedule"}]'
       nodeSelector: # '{"node-role.kubernetes.io/jarvice-compute": ""}'
-      image: jarvice/k8s-rdma-device:1.0.0
+      image: jarvice/k8s-rdma-device:1.0.1
 
 
 # Database server previously set up?  Set enabled to false.
