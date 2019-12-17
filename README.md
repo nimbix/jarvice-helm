@@ -723,6 +723,16 @@ addresses even if Ingress is used, set `jarvice.JARVICE_JOBS_LB_SERVICE=true`,
 in which case JARVICE will create both Ingress as well as LoadBalancer service
 IPs for interactive jobs.
 
+#### Enable path based ingress
+
+Set the parameter `jarvice.JARVICE_JOBS_DOMAIN` to the FQDN of the Ingress
+controller and add the desired path for jobs to use terminated by `$`.
+
+e.g. `JARVICE_JOBS_DOMAIN=my-domain.com/path/to/jobs$`
+
+JARVICE will replace `$` with the job number to enable access to interactive
+jobs over HTTPS.
+
 ### Site specific configuration
 
 The easiest way to configure all of the JARVICE options is to copy the default
