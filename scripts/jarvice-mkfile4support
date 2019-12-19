@@ -189,12 +189,17 @@ jarvice_pulls_namespace=$(cat $values_yaml | \
     shyaml get-value jarvice.JARVICE_PULLS_NAMESPACE)
 [ "$jarvice_pulls_namespace" = "None" ] && \
     jarvice_pulls_namespace=$jarvice_system_namespace-pulls
+jarvice_daemonsets_namespace=$(cat $values_yaml | \
+    shyaml get-value jarvice.JARVICE_DAEMONSETS_NAMESPACE)
+[ "$jarvice_daemonsets_namespace" = "None" ] && \
+    jarvice_daemonsets_namespace=$jarvice_system_namespace-daemonsets
 
 cat <<EOF
 JARVICE_SYSTEM_NAMESPACE: $jarvice_system_namespace
 JARVICE_JOBS_NAMESPACE: $jarvice_jobs_namespace
 JARVICE_BUILDS_NAMESPACE: $jarvice_builds_namespace
 JARVICE_PULLS_NAMESPACE: $jarvice_pulls_namespace
+JARVICE_DAEMONSETS_NAMESPACE: $jarvice_daemonsets_namespace
 EOF
 
 gets="nodes daemonsets persistentvolumes storageclasses"
@@ -204,11 +209,12 @@ for get in $gets; do
     $KUBECTL -n kube-system get -o json $get >$kubedir/$get.json
 done
 
-namespaces="$jarvice_system_namespace $jarvice_jobs_namespace $jarvice_builds_namespace $jarvice_pulls_namespace"
+namespaces="$jarvice_system_namespace $jarvice_jobs_namespace $jarvice_builds_namespace $jarvice_pulls_namespace $jarvice_daemonsets_namespace"
 for ns in $namespaces; do
     echo; echo "Getting data from namespace: $ns"
     mkdir -p $kubedir/$ns
     gets="configmaps secrets persistentvolumeclaims all"
+    [ "$ns" = "$jarvice_daemonsets_namespace" ] && gets="configmaps secrets daemonsets all"
     for get in $gets; do
         echo "Getting $get..."
         $KUBECTL -n $ns get $get >$kubedir/$ns/$get.txt 2>&1
