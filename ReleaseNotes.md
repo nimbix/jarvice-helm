@@ -69,11 +69,23 @@ None
 
 - Jobs that run for a very short period of time and fail may be shown as *Canceled* status versus *Completed with Error*; in rare cases jobs that complete successfully may also show up as *Canceled* if they run for a very short period of time (e.g. less than 1 second).
 - Account variables for a given user account must be referenced in an application AppDef in order to be passed into the container.  Please see [Application Definition Guide](https://jarvice.readthedocs.io/en/latest/appdef/) for details.
+- *NetworkPolicy* may not work with all Kubernetes network plugins and configurations; if JARVICE system pods do not enter ready state as a result of failed connectivity to the `jarvice-db` or `jarvice-dal` service, consider disabling this in the Helm chart
 
 ---
 
 
 # Changelog
+
+## 3.0.0-1.201912212002
+
+* (2208), (2209) Internal scheduler service updates for future capabilities
+* (2215) Support for Kubernetes 1.16
+* (2264) Support for subpath (including substitutions) in PVC vaults; see [User Storage Patterns and Configuration](Storage.md) for details and best practices
+* (2273) Fixed bug where container pull email notifications were not being sent
+* (2324) Full support for path-based ingress; see [Ingress Patterns and Configuration](Ingress.md) for details and best practices
+* (2325) Path-based ingress support for Jupyter notebooks by setting `--NotebookApp.base_url=%BASEURL%`; see [nimbix/appdef-template in GitHub](https://github.com/nimbix/appdef-template) for example, or use [nimbix/notebook-common in GitHub](https://github.com/nimbix/notebook-common) for a standard pattern to create Jupyter-based application environments with
+* (2326) RDMA device plugin for Kubernetes updates for 1.14 and newer
+* (2338) Fixed bug where page refresh was generating additional user login audit log entries
 
 ## 3.0.0-1.201912042137
 
