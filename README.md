@@ -943,7 +943,7 @@ command line with:
 
 Use of the CronJob also requires a persistent volume in which to store the
 database dump files.  By default, it will attempt to use the `jarvice-db-dump`
-storage class and request 200GB of storage.  The
+storage class and request 100GB of storage.  The
 `extra/jarvice-db-dump-pv.yaml` file is provided as a simple example for
 creating a persistent volume that can be used for persistent storage.
 
