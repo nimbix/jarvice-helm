@@ -168,7 +168,7 @@ jarvice_db_dump:
     # storageClass: "-"
     storageClass: "jarvice-db-dump"
     accessMode: ReadWriteOnce
-    size: 100Gi
+    size: 50Gi
   securityContext:
     enabled: false  # Enable when PersistentVolume is root squashed
     fsGroup: 999
