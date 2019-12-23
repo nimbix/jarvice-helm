@@ -38,7 +38,7 @@ As example configuration may look like:
 jarvice_api.ingressHost=mydomain.com
 jarvice_api.ingressPath=/api
 jarvice_mc_portal.ingressHost=mydomain.com
-jarvice_mc_portal.ingressPath=mydomain.com/portal
+jarvice_mc_portal.ingressPath=/portal
 jarvice.JARVICE_JOBS_DOMAIN=mydomain.com/job$
 ```
 
