@@ -17,11 +17,15 @@ The following assumes the latest version of JARVICE is in use; this version will
 
 #### Latest Version Supported
 
-Kubernetes **1.14**; newer versions are not explicitly supported.  Using the latest patch release of each version is recommended but not required.
+Kubernetes **1.16**; newer versions are not explicitly supported.  Using the latest patch release of each version is recommended but not required.
 
 #### Previous Version(s) Supported
 
-None
+Up to 3 previous minor revisions (from the one indicated in [Latest Version Supported](#latest-version-supported)) will be supported at any given time, unless otherwise noted.  Currently this list is limited to:
+
+* Kubernetes **1.15**
+* Kubernetes **1.14**
+
 
 ---
 ## Known Issues, Anomalies, and Caveats
@@ -69,6 +73,7 @@ None
 - Jobs that run for a very short period of time and fail may be shown as *Canceled* status versus *Completed with Error*; in rare cases jobs that complete successfully may also show up as *Canceled* if they run for a very short period of time (e.g. less than 1 second).
 - Account variables for a given user account must be referenced in an application AppDef in order to be passed into the container.  Please see [Application Definition Guide](https://jarvice.readthedocs.io/en/latest/appdef/) for details.
 - *NetworkPolicy* may not work with all Kubernetes network plugins and configurations; if JARVICE system pods do not enter ready state as a result of failed connectivity to the `jarvice-db` or `jarvice-dal` service, consider disabling this in the Helm chart
+- JARVICE File Manager is currently not compatible with path-based ingress
 
 ---
 
