@@ -247,6 +247,7 @@ spec:
 {{- else }}
           name: {{ .Values.jarvice.JARVICE_PULLS_NAMESPACE }}
 {{- end }}
+    - podSelector: {}
     ports:
     - protocol: TCP
       port: 8443
@@ -257,6 +258,7 @@ DO NOT enable it here without understanding the security implications!
 {{- if (not (empty .Values.jarvice_dal.ingressHost)) }}
   - from:
     - namespaceSelector: {}
+    - podSelector: {}
     ports:
     - protocol: TCP
       port: 8443

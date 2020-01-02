@@ -230,6 +230,7 @@ spec:
   ingress:
   - from:
     - namespaceSelector: {}
+    - podSelector: {}
     ports:
     - protocol: TCP
       port: 443

@@ -206,6 +206,7 @@ spec:
     - namespaceSelector:
         matchLabels:
           name: {{ .Release.Namespace }}
+    - podSelector: {}
     ports:
     - protocol: TCP
       port: 9443
@@ -216,6 +217,7 @@ DO NOT enable it here without understanding the security implications!
 {{- if (not (empty .Values.jarvice_scheduler.ingressHost)) }}
   - from:
     - namespaceSelector: {}
+    - podSelector: {}
     ports:
     - protocol: TCP
       port: 9443
