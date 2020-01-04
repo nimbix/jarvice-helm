@@ -33,12 +33,12 @@ set -e
 
 export DEBIAN_FRONTEND=noninteractive
 if [ "$ID" = "ubuntu" ]; then
-    sudo apt-get -y update
-    sudo apt-get -y install --no-install-recommends \
+    $SUDO apt-get -y update
+    $SUDO apt-get -y install --no-install-recommends \
         curl jq apt-transport-https ca-certificates
 else
-    sudo yum -y install epel-release
-    sudo yum -y install curl jq
+    $SUDO yum -y install epel-release
+    $SUDO yum -y install curl jq
 fi
 
 # Set up CUDA repo
@@ -56,12 +56,12 @@ URL_NVIDIA_CUDA_KEY=$URL_NVIDIA_CUDA/7fa2af80.pub
 repo_file=
 if [ "$ID" = "ubuntu" ]; then
     repo_file=/etc/apt/sources.list.d/nvidia.list
-    cat <<EOF | sudo tee $repo_file >/dev/null
+    cat <<EOF | $SUDO tee $repo_file >/dev/null
 deb $URL_NVIDIA_CUDA  /
 EOF
 else
     repo_file=/etc/yum.repos.d/nvidia.repo
-    cat <<EOF | sudo tee $repo_file >/dev/null
+    cat <<EOF | $SUDO tee $repo_file >/dev/null
 [cuda]
 name=cuda
 baseurl=$URL_NVIDIA_CUDA
@@ -77,9 +77,9 @@ URL_NVIDIA_GITHUB=https://nvidia.github.io
 URL_NVIDIA_GITHUB_KEY=$URL_NVIDIA_GITHUB/nvidia-docker/gpgkey
 URL_NVIDIA_DOCKER=$URL_NVIDIA_GITHUB/nvidia-docker/$DISTRO/nvidia-docker
 if [ "$ID" = "ubuntu" ]; then
-    curl -fsSL $URL_NVIDIA_DOCKER.list | sudo tee -a $repo_file >/dev/null
+    curl -fsSL $URL_NVIDIA_DOCKER.list | $SUDO tee -a $repo_file >/dev/null
 else
-    curl -fsSL $URL_NVIDIA_DOCKER.repo | sudo tee -a $repo_file >/dev/null
+    curl -fsSL $URL_NVIDIA_DOCKER.repo | $SUDO tee -a $repo_file >/dev/null
 fi
 
 daemon_json_bak=
@@ -89,12 +89,12 @@ if [ -f /etc/docker/daemon.json ]; then
 fi
 
 if [ "$ID" = "ubuntu" ]; then
-    curl -fsSL $URL_NVIDIA_CUDA_KEY | sudo apt-key add -
-    curl -fsSL $URL_NVIDIA_GITHUB_KEY | sudo apt-key add -
-    sudo apt-get -y update
-    sudo apt-get -y install cuda nvidia-docker2
+    curl -fsSL $URL_NVIDIA_CUDA_KEY | $SUDO apt-key add -
+    curl -fsSL $URL_NVIDIA_GITHUB_KEY | $SUDO apt-key add -
+    $SUDO apt-get -y update
+    $SUDO apt-get -y install cuda nvidia-docker2
 else
-    sudo yum -y install cuda nvidia-docker2
+    $SUDO yum -y install cuda nvidia-docker2
 fi
 
 if [ -n "$daemon_json_bak" ]; then
