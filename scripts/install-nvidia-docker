@@ -1,6 +1,26 @@
 #!/bin/bash
 
-set -e
+DOCKER=$(type -p docker)
+if [ -z "$DOCKER" ]; then
+    cat <<EOF
+Could not find 'docker' in PATH.  It may not be installed.
+Run 'install-docker' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+SUDO=
+if [ "$EUID" != "0" ]; then
+    SUDO=sudo
+    SUID=$($SUDO id -u)
+    if [ "$SUID" != "0" ]; then
+        echo "Could not verify sudo access.  Cannot continue."
+        echo "Please resolve sudo access before re-running this script."
+        exit 1
+    else
+        echo "* Verified sudo access..."
+    fi
+fi
 
 . /etc/os-release
 DISTRO="$ID$VERSION_ID"
@@ -8,6 +28,8 @@ if [ "$ID" != "ubuntu" ] && [ "$ID" != "centos" ] && [ "$ID" != "rhel" ]; then
     echo "This distro is not supported."
     exit 1
 fi
+
+set -e
 
 export DEBIAN_FRONTEND=noninteractive
 if [ "$ID" = "ubuntu" ]; then
