@@ -604,8 +604,7 @@ Once cloned, JARVICE can be quickly installed via the following `helm` command:
 $ kubectl create namespace jarvice-system
 $ helm upgrade jarvice ./jarvice-helm --namespace jarvice-system --install \
     --set jarvice.imagePullSecret="$(echo "_json_key:$(cat jarvice-reg-creds.json)" | base64 -w 0)" \
-    --set jarvice.JARVICE_LICENSE_LIC="<jarvice_license_key>" \
-    --namespace jarvice-system --name jarvice ./jarvice-helm
+    --set jarvice.JARVICE_LICENSE_LIC="<jarvice_license_key>"
 ```
 <!--
     --namespace jarvice-system --name jarvice \
