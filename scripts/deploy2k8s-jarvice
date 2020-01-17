@@ -68,6 +68,17 @@ while [ $# -gt 0 ]; do
     esac
 done
 
+if [ ! -f "$jarvice_chart_dir/values.yaml" ]; then
+    cat <<EOF
+Could not find values.yaml in the JARVICE helm chart directory: $jarvice_chart_dir
+
+This must not be a valid JARVICE helm chart directory.
+Please be sure to execute this script from a cloned jarvice-helm git repo.
+Cannot continue.  Exiting...
+EOF
+    exit 1
+fi
+
 if [ ! -f "$values" ]; then
     cat <<EOF
 
