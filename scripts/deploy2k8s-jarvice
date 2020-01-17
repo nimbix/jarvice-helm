@@ -114,11 +114,12 @@ echo "* Creating namespace: $namespace"
 $KUBECTL create namespace $namespace 2>/dev/null || /bin/true
 
 echo
-echo "* Deploying..."
+echo "* Deploying JARVICE to '$namespace' namespace..."
 $HELM upgrade $release $jarvice_chart_dir \
     --namespace $namespace --install --debug \
     --reset-values -f $jarvice_chart_dir/values.yaml -f $values
 
 echo
-echo "* Deployment successful..."
+echo "* Successfully deployed JARVICE to '$namespace' namespace..."
+echo
 
