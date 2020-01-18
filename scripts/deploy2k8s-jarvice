@@ -10,7 +10,7 @@ values=$jarvice_chart_dir/override.yaml
 function usage {
     cat <<EOF
 Usage:
-    $0 [options]
+    $0 [options] -- [extra_helm_options]
 
 Options:
     -r, --release <release>             Helm release name
@@ -60,6 +60,10 @@ while [ $# -gt 0 ]; do
         -f|--values)
             values=$2
             shift; shift
+            ;;
+        --)
+            shift;
+            break;
             ;;
         *)
             usage
@@ -117,7 +121,7 @@ echo
 echo "* Deploying JARVICE to '$namespace' namespace..."
 $HELM upgrade $release $jarvice_chart_dir \
     --namespace $namespace --install --debug \
-    --reset-values -f $jarvice_chart_dir/values.yaml -f $values
+    --reset-values -f $jarvice_chart_dir/values.yaml -f $values $*
 
 echo
 echo "* Successfully deployed JARVICE to '$namespace' namespace..."
