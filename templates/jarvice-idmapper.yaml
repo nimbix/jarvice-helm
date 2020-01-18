@@ -1,0 +1,142 @@
+{{- if .Values.jarvice_idmapper.enabled }}
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: jarvice-idmapper
+spec:
+  selector:
+    matchLabels:
+      deployment: jarvice-idmapper
+  minAvailable: {{ .Values.jarvice_idmapper.pdb.minAvailable }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jarvice-idmapper
+spec:
+  replicas: {{ .Values.jarvice_idmapper.replicaCount }}
+  selector:
+    matchLabels:
+      deployment: jarvice-idmapper
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-idmapper
+        deployment: jarvice-idmapper
+    spec:
+{{- if (not (empty .Values.jarvice_idmapper.tolerations)) }}
+      tolerations: {{ .Values.jarvice_idmapper.tolerations }}
+{{- else if (not (empty .Values.jarvice.tolerations)) }}
+      tolerations: {{ .Values.jarvice.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice_idmapper.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice_idmapper.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.nodeSelector }}
+{{- end }}
+      affinity:
+        podAntiAffinity:
+        {{- if eq .Values.jarvice_idmapper.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                deployment: jarvice-idmapper
+        {{- else if eq .Values.jarvice_idmapper.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  deployment: jarvice-idmapper
+        {{- end }}
+      containers:
+      - name: jarvice-idmapper
+        image: {{ .Values.jarvice_idmapper.image }}
+        imagePullPolicy: Always
+        ports:
+          - name: http
+            containerPort: 8080
+        readinessProbe:
+          httpGet:
+            port: http
+            path: /map/
+          initialDelaySeconds: 3
+          periodSeconds: 15
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            port: http
+            path: /map/
+          initialDelaySeconds: 3
+          periodSeconds: 15
+          timeoutSeconds: 1
+          successThreshold: 1
+          failureThreshold: 2
+        env:
+          - name: HOMEPATH
+            value: "{{ .Values.jarvice_idmapper.env.HOMEPATH }}"
+          - name: UPNPATH
+            value: "{{ .Values.jarvice_idmapper.env.UPNPATH }}"
+        volumeMounts:
+        - mountPath: /home
+          name: homes
+          readOnly: true
+        resources:
+{{ toYaml .Values.jarvice_idmapper.resources | indent 10 }}
+      volumes:
+        - name: homes
+{{- if (not (empty .Values.jarvice_idmapper.filesystem.server)) }}
+          nfs:
+            path:  {{ .Values.jarvice_idmapper.filesystem.path }}
+            server: {{ .Values.jarvice_idmapper.filesystem.server }}
+{{- else }}
+          hostPath:
+            path:  {{ .Values.jarvice_idmapper.filesystem.path }}
+            type: Directory
+{{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-idmapper
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-idmapper
+spec:
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+    name: http
+  selector:
+    deployment: jarvice-idmapper
+---
+{{- if or .Values.jarvice_idmapper.networkPolicy.enabled (and (eq "<nil>" (toString .Values.jarvice_idmapper.networkPolicy.enabled)) .Values.jarvice.networkPolicy.enabled) }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: jarvice-idmapper
+spec:
+  podSelector:
+    matchLabels:
+      deployment: jarvice-idmapper
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: {{ .Release.Namespace }}
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 8080
+---
+{{- end }}
+{{- end }}
