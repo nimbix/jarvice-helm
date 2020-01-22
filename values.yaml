@@ -202,7 +202,7 @@ jarvice_idmapper:
     server: # nfs.my-domain.com
   # Visit https://github.com/nimbix/idmapper for environment variable details
   env:
-    HOMEPATH: "/home/%u"
+    HOMEPATH: "/home/%u/"
     UPNPATH: "false"
 
 # Memcached server previously set up?  Set jarvice_memcached.enabled to false.
