@@ -80,7 +80,7 @@ arguments similar to:
 --set jarvice_idmapper.enabled=true \
 --set jarvice_idmapper.filesystem.path=/home \
 --set jarvice_idmapper.filesystem.server=nfs.my-domain.com \
---set jarvice_idmapper.env.HOMEPATH=/home/%u \
+--set jarvice_idmapper.env.HOMEPATH=/home/%u/ \
 --set-string jarvice_idmapper.env.UPNPATH=false
 ```
 
