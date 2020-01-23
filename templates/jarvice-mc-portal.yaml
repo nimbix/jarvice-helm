@@ -71,14 +71,12 @@ spec:
         image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-mc-portal:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}{{- include "jarvice.version" . }}
         imagePullPolicy: Always
         ports:
-          - name: https
-            containerPort: 443
           - name: http
-            containerPort: 80
+            containerPort: 8080
         readinessProbe:
           httpGet:
-            scheme: HTTPS
-            port: https
+            scheme: HTTP
+            port: http
             path: /ready
           initialDelaySeconds: 5
           periodSeconds: 5
@@ -87,8 +85,8 @@ spec:
           failureThreshold: 5
         livenessProbe:
           httpGet:
-            scheme: HTTPS
-            port: https
+            scheme: HTTP
+            port: http
             path: /live
           initialDelaySeconds: 60
           periodSeconds: 30
@@ -98,30 +96,18 @@ spec:
         env:
           - name: JARVICE_SYSTEM_K8S
             value: "true"
-          - name: JARVICE_MC_PORTAL_HTTPS
-            value: "enable"
-          - name: JARVICE_MC_PORTAL_HTTPS_PORT
-            value: "443"
-          - name: JARVICE_MC_PORTAL_HTTP
-            value: "enable"
-          - name: JARVICE_MC_PORTAL_HTTP_PORT
-            value: "80"
-          - name: JARVICE_MC_PORTAL_HTTP_REDIRECT_PORT
-            value: "443"
           - name: JARVICE_DAL_URL
+{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_DAL_URL)) }}
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_DAL_URL }}"
+{{- else }}
             value: "https://jarvice-dal:8443"
+{{- end }}
           - name: JARVICE_API_URL
+{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_API_URL)) }}
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_API_URL }}"
+{{- else }}
             value: "https://jarvice-api:7443"
-          - name: JARVICE_MC_PORTAL_CRT
-            valueFrom:
-              secretKeyRef:
-                name: jarvice-tls
-                key: tls.crt
-          - name: JARVICE_MC_PORTAL_KEY
-            valueFrom:
-              secretKeyRef:
-                name: jarvice-tls
-                key: tls.key
+{{- end }}
           - name: JARVICE_USER_DEFAULT_ENABLED
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_USER_DEFAULT_ENABLED }}"
           - name: JARVICE_USER_DEFAULT_DEVELOPER
@@ -206,12 +192,8 @@ spec:
   type: ClusterIP
   ports:
   - protocol: TCP
-    port: 443
-    targetPort: 443
-    name: https
-  - protocol: TCP
-    port: 80
-    targetPort: 80
+    port: 8080
+    targetPort: 8080
     name: http
   selector:
     deployment: jarvice-mc-portal
@@ -233,9 +215,7 @@ spec:
     - podSelector: {}
     ports:
     - protocol: TCP
-      port: 443
-    - protocol: TCP
-      port: 80
+      port: 8080
 ---
 {{- end }}
 {{- if (empty .Values.jarvice_mc_portal.ingressHost) }}
@@ -251,12 +231,8 @@ spec:
   loadBalancerIP: {{ .Values.jarvice_mc_portal.loadBalancerIP }}
   ports:
   - protocol: TCP
-    port: 443
-    targetPort: 443
-    name: https
-  - protocol: TCP
-    port: 80
-    targetPort: 80
+    port: 8080
+    targetPort: 8080
     name: http
   selector:
     deployment: jarvice-mc-portal
@@ -277,20 +253,20 @@ spec:
 {{- if (eq "/portal" .Values.jarvice_mc_portal.ingressPath) }}
       - backend:
           serviceName: jarvice-mc-portal
-          servicePort: https
+          servicePort: http
         path: /portal
       - backend:
           serviceName: jarvice-mc-portal
-          servicePort: https
+          servicePort: http
         path: /static
       - backend:
           serviceName: jarvice-mc-portal
-          servicePort: https
+          servicePort: http
         path: /index.html
 {{- else }}
       - backend:
           serviceName: jarvice-mc-portal
-          servicePort: https
+          servicePort: http
         path: /
 {{- end }}
 ---

@@ -467,9 +467,3 @@ jarvice_api_experimental:
   ingressHost: # jarvice-api.my-domain.com
   ingressPath: "/"  # Valid values are "/" (default) or "/api"
 
-jarvice_mc_portal_experimental:
-  enabled: false
-  loadBalancerIP:
-  ingressHost: # jarvice.my-domain.com
-  ingressPath: "/"  # Valid values are "/" (default) or "/portal"
-
