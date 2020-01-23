@@ -43,7 +43,7 @@ spec:
             - /usr/bin/curl -s -k https://jarvice-scheduler:9443/live | grep -q OK
           initialDelaySeconds: 5
           periodSeconds: 5
-          timeoutSeconds: 1
+          timeoutSeconds: 2
           successThreshold: 1
           failureThreshold: 3
         livenessProbe:
@@ -54,7 +54,7 @@ spec:
             - /usr/bin/curl -s -k https://jarvice-scheduler:9443/live | grep -q OK
           initialDelaySeconds: 20
           periodSeconds: 20
-          timeoutSeconds: 1
+          timeoutSeconds: 5
           successThreshold: 1
           failureThreshold: 3
         env:

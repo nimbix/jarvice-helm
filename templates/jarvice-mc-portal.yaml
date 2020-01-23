@@ -82,7 +82,7 @@ spec:
             path: /ready
           initialDelaySeconds: 5
           periodSeconds: 5
-          timeoutSeconds: 1
+          timeoutSeconds: 2
           successThreshold: 1
           failureThreshold: 5
         livenessProbe:
@@ -92,7 +92,7 @@ spec:
             path: /live
           initialDelaySeconds: 60
           periodSeconds: 30
-          timeoutSeconds: 1
+          timeoutSeconds: 5
           successThreshold: 1
           failureThreshold: 3
         env:

@@ -69,7 +69,7 @@ spec:
           tcpSocket:
             port: jarvice-db
           initialDelaySeconds: 5
-          timeoutSeconds: 1
+          timeoutSeconds: 2
         livenessProbe:
           tcpSocket:
             port: jarvice-db
