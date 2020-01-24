@@ -119,6 +119,7 @@ $KUBECTL create namespace $namespace 2>/dev/null || /bin/true
 
 echo
 echo "* Deploying JARVICE to '$namespace' namespace..."
+echo
 $HELM upgrade $release $jarvice_chart_dir \
     --namespace $namespace --install --debug \
     --reset-values -f $jarvice_chart_dir/values.yaml -f $values $*
