@@ -148,6 +148,12 @@ spec:
 {{- end }}
           - name: JARVICE_PORTAL_MAIL_ADMINS
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_ADMINS }}"
+          - name: JARVICE_PORTAL_DB
+{{- if empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DB }}
+            value: "nimbix_portal_ng"
+{{- else }}
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DB }}"
+{{- end }}
           - name: JARVICE_PORTAL_DBHOST
 {{- if empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DBHOST }}
             value: "{{ .Values.jarvice.JARVICE_DBHOST }}"
