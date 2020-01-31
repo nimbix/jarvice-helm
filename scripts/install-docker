@@ -12,7 +12,7 @@ Options:
                                 (Default: $MAJOR_VER)
 
 Example:
-    $0 --major-version 18.09
+    $0 --major-version $MAJOR_VER
 EOF
 }
 
