@@ -80,6 +80,22 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202002051613
+
+* (2210), (2211), (2212), (2481), (2482) Internal scheduler service updates for future capabilities
+* (2371) Internal portal web service architecture updates
+* (2377) Support for suppressing random passwords from job URLs (e.g. for remote desktop and for File Manager); configurable by team admins in the *Account->Team* view
+* (2381) Vault info dialog shows more detail when inspecting vaults for users from the *Administrator->Users* view
+* (2382) System creates an ephemeral vault by default for all new user accounts (whether invited explicitly or generated implicitly by LDAP or SAML login); if a default PVC vault is specified using `jarvice.JARVICE_PVC_VAULT_*` variables in [values.yaml](values.yaml), it will be created for all new user accounts in addition to the ephemeral one, and will be made default
+* (2383) NetworkPolicy fixes for JARVICE services
+* (2412) JARVICE File Manager updated to support path-based ingress
+* (2423) JARVICE File Manager updated to support suppressed random session password in connection URLs
+* (2429) Fixed "No such user" error if payer is not selected when saving limits in the *Administration->Limits* view
+* (2456) Fixed bug in portal where apps with multiple file selectors for the task builder with different wildcards were not properly filtering listed files
+* (2464) Added ability to remove team app restrictions as user overrides in the *Account->Team Apps* view; removing restrictions also enables the *PushToCompute* mechanism and allows users to build and run their own apps even in teams with restrictive default app rules
+* (2528) Fixed bug in API triggered by commands with `BOOL`-type parameters presented as variables in AppDefs
+
+
 ## 3.0.0-1.201912212002
 
 * (2208), (2209) Internal scheduler service updates for future capabilities
