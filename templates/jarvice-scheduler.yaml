@@ -77,7 +77,7 @@ spec:
             path: /ready
           initialDelaySeconds: 5
           periodSeconds: 5
-          timeoutSeconds: 1
+          timeoutSeconds: 2
           successThreshold: 1
           failureThreshold: 3
         livenessProbe:
@@ -87,7 +87,7 @@ spec:
             path: /live
           initialDelaySeconds: 20
           periodSeconds: 20
-          timeoutSeconds: 1
+          timeoutSeconds: 5
           successThreshold: 1
           failureThreshold: 3
         env:
@@ -206,6 +206,7 @@ spec:
     - namespaceSelector:
         matchLabels:
           name: {{ .Release.Namespace }}
+    - podSelector: {}
     ports:
     - protocol: TCP
       port: 9443
@@ -216,6 +217,7 @@ DO NOT enable it here without understanding the security implications!
 {{- if (not (empty .Values.jarvice_scheduler.ingressHost)) }}
   - from:
     - namespaceSelector: {}
+    - podSelector: {}
     ports:
     - protocol: TCP
       port: 9443

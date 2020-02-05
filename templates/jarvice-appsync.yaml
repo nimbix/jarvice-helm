@@ -44,7 +44,7 @@ spec:
             - "{https://jarvice-dal:8443/status,https://jarvice-api:7443,{{ .Values.jarvice.JARVICE_REMOTE_API_URL }}}"
           initialDelaySeconds: 5
           periodSeconds: 5
-          timeoutSeconds: 1
+          timeoutSeconds: 2
           successThreshold: 1
           failureThreshold: 3
         livenessProbe:
@@ -56,7 +56,7 @@ spec:
             - "{https://jarvice-dal:8443/status,https://jarvice-api:7443,{{ .Values.jarvice.JARVICE_REMOTE_API_URL }}}"
           initialDelaySeconds: 30
           periodSeconds: {{ .Values.jarvice_appsync.livenessProbe.periodSeconds }}
-          timeoutSeconds: 1
+          timeoutSeconds: 5
           successThreshold: 1
           failureThreshold: 3
         env:

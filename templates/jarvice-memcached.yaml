@@ -116,6 +116,7 @@ spec:
     - namespaceSelector:
         matchLabels:
           name: {{ .Release.Namespace }}
+    - podSelector: {}
     ports:
     - protocol: TCP
       port: 11211

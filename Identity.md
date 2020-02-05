@@ -71,7 +71,20 @@ JARVICE automatically selects the Active Directory User Principal Name (UPN) if 
 
 If the `jarvice-idmapper` is deployed with a service in the same Kubernetes namespace as the JARVICE system services, the JARVICE job scheduler will automatically contact it.  Additionally, JARVICE will "deep mount" the home directory of the user in the container after it discovers the identity.  Deep mount means that if for example the home directory is on an NFS exported volume such as `server:/home`, JARVICE will mount into the container `server:/home/user` directly.   This is for security reasons.
 
-Deploying `jarvice-idmapper` is a matter of cloning its [public Git repository](https://github.com/nimbix/idmapper) and following the instructions in the `README.md`.  Given that it's open source, if the mechanisms do not work for a specific scenario, users are free to derive their own version.  The interface is quite simple and can be easily modified.  In the future, the basic `jarvice-idmapper` may be an optional deployment from the Helm chart itself, but for the time being, it needs to be deployed manually.  Deployment scripts and YAML templates are included in the repository and instructions.
+Deploying `jarvice-idmapper` is a matter of enabling and configuring it in the
+JARVICE helm chart.  This can be done either by updating the `jarvice_idmapper`
+stanza in an `override.yaml` file or via additional `helm` command line
+arguments similar to:
+
+```bash
+--set jarvice_idmapper.enabled=true \
+--set jarvice_idmapper.filesystem.path=/home \
+--set jarvice_idmapper.filesystem.server=nfs.my-domain.com \
+--set jarvice_idmapper.env.HOMEPATH=/home/%u/ \
+--set-string jarvice_idmapper.env.UPNPATH=false
+```
+
+Alternatively, deploying `jarvice-idmapper` from outside of this helm chart can be done by cloning its [public Git repository](https://github.com/nimbix/idmapper) and following the instructions in the `README.md`.  Given that it's open source, if the mechanisms do not work for a specific scenario, users are free to derive their own version.  The interface is quite simple and can be easily modified.  Deployment scripts and YAML templates are included in the repository and instructions.
 
 ## Caveats of Using jarvice-idmapper
 

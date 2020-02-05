@@ -1,0 +1,133 @@
+#!/bin/bash
+
+address=*:6443
+masters=
+
+function usage {
+    cat <<EOF
+Usage:
+    $0 [options]
+
+Options:
+    --address <ip[:port]>   HAProxy IP address and port to bind to (optional)
+                            (Default: $address)
+    --master <host[:port]>  K8s API server host:port on master node
+                            (required, multiple allowed)
+
+Example:
+    $0 --master 10.20.0.10:6443 --master 10.20.0.11:6443
+EOF
+}
+
+SUDO=
+if [ "$EUID" != "0" ]; then
+    SUDO=sudo
+    SUID=$($SUDO id -u)
+    if [ "$SUID" != "0" ]; then
+        echo "Could not verify sudo access.  Cannot continue."
+        echo "Please resolve sudo access before re-running this script."
+        exit 1
+    else
+        echo "* Verified sudo access..."
+    fi
+fi
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        --help)
+            usage
+            exit 0
+            ;;
+        --address)
+            address=$2
+            shift; shift
+            ;;
+        --master)
+            [ -z "$masters" ] && masters=$2 || masters+=" $2"
+            shift; shift
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+[ -z "$masters" ] && usage && exit 1
+
+. /etc/os-release
+DISTRO="$ID$VERSION_ID"
+if [ "$ID" != "ubuntu" ] && [ "$ID" != "centos" ] && [ "$ID" != "rhel" ]; then
+    echo "This distro is not supported."
+    exit 1
+fi
+
+set -e
+
+install_pkgs="haproxy"
+echo
+echo "* Installing $install_pkgs..."
+if [ "$ID" = "ubuntu" ]; then
+    $SUDO apt-get update
+    $SUDO apt-get install -y $install_pkgs
+else
+    $SUDO yum install -y $install_pkgs
+
+    $SUDO systemctl enable haproxy
+    $SUDO systemctl start haproxy
+fi
+
+# Write haproxy-k8s-api.cfg
+config=/etc/haproxy/haproxy-k8s-api.cfg
+echo
+echo "* Writing configuration for K8s API servers to $config..."
+cat <<EOF | $SUDO tee $config >/dev/null
+frontend k8s-api
+    bind $address
+    mode tcp
+    option tcplog
+    timeout client 300000
+    default_backend k8s-api
+
+backend k8s-api
+    mode tcp
+    option tcplog
+    option tcp-check
+    timeout server 300000
+    balance roundrobin
+    default-server inter 10s downinter 5s rise 2 fall 2 slowstart 60s maxconn 250 maxqueue 256 weight 100
+EOF
+
+i=0
+for master in $masters; do
+    host=$(echo $master | awk -F: '{print $1}')
+    port=$(echo $master | awk -F: '{print $2}')
+    [ -z "$port" ] && port=6443 || /bin/true
+    echo; echo "* Adding K8s API server to HAProxy configuration: $host:$port"
+    cat <<EOF | $SUDO tee -a $config >/dev/null
+    server apiserver$i $host:$port check
+EOF
+    ((++i))
+done
+
+if [ "$ID" = "ubuntu" ]; then
+    optsfile=/etc/default/haproxy
+    echo; echo "* Adding configuration file to HAProxy startup options..."
+    . $optsfile
+    [ -z "$EXTRAOPTS" ] && EXTRAOPTS="-f $config" || EXTRAOPTS+=" -f $config"
+    grep -q ^EXTRAOPTS= $optsfile && $SUDO sed -ie "s|^EXTRAOPTS=.*|EXTRAOPTS=\"$EXTRAOPTS\"|" $optsfile || echo "EXTRAOPTS=\"$EXTRAOPTS\"" | $SUDO tee -a $optsfile >/dev/null
+
+    echo; echo "* Restarting HAProxy..."
+    $SUDO systemctl restart haproxy
+else
+    optsfile=/etc/sysconfig/haproxy
+    echo; echo "* Adding configuration file to HAProxy startup options..."
+    . $optsfile
+    [ -z "$OPTIONS" ] && OPTIONS="-f $config" || OPTIONS+=" -f $config"
+    grep -q ^OPTIONS= $optsfile && $SUDO sed -ie "s|^OPTIONS=.*|OPTIONS=\"$OPTIONS\"|" $optsfile || echo "OPTIONS=\"$OPTIONS\"" | $SUDO tee -a $optsfile >/dev/null
+
+    echo; echo "* Starting HAProxy..."
+    $SUDO systemctl start haproxy
+fi
+echo
+

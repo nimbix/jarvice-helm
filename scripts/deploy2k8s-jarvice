@@ -1,0 +1,130 @@
+#!/bin/bash
+
+jarvice_chart_dir=$(realpath --relative-to=$(pwd) $(dirname $0)/..)
+args="$*"
+
+release=jarvice
+namespace=jarvice-system
+values=$jarvice_chart_dir/override.yaml
+
+function usage {
+    cat <<EOF
+Usage:
+    $0 [options] -- [extra_helm_options]
+
+Options:
+    -r, --release <release>             Helm release name
+                                        (Default: $release)
+    -n, --namespace <kube_namespace>    Kubernetes namespace to deploy to
+                                        (Default: $namespace)
+    -f, --values <values_file>          Site specific values YAML file
+                                        (Default: $values)
+
+Example:
+    $0 -f $values
+EOF
+}
+
+HELM=$(type -p helm)
+if [ -z "$HELM" ]; then
+    cat <<EOF
+Could not find 'helm' in PATH.  It may not be installed.
+Run 'install-helm' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+KUBECTL=$(type -p kubectl)
+if [ -z "$KUBECTL" ]; then
+    cat <<EOF
+Could not find 'kubectl' in PATH.  It may not be installed.
+Run 'install-kubectl' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        --help)
+            usage
+            exit 0
+            ;;
+        -r|--release)
+            release=$2
+            shift; shift
+            ;;
+        -n|--namespace)
+            namespace=$2
+            shift; shift
+            ;;
+        -f|--values)
+            values=$2
+            shift; shift
+            ;;
+        --)
+            shift;
+            break;
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+if [ ! -f "$jarvice_chart_dir/values.yaml" ]; then
+    cat <<EOF
+Could not find values.yaml in the JARVICE helm chart directory: $jarvice_chart_dir
+
+This must not be a valid JARVICE helm chart directory.
+Please be sure to execute this script from a cloned jarvice-helm git repo.
+Cannot continue.  Exiting...
+EOF
+    exit 1
+fi
+
+if [ ! -f "$values" ]; then
+    cat <<EOF
+
+Could not find values YAML file: $values
+
+Please create a copy of $jarvice_chart_dir/values.yaml file for site specific
+configuration and use with this script.
+
+Example:
+    cp $jarvice_chart_dir/values.yaml $values
+    <open $values and make site specific edits>
+    $0 $args
+EOF
+    exit 1
+fi
+
+set -e
+
+#helm_stable_repo_url=https://kubernetes-charts.storage.googleapis.com/
+#helm_stable_repo=$($HELM repo list 2>/dev/null | grep ^stable || /bin/true)
+#if [ -z "$helm_stable_repo" ]; then
+#    echo
+#    echo "* Adding helm chart repository for stable..."
+#    $HELM repo add stable $helm_stable_repo_url
+#fi
+
+#echo
+#echo "* Updating helm chart repositories..."
+#$HELM repo update
+
+echo
+echo "* Creating namespace: $namespace"
+$KUBECTL create namespace $namespace 2>/dev/null || /bin/true
+
+echo
+echo "* Deploying JARVICE to '$namespace' namespace..."
+echo
+$HELM upgrade $release $jarvice_chart_dir \
+    --namespace $namespace --install --debug \
+    --reset-values -f $jarvice_chart_dir/values.yaml -f $values $*
+
+echo
+echo "* Successfully deployed JARVICE to '$namespace' namespace..."
+echo
+

@@ -37,6 +37,7 @@ $ git clone https://github.com/nimbix/jarvice-helm.git
     - [Selecting external, load balancer IP addresses](#selecting-external-load-balancer-ip-addresses)
     - [Using an Ingress controller for jobs](#using-an-ingress-controller-for-jobs)
     - [Site specific configuration](#site-specific-configuration)
+        - [JARVICE helm deployment script](#jarvice-helm-deployment-script)
     - [Updating configuration (or upgrading to newer JARVICE chart version)](#updating-configuration-or-upgrading-to-newer-jarvice-chart-version)
     - [Non-JARVICE specific services](#non-jarvice-specific-services)
         - [MySQL database (jarvice-db)](#mysql-database-jarvice-db)
@@ -744,6 +745,30 @@ $ helm upgrade jarvice ./jarvice-helm --namespace jarvice-system --install \
     --values jarvice-helm/override.yaml
 ```
 
+#### JARVICE helm deployment script
+
+Alternatively, the simplified `deploy2k8s-jarvice` shell script included in
+the `scripts` directory of this helm chart can be used to install/upgrade
+the JARVICE helm deployment.
+Simply execute `./scripts/deploy2k8s-jarvice --help` to see it's usage.
+
+```bash
+$ ./jarvice-helm/scripts/deploy2k8s-jarvice --help
+Usage:
+    ./jarvice-helm/scripts/deploy2k8s-jarvice [options]
+
+Options:
+    -r, --release <release>             Helm release name
+                                        (Default: jarvice)
+    -n, --namespace <kube_namespace>    Kubernetes namespace to deploy to
+                                        (Default: jarvice-system)
+    -f, --values <values_file>          Site specific values YAML file
+                                        (Default: jarvice-helm/override.yaml)
+
+Example:
+    ./jarvice-helm/scripts/deploy2k8s-jarvice -f jarvice-helm/override.yaml
+```
+
 ### Updating configuration (or upgrading to newer JARVICE chart version)
 
 The `helm upgrade` command can be used to tweak JARVICE after the initial
@@ -942,7 +967,7 @@ command line with:
 
 Use of the CronJob also requires a persistent volume in which to store the
 database dump files.  By default, it will attempt to use the `jarvice-db-dump`
-storage class and request 200GB of storage.  The
+storage class and request 50GB of storage.  The
 `extra/jarvice-db-dump-pv.yaml` file is provided as a simple example for
 creating a persistent volume that can be used for persistent storage.
 

@@ -1,6 +1,20 @@
 #!/bin/bash
 
-MAJOR_VER=19
+MAJOR_VER=19.03
+
+function usage {
+    cat <<EOF
+Usage:
+    $0 [options]
+
+Options:
+    --major-version <version>   Version to install (audo-detects point release)
+                                (Default: $MAJOR_VER)
+
+Example:
+    $0 --major-version $MAJOR_VER
+EOF
+}
 
 SUDO=
 if [ "$EUID" != "0" ]; then
@@ -15,6 +29,22 @@ if [ "$EUID" != "0" ]; then
     fi
 fi
 
+while [ $# -gt 0 ]; do
+    case $1 in
+        --help)
+            usage
+            exit 0
+            ;;
+        --major-version)
+            MAJOR_VER=$2
+            shift; shift
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
 
 . /etc/os-release
 DISTRO="$ID$VERSION_ID"

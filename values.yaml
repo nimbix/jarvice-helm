@@ -168,11 +168,42 @@ jarvice_db_dump:
     # storageClass: "-"
     storageClass: "jarvice-db-dump"
     accessMode: ReadWriteOnce
-    size: 200Gi
+    size: 50Gi
   securityContext:
     enabled: false  # Enable when PersistentVolume is root squashed
     fsGroup: 999
     runAsUser: 999
+
+# Web service to map a username to full Linux identity based on inspection
+# of a shared filesystem:  https://github.com/nimbix/idmapper
+# Enable by setting jarvice_idmapper.enabled to true.  Then, configure shared
+# filesystem settings under jarvice_idmapper.filesystem and jarvice_idmapper.env
+jarvice_idmapper:
+  enabled: false
+  replicaCount: 2
+  # PodDisruptionBudget default requires 25% minimum of pods must be running
+  pdb:
+    minAvailable: "25%"
+  # antiAffinity default of "soft" prefers that pods run on diff nodes.
+  # Set to "hard" to require pods to run on diff nodes.
+  antiAffinity: "soft"
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+  tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-idmapper", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeSelector: # '{"node-role.kubernetes.io/jarvice-idmapper": ""}'
+  networkPolicy:
+    enabled: # Inherits from jarvice.networkPolicy.enabled if unset
+  image: nimbix/idmapper
+  # Shared filesystem settings.  Defaults to hostPath if NFS server is not set
+  filesystem:
+    path: /home
+    server: # nfs.my-domain.com
+  # Visit https://github.com/nimbix/idmapper for environment variable details
+  env:
+    HOMEPATH: "/home/%u/"
+    UPNPATH: "false"
 
 # Memcached server previously set up?  Set jarvice_memcached.enabled to false.
 # Then, set JARVICE_PORTAL_MEMCACHED_LOCATIONS below in jarvice_mc_portal env.
@@ -426,6 +457,7 @@ jarvice_mc_portal:
     JARVICE_PORTAL_MAIL_USERNAME:
     JARVICE_PORTAL_MAIL_PASSWORD:
     JARVICE_PORTAL_MAIL_ADMINS:
+    JARVICE_PORTAL_DB: nimbix_portal_ng
     JARVICE_PORTAL_DBHOST: # jarvice-db
     JARVICE_PORTAL_DBUSER: # root
     JARVICE_PORTAL_DBPASSWD: # Pass1234
@@ -435,10 +467,4 @@ jarvice_api_experimental:
   loadBalancerIP:
   ingressHost: # jarvice-api.my-domain.com
   ingressPath: "/"  # Valid values are "/" (default) or "/api"
-
-jarvice_mc_portal_experimental:
-  enabled: false
-  loadBalancerIP:
-  ingressHost: # jarvice.my-domain.com
-  ingressPath: "/"  # Valid values are "/" (default) or "/portal"
 
