@@ -80,6 +80,10 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202002062128
+
+* (2588) System-wide healthcheck performance optimization
+
 ## 3.0.0-1.202002051613
 
 * (2210), (2211), (2212), (2481), (2482) Internal scheduler service updates for future capabilities
