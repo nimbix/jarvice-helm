@@ -40,6 +40,7 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 - The *Nodes* view in *Administration* should not be used in this version of JARVICE
 - It is not currently possible to add users via the web portal without sending them an email to complete a registration; the cluster should be configured to send email and users should have real email addresses.  If this is not possible, you can still create users manually from the shell in any `jarvice-dal-*` pod in the JARVICE system namespace by running the command `/usr/lib/jarvice/bin/create-user` (run without arguments for usage).
 - When creating vaults for users, do not use the *SINGLE VOLUME BLOCK* and *BLOCK VOLUME ARRAY* types, as these are not supported and can result in bad vaults that can't be deleted.  Use *FILE SYSTEM VAULT* for `ceph` filesystem mounts only, *NFS* for `nfs` mounts, and *PVC* for everything else (via `PersistentVolume` class and/or name)
+- JARVICE does not apply any password policy for LDAP/Active Directory logins; instead, it performs a bind with the user's full DN and the supplied password to validate these as the final step of the login.  It's up to the LDAP administrator to apply policies on binds to help prevent DDoS or brute force login attacks.
 
 ### PushToCompute
 
@@ -73,7 +74,6 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 - Jobs that run for a very short period of time and fail may be shown as *Canceled* status versus *Completed with Error*; in rare cases jobs that complete successfully may also show up as *Canceled* if they run for a very short period of time (e.g. less than 1 second).
 - Account variables for a given user account must be referenced in an application AppDef in order to be passed into the container.  Please see [Application Definition Guide](https://jarvice.readthedocs.io/en/latest/appdef/) for details.
 - *NetworkPolicy* may not work with all Kubernetes network plugins and configurations; if JARVICE system pods do not enter ready state as a result of failed connectivity to the `jarvice-db` or `jarvice-dal` service, consider disabling this in the Helm chart
-- JARVICE File Manager is currently not compatible with path-based ingress
 
 ---
 
