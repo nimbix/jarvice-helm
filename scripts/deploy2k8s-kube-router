@@ -29,7 +29,7 @@ EOF
 fi
 
 echo -n "Checking for previously installed pod network addons..."
-installed_plugins=$($KUBECTL get --all-namespaces daemonsets -o name | grep -w "^daemonset.extensions/\(weave-net\|kube-flannel\|contiv\|cilium\|calico\)")
+installed_plugins=$($KUBECTL get --all-namespaces daemonsets -o name | grep -w "^daemonset\..\+/\(weave-net\|kube-flannel\|contiv\|cilium\|calico\)")
 if [ -n "$installed_plugins" ]; then
     echo; echo "Only one pod network add-on at a time can be used."
     echo "We found that the following has already been deployed:"
