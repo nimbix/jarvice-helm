@@ -165,6 +165,18 @@ https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/
 
 ### Kubernetes network plugin
 
+Deploying a pod network plugin should only be necessary when
+standing up a new kubernetes cluster.  If you are working with an already
+existing cluster, a pod network plugin may already be deployed.  Contact
+your kubernetes cluster administrator for more information.
+
+**WARNING:** Only one pod network plugin at a time may be installed.
+
+**NOTE:**  If running on a managed kubernetes service, such as Amazon EKS,
+a network plugin has likely been set up for the cluster.
+
+#### weave-net
+
 As of this writing, Weave is the only known plugin to work out-of-the-box
 on multiple architectures (amd64, ppc64le, arm64).  As such, it is recommended
 that kubernetes installations use the Weave plugin if intending to run jobs in
@@ -197,9 +209,6 @@ properly routed.  If your site has potential IP conflicts with this range,
 be sure to update the `--ipalloc-range` used by the Weave deployment script.
 Please see the following link for more details:
 https://www.weave.works/docs/net/latest/kubernetes/kube-addon/#configuration-options
-
-**NOTE:**  If running on a managed kubernetes service, such as Amazon EKS,
-a network plugin has likely been set up for the cluster.
 
 ### Kubernetes load balancer
 
