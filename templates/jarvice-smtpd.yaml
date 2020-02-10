@@ -1,0 +1,114 @@
+{{- if .Values.jarvice_smtpd.enabled }}
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: jarvice-smtpd
+spec:
+  selector:
+    matchLabels:
+      deployment: jarvice-smtpd
+  minAvailable: {{ .Values.jarvice_smtpd.pdb.minAvailable }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jarvice-smtpd
+spec:
+  replicas: {{ .Values.jarvice_smtpd.replicaCount }}
+  selector:
+    matchLabels:
+      deployment: jarvice-smtpd
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-smtpd
+        deployment: jarvice-smtpd
+    spec:
+{{- if (not (empty .Values.jarvice_smtpd.tolerations)) }}
+      tolerations: {{ .Values.jarvice_smtpd.tolerations }}
+{{- else if (not (empty .Values.jarvice.tolerations)) }}
+      tolerations: {{ .Values.jarvice.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice_smtpd.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice_smtpd.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.nodeSelector }}
+{{- end }}
+      affinity:
+        podAntiAffinity:
+        {{- if eq .Values.jarvice_smtpd.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                deployment: jarvice-smtpd
+        {{- else if eq .Values.jarvice_smtpd.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  deployment: jarvice-smtpd
+        {{- end }}
+      containers:
+      - name: jarvice-smtpd
+        image: {{ .Values.jarvice_smtpd.image }}
+        imagePullPolicy: Always
+        ports:
+          - name: "smtp"
+            containerPort: 25
+        readinessProbe:
+          tcpSocket:
+            port: smtp
+          initialDelaySeconds: 5
+          timeoutSeconds: 2
+        livenessProbe:
+          tcpSocket:
+            port: smtp
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+        resources:
+{{ toYaml .Values.jarvice_smtpd.resources | indent 10 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-smtpd
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-smtpd
+spec:
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 25
+    targetPort: 25
+    name: smtp
+  selector:
+    deployment: jarvice-smtpd
+---
+{{- if or .Values.jarvice_smtpd.networkPolicy.enabled (and (eq "<nil>" (toString .Values.jarvice_smtpd.networkPolicy.enabled)) .Values.jarvice.networkPolicy.enabled) }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: jarvice-smtpd
+spec:
+  podSelector:
+    matchLabels:
+      deployment: jarvice-smtpd
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: {{ .Release.Namespace }}
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 25
+---
+{{- end }}
+{{- end }}
