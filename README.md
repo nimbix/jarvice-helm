@@ -170,7 +170,7 @@ standing up a new kubernetes cluster.  If you are working with an already
 existing cluster, a pod network plugin may already be deployed.  Contact
 your kubernetes cluster administrator for more information.
 
-**WARNING:** Only one pod network plugin at a time may be installed.
+**WARNING:** Only one pod network plugin may be deployed to a cluster.
 
 **NOTE:**  If running on a managed kubernetes service, such as Amazon EKS,
 a network plugin has likely been set up for the cluster.
