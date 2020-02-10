@@ -109,6 +109,30 @@ spec:
     ports:
     - protocol: TCP
       port: 25
+  - from:
+    - namespaceSelector:
+        matchLabels:
+{{- if empty .Values.jarvice.JARVICE_BUILDS_NAMESPACE }}
+          name: {{ .Release.Namespace }}-builds
+{{- else }}
+          name: {{ .Values.jarvice.JARVICE_BUILDS_NAMESPACE }}
+{{- end }}
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 25
+  - from:
+    - namespaceSelector:
+        matchLabels:
+{{- if empty .Values.jarvice.JARVICE_PULLS_NAMESPACE }}
+          name: {{ .Release.Namespace }}-pulls
+{{- else }}
+          name: {{ .Values.jarvice.JARVICE_PULLS_NAMESPACE }}
+{{- end }}
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 25
 ---
 {{- end }}
 {{- end }}
