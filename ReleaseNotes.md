@@ -80,7 +80,7 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
-## 3.0.0-1.202002062128
+## 3.0.0-1.202002102104
 
 * (2588) System-wide healthcheck performance optimization
 
