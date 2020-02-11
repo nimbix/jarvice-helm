@@ -46,7 +46,7 @@ jarvice:
   JARVICE_MAIL_CONF: |
       [mail]
       from: JARVICE Job Status <DoNotReply@localhost>
-      admins: root@localhost
+      ;admins: root@localhost
       [smtp]
       server: jarvice-smtpd:25
       ;username: DoNotReply@localhost
@@ -174,7 +174,7 @@ jarvice_db_dump:
     fsGroup: 999
     runAsUser: 999
 
-# SMTPD service may be disabled when not being used in the following settings:
+# jarvice_smtpd may be disabled when not being used in the following settings:
 # jarvice.JARVICE_MAIL_CONF
 # jarvice_scheduler.env.JARVICE_MAIL_CONF
 # jarvice_api.env.JARVICE_MAIL_CONF
@@ -366,7 +366,7 @@ jarvice_scheduler:
     JARVICE_MAIL_CONF: #|
         #[mail]
         #from: JARVICE Job Status <DoNotReply@localhost>
-        #admins: root@localhost
+        #;admins: root@localhost
         #[smtp]
         #server: jarvice-smtpd:25
         #;username: DoNotReply@localhost
@@ -411,7 +411,7 @@ jarvice_api:
     JARVICE_MAIL_CONF: #|
         #[mail]
         #from: JARVICE Job Status <DoNotReply@localhost>
-        #admins: root@localhost
+        #;admins: root@localhost
         #[smtp]
         #server: jarvice-smtpd:25
         #;username: DoNotReply@localhost
