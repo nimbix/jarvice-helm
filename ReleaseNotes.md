@@ -80,6 +80,16 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202002192205
+
+* (2460) Fixed bug where resource limits combining both total CPUs and specific machine types were not being enforced correctly
+* (2475) Fixed web portal to not attempt to enforce password policy for LDAP logins, since this should be handled by the LDAP server itself
+* (2480) Fixed bug with erroneous data in the per-user audit log in *Administration->Users*
+* (2524) Fixed bug where portal was not allowing team administrators to edit LDAP and SAML settings unless they were actually the team payer
+* (2533) Significant performance improvements to explicit Docker pulls in JARVICE XE, especially if images are also built by JARVICE
+* (2583) Restored email sending functionality in web portal with default (built-in) SMTP server settings; JARVICE now runs an SMTP pod as a deployment within the Helm chart
+* (2598) Fixed regression in web portal that prevented itemized billing reports from working
+
 ## 3.0.0-1.202002102104
 
 * (2588) System-wide healthcheck performance optimization
