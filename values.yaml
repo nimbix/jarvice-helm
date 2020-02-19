@@ -46,9 +46,9 @@ jarvice:
   JARVICE_MAIL_CONF: |
       [mail]
       from: JARVICE Job Status <DoNotReply@localhost>
-      admins: root@localhost
+      ;admins: root@localhost
       [smtp]
-      server: localhost:25
+      server: jarvice-smtpd:25
       ;username: DoNotReply@localhost
       ;password: Pass1234
 
@@ -173,6 +173,30 @@ jarvice_db_dump:
     enabled: false  # Enable when PersistentVolume is root squashed
     fsGroup: 999
     runAsUser: 999
+
+# jarvice_smtpd may be disabled when not being used in the following settings:
+# jarvice.JARVICE_MAIL_CONF
+# jarvice_scheduler.env.JARVICE_MAIL_CONF
+# jarvice_api.env.JARVICE_MAIL_CONF
+# jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_SERVER
+jarvice_smtpd:
+  enabled: true
+  replicaCount: 2
+  # PodDisruptionBudget default requires 25% minimum of pods must be running
+  pdb:
+    minAvailable: "25%"
+  # antiAffinity default of "soft" prefers that pods run on diff nodes.
+  # Set to "hard" to require pods to run on diff nodes.
+  antiAffinity: "soft"
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+  tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-smtpd", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeSelector: # '{"node-role.kubernetes.io/jarvice-smtpd": ""}'
+  networkPolicy:
+    enabled: # Inherits from jarvice.networkPolicy.enabled if unset
+  image: nimbix/postfix:3.11_3.4.9-r0
 
 # Web service to map a username to full Linux identity based on inspection
 # of a shared filesystem:  https://github.com/nimbix/idmapper
@@ -342,9 +366,9 @@ jarvice_scheduler:
     JARVICE_MAIL_CONF: #|
         #[mail]
         #from: JARVICE Job Status <DoNotReply@localhost>
-        #admins: root@localhost
+        #;admins: root@localhost
         #[smtp]
-        #server: localhost:25
+        #server: jarvice-smtpd:25
         #;username: DoNotReply@localhost
         #;password: Pass1234
     JARVICE_UNFS_REQUEST_MEM: 1Gi
@@ -387,19 +411,19 @@ jarvice_api:
     JARVICE_MAIL_CONF: #|
         #[mail]
         #from: JARVICE Job Status <DoNotReply@localhost>
-        #admins: root@localhost
+        #;admins: root@localhost
         #[smtp]
-        #server: localhost:25
+        #server: jarvice-smtpd:25
         #;username: DoNotReply@localhost
         #;password: Pass1234
 
 jarvice_dockerbuild:
-  tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-dockerbuild", "effect": "NoSchedule", "operator": "Exists"}]'
-  nodeSelector: # '{"node-role.kubernetes.io/jarvice-dockerbuild": ""}'
+  tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-dockerbuildpull", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-dockerbuild", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeSelector: # '{"node-role.kubernetes.io/jarvice-dockerbuildpull": ""}'  # '{"node-role.kubernetes.io/jarvice-dockerbuild": ""}'
 
 jarvice_dockerpull:
-  tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-dockerpull", "effect": "NoSchedule", "operator": "Exists"}]'
-  nodeSelector: # '{"node-role.kubernetes.io/jarvice-dockerpull": ""}'
+  tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-dockerbuildpull", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-dockerpull", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeSelector: # '{"node-role.kubernetes.io/jarvice-dockerbuildpull": ""}'  # '{"node-role.kubernetes.io/jarvice-dockerpull": ""}'
 
 jarvice_appsync:
   enabled: true
@@ -453,7 +477,7 @@ jarvice_mc_portal:
     JARVICE_PORTAL_APP_OWNERS:
     JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
     JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
-    JARVICE_PORTAL_MAIL_SERVER: localhost:25
+    JARVICE_PORTAL_MAIL_SERVER: jarvice-smtpd:25
     JARVICE_PORTAL_MAIL_USERNAME:
     JARVICE_PORTAL_MAIL_PASSWORD:
     JARVICE_PORTAL_MAIL_ADMINS:

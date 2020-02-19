@@ -165,6 +165,18 @@ https://kubernetes.io/docs/tasks/administer-cluster/cpu-management-policies/
 
 ### Kubernetes network plugin
 
+Deploying a pod network plugin should only be necessary when
+standing up a new kubernetes cluster.  If you are working with an already
+existing cluster, a pod network plugin may already be deployed.  Contact
+your kubernetes cluster administrator for more information.
+
+**WARNING:** Only one pod network plugin may be deployed to a cluster.
+
+**NOTE:**  If running on a managed kubernetes service, such as Amazon EKS,
+a network plugin has likely been set up for the cluster.
+
+#### weave-net
+
 As of this writing, Weave is the only known plugin to work out-of-the-box
 on multiple architectures (amd64, ppc64le, arm64).  As such, it is recommended
 that kubernetes installations use the Weave plugin if intending to run jobs in
@@ -197,9 +209,6 @@ properly routed.  If your site has potential IP conflicts with this range,
 be sure to update the `--ipalloc-range` used by the Weave deployment script.
 Please see the following link for more details:
 https://www.weave.works/docs/net/latest/kubernetes/kube-addon/#configuration-options
-
-**NOTE:**  If running on a managed kubernetes service, such as Amazon EKS,
-a network plugin has likely been set up for the cluster.
 
 ### Kubernetes load balancer
 
@@ -412,7 +421,8 @@ used for running the JARVICE platform itself.  The second type,
 The `jarvice-system` pods could be broken down further into four basic types.
 The base `jarvice-system` pods contain components related to the web portal,
 API endpoints, Data Abstraction Layer (DAL), etc.  JARVICE application
-builds use `jarvice-dockerbuild` and `jarvice-dockerpull` pod types.  Lastly,
+builds use `jarvice-dockerbuild` and `jarvice-dockerpull` pod types
+(or the combined `jarvice-dockerbuildpull` type).  Lastly,
 there are other non-JARVICE installed/controlled components.  These other
 components, such as ingress controllers, can be thought of as the
 `jarvice-other` type as they live outside of the JARVICE namespaces.
@@ -476,6 +486,11 @@ Use commands similar to the following to do so:
 ```bash
 $ kubectl label nodes <node_name> node-role.kubernetes.io/jarvice-dockerbuild=
 $ kubectl label nodes <node_name> node-role.kubernetes.io/jarvice-dockerpull=
+```
+
+Or, it may be desirable to simply combine those into a single label:
+```bash
+$ kubectl label nodes <node_name> node-role.kubernetes.io/jarvice-dockerbuildpull=
 ```
 
 To take advantage of such a setup, set `jarvice_dockerbuild.nodeSelector` and

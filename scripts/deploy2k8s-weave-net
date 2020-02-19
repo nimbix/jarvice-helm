@@ -25,6 +25,17 @@ EOF
     exit 1
 fi
 
+echo -n "Checking for previously installed pod network addons..."
+installed_plugins=$($KUBECTL get --all-namespaces daemonsets -o name | grep -w "^daemonset\..\+/\(kube-router\|kube-flannel\|contiv\|cilium\|calico\)")
+if [ -n "$installed_plugins" ]; then
+    echo; echo; echo "Only one pod network add-on at a time can be used."
+    echo "We found that the following has already been deployed:"
+    echo "$installed_plugins"
+    echo; echo "Cannot continue.  Exiting..."
+    exit 1
+fi
+echo "OK"
+
 while [ $# -gt 0 ]; do
     case $1 in
         --help)
@@ -44,7 +55,7 @@ done
 
 set -e
 
-echo "* Deploying...  IPALLOC_RANGE=$IPALLOC_RANGE"
+echo; echo "* Deploying...  IPALLOC_RANGE=$IPALLOC_RANGE"
 
 # See this link for more information on Weave Net configuration options:
 # https://github.com/weaveworks/weave/blob/master/site/kubernetes/kube-addon.md#-changing-configuration-options

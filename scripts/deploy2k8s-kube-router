@@ -28,6 +28,17 @@ EOF
     exit 1
 fi
 
+echo -n "Checking for previously installed pod network addons..."
+installed_plugins=$($KUBECTL get --all-namespaces daemonsets -o name | grep -w "^daemonset\..\+/\(weave-net\|kube-flannel\|contiv\|cilium\|calico\)")
+if [ -n "$installed_plugins" ]; then
+    echo; echo; echo "Only one pod network add-on at a time can be used."
+    echo "We found that the following has already been deployed:"
+    echo "$installed_plugins"
+    echo; echo "Cannot continue.  Exiting..."
+    exit 1
+fi
+echo "OK"
+
 while [ $# -gt 0 ]; do
     case $1 in
         --help)
@@ -43,7 +54,7 @@ done
 
 set -e
 
-echo "* Deploying..."
+echo; echo "* Deploying..."
 
 # See this link for more information on Kube-router configuration options:
 # https://www.kube-router.io/docs/
