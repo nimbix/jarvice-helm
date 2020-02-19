@@ -421,7 +421,8 @@ used for running the JARVICE platform itself.  The second type,
 The `jarvice-system` pods could be broken down further into four basic types.
 The base `jarvice-system` pods contain components related to the web portal,
 API endpoints, Data Abstraction Layer (DAL), etc.  JARVICE application
-builds use `jarvice-dockerbuild` and `jarvice-dockerpull` pod types.  Lastly,
+builds use `jarvice-dockerbuild` and `jarvice-dockerpull` pod types
+(or the combined `jarvice-dockerbuildpull` type).  Lastly,
 there are other non-JARVICE installed/controlled components.  These other
 components, such as ingress controllers, can be thought of as the
 `jarvice-other` type as they live outside of the JARVICE namespaces.
@@ -458,18 +459,18 @@ individual component node selectors are not additive.  They will override
 `jarvice.nodeSelector` if they are set.
 
 For example, if both `jarvice.nodeSelector` and
-`jarvice_dockerpull.nodeSelector` are specified on the `helm` command line:
+`jarvice_dockerbuild.nodeSelector` are specified on the `helm` command line:
 ```bash
 --set jarvice.nodeSelector="\{\"node-role.kubernetes.io/jarvice-system\": \"\"\}"
---set jarvice_dockerpull.nodeSelector="\{\"node-role.kubernetes.io/jarvice-dockerpull\": \"\"\}"
+--set jarvice_dockerbuild.nodeSelector="\{\"node-role.kubernetes.io/jarvice-dockerbuild\": \"\"\}"
 ```
 
 In the example above,
 `node-role.kubernetes.io/jarvice-system` will not be
-applied to `jarvice_dockerpull.nodeSelector`.  In the case that both node
-selectors are desired for `jarvice_dockerpull.nodeSelector`, use:
+applied to `jarvice_dockerbuild.nodeSelector`.  In the case that both node
+selectors are desired for `jarvice_dockerbuild.nodeSelector`, use:
 ```bash
---set jarvice_dockerpull.nodeSelector="\{\"node-role.kubernetes.io/jarvice-system\": \"\"\, \"node-role.kubernetes.io/jarvice-dockerpull\": \"\"\}"
+--set jarvice_dockerbuild.nodeSelector="\{\"node-role.kubernetes.io/jarvice-system\": \"\"\, \"node-role.kubernetes.io/jarvice-dockerbuild\": \"\"\}"
 ```
 
 For more information on assigning kubernetes node labels and using node
@@ -485,6 +486,11 @@ Use commands similar to the following to do so:
 ```bash
 $ kubectl label nodes <node_name> node-role.kubernetes.io/jarvice-dockerbuild=
 $ kubectl label nodes <node_name> node-role.kubernetes.io/jarvice-dockerpull=
+```
+
+Or, it may be desirable to simply combine those into a single label:
+```bash
+$ kubectl label nodes <node_name> node-role.kubernetes.io/jarvice-dockerbuildpull=
 ```
 
 To take advantage of such a setup, set `jarvice_dockerbuild.nodeSelector` and
