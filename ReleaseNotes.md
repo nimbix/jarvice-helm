@@ -40,7 +40,6 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 - The *Nodes* view in *Administration* should not be used in this version of JARVICE
 - It is not currently possible to add users via the web portal without sending them an email to complete a registration; the cluster should be configured to send email and users should have real email addresses.  If this is not possible, you can still create users manually from the shell in any `jarvice-dal-*` pod in the JARVICE system namespace by running the command `/usr/lib/jarvice/bin/create-user` (run without arguments for usage).
 - When creating vaults for users, do not use the *SINGLE VOLUME BLOCK* and *BLOCK VOLUME ARRAY* types, as these are not supported and can result in bad vaults that can't be deleted.  Use *FILE SYSTEM VAULT* for `ceph` filesystem mounts only, *NFS* for `nfs` mounts, and *PVC* for everything else (via `PersistentVolume` class and/or name)
-- Login events are logged in team audit logs even when a logged in user refreshes the page in the browser, resulting in multiple entries in the log
 
 ### PushToCompute
 
