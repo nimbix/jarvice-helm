@@ -80,6 +80,10 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202002202201
+
+* (2589) Fix spurious logouts in the web portal when impersonating users as system or team administrators
+
 ## 3.0.0-1.202002192205
 
 * (2460) Fixed bug where resource limits combining both total CPUs and specific machine types were not being enforced correctly
