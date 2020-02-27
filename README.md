@@ -62,7 +62,8 @@ If you do not already have access to a kubernetes cluster and will not be
 using a managed kubernetes cluster service (e.g. Amazon EKS on AWS or
 Google GKE on GCP), it will be necessary to install your own cluster.
 If you will be installing your own kubernetes cluster, please see the
-[Kubernetes Install](KubernetesInstall.md) documentation for more information.
+[Kubernetes Cluster Installation](KubernetesInstall.md) documentation for
+more information.
 
 #### kubectl
 
@@ -170,45 +171,13 @@ standing up a new kubernetes cluster.  If you are working with an already
 existing cluster, a pod network plugin may already be deployed.  Contact
 your kubernetes cluster administrator for more information.
 
-**WARNING:** Only one pod network plugin may be deployed to a cluster.
+If your cluster does not already have a pod network plugin deployed, see
+[Deploy a pod network plugin/add-on](KubernetesInstall.md#deploy-a-pod-network-plugin-add-on)
+section of the
+[Kubernetes Cluster Installation](KubernetesInstall.md) documentation.
 
 **NOTE:**  If running on a managed kubernetes service, such as Amazon EKS,
 a network plugin has likely been set up for the cluster.
-
-#### weave-net
-
-As of this writing, Weave is the only known plugin to work out-of-the-box
-on multiple architectures (amd64, ppc64le, arm64).  As such, it is recommended
-that kubernetes installations use the Weave plugin if intending to run jobs in
-a multiarch environment.
-
-The `deploy2k8s-weave-net` shell script included in the `scripts`
-directory of this helm chart can be used to deploy it into the kubernetes
-cluster.
-Execute `./scripts/deploy2k8s-weave-net` with `--help` to see all of the
-current command line options:
-```bash
-Usage:
-    ./scripts/deploy2k8s-weave-net [options]
-
-Options:
-    --ipalloc-range <ip_range>  IP address range used by Weave Net
-                                (Default: 10.32.0.0/12)
-
-Example:
-    ./scripts/deploy2k8s-weave-net --ipalloc-range 10.32.0.0/12
-```
-
-Please see the Weave Net set-up guide for more details:
-https://www.weave.works/docs/net/latest/kubernetes/kube-addon/
-
-**NOTE:**  The default IP allocation range Weave Net uses is 10.32.0.0/12
-(10.32.0.1-10.47.255.254).  If this conflicts with disparate site networks
-which will be connecting to the kubernetes cluster, traffic may not be
-properly routed.  If your site has potential IP conflicts with this range,
-be sure to update the `--ipalloc-range` used by the Weave deployment script.
-Please see the following link for more details:
-https://www.weave.works/docs/net/latest/kubernetes/kube-addon/#configuration-options
 
 ### Kubernetes load balancer
 
@@ -217,12 +186,12 @@ has likely been set up for the cluster.  If running a private kubernetes
 cluster, a load balancer is required for making the JARVICE services and jobs
 externally available/accessible from outside of the kubernetes cluster.
 
-Currently, MetalLB (https://metallb.universe.tf/) is a good solution.  After
-installing helm, MetalLB can quickly be installed via helm commands.
-The `deploy2k8s-metallb` shell script included in the `scripts`
-directory of this helm chart can be used to install this with `helm`.
-Simply execute `./scripts/deploy2k8s-metallb --help` to see it's usage.
+If your cluster does not already have a load balancer deployed, see the
+[Kubernetes load balancer](KubernetesInstall.md#kubernetes-load-balancer)
+section of the
+[Kubernetes Cluster Installation](KubernetesInstall.md) documentation.
 
+<!--
 However, if a more complex configuration is needed for your cluster,
 it will be necessary to adjust the script or execute `helm` manually.
 Please visit the MetalLB web site (https://metallb.universe.tf/) and/or
@@ -231,22 +200,24 @@ installation:
 ```bash
 $ helm inspect all stable/metallb
 ```
+-->
 
 ### Kubernetes ingress controller
 
 An ingress controller is required for making the JARVICE services and jobs
-externally available/accessible from outside of the kubernetes cluster via
-fixed, DNS host names.
+available and accessible from outside of the kubernetes cluster via
+DNS host names.
+[Traefik](https://traefik.io/) is the ingress controller solution that is
+supported by JARVICE.
 
-Currently, Traefik (https://traefik.io/) is the solution that is
-supported by JARVICE.  After installing helm, Traefik can quickly be 
-installed via helm commands.
-The `deploy2k8s-traefik` shell script included in the `scripts`
-directory of this helm chart can be used to install this with `helm`.
-Simply execute `./scripts/deploy2k8s-traefik --help` to see it's usage.
+If your cluster does not already have an ingress controller deployed, see the
+[Kubernetes ingress controller](KubernetesInstall.md#kubernetes-ingress-controller)
+section of the
+[Kubernetes Cluster Installation](KubernetesInstall.md) documentation.
 
-However, if a more complex configuration is needed for your cluster,
-it will be necessary to adjust the script or execute `helm` manually.
+If a more complex configuration is needed for your cluster,
+it will be necessary to adjust the `deploy2k8s-traefik` script included in
+the `jarvice-helm` git repository or execute `helm` manually.
 Please visit https://github.com/helm/charts/tree/master/stable/traefik and/or
 execute the following to get more details on Traefik configuration and
 installation via helm:
@@ -254,13 +225,15 @@ installation via helm:
 $ helm inspect all stable/traefik
 ```
 
+<!--
 There are a few things to note when installing Traefik for JARVICE.  In
 particular, the default resource setting for the helm chart are not sufficient
 for use with JARVICE.  If deploying Traefik with `helm` manually,
 it will be necessary to adjust the number of pod
 replicas, cpu, and memory settings per site specifications.
+-->
 
-It will also be necessary to have a valid `loadBalancerIP` or `externalIP`
+**Note:** It will be necessary to have a valid `loadBalancerIP` or `externalIP`
 which is accessible via DNS lookups.  The site domain's DNS settings will need
 to allow wildcard lookups so that the ingress controller can use random host
 names for routing JARVICE jobs.  A JARVICE job hostname will look similar to
@@ -1096,5 +1069,6 @@ Then use https://`$PORTAL_IP`/ to initialize and/or log into JARVICE.
 - [In-container Identity Settings and Best Practices](Identity.md)
 - [JARVICE Troubleshooting Guide](Troubleshooting.md)
 - [JARVICE Developer Documentation (jarvice.readthedocs.io)](https://jarvice.readthedocs.io)
+- [Kubernetes Cluster Installation](KubernetesInstall.md)
 
 
