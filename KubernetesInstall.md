@@ -56,7 +56,7 @@ get started and find out more:
 * [Deploy JARVICE](#deploy-jarvice)
 * [Scaling Up the Kubernetes Cluster](#scaling-up-the-kubernetes-cluster)
     - [Adding kubernetes worker nodes](#adding-kubernetes-worker-nodes)
-    - [Adding kubernetes master nodes](Adding kubernetes master nodes)
+    - [Adding kubernetes master nodes](#adding-kubernetes-master-nodes)
 * [Additional Resources](#additional-resources)
 
 ------------------------------------------------------------------------------
