@@ -67,7 +67,7 @@ done
 
 set -e
 
-echo; echo "* Deploying..."
+echo; echo "* Deploying version: $VERSION"
 
 # See this link for more information on Kube-router configuration options:
 # https://www.kube-router.io/docs/
