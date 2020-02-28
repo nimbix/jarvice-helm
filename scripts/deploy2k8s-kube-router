@@ -1,11 +1,20 @@
 #!/bin/bash
 
+VERSION=v1.0.0-rc1
 IPALLOC_RANGE=10.32.0.0/12
 
 function usage {
     cat <<EOF
 Usage:
-    $0
+    $0 [options]
+
+Options:
+    --version <version>     Version to install
+                            (Default: $VERSION)
+
+Example:
+    $0 --version $VERSION
+
 
 Notes:
     Be sure that kube-controller-manager is running with --cluster-cidr flag.
@@ -45,6 +54,10 @@ while [ $# -gt 0 ]; do
             usage
             exit 0
             ;;
+        --version)
+            VERSION=$2
+            shift; shift
+            ;;
         *)
             usage
             exit 1
@@ -59,7 +72,9 @@ echo; echo "* Deploying..."
 # See this link for more information on Kube-router configuration options:
 # https://www.kube-router.io/docs/
 $KUBECTL apply -f "https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter.yaml"
-$KUBECTL --namespace kube-system patch daemonset kube-router --patch '{"spec": {"template": {"spec": {"tolerations": [{"effect": "NoSchedule", "operator": "Exists"}]}}}}'
+image=docker.io/cloudnativelabs/kube-router:$VERSION
+$KUBECTL --namespace kube-system patch daemonset kube-router \
+    --patch "{\"spec\": {\"template\": {\"spec\": {"containers": {\"image\": \"$image\"}}, {\"tolerations\": [{\"effect\": \"NoSchedule\", \"operator\": \"Exists\"}]}}}}"
 
 echo
 echo "* Deployment successful..."
