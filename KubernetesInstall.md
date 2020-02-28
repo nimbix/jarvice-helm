@@ -8,7 +8,7 @@ deploying JARVICE.  It is not intended to be authoratative documentation for
 site-specific production deployments.
 
 There are a myriad of options to work with when considering a site-specific
-production deployment of a kubernets cluster.  Vist the following links to
+production deployment of a kubernets cluster.  Visit the following links to
 get started and find out more:
 
 * [Getting started - Kubernetes](https://kubernetes.io/docs/setup/#production-environment)
@@ -137,7 +137,7 @@ The certificate and key will be used when deploying and configuring the
 
 The commands and examples in the following sections of this document will be
 using the example layout, node host names, and IP addresses/ranges as
-described below.  This layout is meant to outline the minimal number of
+described.  This layout is meant to outline the minimal number of
 nodes and their requirements for running JARVICE on a kubernetes cluster.
 
 Be sure to adjust the example host names and IPs used in the commands and
@@ -559,6 +559,14 @@ Label the `jarvice-compute` nodes:
 ```bash
 $ NODES="k8s-worker-10 k8s-worker-11"
 $ kubectl label nodes $NODES node-role.kubernetes.io/jarvice-compute=
+```
+
+##### Verify node labels
+
+From a `kubectl` client machine, verify that the nodes are labels with the
+correct roles:
+```bash
+$ kubectl get nodes
 ```
 
 #### Add node taints
