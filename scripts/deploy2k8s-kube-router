@@ -74,7 +74,7 @@ echo; echo "* Deploying..."
 $KUBECTL apply -f "https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter.yaml"
 image=docker.io/cloudnativelabs/kube-router:$VERSION
 $KUBECTL --namespace kube-system patch daemonset kube-router \
-    --patch "{\"spec\": {\"template\": {\"spec\": {"containers": {\"image\": \"$image\"}}, {\"tolerations\": [{\"effect\": \"NoSchedule\", \"operator\": \"Exists\"}]}}}}"
+    --patch "{\"spec\": {\"template\": {\"spec\": {\"containers\": {\"image\": \"$image\"}}, {\"tolerations\": [{\"effect\": \"NoSchedule\", \"operator\": \"Exists\"}]}}}}"
 
 echo
 echo "* Deployment successful..."
