@@ -304,7 +304,8 @@ $ ./jarvice-helm/scripts/install-haproxy \
 If the control plane endpoint will live on one of the kubernetes master nodes,
 it will be necessary to adjust the default port HAProxy listens on.
 Assuming that the control plane endpoint will also live on `k8s-master-00`,
-execute `install-haproxy` with the `--address` flag to adjust the port:
+execute `install-haproxy` from that nodes with the `--address` flag to
+adjust the port:
 ```bash
 $ ./jarvice-helm/scripts/install-haproxy \
     --master k8s-master-00 --master k8s-master-01 --master k8s-master-02 \
