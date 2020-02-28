@@ -468,7 +468,7 @@ $ kubectl get nodes
 
 Now add the additional kubernetes master nodes to the cluster using the
 `kubeadm join` command that was copied when
-[saving the join commands](#saving-the-join-commands):
+[saving the join commands](#saving-the-join-commands).
 Execute the master node join command on each master node being
 added to the cluster (make sure to use `sudo`):
 ```bash
@@ -618,7 +618,7 @@ externally available/accessible from outside of the kubernetes cluster.
 [MetalLB](https://metallb.universe.tf/) is the recommended load balancer
 solution.
 
-The `deploy2k8s-metallb` script can be used to deploy and configure 
+The `deploy2k8s-metallb` script can be used to deploy and configure it
 for the kubernetes cluster.
 Execute `./jarvice-helm/scripts/deploy2k8s-metallb --help` to see it's usage.
 
@@ -628,7 +628,10 @@ has `helm` and `kubectl` installed:
 $ ./jarvice-helm/scripts/deploy2k8s-metallb --addresses 10.20.0.1-10.20.0.2
 ```
 
-Be sure to replace the `--addresses` value with the proper value for your
+As mentioned in the
+[IP address range or subnet for accessing JARVICE](#ip-address-range-or-subnet-for-accessing-jarvice)
+section of this document,
+be sure to replace the `--addresses` value with the proper value for your
 cluster.
 
 ### Kubernetes ingress controller
@@ -646,7 +649,7 @@ Execute `./jarvice-helm/scripts/deploy2k8s-traefik --help` to see it's usage.
 For our example cluster, execute the following from the client machine which
 has `helm` and `kubectl` installed:
 ```bash
-$ ./jarvice-helm/scripts/deploy2k8s-treafik --load-balancer-ip 10.20.0.1 \
+$ ./jarvice-helm/scripts/deploy2k8s-traefik --load-balancer-ip 10.20.0.1 \
     --default-cert-file my-domain.com.pem \
     --default-key-file my-domain.com.key
 ```
@@ -671,7 +674,8 @@ resolved during the kubernetes cluster installation outlined in this document.
 ## Scaling Up the Kubernetes Cluster
 
 Eventually, it may become necessary to scale up JARVICE by adding more
-nodes to the kubernetes cluster.  In order to do so, you must first install
+nodes to the kubernetes cluster.  In order to do so, on each new node,
+you must first install
 [docker and kubeadm](#docker-and-kubeadm) as outlined in the
 [Node Software Installation](#node-software-installation) section of this
 document before continuing here.
@@ -693,8 +697,8 @@ per their desired node roles.
 
 #### Verify nodes
 
-From a `kubectl` client machine, verify that the nodes have been added
-and are in the `Ready` state:
+From a `kubectl` client machine, verify that the node(s) have been added,
+are in the `Ready` state, and are labeled with the correct node role(s):
 ```bash
 $ kubectl get nodes
 ```
