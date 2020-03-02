@@ -328,6 +328,11 @@ $ CMD="./jarvice-helm/scripts/install-docker && ./jarvice-helm/scripts/install-k
 $ for n in $NODES; do ssh $USER@$n "$CMD"; done
 ```
 
+The above scripts will set up their corresponding apt/yum repositories before
+installing the packages.  The `install-kubeadm` script will also disable swap
+on the system and apply `sysctl` updates.
+On CentOS, it will also disable SELinux.
+
 ------------------------------------------------------------------------------
 
 ## Cluster Stand Up

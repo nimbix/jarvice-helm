@@ -98,6 +98,29 @@ EOF
     ver_install_pkgs=$(printf "%s-$ver " $install_pkgs)
     $SUDO yum install -y --disableexcludes=kubernetes $ver_install_pkgs
 
-    #[ "$(basename $0)" = "install-kubeadm" ] && $SUDO systemctl enable kubelet || /bin/true
+    [ "$(basename $0)" = "install-kubeadm" ] && $SUDO systemctl enable --now kubelet || /bin/true
+fi
+
+if [ "$(basename $0)" = "install-kubeadm" ]; then
+    sysctl_file=/etc/sysctl.d/99-sysctl-kubeadm.conf
+    echo; echo "* Updating and applying sysctl settings in $sysctl_file..."
+    $SUDO modprobe br_netfilter
+    cat <<EOF | $SUDO tee $sysctl_file
+net.ipv4.ip_forward=1
+net.bridge.bridge-nf-call-iptables=1
+net.bridge.bridge-nf-call-ip6tables=1
+EOF
+    $SUDO sysctl --system
+
+    echo; echo "* Disabling swap..."
+    $SUDO sed -i -e "s/\(.*\s\)swap\(\s.*\)/#\1swap\2/g" /etc/fstab
+    $SUDO swapoff --all
+
+    if [ "$ID" = "centos" ]; then
+        echo; echo "* Disabling SELinux..."
+        $SUDO sed -i -e 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+        $SUDO setenforce 0
+    fi
+    echo
 fi
 
