@@ -14,12 +14,22 @@ get started and find out more:
 * [Getting started - Kubernetes](https://kubernetes.io/docs/setup/#production-environment)
 * [Bootstrapping clusters with kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/)
 
+Please be sure to read the rest of this document thoroughly before beginning
+a PoC cluster installation.
+
 ------------------------------------------------------------------------------
 
 ## Table of Contents
 
+* [System Overview](#system-overview)
+    - [Machine components](#machine-components)
+    - [Cluster software components](#cluster-software-components)
+    - [Deployed software components](#deployed-software-components)
 * [Prerequisites for Cluster Installation](#prerequisites-for-cluster-installation)
     - [Scripts from the JARVICE helm chart git repository](#scripts-from-the-jarvice-helm-chart-git-repository)
+    - [Access to cluster nodes](#access-to-cluster-nodes)
+        - [SSH keys](#ssh-keys)
+        - [Configuring sudoers](#configuring-sudoers)
     - [CIDRs for IP address blocks](#cidrs-for-ip-address-blocks)
     - [IP address range or subnet for accessing JARVICE](#ip-address-range-or-subnet-for-accessing-jarvice)
     - [DNS host entry or entries](#dns-host-entry-or-entries)
@@ -61,6 +71,59 @@ get started and find out more:
 
 ------------------------------------------------------------------------------
 
+## System Overview
+
+Before getting started, here is a brief overview of the various components
+that will be used for the kubernetes cluster installation and
+JARVICE deployment into the cluster.
+
+### Machine components
+
+These are the virtual machine and/or bare metal nodes that will be necessary
+for running a kubernetes cluster with JARVICE deployed into it:
+
+* Kubernetes control plane endpoint
+    - Node(s) that serve as the entrypoint and load balancer to the master nodes
+* Kubernetes master nodes
+    - Three or more nodes that serve as the cluster control plane
+* Kubernetes worker nodes
+    - Three or more nodes for running the `jarvice-system` deployment
+    - Two or more nodes for running `jarvice-compute` work
+* Kubernetes client node
+    - A node which interacts with and manages the cluster
+
+### Cluster software components
+
+These are the software components that will be used to stand up the
+kubernetes cluster itself and deploy JARVICE into the cluster:
+
+* HAProxy
+    - Load balancer that serves as the control plane endpoint for the API servers running on the kubernetes master nodes.
+* Docker
+    - Kubernetes leverages docker to run it's system kubelets and applications on master and worker nodes.
+* kubeadm
+    - Used to initialize the kubernetes cluster and enable the system kubelets on the master and worker nodes.
+* kubectl
+    - Command line client for communicating with the kubernetes control plane endpoint.
+* helm
+    - Command line client to deploy and manage software **in** the kubernetes cluster.
+
+### Deployed software components
+
+These are the software components that will be deployed **into** the
+kubernetes cluster:
+
+* Kubernetes pod network add-on
+    - Pod network manager for routing traffic between kubernetes pods
+* Kubernetes load balancer
+    - Enables IP routing into the cluster from external sources
+* Kubernetes ingress controller
+    - Enables name based (DNS) access to the cluster from external sources
+* JARVICE
+    - High performance computing (HPC) technology for kubernetes
+
+------------------------------------------------------------------------------
+
 ## Prerequisites for Cluster Installation
 
 ### Scripts from the JARVICE helm chart git repository
@@ -85,6 +148,35 @@ that it is disabled or will not undo any system updates and changes done by
 the scripts.  As an alternative, the code in the scripts can serve as a
 reference for integrating a kubernetes cluster setup into a configuration
 management environment.
+
+### Access to cluster nodes
+
+#### SSH keys
+
+On the client machine that will be used to access the cluster nodes, it is
+recommended that you create SSH keys using `ssh-keygen` and then copying
+the generated keys to each cluster node using `ssh-copy-id`.  This will make
+the example commands and script executions in this document work more
+seemlessly.
+
+It may be necessary to manually set up `ssh-agent` on your client machine
+if it is not already running.  See the following link for more information
+on `ssh-agent:
+https://www.ssh.com/ssh/agent
+
+#### Configuring sudoers
+
+Several of the example commands and script executions in this document will
+also work more seemlessly if the cluster nodes are set up with passwordless
+`sudo` access for a user without a tty requirement.
+
+Assuming the user is named `jarvice`, something similar to the following
+could be written to the configuration file
+`/etc/sudoers.d/99_jarvice` to enable that access for the `jarvice` user:
+```bash
+jarvice ALL=(ALL) NOPASSWD: ALL
+Defaults: jarvice !requiretty
+```
 
 ### CIDRs for IP address blocks
 
@@ -143,14 +235,14 @@ nodes and their requirements for running JARVICE on a kubernetes cluster.
 Be sure to adjust the example host names and IPs used in the commands and
 examples so that they match your environment.
 
-**Note**:
+**Note:**
 For all of the kubernetes master and worker nodes, the `/var` partition
 should be assigned all disk space not required by the base Linux installation.
 The `/var` partition will hold all of the data used by docker and
 the kubernetes kubelets.
 The kubernetes master nodes will also use `/var` to hold etcd data.
 
-**Note**:
+**Note:**
 The kubernetes master and worker nodes will be set up using kubeadm.
 Detailed requirements will be described for each node type below.
 The more general, minimum requirements for kubeadm can be found via the
@@ -174,6 +266,12 @@ in the example commands below:
 **Note:**  If desired, the control plane endpoint could be installed on one
 of the kubernetes master nodes instead of it's own, separate node.
 
+**Also note:**  A production cluster installation would use a
+high availability (HA) setup for the control plane endpoint which utilizes
+multiple load balancer instances running in a failover or round robin
+configuration.  A HA setup of the control plane endpoint is recommended,
+but is beyond the scope of this documentation.
+
 #### Kubernetes master nodes
 
 At a minimum, three kubernetes master nodes will be required.  
@@ -181,7 +279,7 @@ At a minimum, three kubernetes master nodes will be required.
 For JARVICE, the minimum recommended requirements per node calls for
 virtual machines or bare metal servers with 2 CPUs and 8 GB of RAM.
 The amount of disk space needed will largely depend on the cluster usage, but
-120 GB of disk space is recommended.
+100 GB of disk space is recommended.
 
 We'll use the following host names for the kubernetes master nodes
 in the example commands below:
@@ -209,7 +307,7 @@ necessary to scale up the JARVICE system deployment.
 For JARVICE, the minimum recommended requirements per node calls for
 virtual machines or bare metal servers with 8 CPUs and 32 GB of RAM.
 The amount of disk space needed will largely depend on the cluster usage, but
-120 GB of disk space is recommended.
+100 GB of disk space is recommended.
 
 We'll use the following host names for the `jarvice-system` worker nodes
 in the example commands below:
@@ -252,7 +350,7 @@ that the per node CPU and RAM requirements may also vary widely per site.
 The minimums will primarily depend on the types of jobs that will be run
 with JARVICE.  Please contact Nimbix sales or support for more information.
 
-500 GB of disk space is recommended minimum.
+200 GB of disk space is recommended minimum.
 
 We'll use the following host names for the `jarvice-compute` worker nodes
 in the example commands below:
