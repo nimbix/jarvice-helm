@@ -645,7 +645,7 @@ set up to access the cluster with `kubectl`.
 
 #### Add node labels
 
-Label the `jarvice-system` nodes.  If you do not wish to specifically delegate
+Label the `jarvice-system` nodes.  If you do not wish to delegate a
 specific node for JARVICE application builds, add `k8s-worker-04` to the
 node list:
 ```bash
@@ -667,7 +667,7 @@ $ kubectl label nodes $NODES node-role.kubernetes.io/jarvice-compute=
 
 ##### Verify node labels
 
-From a `kubectl` client machine, verify that the nodes are labels with the
+From a `kubectl` client machine, verify that the nodes are labeled with the
 correct roles:
 ```bash
 $ kubectl get nodes
@@ -684,13 +684,13 @@ $ kubectl taint nodes -l node-role.kubernetes.io/jarvice-system= \
 Taint the `jarvice-dockerbuild` nodes:
 ```bash
 $ kubectl taint nodes -l node-role.kubernetes.io/jarvice-dockerbuild= \
-    node-role.kubernetes.io/jarvice-system=:NoSchedule
+    node-role.kubernetes.io/jarvice-dockerbuild=:NoSchedule
 ```
 
 Taint the `jarvice-compute` nodes:
 ```bash
 $ kubectl taint nodes -l node-role.kubernetes.io/jarvice-compute= \
-    node-role.kubernetes.io/jarvice-system=:NoSchedule
+    node-role.kubernetes.io/jarvice-compute=:NoSchedule
 ```
 
 ------------------------------------------------------------------------------
