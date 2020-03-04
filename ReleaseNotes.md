@@ -81,6 +81,10 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202003041950
+
+* (2594), (2605), (2606), (2607) Internal scheduler service and data model updates for future capabilities
+
 ## 3.0.0-1.202002202201
 
 * (2589) Fix spurious logouts in the web portal when impersonating users as system or team administrators
