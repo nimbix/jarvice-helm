@@ -154,14 +154,14 @@ management environment.
 #### SSH keys
 
 On the client machine that will be used to access the cluster nodes, it is
-recommended that you create SSH keys using `ssh-keygen` and then copying
+recommended that you create SSH keys using `ssh-keygen` and then copy
 the generated keys to each cluster node using `ssh-copy-id`.  This will make
 the example commands and script executions in this document work more
 seemlessly.
 
 It may be necessary to manually set up `ssh-agent` on your client machine
 if it is not already running.  See the following link for more information
-on `ssh-agent:
+on `ssh-agent`:
 https://www.ssh.com/ssh/agent
 
 #### Configuring sudoers
