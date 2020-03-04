@@ -92,7 +92,17 @@ spec:
           failureThreshold: 3
         env:
           - name: JARVICE_SYSTEM_K8S
+{{- if empty .Values.jarvice.JARVICE_SYSTEM_K8S }}
             value: "true"
+{{- else }}
+            value: "{{ .Values.jarvice.JARVICE_SYSTEM_K8S }}"
+{{- end }}
+          - name: JARVICE_EXPERIMENTAL
+{{- if empty .Values.jarvice.JARVICE_EXPERIMENTAL }}
+            value: "false"
+{{- else }}
+            value: "{{ .Values.jarvice.JARVICE_EXPERIMENTAL }}"
+{{- end }}
           - name: JARVICE_DAL_URL
             value: "https://jarvice-dal:8443"
           - name: JARVICE_SCHED_URL
