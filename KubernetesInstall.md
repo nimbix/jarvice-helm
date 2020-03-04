@@ -350,7 +350,7 @@ that the per node CPU and RAM requirements may also vary widely per site.
 The minimums will primarily depend on the types of jobs that will be run
 with JARVICE.  Please contact Nimbix sales or support for more information.
 
-200 GB of disk space is recommended minimum.
+200 GB of disk space is the recommended minimum.
 
 We'll use the following host names for the `jarvice-compute` worker nodes
 in the example commands below:
