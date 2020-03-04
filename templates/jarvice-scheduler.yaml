@@ -177,7 +177,7 @@ spec:
 {{- if .Values.jarvice_idmapper.enabled }}
           - name: JARVICE_IDMAPPER_URL
             value: "http://jarvice-idmapper:8080"
-{{-end }}
+{{- end }}
         volumeMounts:
         - name: jarvice-settings
           mountPath: /etc/jarvice/settings/jarvice-scheduler
