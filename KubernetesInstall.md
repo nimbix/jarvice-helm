@@ -154,14 +154,14 @@ management environment.
 #### SSH keys
 
 On the client machine that will be used to access the cluster nodes, it is
-recommended that you create SSH keys using `ssh-keygen` and then copying
+recommended that you create SSH keys using `ssh-keygen` and then copy
 the generated keys to each cluster node using `ssh-copy-id`.  This will make
 the example commands and script executions in this document work more
 seemlessly.
 
 It may be necessary to manually set up `ssh-agent` on your client machine
 if it is not already running.  See the following link for more information
-on `ssh-agent:
+on `ssh-agent`:
 https://www.ssh.com/ssh/agent
 
 #### Configuring sudoers
@@ -350,7 +350,7 @@ that the per node CPU and RAM requirements may also vary widely per site.
 The minimums will primarily depend on the types of jobs that will be run
 with JARVICE.  Please contact Nimbix sales or support for more information.
 
-200 GB of disk space is recommended minimum.
+200 GB of disk space is the recommended minimum.
 
 We'll use the following host names for the `jarvice-compute` worker nodes
 in the example commands below:
@@ -645,7 +645,7 @@ set up to access the cluster with `kubectl`.
 
 #### Add node labels
 
-Label the `jarvice-system` nodes.  If you do not wish to specifically delegate
+Label the `jarvice-system` nodes.  If you do not wish to delegate a
 specific node for JARVICE application builds, add `k8s-worker-04` to the
 node list:
 ```bash
@@ -667,7 +667,7 @@ $ kubectl label nodes $NODES node-role.kubernetes.io/jarvice-compute=
 
 ##### Verify node labels
 
-From a `kubectl` client machine, verify that the nodes are labels with the
+From a `kubectl` client machine, verify that the nodes are labeled with the
 correct roles:
 ```bash
 $ kubectl get nodes
@@ -684,13 +684,13 @@ $ kubectl taint nodes -l node-role.kubernetes.io/jarvice-system= \
 Taint the `jarvice-dockerbuild` nodes:
 ```bash
 $ kubectl taint nodes -l node-role.kubernetes.io/jarvice-dockerbuild= \
-    node-role.kubernetes.io/jarvice-system=:NoSchedule
+    node-role.kubernetes.io/jarvice-dockerbuild=:NoSchedule
 ```
 
 Taint the `jarvice-compute` nodes:
 ```bash
 $ kubectl taint nodes -l node-role.kubernetes.io/jarvice-compute= \
-    node-role.kubernetes.io/jarvice-system=:NoSchedule
+    node-role.kubernetes.io/jarvice-compute=:NoSchedule
 ```
 
 ------------------------------------------------------------------------------
