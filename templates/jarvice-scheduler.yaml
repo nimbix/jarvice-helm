@@ -164,6 +164,10 @@ spec:
             value: "{{ .Values.jarvice_pod_scheduler.env.JARVICE_POD_SCHED_NAME }}"
 {{- end }}
 {{- end }}
+{{- if .Values.jarvice_idmapper.enabled }}
+          - name: JARVICE_IDMAPPER_URL
+            value: "http://jarvice-idmapper:8080"
+{{- end }}
           - name: JARVICE_JOBS_DOMAIN
             value: "{{ .Values.jarvice.JARVICE_JOBS_DOMAIN }}"
           - name: JARVICE_JOBS_LB_SERVICE
@@ -173,10 +177,6 @@ spec:
             value: {{ toYaml .Values.jarvice.JARVICE_MAIL_CONF | indent 12 }}
 {{- else }}
             value: {{ toYaml .Values.jarvice_scheduler.env.JARVICE_MAIL_CONF | indent 12 }}
-{{- end }}
-{{- if .Values.jarvice_idmapper.enabled }}
-          - name: JARVICE_IDMAPPER_URL
-            value: "http://jarvice-idmapper:8080"
 {{- end }}
         volumeMounts:
         - name: jarvice-settings
