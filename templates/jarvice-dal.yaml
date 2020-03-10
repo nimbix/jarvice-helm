@@ -133,6 +133,12 @@ spec:
             value: ";"
           - name: JARVICE_SCHED_URL
             value: "https://jarvice-scheduler:9443"
+          - name: JARVICE_DEFAULT_CLUSTER_URL
+{{- if empty .Values.jarvice.JARVICE_DEFAULT_CLUSTER_URL }}
+            value: "http://localhost:8080"
+{{- else }}
+            value: "{{ .Values.jarvice.JARVICE_DEFAULT_CLUSTER_URL }}"
+{{- end }}
           - name: JARVICE_NODE_ENV
             value: "{{ .Values.jarvice_dal.env.JARVICE_NODE_ENV }}"
           - name: JARVICE_SITE_DBHOST

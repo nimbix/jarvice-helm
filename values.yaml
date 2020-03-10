@@ -17,6 +17,8 @@ jarvice:
   JARVICE_IMAGES_TAG: jarvice-testing
   JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
 
+  JARVICE_DEFAULT_CLUSTER_URL: "http://localhost:8080"
+
   # JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
   JARVICE_JOBS_DOMAIN: # my-domain.com  # (host based ingress)
   JARVICE_JOBS_LB_SERVICE: false
