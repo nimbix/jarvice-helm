@@ -135,7 +135,7 @@ spec:
             value: "https://jarvice-scheduler:9443"
           - name: JARVICE_DEFAULT_CLUSTER_URL
 {{- if empty .Values.jarvice.JARVICE_DEFAULT_CLUSTER_URL }}
-            value: "http://localhost:8080"
+            value: "http://jarvice-k8s-scheduler:8080"
 {{- else }}
             value: "{{ .Values.jarvice.JARVICE_DEFAULT_CLUSTER_URL }}"
 {{- end }}

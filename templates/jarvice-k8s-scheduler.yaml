@@ -1,60 +1,60 @@
-{{- if .Values.jarvice_scheduler.enabled }}
+{{- if .Values.jarvice_k8s_scheduler.enabled }}
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
-  name: jarvice-scheduler
+  name: jarvice-k8s-scheduler
 spec:
   selector:
     matchLabels:
-      deployment: jarvice-scheduler
-  minAvailable: {{ .Values.jarvice_scheduler.pdb.minAvailable }}
+      deployment: jarvice-k8s-scheduler
+  minAvailable: {{ .Values.jarvice_k8s_scheduler.pdb.minAvailable }}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: jarvice-scheduler
+  name: jarvice-k8s-scheduler
 spec:
-  replicas: {{ .Values.jarvice_scheduler.replicaCount }}
+  replicas: {{ .Values.jarvice_k8s_scheduler.replicaCount }}
   selector:
     matchLabels:
-      deployment: jarvice-scheduler
+      deployment: jarvice-k8s-scheduler
   template:
     metadata:
       labels:
         {{- include "jarvice.release_labels" . | indent 8 }}
-        component: jarvice-scheduler
-        deployment: jarvice-scheduler
+        component: jarvice-k8s-scheduler
+        deployment: jarvice-k8s-scheduler
         jarvice-system: core
       annotations:
         deployment-date: {{ now | quote }}
     spec:
       serviceAccountName: jarvice-system
-{{- if (not (empty .Values.jarvice_scheduler.tolerations)) }}
-      tolerations: {{ .Values.jarvice_scheduler.tolerations }}
+{{- if (not (empty .Values.jarvice_k8s_scheduler.tolerations)) }}
+      tolerations: {{ .Values.jarvice_k8s_scheduler.tolerations }}
 {{- else if (not (empty .Values.jarvice.tolerations)) }}
       tolerations: {{ .Values.jarvice.tolerations }}
 {{- end }}
-{{- if (not (empty .Values.jarvice_scheduler.nodeSelector)) }}
-      nodeSelector: {{ .Values.jarvice_scheduler.nodeSelector }}
+{{- if (not (empty .Values.jarvice_k8s_scheduler.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice_k8s_scheduler.nodeSelector }}
 {{- else if (not (empty .Values.jarvice.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice.nodeSelector }}
 {{- end }}
       affinity:
         podAntiAffinity:
-        {{- if eq .Values.jarvice_scheduler.antiAffinity "hard" }}
+        {{- if eq .Values.jarvice_k8s_scheduler.antiAffinity "hard" }}
           requiredDuringSchedulingIgnoredDuringExecution:
           - topologyKey: "kubernetes.io/hostname"
             labelSelector:
               matchLabels:
-                deployment: jarvice-scheduler
-        {{- else if eq .Values.jarvice_scheduler.antiAffinity "soft" }}
+                deployment: jarvice-k8s-scheduler
+        {{- else if eq .Values.jarvice_k8s_scheduler.antiAffinity "soft" }}
           preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 5
             podAffinityTerm:
               topologyKey: "kubernetes.io/hostname"
               labelSelector:
                 matchLabels:
-                  deployment: jarvice-scheduler
+                  deployment: jarvice-k8s-scheduler
         {{- end }}
       imagePullSecrets:
       - name: jarvice-docker
@@ -64,27 +64,23 @@ spec:
             name: {{ .Values.jarvice.settings.configMap }}
             optional: true
       containers:
-      - name: jarvice-scheduler
+      - name: jarvice-k8s-scheduler
         image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-scheduler:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}{{- include "jarvice.version" . }}
         imagePullPolicy: Always
         ports:
-          - name: https
-            containerPort: 9443
+          - name: http
+            containerPort: 8080
         readinessProbe:
-          httpGet:
-            scheme: HTTPS
-            port: https
-            path: /ready
+          tcpSocket:
+            port: http
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 2
           successThreshold: 1
           failureThreshold: 3
         livenessProbe:
-          httpGet:
-            scheme: HTTPS
-            port: https
-            path: /live
+          tcpSocket:
+            port: http
           initialDelaySeconds: 20
           periodSeconds: 20
           timeoutSeconds: 5
@@ -106,7 +102,7 @@ spec:
           - name: JARVICE_DAL_URL
             value: "https://jarvice-dal:8443"
           - name: JARVICE_SCHED_URL
-            value: "https://jarvice-scheduler:9443"
+            value: "http://jarvice-k8s-scheduler:8080"
           - name: JARVICE_LICENSE_LIC
             valueFrom:
               secretKeyRef:
@@ -137,11 +133,7 @@ spec:
           - name: JARVICE_K8S_ADMIN_CONF
             value: "{{ .Values.jarvice_scheduler.env.JARVICE_K8S_ADMIN_CONF }}"
           - name: JARVICE_SCHED_PLUGIN_USE
-{{- if .Values.jarvice_k8s_scheduler.enabled }}
-            value: "false"
-{{- else }}
             value: "true"
-{{- end }}
           - name: JARVICE_SCHED_PASS_INTERVAL
             value: "{{ .Values.jarvice_scheduler.env.JARVICE_SCHED_PASS_INTERVAL }}"
           - name: JARVICE_UNFS_REQUEST_MEM
@@ -187,36 +179,36 @@ spec:
           mountPath: /etc/jarvice/settings/jarvice-scheduler
           readOnly: true
         resources:
-{{- if .Values.jarvice_scheduler.resources }}
-{{ toYaml .Values.jarvice_scheduler.resources | indent 10 }}
+{{- if .Values.jarvice_k8s_scheduler.resources }}
+{{ toYaml .Values.jarvice_k8s_scheduler.resources | indent 10 }}
 {{- end }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: jarvice-scheduler
+  name: jarvice-k8s-scheduler
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-scheduler
+    component: jarvice-k8s-scheduler
 spec:
   type: ClusterIP
   ports:
   - protocol: TCP
-    port: 9443
-    targetPort: 9443
-    name: https
+    port: 8080
+    targetPort: 8080
+    name: http
   selector:
-    deployment: jarvice-scheduler
+    deployment: jarvice-k8s-scheduler
 ---
-{{- if or .Values.jarvice_scheduler.networkPolicy.enabled (and (eq "<nil>" (toString .Values.jarvice_scheduler.networkPolicy.enabled)) .Values.jarvice.networkPolicy.enabled) }}
+{{- if or .Values.jarvice_k8s_scheduler.networkPolicy.enabled (and (eq "<nil>" (toString .Values.jarvice_k8s_scheduler.networkPolicy.enabled)) .Values.jarvice.networkPolicy.enabled) }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: jarvice-scheduler
+  name: jarvice-k8s-scheduler
 spec:
   podSelector:
     matchLabels:
-      deployment: jarvice-scheduler
+      deployment: jarvice-k8s-scheduler
   policyTypes:
   - Ingress
   ingress:
@@ -227,18 +219,18 @@ spec:
     - podSelector: {}
     ports:
     - protocol: TCP
-      port: 9443
+      port: 8080
 {{/*
 WARNING: Enabling ingressHost for this service is dangerous.
 DO NOT enable it here without understanding the security implications!
 */}}
-{{- if (not (empty .Values.jarvice_scheduler.ingressHost)) }}
+{{- if (not (empty .Values.jarvice_k8s_scheduler.ingressHost)) }}
   - from:
     - namespaceSelector: {}
     - podSelector: {}
     ports:
     - protocol: TCP
-      port: 9443
+      port: 8080
 {{- end }}
 ---
 {{- end }}
@@ -246,22 +238,22 @@ DO NOT enable it here without understanding the security implications!
 WARNING: Enabling ingressHost for this service is dangerous.
 DO NOT enable it here without understanding the security implications!
 */}}
-{{- if (not (empty .Values.jarvice_scheduler.ingressHost)) }}
+{{- if (not (empty .Values.jarvice_k8s_scheduler.ingressHost)) }}
 apiVersion: {{ template "apiVersion.ingress" . }}
 kind: Ingress
 metadata:
-  name: jarvice-scheduler
+  name: jarvice-k8s-scheduler
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-scheduler
+    component: jarvice-k8s-scheduler
 spec:
   rules:
-  - host: {{ .Values.jarvice_scheduler.ingressHost }}
+  - host: {{ .Values.jarvice_k8s_scheduler.ingressHost }}
     http:
       paths:
       - backend:
-          serviceName: jarvice-scheduler
-          servicePort: https
+          serviceName: jarvice-k8s-scheduler
+          servicePort: http
 ---
 {{- end }}
 {{- end }}
