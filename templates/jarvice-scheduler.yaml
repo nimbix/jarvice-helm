@@ -137,7 +137,7 @@ spec:
           - name: JARVICE_K8S_ADMIN_CONF
             value: "{{ .Values.jarvice_scheduler.env.JARVICE_K8S_ADMIN_CONF }}"
           - name: JARVICE_SCHED_PLUGIN_USE
-{{- if .Values.jarvice_k8s_scheduler.enabled }}
+{{- if or (not (empty .Values.jarvice.JARVICE_DEFAULT_CLUSTER_URL)) .Values.jarvice_k8s_scheduler.enabled }}
             value: "false"
 {{- else }}
             value: "true"
