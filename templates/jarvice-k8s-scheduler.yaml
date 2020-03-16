@@ -71,16 +71,20 @@ spec:
           - name: http
             containerPort: 8080
         readinessProbe:
-          tcpSocket:
+          httpGet:
+            scheme: HTTP
             port: http
+            path: /ready
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 2
           successThreshold: 1
           failureThreshold: 3
         livenessProbe:
-          tcpSocket:
+          httpGet:
+            scheme: HTTP
             port: http
+            path: /live
           initialDelaySeconds: 20
           periodSeconds: 20
           timeoutSeconds: 5
