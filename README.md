@@ -1068,7 +1068,8 @@ Then use https://`$PORTAL_IP`/ to initialize and/or log into JARVICE.
 - [Active Directory Authentication Best Practices](ActiveDirectory.md)
 - [In-container Identity Settings and Best Practices](Identity.md)
 - [JARVICE Troubleshooting Guide](Troubleshooting.md)
-- [JARVICE Developer Documentation (jarvice.readthedocs.io)](https://jarvice.readthedocs.io)
+- [JARVICE Helm chart deployment scripts](https://github.com/nimbix/jarvice-helm/tree/master/scripts)
 - [Kubernetes Cluster Installation](KubernetesInstall.md)
+- [JARVICE Developer Documentation (jarvice.readthedocs.io)](https://jarvice.readthedocs.io)
 
 
