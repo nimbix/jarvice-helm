@@ -17,6 +17,8 @@ jarvice:
   JARVICE_IMAGES_TAG: jarvice-master
   JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
 
+  JARVICE_DEFAULT_CLUSTER_URL: # "http://jarvice-k8s-scheduler:8080"
+
   # JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
   JARVICE_JOBS_DOMAIN: # my-domain.com  # (host based ingress)
   JARVICE_JOBS_LB_SERVICE: false
@@ -353,7 +355,7 @@ jarvice_scheduler:
   resources:
     limits:
       cpu: 1
-      memory: 4Gi
+      memory: 2Gi
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-scheduler", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.kubernetes.io/jarvice-scheduler": ""}'
   networkPolicy:
@@ -361,7 +363,6 @@ jarvice_scheduler:
   # jarvice.settings.configMap takes precedence over environnment settings
   # for JARVICE_MAIL_CONF
   env:
-    JARVICE_USE_LXCFS: yes
     JARVICE_SCHED_PASS_INTERVAL: 5
     JARVICE_MAIL_CONF: #|
         #[mail]
@@ -376,12 +377,30 @@ jarvice_scheduler:
     JARVICE_UNFS_EXPIRE_SECS: 90
     JARVICE_UNFS_NODE_SELECTOR: # '{"node-role.kubernetes.io/jarvice-storage": ""}'
 
+jarvice_k8s_scheduler:
+  enabled: true
+  replicaCount: 1
+  # PodDisruptionBudget default requires 25% minimum of pods must be running
+  pdb:
+    minAvailable: "25%"
+  # antiAffinity default of "soft" prefers that pods run on diff nodes.
+  # Set to "hard" to require pods to run on diff nodes.
+  antiAffinity: "soft"
+  resources:
+    limits:
+      cpu: 1
+      memory: 2Gi
+  tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-k8s-scheduler", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeSelector: # '{"node-role.kubernetes.io/jarvice-k8s-scheduler": ""}'
+  networkPolicy:
+    enabled: # Inherits from jarvice.networkPolicy.enabled if unset
+
 jarvice_pod_scheduler:
   enabled: true
   resources:
     limits:
       cpu: 1
-      memory: 2Gi
+      memory: 1Gi
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-pod-scheduler", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.kubernetes.io/jarvice-pod-scheduler": ""}'
   env:

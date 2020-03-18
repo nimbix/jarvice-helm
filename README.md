@@ -99,7 +99,7 @@ $ helm repo add stable https://kubernetes-charts.storage.googleapis.com/
 $ helm repo update
 ```
 
-Please seee the Helm Quickstart Guide for more details:
+Please see the Helm Quickstart Guide for more details:
 https://helm.sh/docs/intro/quickstart/
 
 **NOTE:**  This documentation assumes that Helm version 3.0 or newer is being
@@ -1068,7 +1068,8 @@ Then use https://`$PORTAL_IP`/ to initialize and/or log into JARVICE.
 - [Active Directory Authentication Best Practices](ActiveDirectory.md)
 - [In-container Identity Settings and Best Practices](Identity.md)
 - [JARVICE Troubleshooting Guide](Troubleshooting.md)
-- [JARVICE Developer Documentation (jarvice.readthedocs.io)](https://jarvice.readthedocs.io)
+- [JARVICE Helm chart deployment scripts](https://github.com/nimbix/jarvice-helm/tree/master/scripts)
 - [Kubernetes Cluster Installation](KubernetesInstall.md)
+- [JARVICE Developer Documentation (jarvice.readthedocs.io)](https://jarvice.readthedocs.io)
 
 

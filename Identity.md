@@ -69,7 +69,7 @@ The `jarvice-idmapper` is an open source service that examines a given network v
 
 JARVICE automatically selects the Active Directory User Principal Name (UPN) if the user is logged in via Active Directory.  If not, it selects the user name that submitted the job (via portal or API), and attempts to map it.
 
-If the `jarvice-idmapper` is deployed with a service in the same Kubernetes namespace as the JARVICE system services, the JARVICE job scheduler will automatically contact it.  Additionally, JARVICE will "deep mount" the home directory of the user in the container after it discovers the identity.  Deep mount means that if for example the home directory is on an NFS exported volume such as `server:/home`, JARVICE will mount into the container `server:/home/user` directly.   This is for security reasons.
+If the `jarvice-idmapper` is deployed with a service in the same Kubernetes namespace as the JARVICE system services, the JARVICE job scheduler will automatically contact it.
 
 Deploying `jarvice-idmapper` is a matter of enabling and configuring it in the
 JARVICE helm chart.  This can be done either by updating the `jarvice_idmapper`
@@ -90,5 +90,4 @@ Alternatively, deploying `jarvice-idmapper` from outside of this helm chart can 
 
 * JARVICE only supports NFS or *hostPath* shares, and does not support using *PersistentVolumeClaim* volumes.  This may expand in the future but is required since JARVICE actually modifies mount paths as described above.  In cases where NFS is not possible, the volume should be mounted on the host and *hostPath* should be used.
 * If *hostPath* is used, this path should be mounted on all compute nodes, not just the node(s) running `jarvice-idmapper`
-* `jarvice-idmapper` is only contacted if the team identity type is set to *System Default*; this prevents users from being able to impersonate the identity of other users and mount their home directory (read/write) just by knowing their user name.
-* It is not currently possible to *not* mount a network home directory if `jarvice-idmapper` is used and a successful map occurs.
+* `jarvice-idmapper` is only contacted if the team identity type is set to *System Default*; this prevents users from being able to impersonate the identity of other users just by knowing their user name.
