@@ -82,6 +82,12 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202003181900
+
+* (2525) Fixed bug where logout on password reset using path-based ingress resulted in a 404 error
+* (2609), (2610), (2657) Internet scheduler service and deployment updates for future capabilities
+* (2660) Support for new `UPLOAD` parameter for AppDefs to allow small files to be uploaded as part of job submission; please see the *`parameters` Object Reference* in the [JARVICE Application Definition Guide](https://jarvice.readthedocs.io/en/latest/appdef/#reference) for details.
+
 ## 3.0.0-1.202003041950
 
 * (2594), (2605), (2606), (2607) Internal scheduler service and data model updates for future capabilities
