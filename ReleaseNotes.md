@@ -82,6 +82,10 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202003191528
+
+* (2728) Fixed bug where cloning a job in the dashboard with UPLOAD parameters in the AppDef would hang the browser session.
+
 ## 3.0.0-1.202003181900
 
 * (2525) Fixed bug where logout on password reset using path-based ingress resulted in a 404 error
