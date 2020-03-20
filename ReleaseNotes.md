@@ -82,7 +82,7 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
-## 3.0.0-1.202003191528
+## 3.0.0-1.202003200237
 
 * (2728) Fixed bug where cloning a job in the dashboard with UPLOAD parameters in the AppDef would hang the browser session.
 
