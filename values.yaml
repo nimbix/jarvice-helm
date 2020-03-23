@@ -42,6 +42,9 @@ jarvice:
   JARVICE_PVC_VAULT_SUBPATH:      # optional subpath (supports substitutions)
 
   JARVICE_POD_SCHED_LOGLEVEL: 30
+  JARVICE_SCHED_PASS_LOGLEVEL: 30
+  JARVICE_SCHED_LOGLEVEL: 30
+  JARVICE_K8S_SCHED_LOGLEVEL: 30
 
   # JARVICE_MAIL_CONF can be overridden with jarvice_api.env.JARVICE_MAIL_CONF
   # and jarvice_scheduler.env.JARVICE_MAIL_CONF

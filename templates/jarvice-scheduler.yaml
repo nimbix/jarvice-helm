@@ -176,6 +176,10 @@ spec:
             value: "{{ .Values.jarvice.JARVICE_JOBS_DOMAIN }}"
           - name: JARVICE_JOBS_LB_SERVICE
             value: "{{ .Values.jarvice.JARVICE_JOBS_LB_SERVICE }}"
+          - name: JARVICE_SCHED_LOGLEVEL
+            value: "{{ .Values.jarvice.JARVICE_SCHED_LOGLEVEL }}"
+          - name: JARVICE_SCHED_PASS_LOGLEVEL
+            value: "{{ .Values.jarvice.JARVICE_SCHED_PASS_LOGLEVEL }}"
           - name: JARVICE_MAIL_CONF
 {{- if empty .Values.jarvice_scheduler.env.JARVICE_MAIL_CONF }}
             value: {{ toYaml .Values.jarvice.JARVICE_MAIL_CONF | indent 12 }}
