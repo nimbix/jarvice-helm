@@ -1,3 +1,4 @@
+{{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if .Values.jarvice_dal.enabled }}
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
@@ -310,5 +311,6 @@ spec:
           serviceName: jarvice-dal
           servicePort: https
 ---
+{{- end }}
 {{- end }}
 {{- end }}

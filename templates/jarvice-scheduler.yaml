@@ -1,3 +1,4 @@
+{{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if .Values.jarvice_scheduler.enabled }}
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
@@ -267,5 +268,6 @@ spec:
           serviceName: jarvice-scheduler
           servicePort: https
 ---
+{{- end }}
 {{- end }}
 {{- end }}

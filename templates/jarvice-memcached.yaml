@@ -1,3 +1,4 @@
+{{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if .Values.jarvice_memcached.enabled }}
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
@@ -121,5 +122,6 @@ spec:
     - protocol: TCP
       port: 11211
 ---
+{{- end }}
 {{- end }}
 {{- end }}

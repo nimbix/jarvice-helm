@@ -1,3 +1,4 @@
+{{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if .Values.jarvice_db.enabled }}
 {{- if and .Values.jarvice_db.persistence.enabled (empty .Values.jarvice_db.persistence.existingClaimName) }}
 apiVersion: v1
@@ -160,5 +161,6 @@ spec:
     - protocol: TCP
       port: 3306
 ---
+{{- end }}
 {{- end }}
 {{- end }}

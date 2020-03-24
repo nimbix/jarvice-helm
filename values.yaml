@@ -17,6 +17,10 @@ jarvice:
   JARVICE_IMAGES_TAG: jarvice-testing
   JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
 
+  # If not set to "downstream", an "upstream" cluster is assumed.
+  # If set to "downstream", upstream cluster type settings below are ignored.
+  JARVICE_CLUSTER_TYPE: "upstream"  # "downstream"
+
   JARVICE_DEFAULT_CLUSTER_URL: # "http://jarvice-k8s-scheduler:8080"
 
   # JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
@@ -117,7 +121,7 @@ jarvice:
 
 
 # Database server previously set up?  Set enabled to false.
-jarvice_db:
+jarvice_db: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
   replicaCount: 1
   resources:
@@ -155,7 +159,7 @@ jarvice_db:
     MYSQL_PASSWORD: # Pass1234
 
 # Enable to use a kubernetes CronJob to regularly dump the JARVICE database
-jarvice_db_dump:
+jarvice_db_dump: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: false
   schedule: "0 4 * * *"
   successfulJobsHistoryLimit: 3
@@ -236,7 +240,7 @@ jarvice_idmapper:
 
 # Memcached server previously set up?  Set jarvice_memcached.enabled to false.
 # Then, set JARVICE_PORTAL_MEMCACHED_LOCATIONS below in jarvice_mc_portal env.
-jarvice_memcached:
+jarvice_memcached: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
   replicaCount: 3
   # PodDisruptionBudget default requires 2 minimum pods must be running
@@ -294,7 +298,7 @@ jarvice_registry:
     crt: # If secretName is set, set this to base64 encoded cert
     key: # If secretName is set, set this to base64 encoded key
 
-jarvice_dal:
+jarvice_dal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
   replicaCount: 2
   # PodDisruptionBudget default requires 25% minimum of pods must be running
@@ -409,7 +413,7 @@ jarvice_pod_scheduler:
   env:
     JARVICE_POD_SCHED_NAME:  # auto-set, should not need to be updated
 
-jarvice_api:
+jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
   replicaCount: 2
   # PodDisruptionBudget default requires 25% minimum of pods must be running
@@ -439,15 +443,15 @@ jarvice_api:
         #;username: DoNotReply@localhost
         #;password: Pass1234
 
-jarvice_dockerbuild:
+jarvice_dockerbuild: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-dockerbuildpull", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-dockerbuild", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.kubernetes.io/jarvice-dockerbuildpull": ""}'  # '{"node-role.kubernetes.io/jarvice-dockerbuild": ""}'
 
-jarvice_dockerpull:
+jarvice_dockerpull: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-dockerbuildpull", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-dockerpull", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.kubernetes.io/jarvice-dockerbuildpull": ""}'  # '{"node-role.kubernetes.io/jarvice-dockerpull": ""}'
 
-jarvice_appsync:
+jarvice_appsync: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
   replicaCount: 1
   resources:
@@ -465,7 +469,7 @@ jarvice_appsync:
   livenessProbe:
     periodSeconds: 900
 
-jarvice_mc_portal:
+jarvice_mc_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
   replicaCount: 2
   # PodDisruptionBudget default requires 25% minimum of pods must be running
@@ -508,7 +512,7 @@ jarvice_mc_portal:
     JARVICE_PORTAL_DBUSER: # root
     JARVICE_PORTAL_DBPASSWD: # Pass1234
 
-jarvice_api_experimental:
+jarvice_api_experimental:  # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: false
   loadBalancerIP:
   ingressHost: # jarvice-api.my-domain.com

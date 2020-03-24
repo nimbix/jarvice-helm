@@ -17,6 +17,7 @@ metadata:
 {{- end }}
 ---
 {{- end }}
+{{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if .Values.jarvice_api.enabled }}
 apiVersion: v1
 kind: Namespace
@@ -52,6 +53,7 @@ metadata:
     name: {{ .Values.jarvice.JARVICE_PULLS_NAMESPACE }}
 {{- end }}
 ---
+{{- end }}
 {{- end }}
 {{- if or .Values.jarvice.daemonsets.cache_pull.enabled .Values.jarvice.daemonsets.lxcfs.enabled .Values.jarvice.daemonsets.nvidia.enabled .Values.jarvice.daemonsets.xilinx_fpga.enabled .Values.jarvice.daemonsets.rdma.enabled }}
 apiVersion: v1

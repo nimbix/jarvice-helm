@@ -1,3 +1,4 @@
+{{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if .Values.jarvice_appsync.enabled }}
 apiVersion: apps/v1
 kind: Deployment
@@ -114,4 +115,5 @@ spec:
             value: "{{ .Values.jarvice_appsync.env.JARVICE_APPSYNC_INTERVAL }}"
         resources:
 {{ toYaml .Values.jarvice_appsync.resources | indent 10 }}
+{{- end }}
 {{- end }}
