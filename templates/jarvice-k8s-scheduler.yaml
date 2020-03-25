@@ -233,12 +233,16 @@ spec:
     - protocol: TCP
       port: 8080
 {{- if (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE) }}
+{{- if (empty .Values.jarvice_k8s_scheduler.ingressHost) }}
+  - {}
+{{- else }}
   - from:
     - namespaceSelector: {}
     - podSelector: {}
     ports:
     - protocol: TCP
       port: 8080
+{{- end }}
 {{- end }}
 ---
 {{- end }}
