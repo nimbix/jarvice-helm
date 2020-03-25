@@ -232,11 +232,7 @@ spec:
     ports:
     - protocol: TCP
       port: 8080
-{{/*
-WARNING: Enabling ingressHost for this service is dangerous.
-DO NOT enable it here without understanding the security implications!
-*/}}
-{{- if (not (empty .Values.jarvice_k8s_scheduler.ingressHost)) }}
+{{- if or (not (empty .Values.jarvice_k8s_scheduler.ingressHost)) (not (empty .Values.jarvice_k8s_scheduler.loadBalancerIP)) }}
   - from:
     - namespaceSelector: {}
     - podSelector: {}
@@ -246,11 +242,27 @@ DO NOT enable it here without understanding the security implications!
 {{- end }}
 ---
 {{- end }}
-{{/*
-WARNING: Enabling ingressHost for this service is dangerous.
-DO NOT enable it here without understanding the security implications!
-*/}}
-{{- if (not (empty .Values.jarvice_k8s_scheduler.ingressHost)) }}
+{{- if (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE) }}
+{{- if (empty .Values.jarvice_k8s_scheduler.ingressHost) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-k8s-scheduler-lb
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-k8s-scheduler
+spec:
+  type: LoadBalancer
+  loadBalancerIP: {{ .Values.jarvice_k8s_scheduler.loadBalancerIP }}
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+    name: http
+  selector:
+    deployment: jarvice-k8s-scheduler
+---
+{{- else }}
 apiVersion: {{ template "apiVersion.ingress" . }}
 kind: Ingress
 metadata:
@@ -267,5 +279,6 @@ spec:
           serviceName: jarvice-k8s-scheduler
           servicePort: http
 ---
+{{- end }}
 {{- end }}
 {{- end }}

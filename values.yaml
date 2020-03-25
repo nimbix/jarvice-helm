@@ -393,6 +393,10 @@ jarvice_k8s_scheduler:
   # antiAffinity default of "soft" prefers that pods run on diff nodes.
   # Set to "hard" to require pods to run on diff nodes.
   antiAffinity: "soft"
+  # loadBalancerIP and ingressHost are only applicable when
+  # jarvice.JARVICE_CLUSTER_TYPE is set to "downstream"
+  loadBalancerIP:
+  ingressHost: # jarvice-k8s-scheduler.my-domain.com
   resources:
     limits:
       cpu: 1
