@@ -232,7 +232,7 @@ spec:
     ports:
     - protocol: TCP
       port: 8080
-{{- if or (not (empty .Values.jarvice_k8s_scheduler.ingressHost)) (not (empty .Values.jarvice_k8s_scheduler.loadBalancerIP)) }}
+{{- if (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE) }}
   - from:
     - namespaceSelector: {}
     - podSelector: {}
