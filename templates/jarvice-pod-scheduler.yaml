@@ -40,7 +40,7 @@ spec:
             command:
             - /bin/sh
             - -c
-            - /usr/bin/curl -s http://jarvice-k8s-scheduler:8080/live | grep -q OK
+            - /usr/bin/curl -s http://jarvice-k8s-scheduler:8080/live | grep -q true
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 2
@@ -51,7 +51,7 @@ spec:
             command:
             - /bin/sh
             - -c
-            - /usr/bin/curl -s http://jarvice-k8s-scheduler:8080/live | grep -q OK
+            - /usr/bin/curl -s http://jarvice-k8s-scheduler:8080/live | grep -q true
           initialDelaySeconds: 20
           periodSeconds: 20
           timeoutSeconds: 5
