@@ -43,6 +43,8 @@ $ git clone https://github.com/nimbix/jarvice-helm.git
         - [MySQL database (jarvice-db)](#mysql-database-jarvice-db)
         - [Memcached (jarvice-memcached)](#memcached-jarvice-memcached)
         - [Docker registry (jarvice-registry)](#docker-registry-jarvice-registry)
+* [JARVICE Downstream Installation](#jarvice-downstream-installation)
+    - [Upstream cluster settings](#upstream-cluster-settings)
 * [JARVICE Configuration Values Reference](#jarvice-configuration-values-reference)
 * [JARVICE Post Installation](#jarvice-post-installation)
     - [Install recommended DaemonSets](#install-recommended-daemonsets)
@@ -850,6 +852,49 @@ Use the helm inspect command for details:
 ```bash
 $ helm inspect all stable/docker-registry
 ```
+
+------------------------------------------------------------------------------
+
+## JARVICE Downstream Installation
+
+The JARVICE helm chart supports a deployment mode for downstream clusters.
+Once a downstream [kubernetes cluster](#kubernetes-cluster) is ready and it's
+nodes are [labeled and tainted](#kubernetes-cluster-shaping), a downstream
+JARVICE deployment can quickly be deployed into the cluster with a helm
+command similar to the following:
+
+```bash
+$ kubectl create namespace jarvice-system
+$ helm upgrade jarvice ./jarvice-helm --namespace jarvice-system --install \
+    --set jarvice.imagePullSecret="$(echo "_json_key:$(cat jarvice-reg-creds.json)" | base64 -w 0)" \
+    --set jarvice.JARVICE_CLUSTER_TYPE="downstream" \
+    --set jarvice.JARVICE_SCHED_SERVER_KEY="<user>:<password>" \
+    --set jarvice.JARVICE_JOBS_DOMAIN="<downstream-domain.com>" \
+    --set jarvice.jarvice_k8s_scheduler.ingressHost="<jarvice.downstream-domain.com>"
+```
+
+The `jarvice.JARVICE_CLUSTER_TYPE` value `downstream` is how the helm chart
+determines that this is a downtream deployment of JARVICE.  A `downstream`
+deployment automatically disables JARVICE components which are only necessary
+in an upstream deployment.
+
+It is recommended that `jarvice.JARVICE_SCHED_SERVER_KEY` is set so provide
+authentication for an upstream JARVICE deployment.
+
+The above command assumes that the downstream kubernetes cluster already has a
+[kubernetes ingress controller](#kubernetes-ingress-controller) deployed into
+it.  It is possible for the downstream JARVICE deployment to utilize a load
+balancer service with an IP address, however, ingress is the preferred.
+
+### Upstream cluster settings
+
+Once a downstream deployment is up and running, it will be necessary to
+enable it in the upstream cluster.  In order to do so, as a JARVICE
+administrator, navigate to the `Clusters` panel found under `Administration`
+and click `NEW`.  Use the downstream ingress host name
+(`https://<jarvice.downstream-domain.com>`) and scheduler server key
+(`<user>:<password>`) in the `URL` and `Authentication` dialog boxes
+respectively.
 
 ------------------------------------------------------------------------------
 
