@@ -878,7 +878,7 @@ determines that this is a downtream deployment of JARVICE.  A `downstream`
 deployment automatically disables JARVICE components which are only necessary
 in an upstream deployment.
 
-It is recommended that `jarvice.JARVICE_SCHED_SERVER_KEY` is set so provide
+It is recommended that `jarvice.JARVICE_SCHED_SERVER_KEY` is set to provide
 authentication for an upstream JARVICE deployment.
 
 The above command assumes that the downstream kubernetes cluster already has a
