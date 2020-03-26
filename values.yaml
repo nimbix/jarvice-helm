@@ -211,7 +211,7 @@ jarvice_smtpd:
 # of a shared filesystem:  https://github.com/nimbix/idmapper
 # Enable by setting jarvice_idmapper.enabled to true.  Then, configure shared
 # filesystem settings under jarvice_idmapper.filesystem and jarvice_idmapper.env
-jarvice_idmapper:
+jarvice_idmapper: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: false
   replicaCount: 2
   # PodDisruptionBudget default requires 25% minimum of pods must be running
@@ -350,7 +350,7 @@ jarvice_dal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
         [naelimits]
     JARVICE_NODE_ENV: production
 
-jarvice_scheduler:
+jarvice_scheduler: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
   replicaCount: 1
   # PodDisruptionBudget default requires 25% minimum of pods must be running
@@ -379,10 +379,6 @@ jarvice_scheduler:
         #server: jarvice-smtpd:25
         #;username: DoNotReply@localhost
         #;password: Pass1234
-    JARVICE_UNFS_REQUEST_MEM: 1Gi
-    JARVICE_UNFS_REQUEST_CPU: 1
-    JARVICE_UNFS_EXPIRE_SECS: 90
-    JARVICE_UNFS_NODE_SELECTOR: # '{"node-role.kubernetes.io/jarvice-storage": ""}'
 
 jarvice_k8s_scheduler:
   enabled: true
@@ -405,6 +401,11 @@ jarvice_k8s_scheduler:
   nodeSelector: # '{"node-role.kubernetes.io/jarvice-k8s-scheduler": ""}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
+  env:
+    JARVICE_UNFS_REQUEST_MEM: 1Gi
+    JARVICE_UNFS_REQUEST_CPU: 1
+    JARVICE_UNFS_EXPIRE_SECS: 90
+    JARVICE_UNFS_NODE_SELECTOR: # '{"node-role.kubernetes.io/jarvice-storage": ""}'
 
 jarvice_pod_scheduler:
   enabled: true
