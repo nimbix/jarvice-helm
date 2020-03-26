@@ -884,7 +884,8 @@ authentication for an upstream JARVICE deployment.
 The above command assumes that the downstream kubernetes cluster already has a
 [kubernetes ingress controller](#kubernetes-ingress-controller) deployed into
 it.  It is possible for the downstream JARVICE deployment to utilize a load
-balancer service with an IP address, however, ingress is the preferred.
+balancer service with an IP address, however, ingress is the preferred way
+to access JARVICE clusters.
 
 ### Upstream cluster settings
 
