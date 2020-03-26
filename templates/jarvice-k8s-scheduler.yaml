@@ -120,6 +120,7 @@ spec:
               secretKeyRef:
                 name: jarvice-sched-server-key
                 key: JARVICE_SCHED_SERVER_KEY
+                optional: true
           - name: JARVICE_JOBS_NAMESPACE
 {{- if empty .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
             value: {{ .Release.Namespace }}-jobs

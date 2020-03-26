@@ -17,6 +17,9 @@ jarvice:
   JARVICE_IMAGES_TAG: jarvice-testing
   JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
 
+  # Optionally, run jobs on a "downstream" cluster by default
+  JARVICE_DEFAULT_CLUSTER_URL: # "https://jarvice.downstream-domain.com"
+
   # If JARVICE_CLUSTER_TYPE is not set to "downstream", an "upstream" cluster
   # deployment/configuration is assumed.
   # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
@@ -25,9 +28,6 @@ jarvice:
 
   # If deploying "downstream" cluster, be sure to set JARVICE_SCHED_SERVER_KEY
   JARVICE_SCHED_SERVER_KEY: # "jarvice-downstream:Pass1234"
-
-  # Optionally, run jobs on a "downstream" cluster by default
-  JARVICE_DEFAULT_CLUSTER_URL: # "https://jarvice.downstream-domain.com"
 
   # JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
   JARVICE_JOBS_DOMAIN: # my-domain.com  # (host based ingress)
