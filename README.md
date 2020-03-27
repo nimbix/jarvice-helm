@@ -870,7 +870,7 @@ $ helm upgrade jarvice ./jarvice-helm --namespace jarvice-system --install \
     --set jarvice.JARVICE_CLUSTER_TYPE="downstream" \
     --set jarvice.JARVICE_SCHED_SERVER_KEY="<user>:<password>" \
     --set jarvice.JARVICE_JOBS_DOMAIN="<downstream-domain.com>" \
-    --set jarvice.jarvice_k8s_scheduler.ingressHost="<jarvice.downstream-domain.com>"
+    --set jarvice_k8s_scheduler.ingressHost="<jarvice.downstream-domain.com>"
 ```
 
 The `jarvice.JARVICE_CLUSTER_TYPE` value `downstream` is how the helm chart
