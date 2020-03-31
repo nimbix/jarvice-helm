@@ -9,7 +9,6 @@ fi
 
 eks_cluster_delete=
 install_nvidia_plugin=
-install_dashboard=
 helm_name=jarvice
 helm_namespace=jarvice-system
 database_vol_delete=
@@ -30,14 +29,12 @@ Available [global_options]:
                                     (Default: $config_file)
 
 Available [delete_options]:
-  --eks-cluster-delete              Delete the EKS cluster
+  --cluster-delete                  Delete the EKS cluster
   --database-vol-delete             Delete the database volume on cluster delete
   --vault-vols-delete               Delete the vault volumes on cluster delete
 
 EOF
 }
-#Available [deploy_options]:
-#  --install-dashboard               Install kubernetes dashboard into cluster
 
 
 while [ $# -gt 0 ]; do
@@ -54,11 +51,7 @@ while [ $# -gt 0 ]; do
             config_file=$2
             shift; shift
             ;;
-        --install-dashboard)
-            install_dashboard=y
-            shift
-            ;;
-        --eks-cluster-delete)
+        --cluster-delete|--eks-cluster-delete)
             eks_cluster_delete=y
             shift
             ;;
@@ -101,6 +94,7 @@ fi
 [ -z "$JQ" ] && JQ=$(type -p jq)
 [ -z "$YQ" ] && YQ=$(type -p yq)
 
+HELM_VER_REQ=3.0.0
 KUBECTL_VER_REQ=1.10
 EKSCTL_VER_REQ=0.7.0
 
@@ -164,7 +158,7 @@ function get_yaml_value {
 function strict_version {
     ver=$1
     ver_req=$2
-    python -c "from distutils.version import StrictVersion;print StrictVersion('$ver') >= StrictVersion('$ver_req');"
+    python -c "from distutils.version import StrictVersion;print StrictVersion('$ver') >= StrictVersion('$ver_req');" 2>/dev/null || /bin/true
 }
 
 function kubectl_install_nvidia_plugin {
@@ -187,6 +181,8 @@ jarvice_image_pull_secret=$(get_yaml_value $config_file "jarvice.imagePullSecret
 jarvice_license=$(get_yaml_value $config_file "jarvice.JARVICE_LICENSE_LIC")
 jarvice_username=$(get_yaml_value $config_file "jarvice.JARVICE_REMOTE_USER")
 jarvice_apikey=$(get_yaml_value $config_file "jarvice.JARVICE_REMOTE_APIKEY")
+jarvice_cluster_type=$(get_yaml_value $config_file "jarvice.JARVICE_CLUSTER_TYPE")
+jarvice_sched_server_key=$(get_yaml_value $config_file "jarvice.JARVICE_SCHED_SERVER_KEY")
 
 if [ -n "$eks_cluster_delete" ]; then
     set -e
@@ -220,24 +216,26 @@ if [ -n "$eks_cluster_delete" ]; then
         fi
     done
 
-    filters="Name=tag-key,Values=kubernetes.io/cluster/$eks_cluster_name"
-    filters+=" Name=tag:kubernetes.io/created-for/pvc/namespace,Values=$helm_namespace"
-    filters+=" Name=tag:kubernetes.io/created-for/pvc/name,Values=jarvice-db-pvc"
-    filters+=" Name=status,Values=available"
-    pvc_vol=$($AWS --region $aws_region ec2 \
-        describe-volumes --no-paginate --output=json --filters $filters)
-    vol_id=$(echo "$pvc_vol" | $JQ -r ".Volumes[0].VolumeId | select(.!=null)")
-    if [ -z "$vol_id" ]; then
-        echo
-        echo "* ERROR: Could not find EBS volume containing JARVICE database!"
-        echo
-        exit 1
-    fi
-    if [ -n "$database_vol_delete" ]; then
-        echo
-        echo "* Deleting EBS volume ('$vol_id') containing JARVICE database..."
-        $AWS --region $aws_region ec2 \
-            delete-volume --volume-id $vol_id
+    if [ "$jarvice_cluster_type" != "downstream" ]; then
+        filters="Name=tag-key,Values=kubernetes.io/cluster/$eks_cluster_name"
+        filters+=" Name=tag:kubernetes.io/created-for/pvc/namespace,Values=$helm_namespace"
+        filters+=" Name=tag:kubernetes.io/created-for/pvc/name,Values=jarvice-db-pvc"
+        filters+=" Name=status,Values=available"
+        pvc_vol=$($AWS --region $aws_region ec2 \
+            describe-volumes --no-paginate --output=json --filters $filters)
+        vol_id=$(echo "$pvc_vol" | $JQ -r ".Volumes[0].VolumeId | select(.!=null)")
+        if [ -z "$vol_id" ]; then
+            echo
+            echo "* ERROR: Could not find EBS volume containing JARVICE database!"
+            echo
+            exit 1
+        fi
+        if [ -n "$database_vol_delete" ]; then
+            echo
+            echo "* Deleting EBS volume ('$vol_id') containing JARVICE database..."
+            $AWS --region $aws_region ec2 \
+                delete-volume --volume-id $vol_id
+        fi
     fi
 
     echo
@@ -245,12 +243,14 @@ if [ -n "$eks_cluster_delete" ]; then
     echo
     echo "Succesfully deleted '$eks_cluster_name' cluster is in the '$aws_region' region."
     echo
-    if [ -z "$database_vol_delete" ]; then
-        echo
-        echo "** Preserved EBS volume containing the JARVICE database:  $vol_id"
-        echo
-        echo "* EBS volume for the JARVICE database may be deleted by executing:"
-        echo "\$ $0 --eks-cluster-delete --config-file $config_file --database-vol-delete"
+    if [ "$jarvice_cluster_type" != "downstream" ]; then
+        if [ -z "$database_vol_delete" ]; then
+            echo
+            echo "** Preserved EBS volume containing the JARVICE database:  $vol_id"
+            echo
+            echo "* EBS volume for the JARVICE database may be deleted by executing:"
+            echo "\$ $0 --eks-cluster-delete --config-file $config_file --database-vol-delete"
+        fi
     fi
     if [ -z "$vault_vols_delete" ]; then
         echo
@@ -271,7 +271,12 @@ if [ -n "$eks_cluster_delete" ]; then
     exit 0
 fi
 
-if [ -z "$jarvice_image_pull_secret" -o -z "$jarvice_license" -o -z "$jarvice_username" -o -z "$jarvice_apikey" ]; then
+if [ "$jarvice_cluster_type" = "downstream" ] && [ -z "$jarvice_image_pull_secret" ]; then
+    echo "Missing credentials and/or license.  Cannot continue."
+    echo "Please update the configuration file: $config_file"
+    jarvice_deploy2eks_usage
+    exit 1
+elif [ "$jarvice_cluster_type" != "downstream" ] && [ -z "$jarvice_image_pull_secret" -o -z "$jarvice_license" -o -z "$jarvice_username" -o -z "$jarvice_apikey" ]; then
     echo "Missing credentials and/or license.  Cannot continue."
     echo "Please update the configuration file: $config_file"
     jarvice_deploy2eks_usage
@@ -384,7 +389,14 @@ if [ -z "$HELM" ]; then
     sudo --preserve-env bash /tmp/get_helm.sh >/dev/null
     rm -f /tmp/get_helm.sh
 else
-    echo "Found $HELM..."
+    HELM_VER=$($HELM version 2>/dev/null | grep 'Version:' | sed -E 's/.*Version:"v([.0-9]+)".*/\1/')
+    echo "Found $HELM... Version: $HELM_VER"
+    if [ "$(strict_version $HELM_VER $HELM_VER_REQ)" != "True" ]; then
+        echo "helm version $HELM_VER_REQ or newer is required."
+        echo "Please upgrade helm or remove it."
+        echo "This script will re-install helm if it is removed."
+        exit 1
+    fi
 fi
 
 echo "------------------------------------------------------------------------"
@@ -473,20 +485,6 @@ echo
 echo "* Updating helm chart repositories..."
 $HELM repo update
 
-if [ -n "$install_dashboard" ]; then
-    HELM_NAME_CHART="traefik stable/kubernetes-dashboard"
-    [ -n "$HELM2" ] && HELM_NAME_CHART="stable/kubernetes-dashboard --name kubernetes-dashboard"
-    echo
-    echo "* Installing kubernetes-dashboard..."
-    $HELM install $HELM_NAME_CHART --namespace kube-system \
-        --set tolerations[0].effect=NoSchedule \
-        --set tolerations[0].key=node-role.kubernetes.io/jarvice-system \
-        --set tolerations[0].operator=Exists
-
-    $KUBECTL --namespace kube-system expose deployment kubernetes-dashboard \
-        --type=LoadBalancer --name kubernetes-dashboard-lb
-fi
-
 classes="jarvice-db jarvice-user"
 for class in $classes; do
     echo
@@ -563,6 +561,8 @@ $HELM install $HELM_NAME_CHART --namespace $helm_namespace --debug \
     --set jarvice.JARVICE_LICENSE_LIC="$jarvice_license" \
     --set jarvice.JARVICE_REMOTE_USER="$jarvice_username" \
     --set jarvice.JARVICE_REMOTE_APIKEY="$jarvice_apikey" \
+    --set jarvice.JARVICE_CLUSTER_TYPE="$jarvice_cluster_type" \
+    --set jarvice.JARVICE_SCHED_SERVER_KEY="$jarvice_sched_server_key" \
     --set jarvice.JARVICE_JOBS_DOMAIN="$jarvice_jobs_domain" \
     --set jarvice.JARVICE_JOBS_LB_SERVICE="$jarvice_jobs_lb_service" \
     --set jarvice.JARVICE_PVC_VAULT_SIZE="$jarvice_pvc_vault_size" \
@@ -857,8 +857,12 @@ if [ -z "$vol_ids" ]; then
     echo "No previous EBS user vault volumes were found."
 fi
 
-DEPLOYMENTS="jarvice-dal jarvice-scheduler jarvice-api"
-DEPLOYMENTS+=" jarvice-mc-portal jarvice-appsync"
+DEPLOYMENTS="jarvice-dal jarvice-scheduler jarvice-k8s-scheduler"
+DEPLOYMENTS+=" jarvice-pod-scheduler jarvice-api jarvice-mc-portal"
+DEPLOYMENTS+=" jarvice-appsync"
+if [ "$jarvice_cluster_type" = "downstream" ]; then
+    DEPLOYMENTS="jarvice-k8s-scheduler jarvice-pod-scheduler"
+fi
 for deployment in $DEPLOYMENTS; do
     echo
     echo -n "* "
@@ -882,36 +886,47 @@ if [ -n "$OLD_CONTEXT" ]; then
     echo "\$ kubectl config set current-context $OLD_CONTEXT"
 fi
 
+echo
+echo "* Getting ingress hosts..."
+sleep 10
+
+set +e
 API_HOST=$($KUBECTL --namespace $helm_namespace \
-    describe services jarvice-api-lb | \
+    describe services jarvice-api-lb 2>/dev/null | \
     grep Ingress | awk '{print $3}')
 PORTAL_HOST=$($KUBECTL --namespace $helm_namespace \
-    describe services jarvice-mc-portal-lb | \
+    describe services jarvice-mc-portal-lb 2>/dev/null | \
     grep Ingress | awk '{print $3}')
-
-if [ -n "$install_dashboard" ]; then
-    DASHBOARD_HOST=$($KUBECTL --namespace $helm_namespace \
-        describe services kubernetes-dashboard-lb | \
-        grep Ingress | awk '{print $3}')
-    echo
-    echo "Kubernetes dashbaord is available at:"
-    echo "https://$DASHBOARD_HOST:8443/"
-fi
+SCHED_HOST=$($KUBECTL --namespace $helm_namespace \
+    describe services jarvice-k8s-scheduler-lb 2>/dev/null | \
+    grep Ingress | awk '{print $3}')
 TRAEFIK_HOST=$($KUBECTL --namespace kube-system \
-    describe services traefik | \
+    describe services traefik 2>/dev/null | \
     grep Ingress | awk '{print $3}')
 
+echo
+if [ -n "$API_HOST" ]; then
+    echo
+    echo "JARVICE API endpoint is available at:"
+    echo "https://$API_HOST/"
+fi
+if [ -n "$PORTAL_HOST" ]; then
+    echo
+    echo "JARVICE portal is available at:"
+    echo "https://$PORTAL_HOST/"
+fi
+if [ -n "$SCHED_HOST" ]; then
+    echo
+    echo "JARVICE downstream scheduler endpoint is available at:"
+    echo "https://$SCHED_HOST/"
+fi
 
-echo
-echo "JARVICE API endpoint is available at:"
-echo "https://$API_HOST/"
-echo
-echo "JARVICE portal is available at:"
-echo "https://$PORTAL_HOST/"
 echo
 echo "Optionally, set up DNS for Traefik ingress available at:"
 echo "$TRAEFIK_HOST"
+
 echo
 echo "Use '$EKSCTL get/scale/create/delete nodegroup --cluster $eks_cluster_name' to modify cluster nodes."
+
 echo
 

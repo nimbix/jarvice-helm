@@ -8,7 +8,6 @@ if [ "$(arch)" != "x86_64" ]; then
 fi
 
 cluster_delete=
-install_dashboard=
 helm_name=jarvice
 helm_namespace=jarvice-system
 database_disk_delete=
@@ -35,8 +34,6 @@ Available [delete_options]:
 
 EOF
 }
-#Available [deploy_options]:
-#  --install-dashboard               Install kubernetes dashboard into cluster
 
 
 while [ $# -gt 0 ]; do
@@ -52,10 +49,6 @@ while [ $# -gt 0 ]; do
         --config-file)
             config_file=$2
             shift; shift
-            ;;
-        --install-dashboard)
-            install_dashboard=y
-            shift
             ;;
         --cluster-delete)
             cluster_delete=y
@@ -94,7 +87,10 @@ UNZIP=$(type -p unzip)
 JQ=$(type -p jq)
 SHYAML=$(type -p shyaml)
 
+HELM_VER_REQ=3.0.0
 KUBECTL_VER_REQ=1.10
+
+KUBECTL_OPTS="--request-timeout=5m"
 
 if [ -z "$KUBECONFIG" ]; then
     KUBECONFIG=~/.kube/config
@@ -155,7 +151,31 @@ function get_yaml_value {
 function strict_version {
     ver=$1
     ver_req=$2
-    python -c "from distutils.version import StrictVersion;print StrictVersion('$ver') >= StrictVersion('$ver_req');"
+    python -c "from distutils.version import StrictVersion;print StrictVersion('$ver') >= StrictVersion('$ver_req');" 2>/dev/null || /bin/true
+}
+
+# Ugly hack around metrics apiservice randomly becoming unavailable.
+# This may be k8s 1.15 issue only.
+function cluster_wait {
+    set +e
+    [ -n "$1" ] && echo -n "."
+    while /bin/true; do
+        SVCS=$($KUBECTL $KUBECTL_OPTS get --no-headers apiservices 2>/dev/null)
+        [ -n "$SVCS" ] && [ -z "$(echo $SVCS | grep False)" ] && break
+        sleep 5
+        [ -n "$1" ] && echo -n "."
+    done
+    set -e
+}
+
+function services_wait {
+    set +e
+    [ -n "$1" ] && echo -n "."
+    while $KUBECTL $KUBECTL_OPTS --namespace $helm_namespace get services 2>/dev/null | grep -q pending; do
+        sleep 5
+        [ -n "$1" ] && echo -n "."
+    done
+    set -e
 }
 
 
@@ -179,6 +199,8 @@ jarvice_image_pull_secret=$(get_yaml_value "jarvice.imagePullSecret")
 jarvice_license=$(get_yaml_value "jarvice.JARVICE_LICENSE_LIC")
 jarvice_username=$(get_yaml_value "jarvice.JARVICE_REMOTE_USER")
 jarvice_apikey=$(get_yaml_value "jarvice.JARVICE_REMOTE_APIKEY")
+jarvice_cluster_type=$(get_yaml_value "jarvice.JARVICE_CLUSTER_TYPE")
+jarvice_sched_server_key=$(get_yaml_value "jarvice.JARVICE_SCHED_SERVER_KEY")
 
 if [ -n "$cluster_delete" ]; then
     set -e
@@ -192,19 +214,21 @@ if [ -n "$cluster_delete" ]; then
 
     if [ -n "$vault_disks_delete" ]; then
         echo; echo "* Deleting user vault disks..."
-        $KUBECTL -n $helm_namespace-jobs delete pods --all
-        $KUBECTL -n $helm_namespace-jobs delete pvc --all
+        $KUBECTL $KUBECTL_OPTS -n $helm_namespace-jobs delete pods --all
+        $KUBECTL $KUBECTL_OPTS -n $helm_namespace-jobs delete pvc --all
     else
         echo; echo "* Preserving user vault disks..."
     fi
 
-    if [ -n "$database_disk_delete" ]; then
-        echo
-        echo "* Deleting disk containing JARVICE database..."
-        $KUBECTL -n $helm_namespace delete deployment jarvice-db
-        $KUBECTL -n $helm_namespace delete pvc jarvice-db-pvc
-    else
-        echo; echo "* Preserving disk containing the JARVICE database..."
+    if [ "$jarvice_cluster_type" != "downstream" ]; then
+        if [ -n "$database_disk_delete" ]; then
+            echo
+            echo "* Deleting disk containing JARVICE database..."
+            $KUBECTL $KUBECTL_OPTS -n $helm_namespace delete deployment jarvice-db
+            $KUBECTL $KUBECTL_OPTS -n $helm_namespace delete pvc jarvice-db-pvc
+        else
+            echo; echo "* Preserving disk containing the JARVICE database..."
+        fi
     fi
 
     echo
@@ -215,15 +239,22 @@ if [ -n "$cluster_delete" ]; then
     echo "------------------------------------------------------------------------"
     echo
     echo "Succesfully deleted '$cluster_name' cluster is in the '$cluster_zone' zone."
-    if [ -z "$database_disk_delete" -o -z "$vault_disks_delete" ]; then
-        echo
-        echo "** Preserved disks will be reused if another '$cluster_name' cluster is created in the '$cluster_zone' zone."
+    if [ "$jarvice_cluster_type" != "downstream" ]; then
+        if [ -z "$database_disk_delete" -o -z "$vault_disks_delete" ]; then
+            echo
+            echo "** Preserved disks will be reused if another '$cluster_name' cluster is created in the '$cluster_zone' zone."
+        fi
     fi
     echo
     exit 0
 fi
 
-if [ -z "$jarvice_image_pull_secret" -o -z "$jarvice_license" -o -z "$jarvice_username" -o -z "$jarvice_apikey" ]; then
+if [ "$jarvice_cluster_type" = "downstream" ] && [ -z "$jarvice_image_pull_secret" ]; then
+    echo "Missing credentials and/or license.  Cannot continue."
+    echo "Please update the configuration file: $config_file"
+    jarvice_deploy2eks_usage
+    exit 1
+elif [ "$jarvice_cluster_type" != "downstream" ] && [ -z "$jarvice_image_pull_secret" -o -z "$jarvice_license" -o -z "$jarvice_username" -o -z "$jarvice_apikey" ]; then
     echo "Missing credentials and/or license.  Cannot continue."
     echo "Please update the configuration file: $config_file"
     jarvice_deploy2usage
@@ -253,8 +284,8 @@ if [ -z "$KUBECTL" ]; then
     sudo chown root.root $KUBECTL
     sudo chmod 755 $KUBECTL
 else
-    KUBECTL_MAJOR=$($KUBECTL version | grep '^Client' | sed -E 's/.*Major:"([0-9]+)".*/\1/')
-    KUBECTL_MINOR=$($KUBECTL version | grep '^Client' | sed -E 's/.*Minor:"([0-9]+)\+*".*/\1/')
+    KUBECTL_MAJOR=$($KUBECTL version 2>/dev/null | grep '^Client' | sed -E 's/.*Major:"([0-9]+)".*/\1/')
+    KUBECTL_MINOR=$($KUBECTL version 2>/dev/null | grep '^Client' | sed -E 's/.*Minor:"([0-9]+)\+*".*/\1/')
     KUBECTL_VER="$KUBECTL_MAJOR.$KUBECTL_MINOR"
     echo "Found $KUBECTL... Version: $KUBECTL_VER"
     if [ "$(strict_version $KUBECTL_VER $KUBECTL_VER_REQ)" != "True" ]; then
@@ -298,7 +329,14 @@ if [ -z "$HELM" ]; then
     sudo --preserve-env bash /tmp/get_helm.sh >/dev/null
     rm -f /tmp/get_helm.sh
 else
-    echo "Found $HELM..."
+    HELM_VER=$($HELM version 2>/dev/null | grep 'Version:' | sed -E 's/.*Version:"v([.0-9]+)".*/\1/')
+    echo "Found $HELM... Version: $HELM_VER"
+    if [ "$(strict_version $HELM_VER $HELM_VER_REQ)" != "True" ]; then
+        echo "helm version $HELM_VER_REQ or newer is required."
+        echo "Please upgrade helm or remove it."
+        echo "This script will re-install helm if it is removed."
+        exit 1
+    fi
 fi
 
 echo "------------------------------------------------------------------------"
@@ -310,7 +348,6 @@ OLD_CONTEXT=$($KUBECTL config current-context 2>/dev/null || /bin/true)
 echo
 echo "* Running $GCLOUD to create cluster..."
     #--no-enable-basic-auth \
-    #--enable-ip-alias \
     #--issue-client-certificate \
 $GCLOUD container clusters create $cluster_name \
     --labels jarvice-cluster=$cluster_name \
@@ -336,36 +373,43 @@ done
 
 echo
 echo "* Running NVIDIA driver installer..."
-$KUBECTL apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/ubuntu/daemonset-preloaded.yaml
+$KUBECTL $KUBECTL_OPTS apply -f https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/ubuntu/daemonset-preloaded.yaml
 
+# Strangely, the master does not go offline immediately
 echo
 echo "* Waiting for kubernetes master to come back online..."
-# Strangely, the master does not go offline immediately, so a sleep is needed
-[ -n "$node_pools" ] && sleep 90
-set +e
-while ! $KUBECTL get nodes >/dev/null 2>&1; do
-    echo -n "."
-    sleep 5
-done
-set -e
+cluster_wait status
+
 echo; echo
 echo "* Cluster nodes are ready..."
-$KUBECTL get nodes
+echo
+$KUBECTL $KUBECTL_OPTS get nodes
+
+roles="jarvice-system jarvice-dockerbuild jarvice-dockerpull jarvice-compute"
+echo
+echo "* Updating node role labels..."
+echo
+for role in $roles; do
+    $KUBECTL $KUBECTL_OPTS label nodes -l node-role.jarvice.io/$role= \
+        node-role.kubernetes.io/$role=
+    $KUBECTL $KUBECTL_OPTS label nodes --all=true node-role.jarvice.io/$role-
+done
+echo
+$KUBECTL $KUBECTL_OPTS get nodes
 
 echo
 echo "* Updating node taints..."
 # GKE auto-adds taint for NVIDIA nodes.  We don't want that.  It's in the way.
-$KUBECTL taint nodes --all=true nvidia.com/gpu- || /bin/true
-roles="jarvice-system jarvice-dockerbuild jarvice-dockerpull jarvice-compute"
+$KUBECTL $KUBECTL_OPTS taint nodes --all=true nvidia.com/gpu- || /bin/true
 for role in $roles; do
-    $KUBECTL taint nodes -l node-role.kubernetes.io/$role= \
+    $KUBECTL $KUBECTL_OPTS taint nodes -l node-role.kubernetes.io/$role= \
         node-role.kubernetes.io/$role=:NoSchedule
 done
 
 #if [ -n "$install_weave_plugin" ]; then
 #    echo
 #    echo "* Installing Weave Net network plugin into cluster..."
-#    $KUBECTL apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+#    $KUBECTL $KUBECTL_OPTS apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 #fi
 
 JARVICE_MACHINES_ADD='[{"mc_name":"n0", "mc_description":"2 core, 16GB RAM (CPU only)", "mc_cores":"2", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"16", "mc_swap":"8", "mc_scratch":"64", "mc_devices":"", "mc_properties":"node-role.kubernetes.io/jarvice-compute=", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"16", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
@@ -431,20 +475,6 @@ echo
 echo "* Updating helm chart repositories..."
 $HELM repo update
 
-if [ -n "$install_dashboard" ]; then
-    HELM_NAME_CHART="traefik stable/kubernetes-dashboard"
-    [ -n "$HELM2" ] && HELM_NAME_CHART="stable/kubernetes-dashboard --name kubernetes-dashboard"
-    echo
-    echo "* Installing kubernetes-dashboard..."
-    $HELM install $HELM_NAME_CHART --namespace kube-system \
-        --set tolerations[0].effect=NoSchedule \
-        --set tolerations[0].key=node-role.kubernetes.io/jarvice-system \
-        --set tolerations[0].operator=Exists
-
-    $KUBECTL --namespace kube-system expose deployment kubernetes-dashboard \
-        --type=LoadBalancer --name kubernetes-dashboard-lb
-fi
-
 # See: https://kubernetes.io/docs/concepts/storage/storage-classes/#gce-pd
 classes="jarvice-db jarvice-user"
 for class in $classes; do
@@ -465,7 +495,7 @@ mountOptions:
   - debug
 EOF
 )
-    echo "$storage_class_yaml" | $KUBECTL --namespace kube-system create -f -
+    echo "$storage_class_yaml" | $KUBECTL $KUBECTL_OPTS --namespace kube-system create -f -
 done
 
 dbpv=$($GCLOUD compute disks list $gcloud_global_flags --format=json \
@@ -498,8 +528,12 @@ spec:
     - debug
 EOF
 )
-    echo "$pv_yaml" | $KUBECTL --namespace kube-system create -f -
+    echo "$pv_yaml" | $KUBECTL $KUBECTL_OPTS --namespace kube-system create -f -
 fi
+
+echo
+echo "* Waiting for kubernetes API services come online..."
+cluster_wait status
 
 jarvice_jobs_domain=$(get_yaml_value "jarvice.JARVICE_JOBS_DOMAIN")
 jarvice_jobs_lb_service=$(get_yaml_value "jarvice.JARVICE_JOBS_LB_SERVICE")
@@ -508,16 +542,18 @@ jarvice_pvc_vault_name=$(get_yaml_value "jarvice.JARVICE_PVC_VAULT_NAME")
 jarvice_pvc_vault_storageclass=$(get_yaml_value "jarvice.JARVICE_PVC_VAULT_STORAGECLASS")
 jarvice_pvc_vault_accessmodes=$(get_yaml_value "jarvice.JARVICE_PVC_VAULT_ACCESSMODES")
 jarvice_machines_add_env="$(echo "$JARVICE_MACHINES_ADD" | sed -e 's#\([]{}",[/]\)#\\\1#g')"
-echo
+echo; echo
 echo "* Running helm to deploy JARVICE into cluster..."
 HELM_NAME_CHART="$helm_name $jarvice_chart_dir"
 [ -n "$HELM2" ] && HELM_NAME_CHART="$jarvice_chart_dir --name $helm_name"
-$KUBECTL create namespace $helm_namespace
+$KUBECTL $KUBECTL_OPTS create namespace $helm_namespace
 $HELM install $HELM_NAME_CHART --namespace $helm_namespace --debug \
     --set jarvice.imagePullSecret="$jarvice_image_pull_secret" \
     --set jarvice.JARVICE_LICENSE_LIC="$jarvice_license" \
     --set jarvice.JARVICE_REMOTE_USER="$jarvice_username" \
     --set jarvice.JARVICE_REMOTE_APIKEY="$jarvice_apikey" \
+    --set jarvice.JARVICE_CLUSTER_TYPE="$jarvice_cluster_type" \
+    --set jarvice.JARVICE_SCHED_SERVER_KEY="$jarvice_sched_server_key" \
     --set jarvice.JARVICE_JOBS_DOMAIN="$jarvice_jobs_domain" \
     --set jarvice.JARVICE_JOBS_LB_SERVICE="$jarvice_jobs_lb_service" \
     --set jarvice.JARVICE_PVC_VAULT_SIZE="$jarvice_pvc_vault_size" \
@@ -533,6 +569,7 @@ $HELM install $HELM_NAME_CHART --namespace $helm_namespace --debug \
     #--set jarvice_db.persistence.volumeName="jarvice-db-$cluster_name" \
 sleep 1
 
+cluster_wait
 echo
 echo "* Installing Traefik ingress controller..."
 cert_file=$(get_yaml_value "jarvice.ingress.cert_file")
@@ -601,7 +638,7 @@ spec:
     - debug
 EOF
 )
-    echo "$pv_yaml" | $KUBECTL --namespace kube-system create -f -
+    echo "$pv_yaml" | $KUBECTL $KUBECTL_OPTS --namespace kube-system create -f -
 
     echo
     echo "* Recreating PersistentVolumeClaim '$pvc_name' in '$helm_namespace-jobs' namespace..."
@@ -621,7 +658,7 @@ spec:
   volumeName: $pv_name
 EOF
 )
-    echo "$pvc_yaml" | $KUBECTL --namespace $helm_namespace-jobs create -f -
+    echo "$pvc_yaml" | $KUBECTL $KUBECTL_OPTS --namespace $helm_namespace-jobs create -f -
 done
 
 if [ -z "$user_disks" ]; then
@@ -630,12 +667,16 @@ fi
 
 echo
 echo "* Waiting for rollout of JARVICE components..."
-DEPLOYMENTS="jarvice-dal jarvice-scheduler jarvice-api"
-DEPLOYMENTS+=" jarvice-mc-portal jarvice-appsync"
+DEPLOYMENTS="jarvice-dal jarvice-scheduler jarvice-k8s-scheduler"
+DEPLOYMENTS+=" jarvice-pod-scheduler jarvice-api jarvice-mc-portal"
+DEPLOYMENTS+=" jarvice-appsync"
+if [ "$jarvice_cluster_type" = "downstream" ]; then
+    DEPLOYMENTS="jarvice-k8s-scheduler jarvice-pod-scheduler"
+fi
 for deployment in $DEPLOYMENTS; do
     echo
     echo -n "* "
-    $KUBECTL --namespace $helm_namespace rollout status \
+    $KUBECTL $KUBECTL_OPTS --namespace $helm_namespace rollout status \
         deployment $deployment --watch=true
 done
 
@@ -655,34 +696,52 @@ if [ -n "$OLD_CONTEXT" ]; then
     echo "\$ kubectl config set current-context $OLD_CONTEXT"
 fi
 
-API_HOST=$($KUBECTL --namespace $helm_namespace \
-    describe services jarvice-api-lb | \
+sleep 3
+echo
+echo "* Getting ingress hosts..."
+
+cluster_wait status
+services_wait status
+sleep 10  # It can take a bit to assign external service addresses
+
+set +e
+API_HOST=$($KUBECTL $KUBECTL_OPTS --namespace $helm_namespace \
+    describe services jarvice-api-lb 2>/dev/null | \
     grep Ingress | awk '{print $3}')
-PORTAL_HOST=$($KUBECTL --namespace $helm_namespace \
-    describe services jarvice-mc-portal-lb | \
+PORTAL_HOST=$($KUBECTL $KUBECTL_OPTS --namespace $helm_namespace \
+    describe services jarvice-mc-portal-lb 2>/dev/null | \
+    grep Ingress | awk '{print $3}')
+SCHED_HOST=$($KUBECTL $KUBECTL_OPTS --namespace $helm_namespace \
+    describe services jarvice-k8s-scheduler-lb 2>/dev/null | \
     grep Ingress | awk '{print $3}')
 
-if [ -n "$install_dashboard" ]; then
-    DASHBOARD_HOST=$($KUBECTL --namespace $helm_namespace \
-        describe services kubernetes-dashboard-lb | \
+set +e
+while [ -z "$TRAEFIK_HOST" ]; do
+    TRAEFIK_HOST=$($KUBECTL $KUBECTL_OPTS --namespace kube-system \
+        describe services traefik 2>/dev/null | \
         grep Ingress | awk '{print $3}')
+done
+
+echo
+if [ -n "$API_HOST" ]; then
     echo
-    echo "Kubernetes dashbaord is available at:"
-    echo "https://$DASHBOARD_HOST:8443/"
+    echo "JARVICE API endpoint is available at:"
+    echo "https://$API_HOST/"
 fi
-TRAEFIK_HOST=$($KUBECTL --namespace kube-system \
-    describe services traefik | \
-    grep Ingress | awk '{print $3}')
+if [ -n "$PORTAL_HOST" ]; then
+    echo
+    echo "JARVICE portal is available at:"
+    echo "https://$PORTAL_HOST/"
+fi
+if [ -n "$SCHED_HOST" ]; then
+    echo
+    echo "JARVICE downstream scheduler endpoint is available at:"
+    echo "https://$SCHED_HOST/"
+fi
 
-
-echo
-echo "JARVICE API endpoint is available at:"
-echo "https://$API_HOST/"
-echo
-echo "JARVICE portal is available at:"
-echo "https://$PORTAL_HOST/"
 echo
 echo "Optionally, set up DNS for Traefik ingress available at:"
 echo "$TRAEFIK_HOST"
+
 echo
 
