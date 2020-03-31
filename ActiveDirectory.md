@@ -40,6 +40,14 @@ When creating apps with PushToCompute, any team member can elect to make the app
 
 #### Troubleshooting LDAP login failures
 
+Use the *TEST* button in the web portal's *Account->LDAP* view after saving a configuration.  This tests the steps for a user login and reports errors in more detail than when an end user attempts a regular login.  On successful login, the user's full DN will be shown in the *Test LDAP* dialog.  Make sure to use the test user's full UPN (including the realm suffix) as the logon name - e.g. `testuser1@myrealm.com` is a valid user name, while `testuser1` is not.  If the login fails, the portal will display `LDAP failure:` in red letters, followed by the enumeration of a status code from the directory server - e.g.:
+
+|Code|Meaning|Notes|
+|---|---|---|
+|SERVER_DOWN|The LDAP server could not be reached|Check the *Directory Server Address* value, if port is not 0, ensure the port is correct, and check the SSL and *Require Valid Certificate* settings|
+|INVALID_CREDENTIALS|Either the bind user or login user credentials are incorrect|Check both values, and ensure full UPNs are being used in both cases|
+|*All other values*||Check the *Base DN* and ensure it is valid; additionally, the logs for pods matching the `component=jarvice-mc-portal` will provide more details on the exact nature of the error|
+
 The utility `jarvice-ldap-bind` in the pod(s) behind the `jarvice-mc-portal` deployment can be used to debug LDAP login failures that can be caused by either URI or user schema problems.  It can be used interactively or as a single command, and gives information as to what fails in more detail.
 
 To use `jarvice-ldap-bind`, first find the name of any of the `jarvice-mc-portal` pods in the namespace where the JARVICE system is deployed.  For example, if the namespace is jarvice-system, the following command will list said pods:
