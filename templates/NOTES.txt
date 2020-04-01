@@ -44,14 +44,26 @@ $ kubectl --namespace {{ .Release.Namespace }} get all
 
 * Retreive IP addresses for accessing JARVICE
 
+{{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 If utilizing LoadBalancer IP addresses instead of an ingress controller for
 web portal and API endpoint access, the LoadBalancer IP addresses can be
 found with the following commands:
 
 $ PORTAL_IP=$(kubectl --namespace {{ .Release.Namespace }} get services \
     jarvice-mc-portal-lb -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+$ echo "$PORTAL_IP"
 $ API_IP=$(kubectl --namespace {{ .Release.Namespace }} get services \
     jarvice-api-lb -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+$ echo "$API_IP"
+{{- else }}
+If utilizing a LoadBalancer IP address instead of an ingress controller for
+downstream cluster access, the LoadBalancer IP address for the scheduler can be
+found with the following command:
+
+$ SCHED_IP=$(kubectl --namespace {{ .Release.Namespace }} get services \
+    jarvice-k8s-scheduler-lb -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+$ echo "$SCHED_IP"
+{{- end }}
 {{- if .Values.jarvice_registry.enabled }}
 
 The registry IP address can be found with:
@@ -59,8 +71,13 @@ The registry IP address can be found with:
 $ REGISTRY_IP=$(kubectl --namespace {{ .Release.Namespace }} get services \
     jarvice-registry-lb -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 {{- end }}
+{{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 
-Then use https://$PORTAL_IP/ to initialize and/or log into JARVICE.
+Use https://$PORTAL_IP/ to initialize and/or log into JARVICE.
+Use https://$API_IP/jarvice/ as the API endpoint for JARVICE.
+{{- else }}
+Use https://$SCHED_IP/ in the upstream JARVICE cluster configuration.
+{{- end }}
 
 -------------------------------------------------------------------------------
 

@@ -1,3 +1,4 @@
+{{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if .Values.jarvice_scheduler.enabled }}
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
@@ -144,38 +145,14 @@ spec:
 {{- end }}
           - name: JARVICE_SCHED_PASS_INTERVAL
             value: "{{ .Values.jarvice_scheduler.env.JARVICE_SCHED_PASS_INTERVAL }}"
-          - name: JARVICE_UNFS_REQUEST_MEM
-            value: "{{ .Values.jarvice_scheduler.env.JARVICE_UNFS_REQUEST_MEM }}"
-          - name: JARVICE_UNFS_REQUEST_CPU
-            value: "{{ .Values.jarvice_scheduler.env.JARVICE_UNFS_REQUEST_CPU }}"
-          - name: JARVICE_UNFS_EXPIRE_SECS
-            value: "{{ .Values.jarvice_scheduler.env.JARVICE_UNFS_EXPIRE_SECS }}"
-{{- if (not (empty .Values.jarvice_scheduler.JARVICE_UNFS_NODE_SELECTOR)) }}
-          - name: JARVICE_UNFS_NODE_SELECTOR
-            value: '{{ .Values.jarvice_scheduler.JARVICE_UNFS_NODE_SELECTOR }}'
-{{- else if (not (empty .Values.jarvice_dal.nodeSelector)) }}
-          - name: JARVICE_UNFS_NODE_SELECTOR
-            value: '{{ .Values.jarvice_dal.nodeSelector }}'
-{{- else if (not (empty .Values.jarvice.nodeSelector)) }}
-          - name: JARVICE_UNFS_NODE_SELECTOR
-            value: '{{ .Values.jarvice.nodeSelector }}'
-{{- end }}
-{{- if .Values.jarvice_pod_scheduler.enabled }}
-          - name: JARVICE_POD_SCHED_USE
-{{- if empty .Values.jarvice_pod_scheduler.JARVICE_POD_SCHED_NAME }}
-            value: "{{ .Release.Namespace }}"
-{{- else }}
-            value: "{{ .Values.jarvice_pod_scheduler.env.JARVICE_POD_SCHED_NAME }}"
-{{- end }}
-{{- end }}
 {{- if .Values.jarvice_idmapper.enabled }}
           - name: JARVICE_IDMAPPER_URL
             value: "http://jarvice-idmapper:8080"
 {{- end }}
-          - name: JARVICE_JOBS_DOMAIN
-            value: "{{ .Values.jarvice.JARVICE_JOBS_DOMAIN }}"
-          - name: JARVICE_JOBS_LB_SERVICE
-            value: "{{ .Values.jarvice.JARVICE_JOBS_LB_SERVICE }}"
+          - name: JARVICE_SCHED_LOGLEVEL
+            value: "{{ .Values.jarvice.JARVICE_SCHED_LOGLEVEL }}"
+          - name: JARVICE_SCHED_PASS_LOGLEVEL
+            value: "{{ .Values.jarvice.JARVICE_SCHED_PASS_LOGLEVEL }}"
           - name: JARVICE_MAIL_CONF
 {{- if empty .Values.jarvice_scheduler.env.JARVICE_MAIL_CONF }}
             value: {{ toYaml .Values.jarvice.JARVICE_MAIL_CONF | indent 12 }}
@@ -263,5 +240,6 @@ spec:
           serviceName: jarvice-scheduler
           servicePort: https
 ---
+{{- end }}
 {{- end }}
 {{- end }}

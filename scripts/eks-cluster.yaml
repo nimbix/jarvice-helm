@@ -8,8 +8,10 @@ jarvice:
   JARVICE_LICENSE_LIC:
   JARVICE_REMOTE_USER:
   JARVICE_REMOTE_APIKEY:
-  JARVICE_JOBS_LB_SERVICE: true  # Set to false if using JARVICE_JOBS_DOMAIN
+  JARVICE_CLUSTER_TYPE: upstream # "downstream" signifies a downstream deploy
+  JARVICE_SCHED_SERVER_KEY: # "<user>:<password>" allows upstream auth
   JARVICE_JOBS_DOMAIN: # Set this if using ingress
+  JARVICE_JOBS_LB_SERVICE: true  # Set to false if using JARVICE_JOBS_DOMAIN
   ingress:  # Traefik is used for ingress
     cert_file: # Optional, provide path to SSL certificate file
     key_file: # Optional, provide path to SSL key file
@@ -37,6 +39,7 @@ nodeGroups:
     labels:
         node-role.kubernetes.io/jarvice-system: ""
     instanceType: m5.2xlarge  # https://aws.amazon.com/ec2/instance-types/
+    #instanceType: m5.xlarge  # "downstream" cluster type
     minSize: 3
     maxSize: 3
     desiredCapacity: 3

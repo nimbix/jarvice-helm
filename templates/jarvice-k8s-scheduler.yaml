@@ -103,15 +103,24 @@ spec:
 {{- else }}
             value: "{{ .Values.jarvice.JARVICE_EXPERIMENTAL }}"
 {{- end }}
+          - name: JARVICE_CLUSTER_TYPE
+{{- if empty .Values.jarvice.JARVICE_CLUSTER_TYPE }}
+            value: "upstream"
+{{- else }}
+            value: "{{ .Values.jarvice.JARVICE_CLUSTER_TYPE }}"
+{{- end }}
+{{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
           - name: JARVICE_DAL_URL
             value: "https://jarvice-dal:8443"
           - name: JARVICE_SCHED_URL
             value: "https://jarvice-scheduler:9443"
-          - name: JARVICE_LICENSE_LIC
+{{- end }}
+          - name: JARVICE_SCHED_SERVER_KEY
             valueFrom:
               secretKeyRef:
-                name: jarvice-license
-                key: JARVICE_LICENSE_LIC
+                name: jarvice-sched-server-key
+                key: JARVICE_SCHED_SERVER_KEY
+                optional: true
           - name: JARVICE_JOBS_NAMESPACE
 {{- if empty .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
             value: {{ .Release.Namespace }}-jobs
@@ -135,20 +144,33 @@ spec:
           - name: JARVICE_LOCAL_REPO_BASE
             value: {{ .Values.jarvice.JARVICE_LOCAL_REPO_BASE }}
           - name: JARVICE_K8S_ADMIN_CONF
-            value: "{{ .Values.jarvice_scheduler.env.JARVICE_K8S_ADMIN_CONF }}"
+            value: "{{ .Values.jarvice_k8s_scheduler.env.JARVICE_K8S_ADMIN_CONF }}"
           - name: JARVICE_SCHED_PLUGIN_USE
             value: "true"
-          - name: JARVICE_SCHED_PASS_INTERVAL
-            value: "{{ .Values.jarvice_scheduler.env.JARVICE_SCHED_PASS_INTERVAL }}"
           - name: JARVICE_UNFS_REQUEST_MEM
+{{- if (not (empty .Values.jarvice_scheduler.env.JARVICE_UNFS_REQUEST_MEM)) }}
             value: "{{ .Values.jarvice_scheduler.env.JARVICE_UNFS_REQUEST_MEM }}"
+{{- else }}
+            value: "{{ .Values.jarvice_k8s_scheduler.env.JARVICE_UNFS_REQUEST_MEM }}"
+{{- end }}
           - name: JARVICE_UNFS_REQUEST_CPU
+{{- if (not (empty .Values.jarvice_scheduler.env.JARVICE_UNFS_REQUEST_CPU)) }}
             value: "{{ .Values.jarvice_scheduler.env.JARVICE_UNFS_REQUEST_CPU }}"
+{{- else }}
+            value: "{{ .Values.jarvice_k8s_scheduler.env.JARVICE_UNFS_REQUEST_CPU }}"
+{{- end }}
           - name: JARVICE_UNFS_EXPIRE_SECS
+{{- if (not (empty .Values.jarvice_scheduler.env.JARVICE_UNFS_EXPIRE_SECS)) }}
             value: "{{ .Values.jarvice_scheduler.env.JARVICE_UNFS_EXPIRE_SECS }}"
-{{- if (not (empty .Values.jarvice_scheduler.JARVICE_UNFS_NODE_SELECTOR)) }}
+{{- else }}
+            value: "{{ .Values.jarvice_k8s_scheduler.env.JARVICE_UNFS_EXPIRE_SECS }}"
+{{- end }}
+{{- if (not (empty .Values.jarvice_scheduler.env.JARVICE_UNFS_NODE_SELECTOR)) }}
           - name: JARVICE_UNFS_NODE_SELECTOR
-            value: '{{ .Values.jarvice_scheduler.JARVICE_UNFS_NODE_SELECTOR }}'
+            value: '{{ .Values.jarvice_scheduler.env.JARVICE_UNFS_NODE_SELECTOR }}'
+{{- else if (not (empty .Values.jarvice_k8s_scheduler.env.JARVICE_UNFS_NODE_SELECTOR)) }}
+          - name: JARVICE_UNFS_NODE_SELECTOR
+            value: '{{ .Values.jarvice_k8s_scheduler.env.JARVICE_UNFS_NODE_SELECTOR }}'
 {{- else if (not (empty .Values.jarvice_dal.nodeSelector)) }}
           - name: JARVICE_UNFS_NODE_SELECTOR
             value: '{{ .Values.jarvice_dal.nodeSelector }}'
@@ -164,20 +186,12 @@ spec:
             value: "{{ .Values.jarvice_pod_scheduler.env.JARVICE_POD_SCHED_NAME }}"
 {{- end }}
 {{- end }}
-{{- if .Values.jarvice_idmapper.enabled }}
-          - name: JARVICE_IDMAPPER_URL
-            value: "http://jarvice-idmapper:8080"
-{{- end }}
           - name: JARVICE_JOBS_DOMAIN
             value: "{{ .Values.jarvice.JARVICE_JOBS_DOMAIN }}"
           - name: JARVICE_JOBS_LB_SERVICE
             value: "{{ .Values.jarvice.JARVICE_JOBS_LB_SERVICE }}"
-          - name: JARVICE_MAIL_CONF
-{{- if empty .Values.jarvice_scheduler.env.JARVICE_MAIL_CONF }}
-            value: {{ toYaml .Values.jarvice.JARVICE_MAIL_CONF | indent 12 }}
-{{- else }}
-            value: {{ toYaml .Values.jarvice_scheduler.env.JARVICE_MAIL_CONF | indent 12 }}
-{{- end }}
+          - name: JARVICE_K8S_SCHED_LOGLEVEL
+            value: "{{ .Values.jarvice.JARVICE_K8S_SCHED_LOGLEVEL }}"
         volumeMounts:
         - name: jarvice-settings
           mountPath: /etc/jarvice/settings/jarvice-scheduler
@@ -224,11 +238,10 @@ spec:
     ports:
     - protocol: TCP
       port: 8080
-{{/*
-WARNING: Enabling ingressHost for this service is dangerous.
-DO NOT enable it here without understanding the security implications!
-*/}}
-{{- if (not (empty .Values.jarvice_k8s_scheduler.ingressHost)) }}
+{{- if (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE) }}
+{{- if (empty .Values.jarvice_k8s_scheduler.ingressHost) }}
+  - {}
+{{- else }}
   - from:
     - namespaceSelector: {}
     - podSelector: {}
@@ -236,13 +249,30 @@ DO NOT enable it here without understanding the security implications!
     - protocol: TCP
       port: 8080
 {{- end }}
+{{- end }}
 ---
 {{- end }}
-{{/*
-WARNING: Enabling ingressHost for this service is dangerous.
-DO NOT enable it here without understanding the security implications!
-*/}}
-{{- if (not (empty .Values.jarvice_k8s_scheduler.ingressHost)) }}
+{{- if (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE) }}
+{{- if (empty .Values.jarvice_k8s_scheduler.ingressHost) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-k8s-scheduler-lb
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-k8s-scheduler
+spec:
+  type: LoadBalancer
+  loadBalancerIP: {{ .Values.jarvice_k8s_scheduler.loadBalancerIP }}
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+    name: http
+  selector:
+    deployment: jarvice-k8s-scheduler
+---
+{{- else }}
 apiVersion: {{ template "apiVersion.ingress" . }}
 kind: Ingress
 metadata:
@@ -259,5 +289,6 @@ spec:
           serviceName: jarvice-k8s-scheduler
           servicePort: http
 ---
+{{- end }}
 {{- end }}
 {{- end }}

@@ -1,3 +1,4 @@
+{{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if .Values.jarvice_db_dump.enabled }}
 {{- if (empty .Values.jarvice_db_dump.persistence.existingClaimName) }}
 apiVersion: v1
@@ -151,4 +152,4 @@ data:
     exit 0
 ---
 {{- end }}
-
+{{- end }}
