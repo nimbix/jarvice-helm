@@ -82,6 +82,19 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202004012010
+
+* (2474) Improved LDAP error reporting when using the *TEST* button in the *Account->LDAP* view; see the troubleshooting section in [Active Directory Authentication Best Practices](ActiveDirectory.md#troubleshooting-ldap-login-failures) for details.
+* (2611) Added downstream cluster configuration interface in web portal in *Administration->Clusters* view.
+* (2612) Internal scheduler service and deployment updates for future capabilities
+* (2613) Added downstream cluster deployment mechanisms in Helm chart; see [JARVICE Downstream Installation](README.md#jarvice-downstream-installation) for details.
+* (2614) Added downstream cluster deployment automation for EKS and GKE; see "downstream" settings in the respective YAML files for these deployments.
+* (2715) Added Active Jobs mode in *Administration->Jobs* view and the ability to terminate all jobs on page via the *TERMINATE ALL* button.
+* (2725) Updated multicluster documentation in [JARVICE Multi-cluter Overview](MultiCluster.md)
+* (2728) Fixed bug in web portal where cloning a job with an upload parameter would hang the session.
+* (2761) (2762) Standardized logging for upstream scheduler (future feature to be released).
+* (2763) Standardized logging for downstream scheduler (future feature to be released).
+
 ## 3.0.0-1.202003200237
 
 * (2728) Fixed bug where cloning a job in the dashboard with UPLOAD parameters in the AppDef would hang the browser session.
@@ -89,7 +102,7 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 ## 3.0.0-1.202003181900
 
 * (2525) Fixed bug where logout on password reset using path-based ingress resulted in a 404 error
-* (2609), (2610), (2657) Internet scheduler service and deployment updates for future capabilities
+* (2609), (2610), (2657) Internal scheduler service and deployment updates for future capabilities
 * (2660) Support for new `UPLOAD` parameter for AppDefs to allow small files to be uploaded as part of job submission; please see the *`parameters` Object Reference* in the [JARVICE Application Definition Guide](https://jarvice.readthedocs.io/en/latest/appdef/#reference) for details.
 
 ## 3.0.0-1.202003041950
