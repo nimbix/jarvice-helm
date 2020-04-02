@@ -377,6 +377,7 @@ jarvice_scheduler: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   # for JARVICE_MAIL_CONF
   env:
     JARVICE_SCHED_PASS_INTERVAL: 5
+    JARVICE_SCHED_CLUSTERS_TIMEOUT: 20
     JARVICE_MAIL_CONF: #|
         #[mail]
         #from: JARVICE Job Status <DoNotReply@localhost>
