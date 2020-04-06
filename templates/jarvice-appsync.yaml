@@ -42,7 +42,7 @@ spec:
             - /usr/bin/curl
             - -k
             - -s
-            - "{https://jarvice-dal:8443/status,https://jarvice-api:7443,{{ .Values.jarvice.JARVICE_REMOTE_API_URL }}}"
+            - "https://jarvice-dal:8443/status"
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 2
@@ -54,7 +54,7 @@ spec:
             - /usr/bin/curl
             - -k
             - -s
-            - "{https://jarvice-dal:8443/status,https://jarvice-api:7443,{{ .Values.jarvice.JARVICE_REMOTE_API_URL }}}"
+            - "https://jarvice-dal:8443/status"
           initialDelaySeconds: 30
           periodSeconds: {{ .Values.jarvice_appsync.livenessProbe.periodSeconds }}
           timeoutSeconds: 5
