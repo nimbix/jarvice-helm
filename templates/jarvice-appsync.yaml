@@ -39,10 +39,9 @@ spec:
         readinessProbe:
           exec:
             command:
-            - /usr/bin/curl
-            - -k
-            - -s
-            - "https://jarvice-dal:8443/status"
+            - /bin/sh
+            - -c
+            - /usr/bin/curl -s -k  https://jarvice-dal:8443/ready | grep -q OK
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 2
@@ -51,10 +50,9 @@ spec:
         livenessProbe:
           exec:
             command:
-            - /usr/bin/curl
-            - -k
-            - -s
-            - "https://jarvice-dal:8443/status"
+            - /bin/sh
+            - -c
+            - /usr/bin/curl -s -k  https://jarvice-dal:8443/live | grep -q OK
           initialDelaySeconds: 30
           periodSeconds: {{ .Values.jarvice_appsync.livenessProbe.periodSeconds }}
           timeoutSeconds: 5
