@@ -82,6 +82,11 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202004062122
+
+* (2843) Fixed frequent `OOMKilled` pull pod failures (e.g. `jarvice-system-pulls` namespace), which were preventing container pulls from the *PushToCompute* tab to complete.
+* Patched minor regression in system and team audit log views related to sorting and category selection.
+
 ## 3.0.0-1.202004012010
 
 * (2474) Improved LDAP error reporting when using the *TEST* button in the *Account->LDAP* view; see the troubleshooting section in [Active Directory Authentication Best Practices](ActiveDirectory.md#troubleshooting-ldap-login-failures) for details.
