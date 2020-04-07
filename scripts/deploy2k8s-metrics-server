@@ -1,0 +1,108 @@
+#!/bin/bash
+
+version_tag=
+namespace=kube-system
+
+function usage {
+    cat <<EOF
+Usage:
+    $0 [options]
+
+Options:
+    --namespace <kube_namespace>    Kubernetes namespace to deploy to
+                                    (Default: $namespace)
+    --version-tag <tag>             Metrics server version (optional)
+
+Example:
+    $0 --namespace $namespace --version-tag v0.3.6
+EOF
+}
+
+HELM=$(type -p helm)
+if [ -z "$HELM" ]; then
+    cat <<EOF
+Could not find 'helm' in PATH.  It may not be installed.
+Run 'install-helm' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+KUBECTL=$(type -p kubectl)
+if [ -z "$KUBECTL" ]; then
+    cat <<EOF
+Could not find 'kubectl' in PATH.  It may not be installed.
+Run 'install-kubectl' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        --help)
+            usage
+            exit 0
+            ;;
+        --namespace)
+            namespace=$2
+            shift; shift
+            ;;
+        --version-tag)
+            version_tag=$2
+            shift; shift
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+set -e
+
+helm_stable_repo_url=https://kubernetes-charts.storage.googleapis.com/
+helm_stable_repo=$($HELM repo list 2>/dev/null | grep ^stable || /bin/true)
+if [ -z "$helm_stable_repo" ]; then
+    echo
+    echo "* Adding helm chart repository for stable..."
+    $HELM repo add stable $helm_stable_repo_url
+fi
+
+echo
+echo "* Updating helm chart repositories..."
+$HELM repo update
+
+if [ "$namespace" != "kube-system" ]; then
+    echo
+    echo "* Creating namespace: $namespace"
+    $KUBECTL create namespace $namespace 2>/dev/null || /bin/true
+fi
+
+echo
+echo "* Deploying..."
+$HELM upgrade metrics-server stable/metrics-server \
+    --namespace $namespace --install --reset-values \
+    \
+    ${version_tag:+--set image.tag=$version_tag} \
+    \
+    --set nodeSelector."beta\.kubernetes\.io/arch"=amd64 \
+    --set nodeSelector."node-role\.kubernetes\.io/jarvice-system"="" \
+    \
+    --set tolerations[0]."key"="node-role\.kubernetes\.io/jarvice-system" \
+    --set tolerations[0]."effect"="NoSchedule" \
+    --set tolerations[0]."operator"="Exists" \
+    \
+    --set priorityClassName=system-node-critical  \
+    \
+    --set args[0]='--kubelet-preferred-address-types=InternalIP' \
+    --set args[1]='--kubelet-insecure-tls' \
+    \
+    --set-string service.labels."kubernetes\.io/cluster-service"=true \
+    --set-string service.labels."kubernetes\.io/name"=Metrics-server
+
+echo
+echo "* Deployment successful..."
+
+echo
+echo "For advanced setup details, visit https://github.com/kubernetes-sigs/metrics-server and/or execute:"
+echo "$ helm inspect all stable/metrics-server"
+

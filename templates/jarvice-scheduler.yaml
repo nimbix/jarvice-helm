@@ -145,6 +145,8 @@ spec:
 {{- end }}
           - name: JARVICE_SCHED_PASS_INTERVAL
             value: "{{ .Values.jarvice_scheduler.env.JARVICE_SCHED_PASS_INTERVAL }}"
+          - name: JARVICE_SCHED_CLUSTERS_TIMEOUT
+            value: "{{ .Values.jarvice_scheduler.env.JARVICE_SCHED_CLUSTERS_TIMEOUT }}"
 {{- if .Values.jarvice_idmapper.enabled }}
           - name: JARVICE_IDMAPPER_URL
             value: "http://jarvice-idmapper:8080"
