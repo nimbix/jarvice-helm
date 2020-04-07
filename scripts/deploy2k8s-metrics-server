@@ -96,8 +96,8 @@ $HELM upgrade metrics-server stable/metrics-server \
     --set args[0]='--kubelet-preferred-address-types=InternalIP' \
     --set args[1]='--kubelet-insecure-tls' \
     \
-    --set service.labels."kubernetes\.io/cluster-service"="true" \
-    --set service.labels."kubernetes\.io/name"="metrics-server"
+    --set-string service.labels."kubernetes\.io/cluster-service"=true \
+    --set-string service.labels."kubernetes\.io/name"=Metrics-server
 
 echo
 echo "* Deployment successful..."
