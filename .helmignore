@@ -25,3 +25,6 @@ extra*/
 scripts*/
 jarvice-settings*/
 tmp*/
+terraform*/
+*.local/
+*.local
