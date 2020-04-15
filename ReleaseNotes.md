@@ -83,6 +83,17 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202004151913
+
+* (2534) Fixed bug where a user logging into the portal that had previously navigated to a page that is no longer authorized, would get a blank page.
+* (2602) Gray out SAML/LDAP admin role in the role editor under *Administration->Users* for any non-payer user, since this is inherited from the team payer account if set.
+* (2659) Ensure *JARVICE File Manager* is enabled by default when creating rules in the *Account->Team Apps* view.
+* (2718) Added underlying job submission data to job inspection popup in the *Administration->Jobs* view.
+* (2760) Standardized logging for upstream and downstream schedulers now released, no longer future functionality (re: 2763)
+* (2764) Fixed bug where job connection parameters including password would be shown in the dashboard for non-interactive jobs on systems using Ingress.
+* (2765) Added IP address assignment audit logging for containers in the *Administration->Logs* view.
+* (2774) Added configurable timeouts for downstream scheduler endpoints via the `jarvice_scheduler.JARVICE_SCHED_CLUSTERS_TIMEOUT` value in `values.yaml`.
+
 ## 3.0.0-1.202004062122
 
 * (2843) Fixed frequent `OOMKilled` pull pod failures (e.g. `jarvice-system-pulls` namespace), which were preventing container pulls from the *PushToCompute* tab to complete.
