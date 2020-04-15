@@ -58,6 +58,7 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 - When using a PersistentVolume vault ("PVC" type), users will experience a slight delay when navigating file lists for file arguments in the task builder; on average this will a few seconds each time a directory is clicked.  This is becauase JARVICE cannot mount the storage directly and must instead schedule a pod to get file listings using a PersistentVolumeClaim.  As will all PVC vault types, JARVICE manages the PersistentVolumeClaim objects themselves.
 - Before an application with a file selection in the task builder can work, at least one job with the PVC vault attached must be run; typically this will be the *JARVICE File Manager*, which is used to transfer files to and from the storage.
+- The name of the PersistentVolumeClaim that JARVICE generates for a PVC vault is derived from the PVC vault name in JARVICE itself - however, it is case insensitive.  This means that `testVault` and `testvault` will result in the same storage claim, for example.
 
 #### ReadWriteOnce PersistentVolumes
 
