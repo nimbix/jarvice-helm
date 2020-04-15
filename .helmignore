@@ -26,5 +26,7 @@ scripts*/
 jarvice-settings*/
 tmp*/
 terraform*/
+terraform*
+.terraform/
 *.local/
 *.local
