@@ -13,6 +13,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: jarvice-idmapper
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-idmapper
+    deployment: jarvice-idmapper
 spec:
   replicas: {{ .Values.jarvice_idmapper.replicaCount }}
   selector:

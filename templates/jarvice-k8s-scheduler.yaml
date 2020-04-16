@@ -13,6 +13,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: jarvice-k8s-scheduler
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-k8s-scheduler
+    deployment: jarvice-k8s-scheduler
+    jarvice-system: core
 spec:
   replicas: {{ .Values.jarvice_k8s_scheduler.replicaCount }}
   selector:

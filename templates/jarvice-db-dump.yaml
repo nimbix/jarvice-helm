@@ -32,6 +32,10 @@ apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
   name: jarvice-db-dump
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-db-dump
+    cronjob: jarvice-db-dump
 spec:
   schedule: "{{ .Values.jarvice_db_dump.schedule }}"
   failedJobsHistoryLimit: {{ .Values.jarvice_db_dump.failedJobsHistoryLimit }}

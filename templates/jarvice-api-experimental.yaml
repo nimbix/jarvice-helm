@@ -14,6 +14,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: jarvice-api-experimental
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-api-experimental
+    deployment: jarvice-api-experimental
+    jarvice-system: core
 spec:
   replicas: {{ .Values.jarvice_api.replicaCount }}
   selector:

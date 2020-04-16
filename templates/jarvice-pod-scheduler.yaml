@@ -3,6 +3,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: jarvice-pod-scheduler
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-pod-scheduler
+    deployment: jarvice-pod-scheduler
+    jarvice-system: core
 spec:
   replicas: 1
   selector:

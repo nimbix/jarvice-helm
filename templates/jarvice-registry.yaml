@@ -45,6 +45,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: jarvice-registry
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-registry
+    deployment: jarvice-registry
 spec:
   replicas: {{ .Values.jarvice_registry.replicaCount }}
   selector:
