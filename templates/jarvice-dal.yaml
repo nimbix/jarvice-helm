@@ -196,6 +196,8 @@ spec:
             value: "{{ .Values.jarvice.JARVICE_PVC_VAULT_SIZE }}"
           - name: JARVICE_PVC_VAULT_SUBPATH
             value: "{{ .Values.jarvice.JARVICE_PVC_VAULT_SUBPATH }}"
+          - name: JARVICE_PVC_VAULT_ZONE
+            value: "{{ .Values.jarvice.JARVICE_PVC_VAULT_ZONE }}"
           - name: JARVICE_MACHINES_ADD
             value: '{{ .Values.jarvice_dal.env.JARVICE_MACHINES_ADD }}'
           - name: JARVICE_CFG_NETWORK
