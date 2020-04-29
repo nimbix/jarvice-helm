@@ -83,6 +83,17 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202004292028
+
+* (2719) Real-time scheduler events and job output available in the *Active Jobs* status filter of the *Administration->Jobs* view.
+* (2832) Portal warns if files with special characters in them, such as spaces, are selected for workflows with file parameter(s), as this can cause applications to behave incorrectly or fail.
+* (2833) Security fix to prevent web server directory listing in browser for interactive jobs using noVNC.
+* (2858) (2859) (2876) Zoned vault model support for future functionality.
+* (2860) (2861) API validation of vault and machine selection for zone compatibility.
+* (2862) Removed legacy vault type support from the *Vaults* dialog in *Administration->Users*, and added zone affinity selection for new vaults.
+* (2863) Modernized `jarvice-appsync` component, including standardized logging.
+* (2917) Fixed regression preventing copy of job session passwords for interactive jobs to clipboard.
+
 ## 3.0.0-1.202004151913
 
 * (2534) Fixed bug where a user logging into the portal that had previously navigated to a page that is no longer authorized, would get a blank page.
