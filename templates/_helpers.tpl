@@ -44,7 +44,7 @@ JARVICE version for images
 {{- printf "-%s" .Values.jarvice.JARVICE_IMAGES_VERSION -}}
 {{- end -}}
 {{- else -}}
-{{- printf "-%s" .Chart.Version -}}
+{{- printf "-%s" .Chart.Version | trimSuffix "-development" | trimSuffix "-testing" -}}
 {{- end -}}
 {{- end -}}
 

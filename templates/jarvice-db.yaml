@@ -32,6 +32,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: jarvice-db
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-db
+    deployment: jarvice-db
 spec:
   replicas: {{ .Values.jarvice_db.replicaCount }}
   strategy:

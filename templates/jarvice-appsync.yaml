@@ -4,6 +4,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: jarvice-appsync
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-appsync
+    deployment: jarvice-appsync
+    jarvice-system: core
 spec:
   replicas: {{ .Values.jarvice_appsync.replicaCount }}
   selector:

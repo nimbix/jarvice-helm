@@ -27,6 +27,9 @@ metadata:
 {{- else }}
   namespace: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
 {{- end }}
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-cache-pull
 spec:
   selector:
     matchLabels:
@@ -180,6 +183,9 @@ metadata:
 {{- else }}
   namespace: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
 {{- end }}
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-lxcfs
 spec:
   selector:
     matchLabels:
@@ -238,6 +244,9 @@ metadata:
 {{- else }}
   namespace: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
 {{- end }}
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-nvidia-device-plugin
 spec:
   selector:
     matchLabels:
@@ -292,6 +301,9 @@ metadata:
 {{- else }}
   namespace: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
 {{- end }}
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-xilinx-fpga-device-plugin
 spec:
   selector:
     matchLabels:
@@ -351,6 +363,9 @@ metadata:
 {{- else }}
   namespace: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
 {{- end }}
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-rdma-device-plugin
 spec:
   selector:
     matchLabels:

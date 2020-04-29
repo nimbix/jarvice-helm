@@ -14,6 +14,10 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: jarvice-memcached
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-memcached
+    deployment: jarvice-memcached
 spec:
   serviceName: jarvice-memcached
   replicas: {{ .Values.jarvice_memcached.replicaCount }}

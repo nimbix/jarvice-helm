@@ -13,6 +13,10 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: jarvice-smtpd
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-smtpd
+    deployment: jarvice-smtpd
 spec:
   replicas: {{ .Values.jarvice_smtpd.replicaCount }}
   selector:
