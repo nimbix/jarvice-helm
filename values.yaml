@@ -525,9 +525,3 @@ jarvice_mc_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     JARVICE_PORTAL_DBUSER: # root
     JARVICE_PORTAL_DBPASSWD: # Pass1234
 
-jarvice_api_experimental:  # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
-  enabled: false
-  loadBalancerIP:
-  ingressHost: # jarvice-api.my-domain.com
-  ingressPath: "/"  # Valid values are "/" (default) or "/api"
-

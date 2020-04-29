@@ -69,15 +69,13 @@ spec:
         image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-api:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}{{- include "jarvice.version" . }}
         imagePullPolicy: Always
         ports:
-          - name: https
-            containerPort: 7443
           - name: http
-            containerPort: 7080
+            containerPort: 8080
         readinessProbe:
           httpGet:
-            scheme: HTTPS
-            port: https
-            path: /ready
+            scheme: HTTP
+            port: http
+            path: /jarvice/ready
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 2
@@ -85,9 +83,9 @@ spec:
           failureThreshold: 3
         livenessProbe:
           httpGet:
-            scheme: HTTPS
-            port: https
-            path: /live
+            scheme: HTTP
+            port: http
+            path: /jarvice/live
           initialDelaySeconds: 30
           periodSeconds: 30
           timeoutSeconds: 5
@@ -106,14 +104,6 @@ spec:
 {{- else }}
             value: "{{ .Values.jarvice.JARVICE_EXPERIMENTAL }}"
 {{- end }}
-          - name: JARVICE_API_HTTPS
-            value: "enable"
-          - name: JARVICE_API_HTTPS_PORT
-            value: "7443"
-          - name: JARVICE_API_HTTP
-            value: "enable"
-          - name: JARVICE_API_HTTP_PORT
-            value: "7080"
           - name: JARVICE_DAL_URL
 {{- if empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
             value: "https://jarvice-dal.{{ .Release.Namespace }}:8443"
@@ -122,22 +112,12 @@ spec:
 {{- end }}
           - name: JARVICE_API_URL
 {{- if empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
-            value: "https://jarvice-api.{{ .Release.Namespace }}:7443"
+            value: "http://jarvice-api.{{ .Release.Namespace }}:8080"
 {{- else }}
-            value: "https://jarvice-api.{{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}:7443"
+            value: "http://jarvice-api.{{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}:8080"
 {{- end }}
           - name: JARVICE_SCHED_URL
             value: "https://jarvice-scheduler:9443"
-          - name: JARVICE_API_CRT
-            valueFrom:
-              secretKeyRef:
-                name: jarvice-tls
-                key: tls.crt
-          - name: JARVICE_API_KEY
-            valueFrom:
-              secretKeyRef:
-                name: jarvice-tls
-                key: tls.key
           - name: JARVICE_JOBS_NAMESPACE
 {{- if empty .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
             value: {{ .Release.Namespace }}-jobs
@@ -224,12 +204,8 @@ spec:
   type: ClusterIP
   ports:
   - protocol: TCP
-    port: 7443
-    targetPort: 7443
-    name: https
-  - protocol: TCP
-    port: 7080
-    targetPort: 7080
+    port: 8080
+    targetPort: 8080
     name: http
   selector:
     deployment: jarvice-api
@@ -251,9 +227,7 @@ spec:
     - podSelector: {}
     ports:
     - protocol: TCP
-      port: 7443
-    - protocol: TCP
-      port: 7080
+      port: 8080
 ---
 {{- end }}
 {{- if (empty .Values.jarvice_api.ingressHost) }}
@@ -269,12 +243,8 @@ spec:
   loadBalancerIP: {{ .Values.jarvice_api.loadBalancerIP }}
   ports:
   - protocol: TCP
-    port: 443
-    targetPort: 7443
-    name: https
-  - protocol: TCP
-    port: 80
-    targetPort: 7080
+    port: 8080
+    targetPort: 8080
     name: http
   selector:
     deployment: jarvice-api
