@@ -79,7 +79,7 @@ spec:
           - name: JARVICE_DAL_URL
             value: "https://jarvice-dal:8443"
           - name: JARVICE_LOCAL_API_URL
-            value: "https://jarvice-api:7443"
+            value: "http://jarvice-api:8080"
           - name: JARVICE_APP_USER
             value: "jarvice"
           - name: JARVICE_REMOTE_API_URL
