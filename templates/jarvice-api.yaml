@@ -190,6 +190,10 @@ spec:
 {{- else }}
             value: {{ toYaml .Values.jarvice_api.env.JARVICE_MAIL_CONF | replace "jarvice-smtpd:25" $smtpd | indent 12 }}
 {{- end }}
+{{- if (not (empty .Values.jarvice_api.env.JARVICE_API_LOG_ENABLE)) }}
+          - name: JARVICE_API_LOG_ENABLE
+            value: "true"
+{{- end }}
         resources:
 {{ toYaml .Values.jarvice_api.resources | indent 10 }}
 ---
