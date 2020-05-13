@@ -13,6 +13,8 @@ cluster_name = "jarvice"
 kubernetes_version = "1.15.10"
 ssh_public_key = "~/.ssh/id_rsa.pub"
 
+# Visit the following link for Azure node size specs:
+# https://docs.microsoft.com/en-us/azure/cloud-services/cloud-services-sizes-specs
 compute_node_vm_size = "Standard_D32_v3"
 compute_node_os_disk_size_gb = 100
 compute_node_count = 2
