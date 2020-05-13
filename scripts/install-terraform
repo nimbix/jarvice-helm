@@ -10,7 +10,7 @@ function strict_version {
 }
 
 if [ -n "$TF" ]; then
-    TF_VER=$($TF --version | sed 's/^Terraform v//')
+    TF_VER=$($TF --version | head -n 1 | sed 's/^Terraform v//')
     echo "Found $TF v$TF_VER..."
     if [ "$(strict_version $TF_VER $TF_VER_REQ)" != "True" ]; then
         echo "$TF v$TF_VER_REQ or newer is required."
