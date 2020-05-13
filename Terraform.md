@@ -94,7 +94,7 @@ chart deployment used with `terraform`.
 
 The default `terraform` configuration provided requires that `values.yaml` be
 copied to `override.yaml`.
-Helm chart values ustomizations can then be made by editing `override.yaml`.
+Helm chart value customizations can then be made by editing `override.yaml`.
 
 ## Deploying JARVICE
 
@@ -137,4 +137,13 @@ echo "http://$(kubectl -n jarvice-system get services jarvice-mc-portal-lb -o js
 
 After successfully deploying JARVICE, visit the portal URL provided above
 and initialize the new deployment.
+
+### Destroying the cluster
+
+To remove the cluster and delete it's resources, execute the following from
+the top level directory of `jarvice-helm` to deploy JARVICE:
+
+```bash
+$ terraform destroy ./terraform
+```
 
