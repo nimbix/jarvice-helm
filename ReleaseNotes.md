@@ -93,6 +93,14 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202005131926
+
+* (2871) Allow in-place editing of vault objects in the *Administration-Users* view.
+* (2878) Modernized `jarvice-pod-scheduler` component.
+* (2880) Official support for Microsoft Azure as either standalone or downstream platform, using Terraform deployment mechanism; see [JARVICE deployment with Terraform](Terraform.md) for details
+* (2928) Fixed rendering bug in task builder where *Submit* button was obscured at lower resolutions.
+* (2964) Fixed `/jarvice/jobs` API endpoint to not return downstream scheduler-specific job submission data.
+
 ## 3.0.0-1.202004292028
 
 * (2719) Real-time scheduler events and job output available in the *Active Jobs* status filter of the *Administration->Jobs* view.
