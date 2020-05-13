@@ -126,7 +126,7 @@ Upon success, you will see output similar to the following:
 ```
 Execute the following to begin using kubectl/helm with the new cluster:
 
-export KUBECONFIG=/home/paulbsch/.kube/config.jarvice.tf.aks
+export KUBECONFIG=~/.kube/config.jarvice.tf.aks
 
 Execute the following to get the JARVICE portal URL:
 
