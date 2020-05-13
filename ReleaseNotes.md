@@ -35,6 +35,16 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 - Custom resource weighting is not yet implemented; all resource multipliers are set to 1 automatically.
 - Pod affinity, local volumes, or any mechanism that pins pods to specific nodes in the cluster is not supported; use node labels as machine properties to direct pods to sets of nodes instead, and use network-attached persistent storage only
 
+### Downstream Deployments
+
+- The `jarvice.JARVICE_SCHED_SERVER_KEY` is _required_ and must have a value.
+
+### Deployments with Terraform
+
+- Compute node labels will have `true` as the value rather than blank, so ensure machine definitions are correct.  For example, to target work to compute nodes, use `node-role.kubernetes.io/jarvice-compute=true` in the *properties* field of the machine definition.
+- Persistent volumes **do not** persist after the cluster is destroyed with the `terraform destroy` command.
+
+
 ### Web Portal
 
 - The *Nodes* view in *Administration* should not be used in this version of JARVICE
