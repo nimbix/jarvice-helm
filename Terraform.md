@@ -18,7 +18,7 @@ $ git clone https://github.com/nimbix/jarvice-helm.git
 
 ## Install required software
 
-## Install `kubectl`
+### Install `kubectl`
 
 The `install-kubectl` helper script can be used to install the latest
 version of `kubectl`.
@@ -27,7 +27,7 @@ Simply execute the following to install the `kubectl` executable:
 $ ./jarvice-helm/scripts/install-kubectl
 ```
 
-## Install `helm`
+### Install `helm`
 
 The `install-helm` helper script can be used to install the latest
 version of `helm`.
