@@ -1,0 +1,65 @@
+#!/bin/bash
+
+TF=$(type -p terraform)
+TF_VER_REQ=0.12.0
+
+function strict_version {
+    ver=$1
+    ver_req=$2
+    python -c "from distutils.version import StrictVersion;print StrictVersion('$ver') >= StrictVersion('$ver_req');" 2>/dev/null || /bin/true
+}
+
+if [ -n "$TF" ]; then
+    TF_VER=$($TF --version | sed 's/^Terraform v//')
+    echo "Found $TF v$TF_VER..."
+    if [ "$(strict_version $TF_VER $TF_VER_REQ)" != "True" ]; then
+        echo "$TF v$TF_VER_REQ or newer is required."
+    fi
+    echo "Remove $TF before re-installing it with this script."
+    exit 0
+fi
+
+SUDO=
+if [ "$EUID" != "0" ]; then
+    SUDO="sudo --preserve-env"
+    SUID=$($SUDO id -u)
+    if [ "$SUID" != "0" ]; then
+        echo "Could not verify sudo access.  Cannot continue."
+        echo "Please resolve sudo access before re-running this script."
+        exit 1
+    else
+        echo "* Verified sudo access..."
+    fi
+fi
+
+if [ -z "$(type -p curl)" -o -z "$(type -p openssl)" ]; then
+    install_pkgs="curl openssl unzip"
+    if [ -e /etc/redhat-release ]; then
+        install_pkgs+=" which"
+        echo; echo "* Installing '$install_pkgs'..."
+        $SUDO yum -y install $install_pkgs
+    else
+        install_pkgs+=" debianutils"
+        echo; echo "* Installing '$install_pkgs'..."
+        $SUDO apt-get -y update
+        $SUDO apt-get -y install $install_pkgs
+    fi
+fi
+
+set -e
+
+[ -z "$INSTALL_DIR" ] && INSTALL_DIR=/usr/local
+TF_INSTALL_DIR=$INSTALL_DIR/bin
+
+TF_URL=https://releases.hashicorp.com/terraform/
+TF_VER=$(curl --silent $TF_URL | grep terraform_ | head -n 1 | sed -e 's/.*terraform_\(.*\)<.*/\1/')
+TF_ZIP+="terraform_${TF_VER}_linux_amd64.zip"
+TF_URL+="$TF_VER/$TF_ZIP"
+
+echo; echo "* Installing terraform version $TF_VER..."
+curl --silent $TF_URL >/tmp/$TF_ZIP
+$SUDO unzip /tmp/$TF_ZIP -d $TF_INSTALL_DIR
+rm -f /tmp/$TF_ZIP
+
+echo; echo "* Terraform is ready for use..."
+
