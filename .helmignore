@@ -24,11 +24,11 @@
 extra*/
 scripts*/
 jarvice-settings*/
+.terraform/
+terraform/.terraform/
+terraform.*
 tmp*/
 *.bak/
 bak*/
-terraform*/
-terraform*
-.terraform/
 *.local/
 *.local
