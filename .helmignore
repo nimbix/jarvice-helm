@@ -25,6 +25,8 @@ extra*/
 scripts*/
 jarvice-settings*/
 tmp*/
+*.bak/
+bak*/
 terraform*/
 terraform*
 .terraform/
