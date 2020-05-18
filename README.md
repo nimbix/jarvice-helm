@@ -1116,6 +1116,7 @@ Then use https://`$PORTAL_IP`/ to initialize and/or log into JARVICE.
 - [JARVICE Troubleshooting Guide](Troubleshooting.md)
 - [JARVICE Helm chart deployment scripts](https://github.com/nimbix/jarvice-helm/tree/master/scripts)
 - [Kubernetes Cluster Installation](KubernetesInstall.md)
+- [JARVICE deployment with Terraform](Terraform.md)
 - [JARVICE Developer Documentation (jarvice.readthedocs.io)](https://jarvice.readthedocs.io)
 
 
