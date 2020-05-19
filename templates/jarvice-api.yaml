@@ -184,6 +184,21 @@ spec:
 {{- if (not (empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE)) }}
 {{- $smtpd = printf "jarvice-smtpd.%s:25" .Values.jarvice.JARVICE_SYSTEM_NAMESPACE -}}
 {{- end }}
+          - name: JARVICE_MAIL_FROM
+            value: {{ toYaml .Values.jarvice.JARVICE_MAIL_FROM | indent 12 }}
+          - name: JARVICE_MAIL_ADMINS
+            value: {{ toYaml .Values.jarvice.JARVICE_MAIL_ADMINS | indent 12 }}
+          - name: JARVICE_MAIL_SERVER
+            value: {{ toYaml .Values.jarvice.JARVICE_MAIL_SERVER | replace "jarvice-smtpd:25" $smtpd | indent 12 }}
+          - name: JARVICE_MAIL_USERNAME
+            value: {{ toYaml .Values.jarvice.JARVICE_MAIL_USERNAME | indent 12 }}
+{{- if (not (empty .Values.JARVICE_MAIL_PASSWORD)) }}
+          - name: JARVICE_MAIL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-mail
+                key: JARVICE_MAIL_PASSWORD
+{{- end }}
           - name: JARVICE_MAIL_CONF
 {{- if empty .Values.jarvice_api.env.JARVICE_MAIL_CONF }}
             value: {{ toYaml .Values.jarvice.JARVICE_MAIL_CONF | replace "jarvice-smtpd:25" $smtpd | indent 12 }}
