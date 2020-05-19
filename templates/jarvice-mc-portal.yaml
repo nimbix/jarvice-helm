@@ -148,22 +148,48 @@ spec:
           - name: JARVICE_PORTAL_APP_OWNERS
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_APP_OWNERS }}"
           - name: JARVICE_PORTAL_MAIL_FROM
+{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_FROM)) }}
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_FROM }}"
+{{- else }}
+            value: "{{ .Values.jarvice.JARVICE_PORTAL_MAIL_FROM }}"
+{{- end }}
           - name: JARVICE_PORTAL_MAIL_SUBJECT
+{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_SUBJECT)) }}
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_SUBJECT }}"
+{{- else }}
+            value: "{{ .Values.jarvice.JARVICE_PORTAL_MAIL_SUBJECT }}"
+{{- end }}
           - name: JARVICE_PORTAL_MAIL_SERVER
+{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_SERVER)) }}
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_SERVER }}"
+{{- else }}
+            value: "{{ .Values.jarvice.JARVICE_MAIL_SERVER }}"
+{{- end }}
           - name: JARVICE_PORTAL_MAIL_USERNAME
+{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_USERNAME)) }}
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_USERNAME }}"
+{{- else }}
+            value: "{{ .Values.jarvice.JARVICE_MAIL_USERNAME }}"
+{{- end }}
 {{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_PASSWORD)) }}
           - name: JARVICE_PORTAL_MAIL_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: jarvice-mc-portal
                 key: JARVICE_PORTAL_MAIL_PASSWORD
+{{- else if (not (empty .Values.jarvice.JARVICE_MAIL_PASSWORD)) }}
+          - name: JARVICE_PORTAL_MAIL_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-mail
+                key: JARVICE_MAIL_PASSWORD
 {{- end }}
           - name: JARVICE_PORTAL_MAIL_ADMINS
+{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_ADMINS)) }}
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_ADMINS }}"
+{{- else }}
+            value: "{{ .Values.jarvice.JARVICE_MAIL_ADMINS }}"
+{{- end }}
           - name: JARVICE_PORTAL_DB
 {{- if empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DB }}
             value: "nimbix_portal_ng"
