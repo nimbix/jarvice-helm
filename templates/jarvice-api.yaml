@@ -203,7 +203,10 @@ spec:
                 name: jarvice-mail
                 key: JARVICE_MAIL_PASSWORD
 {{- end }}
-{{- if (not (empty .Values.jarvice.JARVICE_MAIL_CONF)) }}
+{{- if (not (empty .Values.jarvice_api.env.JARVICE_MAIL_CONF)) }}
+          - name: JARVICE_MAIL_CONF
+            value: {{ toYaml .Values.jarvice_api.env.JARVICE_MAIL_CONF | replace "jarvice-smtpd:25" $smtpd | indent 12 }}
+{{- else if (not (empty .Values.jarvice.JARVICE_MAIL_CONF)) }}
           - name: JARVICE_MAIL_CONF
             value: {{ toYaml .Values.jarvice.JARVICE_MAIL_CONF | replace "jarvice-smtpd:25" $smtpd | indent 12 }}
 {{- end }}
