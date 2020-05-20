@@ -27,20 +27,6 @@ spec:
 {{- end }}
 ---
 {{- end }}
-{{- if (not (empty .Values.jarvice_registry.tls.secretName)) }}
-apiVersion: v1
-kind: Secret
-metadata:
-  name: {{ .Values.jarvice_registry.tls.secretName }}
-  labels:
-    {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-registry
-type: Opaque
-data:
-  tls.crt: {{ .Values.jarvice_registry.tls.crt }}
-  tls.key: {{ .Values.jarvice_registry.tls.key }}
----
-{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -71,16 +57,8 @@ spec:
 {{- else if (not (empty .Values.jarvice.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice.nodeSelector }}
 {{- end }}
-      volumes:
-        - name: registry-tls-cert
-          secret:
-{{- if (not (empty .Values.jarvice_registry.tls.secretName)) }}
-            secretName: {{ .Values.jarvice_registry.tls.secretName }}
-{{- else }}
-            secretName: jarvice-tls
-{{- end }}
-            optional: true
 {{- if .Values.jarvice_registry.persistence.enabled }}
+      volumes:
         - name: registry-data-vol
           persistentVolumeClaim:
 {{- if (empty .Values.jarvice_registry.persistence.existingClaimName) }}
@@ -94,30 +72,23 @@ spec:
         image: {{ .Values.jarvice_registry.image }}
         imagePullPolicy: Always
         ports:
-          - name: https
-            containerPort: 443
+          - name: http
+            containerPort: 5000
         readinessProbe:
           tcpSocket:
-            port: https
+            port: http
           initialDelaySeconds: 5
           timeoutSeconds: 1
         livenessProbe:
           tcpSocket:
-            port: https
+            port: http
           initialDelaySeconds: 30
           timeoutSeconds: 5
         env:
           - name: REGISTRY_HTTP_ADDR
             value: "{{ .Values.jarvice_registry.env.REGISTRY_HTTP_ADDR }}"
-          - name: REGISTRY_HTTP_TLS_CERTIFICATE
-            value: /etc/ssl/docker/tls.crt
-          - name: REGISTRY_HTTP_TLS_KEY
-            value: /etc/ssl/docker/tls.key
-        volumeMounts:
-        - name: registry-tls-cert
-          mountPath: /etc/ssl/docker
-          readOnly: true
 {{- if .Values.jarvice_registry.persistence.enabled }}
+        volumeMounts:
         - name: registry-data-vol
           mountPath: /var/lib/registry
 {{- end }}
@@ -135,9 +106,9 @@ spec:
   type: ClusterIP
   ports:
   - protocol: TCP
-    port: 443
-    targetPort: 443
-    name: https
+    port: 5000
+    targetPort: 5000
+    name: http
   selector:
     deployment: jarvice-registry
 ---
@@ -158,7 +129,7 @@ spec:
     - podSelector: {}
     ports:
     - protocol: TCP
-      port: 443
+      port: 5000
 ---
 {{- end }}
 {{- if (empty .Values.jarvice_registry.ingressHost) }}
@@ -174,9 +145,9 @@ spec:
   loadBalancerIP: {{ .Values.jarvice_registry.loadBalancerIP }}
   ports:
   - protocol: TCP
-    port: 443
-    targetPort: 443
-    name: https
+    port: 5000
+    targetPort: 5000
+    name: http
   selector:
     deployment: {{ template "jarvice.name" . }}-registry
 ---
@@ -196,12 +167,12 @@ spec:
 {{- if (eq "/registry" .Values.jarvice_registry.ingressPath) }}
       - backend:
           serviceName: jarvice-registry
-          servicePort: https
+          servicePort: http
         path: /registry
 {{- else }}
       - backend:
           serviceName: jarvice-registry
-          servicePort: https
+          servicePort: http
         path: /
 {{- end }}
 ---
