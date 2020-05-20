@@ -9,7 +9,7 @@ jarvice:
   JARVICE_REMOTE_APIKEY:
   JARVICE_APPSYNC_USERONLY: false
 
-  JARVICE_LOCAL_REGISTRY: # jarvice-registry:443
+  JARVICE_LOCAL_REGISTRY: # jarvice-registry:5000
   JARVICE_LOCAL_REPO_BASE: jarvice
 
   JARVICE_SYSTEM_REGISTRY: gcr.io
@@ -75,13 +75,6 @@ jarvice:
   # https://github.com/nimbix/jarvice-helm#customize-jarvice-files-via-a-configmap
   settings:
     configMap: jarvice-settings
-
-  # Preference is to provide TLS through the ingress controller, please see:
-  #     https://github.com/nimbix/jarvice-helm#kubernetes-ingress-controller
-  # Otherwise, the default jarvice-tls secret can be overridden here.
-  tls:
-    crt: # base64 encoded.  e.g. Derive w/ base64 -w 0 <site-domain>.pem
-    key: # base64 encoded.  e.g. Derive w/ base64 -w 0 <site-domain>.key
 
   JARVICE_SYSTEM_NAMESPACE: # auto-detected, should not need to be updated
   JARVICE_JOBS_NAMESPACE: # auto-set, should not need to be updated
@@ -262,9 +255,6 @@ jarvice_memcached: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   verbosity: v
   extendedOptions: modern
 
-# Want to run the docker registry in JARVICE namespace?  Set enabled to true.
-# Then set JARVICE_LOCAL_REGISTRY to jarvice-registry:443 as seen above
-# in the jarvice: stanza.  Use ingressHost or set loadBalancerIP as desired.
 jarvice_registry:
   enabled: false
   replicaCount: 1
@@ -291,12 +281,7 @@ jarvice_registry:
     accessMode: ReadWriteOnce
     size: 10Gi
   env:
-    REGISTRY_HTTP_ADDR: 0.0.0.0:443
-  tls:
-    # jarvice.tls will be used from above unless secretName is set
-    secretName: # jarvice-registry-tls
-    crt: # If secretName is set, set this to base64 encoded cert
-    key: # If secretName is set, set this to base64 encoded key
+    REGISTRY_HTTP_ADDR: 0.0.0.0:5000
 
 jarvice_dal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
