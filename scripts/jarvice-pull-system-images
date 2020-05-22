@@ -7,7 +7,7 @@ JARVICE_VERSION=
 PUSH_REGISTRY=
 PUSH_REPOSITORY=$JARVICE_REPOSITORY
 
-JARVICE_IMAGES="jarvice-dal jarvice-scheduler jarvice-pod-scheduler jarvice-api jarvice-mc-portal init jarvice-appsync jarvice-dockerbuild jarvice-dockerpull"
+JARVICE_IMAGES="jarvice-dal jarvice-scheduler jarvice-upstream-scheduler jarvice-pod-scheduler jarvice-api jarvice-mc-portal init jarvice-appsync jarvice-dockerbuild jarvice-dockerpull"
 
 function usage {
     cat <<EOF
