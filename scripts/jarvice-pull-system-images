@@ -1,0 +1,88 @@
+#!/bin/bash
+
+JARVICE_REGISTRY=gcr.io
+JARVICE_REPOSITORY=jarvice-system
+JARVICE_VERSION=
+
+PUSH_REGISTRY=
+PUSH_REPOSITORY=$JARVICE_REPOSITORY
+
+JARVICE_IMAGES="jarvice-dal jarvice-scheduler jarvice-pod-scheduler jarvice-api jarvice-mc-portal init jarvice-appsync jarvice-dockerbuild jarvice-dockerpull"
+
+function usage {
+    cat <<EOF
+Usage:
+    $0 [options]
+
+Options:
+    --jarvice-version <version>     JARVICE version to pull (required)
+    --push-registry <registry>      Registry to push images to
+    --push-repository <repository>  Repository/namespace to push images to
+                                    (Default: $PUSH_REPOSITORY)
+    --push-and-remove               Remove local images after successful push
+
+Example:
+$0 \\
+    --jarvice-version jarvice-master-3.0.0-1.202005151836 \\
+    --push-registry localhost:5000 \\
+    --push-repository $PUSH_REPOSITORY
+EOF
+}
+
+DOCKER=$(type -p docker)
+if [ -z "$DOCKER" ]; then
+    cat <<EOF
+Could not find 'docker' in PATH.  It may not be installed.
+Run 'install-docker' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+$DOCKER info >/dev/null 2>&1
+[ "$?" != "0" ] && echo "User '$USER' is not able to communicate with the docker daemon" && exit 1
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        --help)
+            usage
+            exit 0
+            ;;
+        --jarvice-version)
+            JARVICE_VERSION=$2
+            shift; shift
+            ;;
+        --push-registry)
+            PUSH_REGISTRY=$2
+            shift; shift
+            ;;
+        --push-repository)
+            PUSH_REPOSITORY=$2
+            shift; shift
+            ;;
+        --push-and-remove)
+            PUSH_AND_REMOVE=1
+            shift;
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+[ -z "$JARVICE_VERSION" ] && usage && exit 1
+
+set -e
+
+JARVICE_REG_REPO=$JARVICE_REGISTRY/$JARVICE_REPOSITORY
+PUSH_REG_REPO=
+[ -n "$PUSH_REGISTRY" ] && PUSH_REG_REPO=$PUSH_REGISTRY/$PUSH_REPOSITORY
+for i in $JARVICE_IMAGES; do
+    $DOCKER pull $JARVICE_REG_REPO/$i
+    if [ -n "$PUSH_REG_REPO" ]; then
+        $DOCKER tag $JARVICE_REG_REPO/$i $PUSH_REG_REPO/$i
+        $DOCKER push $PUSH_REG_REPO/$i
+        [ -n "$PUSH_AND_REMOVE" ] && $DOCKER rmi $PUSH_REG_REPO/$i $JARVICE_REG_REPO/$i
+    fi
+done
+
