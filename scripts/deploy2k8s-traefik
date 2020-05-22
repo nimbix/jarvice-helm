@@ -4,6 +4,11 @@ load_balancer_ip=
 generate_tls=true
 default_cert_file=
 default_key_file=
+replicas=3
+memory_request=1Gi
+memory_limit=1Gi
+cpu_request=1
+cpu_limit=1
 namespace=kube-system
 
 function usage {
@@ -15,6 +20,16 @@ Options:
     --load-balancer-ip <ip_addr>    Static IP for ingress controller (required)
     --default-cert-file <filename>  TLS default certificate file
     --default-key-file <filename>   TLS default key file
+    --replicas <replicas>           Number of pod replicas to run
+                                    (Default: $replicas)
+    --memory-request <memory>       Memory request for each pod
+                                    (Default: $memory_request)
+    --memory-limit <memory>         Memory limit for each pod
+                                    (Default: $memory_limit)
+    --cpu-request <cpu>             CPU request for each pod
+                                    (Default: $cpu_request)
+    --cpu-limit <cpu>               CPU limit for each pod
+                                    (Default: $cpu_limit)
     --namespace <kube_namespace>    Kubernetes namespace to deploy to
                                     (Default: $namespace)
 EOF
@@ -54,6 +69,26 @@ while [ $# -gt 0 ]; do
             ;;
         --load-balancer-ip)
             load_balancer_ip=$2
+            shift; shift
+            ;;
+        --replicas)
+            replicas=$2
+            shift; shift
+            ;;
+        --memory-request)
+            memory_request=$2
+            shift; shift
+            ;;
+        --memory-limit)
+            memory_limit=$2
+            shift; shift
+            ;;
+        --cpu-request)
+            cpu_request=$2
+            shift; shift
+            ;;
+        --cpu-limit)
+            cpu_limit=$2
             shift; shift
             ;;
         --namespace)
@@ -120,11 +155,11 @@ $HELM upgrade traefik stable/traefik \
     --set ssl.defaultCert="$default_cert" \
     --set ssl.defaultKey="$default_key" \
     \
-    --set replicas=3 \
-    --set memoryRequest=1Gi \
-    --set memoryLimit=1Gi \
-    --set cpuRequest=1 \
-    --set cpuLimit=1
+    --set replicas=$replicas \
+    --set memoryRequest=$memory_request \
+    --set memoryLimit=$memory_limit \
+    --set cpuRequest=$cpu_request \
+    --set cpuLimit=$cpu_limit
 
 echo
 echo "* Deployment successful..."
