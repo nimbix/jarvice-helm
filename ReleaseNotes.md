@@ -93,6 +93,19 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202005272025
+
+* (2866) Modernized `jarvice-scheduler` component.
+* (2867) Modernized `jarvice-api` component.  **WARNING: direct use of the JARVICE API in this release may not match the specification entirely.**
+* (2868) Modernized `jarvice-dockerbuild` component.
+* (2869) Modernized `jarvice-dockerpull` component.
+* (2879) Added Zone editor in the *Administration* section of the portal.  **NOTE:** full multi-zone functionality will be available in a future release.
+* (2932) Improved performance of user logouts from the portal.
+* (2953) Added `/jarvice/billing` endpoint in the JARVICE API for system administrator users.  See [The JARVICE API](https://jarvice.readthedocs.io/en/latest/api/) reference for details.
+* (2991) Allow configuration of control plane nodes for Azure deployments via Terraform; see [JARVICE deployment with Terraform](Terraform.md) for details.
+* (2994) Allow configuration of multiple compute node groups for Azure deployments via Terraform; see [JARVICE deployment with Terraform](Terraform.md) for details.
+* (3009) Improved performance of liveness checks in system services, including reduction of unnecessary pod restarts.
+
 ## 3.0.0-1.202005151836
 
 * (2998) Fixed regression in the per-user audit log under *Administration->Users* view.
