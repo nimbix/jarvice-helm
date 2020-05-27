@@ -6,7 +6,7 @@ resource "local_file" "kube_config" {
   filename = pathexpand("~/.kube/config.jarvice.tf.aks")
   file_permission = "0600" 
   directory_permission = "0775"
-  content = azurerm_kubernetes_cluster.jarvice.kube_config_raw
+  content = azurerm_kubernetes_cluster.jarvice[0].kube_config_raw
 }
 
 output "kube_config" {

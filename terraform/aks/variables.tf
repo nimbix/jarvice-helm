@@ -1,7 +1,7 @@
 
 variable "aks" {
     description = "Azure AKS Settings"
-    type = list(object({
+    type = object({
         enabled = bool
 
         service_principal_client_id = string
@@ -28,8 +28,8 @@ variable "aks" {
         }))
 
         helm = map(string)
-    }))
-    default = [{
+    })
+    default = {
         enabled = false
 
         service_principal_client_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
@@ -58,12 +58,12 @@ variable "aks" {
         ]
 
         helm = {
-            override_yaml = "override.yaml"
+            override_yaml = "override.aks.yaml"
             JARVICE_PVC_VAULT_SIZE = "10"
             JARVICE_PVC_VAULT_NAME = "persistent"
             JARVICE_PVC_VAULT_STORAGECLASS = "jarvice-user"
             JARVICE_PVC_VAULT_ACCESSMODES = "ReadWriteOnce"
         }
-    }]
+    },
 }
 
