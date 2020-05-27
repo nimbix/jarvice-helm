@@ -2,7 +2,7 @@
 variable "aks" {
     description = "Azure AKS Settings"
     type = object({
-        enabled = bool
+        #enabled = bool
 
         service_principal_client_id = string
         service_principal_client_secret = string
@@ -30,7 +30,7 @@ variable "aks" {
         helm = map(string)
     })
     default = {
-        enabled = false
+        #enabled = false
 
         service_principal_client_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
         service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
@@ -64,6 +64,6 @@ variable "aks" {
             JARVICE_PVC_VAULT_STORAGECLASS = "jarvice-user"
             JARVICE_PVC_VAULT_ACCESSMODES = "ReadWriteOnce"
         }
-    },
+    }
 }
 

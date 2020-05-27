@@ -31,7 +31,6 @@
 ##########################
 aks = [
     {
-        enabled = false
 
         # Visit the following link for service principal creation information:
         # https://github.com/nimbix/jarvice-helm/blob/testing/Terraform.md#creating-a-service-principal-using-the-azure-cli

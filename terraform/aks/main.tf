@@ -64,7 +64,7 @@ resource "azurerm_kubernetes_cluster" "jarvice" {
     network_plugin = "kubenet"
     load_balancer_sku = "Standard"
     load_balancer_profile {
-      outbound_ip_address_ids = [ "${azurerm_public_ip.jarvice[0].id}" ]
+      outbound_ip_address_ids = [ "${azurerm_public_ip.jarvice.id}" ]
     }
   }
 
