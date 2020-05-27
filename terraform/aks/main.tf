@@ -10,8 +10,6 @@ provider "azurerm" {
 }
 
 resource "azurerm_resource_group" "jarvice" {
-  count = var.aks["enabled"] ? 1 : 0
-
   name = "${var.aks["cluster_name"]}-resource-group"
   location = var.aks["location"]
   tags = {
@@ -20,11 +18,9 @@ resource "azurerm_resource_group" "jarvice" {
 }
 
 resource "azurerm_public_ip" "jarvice" {
-  count = var.aks["enabled"] ? 1 : 0
-
   name = "${var.aks["cluster_name"]}-public-ip"
-  resource_group_name = azurerm_resource_group.jarvice[0].name
-  location = azurerm_resource_group.jarvice[0].location
+  resource_group_name = azurerm_resource_group.jarvice.name
+  location = azurerm_resource_group.jarvice.location
   allocation_method = "Static"
   ip_version = "IPv4"
   sku = "standard"
@@ -34,13 +30,11 @@ resource "azurerm_public_ip" "jarvice" {
 }
 
 resource "azurerm_kubernetes_cluster" "jarvice" {
-  count = var.aks["enabled"] ? 1 : 0
-
   name = "${var.aks["cluster_name"]}-kubernetes-cluster"
   kubernetes_version = var.aks["kubernetes_version"]
   dns_prefix = var.aks["cluster_name"]
-  resource_group_name = azurerm_resource_group.jarvice[0].name
-  location = azurerm_resource_group.jarvice[0].location
+  resource_group_name = azurerm_resource_group.jarvice.name
+  location = azurerm_resource_group.jarvice.location
 
   linux_profile {
       admin_username = "jarvice"
@@ -89,11 +83,9 @@ resource "azurerm_kubernetes_cluster" "jarvice" {
 }
 
 resource "azurerm_kubernetes_cluster_node_pool" "jarvice_system" {
-  count = var.aks["enabled"] ? 1 : 0
-
   name = "jxesystem"
-  availability_zones = azurerm_kubernetes_cluster.jarvice[0].default_node_pool[0].availability_zones
-  kubernetes_cluster_id = azurerm_kubernetes_cluster.jarvice[0].id
+  availability_zones = azurerm_kubernetes_cluster.jarvice.default_node_pool[0].availability_zones
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.jarvice.id
 
   vm_size = var.aks.system_node_pool["node_vm_size"]
   node_count = var.aks.system_node_pool["node_count"]
@@ -107,11 +99,11 @@ resource "azurerm_kubernetes_cluster_node_pool" "jarvice_system" {
 }
 
 resource "azurerm_kubernetes_cluster_node_pool" "jarvice_compute" {
-  count = var.aks["enabled"] ? length(var.aks.compute_node_pools) : 0
+  count = length(var.aks["compute_node_pools"])
 
   name = "jxecompute${count.index}"
-  availability_zones = azurerm_kubernetes_cluster.jarvice[0].default_node_pool[0].availability_zones
-  kubernetes_cluster_id = azurerm_kubernetes_cluster.jarvice[0].id
+  availability_zones = azurerm_kubernetes_cluster.jarvice.default_node_pool[0].availability_zones
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.jarvice.id
 
   vm_size = var.aks.compute_node_pools[count.index]["node_vm_size"]
   os_disk_size_gb = var.aks.compute_node_pools[count.index]["node_os_disk_size_gb"]

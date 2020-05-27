@@ -2,15 +2,13 @@ provider "kubernetes" {
   version = "~> 1.11"
 
   load_config_file = "false"
-  client_certificate = base64decode(azurerm_kubernetes_cluster.jarvice[0].kube_config.0.client_certificate)
-  client_key = base64decode(azurerm_kubernetes_cluster.jarvice[0].kube_config.0.client_key)
-  cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.jarvice[0].kube_config.0.cluster_ca_certificate)
-  host = azurerm_kubernetes_cluster.jarvice[0].kube_config.0.host
+  client_certificate = base64decode(azurerm_kubernetes_cluster.jarvice.kube_config.0.client_certificate)
+  client_key = base64decode(azurerm_kubernetes_cluster.jarvice.kube_config.0.client_key)
+  cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.jarvice.kube_config.0.cluster_ca_certificate)
+  host = azurerm_kubernetes_cluster.jarvice.kube_config.0.host
 }
 
 resource "kubernetes_storage_class" "jarvice-db" {
-  count = var.aks["enabled"] ? 1 : 0
-
   metadata {
     name = "jarvice-db"
     labels = {"storage-role.jarvice.io/jarvice-db" = "${var.aks["cluster_name"]}"}
@@ -26,8 +24,6 @@ resource "kubernetes_storage_class" "jarvice-db" {
 }
 
 resource "kubernetes_storage_class" "jarvice-user" {
-  count = var.aks["enabled"] ? 1 : 0
-
   metadata {
     name = "jarvice-user"
     labels = {"storage-role.jarvice.io/jarvice-user" = "${var.aks["cluster_name"]}"}
@@ -50,10 +46,10 @@ provider "helm" {
     #config_path = "~/.kube/config"
     load_config_file = false
 
-    client_certificate = base64decode(azurerm_kubernetes_cluster.jarvice[0].kube_config.0.client_certificate)
-    client_key = base64decode(azurerm_kubernetes_cluster.jarvice[0].kube_config.0.client_key)
-    cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.jarvice[0].kube_config.0.cluster_ca_certificate)
-    host = azurerm_kubernetes_cluster.jarvice[0].kube_config.0.host
+    client_certificate = base64decode(azurerm_kubernetes_cluster.jarvice.kube_config.0.client_certificate)
+    client_key = base64decode(azurerm_kubernetes_cluster.jarvice.kube_config.0.client_key)
+    cluster_ca_certificate = base64decode(azurerm_kubernetes_cluster.jarvice.kube_config.0.cluster_ca_certificate)
+    host = azurerm_kubernetes_cluster.jarvice.kube_config.0.host
   }
 }
 

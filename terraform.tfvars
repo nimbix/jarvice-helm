@@ -66,7 +66,7 @@ aks = [
             #    node_count = 2
             #    node_min_count = 1
             #    node_max_count = 16
-            #}
+            #},
         ]
 
         helm = {
