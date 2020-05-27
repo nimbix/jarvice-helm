@@ -11,7 +11,7 @@ provider "kubernetes" {
 resource "kubernetes_storage_class" "jarvice-db" {
   metadata {
     name = "jarvice-db"
-    labels = {"storage-role.jarvice.io/jarvice-db" = "${var.cluster_name}"}
+    labels = {"storage-role.jarvice.io/jarvice-db" = "${var.aks["cluster_name"]}"}
   }
   storage_provisioner = "kubernetes.io/azure-disk"
   reclaim_policy      = "Retain"
@@ -26,7 +26,7 @@ resource "kubernetes_storage_class" "jarvice-db" {
 resource "kubernetes_storage_class" "jarvice-user" {
   metadata {
     name = "jarvice-user"
-    labels = {"storage-role.jarvice.io/jarvice-user" = "${var.cluster_name}"}
+    labels = {"storage-role.jarvice.io/jarvice-user" = "${var.aks["cluster_name"]}"}
   }
   storage_provisioner = "kubernetes.io/azure-disk"
   reclaim_policy = "Retain"
@@ -103,15 +103,15 @@ resource "helm_release" "jarvice" {
 
   values = [
     "${file("values.yaml")}",
-    "${file("${var.override_yaml}")}",
+    "${file("${var.aks.helm["override_yaml"]}")}",
 <<EOF
 jarvice:
   nodeSelector: '{"node-role.kubernetes.io/jarvice-system": "true"}'
 
-  JARVICE_PVC_VAULT_SIZE: ${var.JARVICE_PVC_VAULT_SIZE}
-  JARVICE_PVC_VAULT_NAME: ${var.JARVICE_PVC_VAULT_NAME}
-  JARVICE_PVC_VAULT_STORAGECLASS: ${var.JARVICE_PVC_VAULT_STORAGECLASS}
-  JARVICE_PVC_VAULT_ACCESSMODES: ${var.JARVICE_PVC_VAULT_ACCESSMODES}
+  JARVICE_PVC_VAULT_SIZE: ${var.aks.helm["JARVICE_PVC_VAULT_SIZE"]}
+  JARVICE_PVC_VAULT_NAME: ${var.aks.helm["JARVICE_PVC_VAULT_NAME"]}
+  JARVICE_PVC_VAULT_STORAGECLASS: ${var.aks.helm["JARVICE_PVC_VAULT_STORAGECLASS"]}
+  JARVICE_PVC_VAULT_ACCESSMODES: ${var.aks.helm["JARVICE_PVC_VAULT_ACCESSMODES"]}
 
 #jarvice_api:
 #  ingressHost: {azurerm_public_ip.jarvice.fqdn}
@@ -123,6 +123,6 @@ jarvice:
 EOF
   ]
 
-  depends_on = [azurerm_public_ip.jarvice]
+  #depends_on = [azurerm_public_ip.jarvice]
 }
 

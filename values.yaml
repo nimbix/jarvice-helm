@@ -9,7 +9,7 @@ jarvice:
   JARVICE_REMOTE_APIKEY:
   JARVICE_APPSYNC_USERONLY: false
 
-  JARVICE_LOCAL_REGISTRY: # jarvice-registry:443
+  JARVICE_LOCAL_REGISTRY: # jarvice-registry:5000
   JARVICE_LOCAL_REPO_BASE: jarvice
 
   JARVICE_SYSTEM_REGISTRY: gcr.io
@@ -57,16 +57,13 @@ jarvice:
   JARVICE_SCHED_LOGLEVEL: 30
   JARVICE_K8S_SCHED_LOGLEVEL: 30
 
-  # JARVICE_MAIL_CONF can be overridden with jarvice_api.env.JARVICE_MAIL_CONF
-  # and jarvice_scheduler.env.JARVICE_MAIL_CONF
-  JARVICE_MAIL_CONF: |
-      [mail]
-      from: JARVICE Job Status <DoNotReply@localhost>
-      ;admins: root@localhost
-      [smtp]
-      server: jarvice-smtpd:25
-      ;username: DoNotReply@localhost
-      ;password: Pass1234
+  JARVICE_MAIL_SERVER: jarvice-smtpd:25
+  JARVICE_MAIL_USERNAME: # "mail-username"
+  JARVICE_MAIL_PASSWORD: # "Pass1234"
+  JARVICE_MAIL_ADMINS: # "admin1@my-domain.com,admin2@my-domain.com"
+  JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
+  JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
+  JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 
   # Global setting for enabling a secure NetworkPolicy for all JARVICE services
   # The global setting can be overridden within individual services below
@@ -78,13 +75,6 @@ jarvice:
   # https://github.com/nimbix/jarvice-helm#customize-jarvice-files-via-a-configmap
   settings:
     configMap: jarvice-settings
-
-  # Preference is to provide TLS through the ingress controller, please see:
-  #     https://github.com/nimbix/jarvice-helm#kubernetes-ingress-controller
-  # Otherwise, the default jarvice-tls secret can be overridden here.
-  tls:
-    crt: # base64 encoded.  e.g. Derive w/ base64 -w 0 <site-domain>.pem
-    key: # base64 encoded.  e.g. Derive w/ base64 -w 0 <site-domain>.key
 
   JARVICE_SYSTEM_NAMESPACE: # auto-detected, should not need to be updated
   JARVICE_JOBS_NAMESPACE: # auto-set, should not need to be updated
@@ -190,11 +180,7 @@ jarvice_db_dump: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     fsGroup: 999
     runAsUser: 999
 
-# jarvice_smtpd may be disabled when not being used in the following settings:
-# jarvice.JARVICE_MAIL_CONF
-# jarvice_scheduler.env.JARVICE_MAIL_CONF
-# jarvice_api.env.JARVICE_MAIL_CONF
-# jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_SERVER
+# jarvice_smtpd may be disabled when not set for jarvice.JARVICE_MAIL_SERVER
 jarvice_smtpd:
   enabled: true
   replicaCount: 2
@@ -269,9 +255,6 @@ jarvice_memcached: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   verbosity: v
   extendedOptions: modern
 
-# Want to run the docker registry in JARVICE namespace?  Set enabled to true.
-# Then set JARVICE_LOCAL_REGISTRY to jarvice-registry:443 as seen above
-# in the jarvice: stanza.  Use ingressHost or set loadBalancerIP as desired.
 jarvice_registry:
   enabled: false
   replicaCount: 1
@@ -298,12 +281,7 @@ jarvice_registry:
     accessMode: ReadWriteOnce
     size: 10Gi
   env:
-    REGISTRY_HTTP_ADDR: 0.0.0.0:443
-  tls:
-    # jarvice.tls will be used from above unless secretName is set
-    secretName: # jarvice-registry-tls
-    crt: # If secretName is set, set this to base64 encoded cert
-    key: # If secretName is set, set this to base64 encoded key
+    REGISTRY_HTTP_ADDR: 0.0.0.0:5000
 
 jarvice_dal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
@@ -374,19 +352,9 @@ jarvice_scheduler: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   nodeSelector: # '{"node-role.kubernetes.io/jarvice-scheduler": ""}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
-  # jarvice.settings.configMap takes precedence over environnment settings
-  # for JARVICE_MAIL_CONF
   env:
     JARVICE_SCHED_PASS_INTERVAL: 5
     JARVICE_SCHED_CLUSTERS_TIMEOUT: 20
-    JARVICE_MAIL_CONF: #|
-        #[mail]
-        #from: JARVICE Job Status <DoNotReply@localhost>
-        #;admins: root@localhost
-        #[smtp]
-        #server: jarvice-smtpd:25
-        #;username: DoNotReply@localhost
-        #;password: Pass1234
 
 jarvice_k8s_scheduler:
   enabled: true
@@ -447,14 +415,7 @@ jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   env:
-    JARVICE_MAIL_CONF: #|
-        #[mail]
-        #from: JARVICE Job Status <DoNotReply@localhost>
-        #;admins: root@localhost
-        #[smtp]
-        #server: jarvice-smtpd:25
-        #;username: DoNotReply@localhost
-        #;password: Pass1234
+    JARVICE_API_LOG_ENABLE:
 
 jarvice_dockerbuild: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-dockerbuildpull", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-dockerbuild", "effect": "NoSchedule", "operator": "Exists"}]'
@@ -514,20 +475,8 @@ jarvice_mc_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     # jarvice_memcached.enabled/jarvice_memcached.replicaCount
     JARVICE_PORTAL_MEMCACHED_LOCATIONS: # jarvice-memcached-0.jarvice-memcached:11211,jarvice-memcached-1.jarvice-memcached:11211,jarvice-memcached-2.jarvice-memcached:11211
     JARVICE_PORTAL_APP_OWNERS:
-    JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
-    JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
-    JARVICE_PORTAL_MAIL_SERVER: jarvice-smtpd:25
-    JARVICE_PORTAL_MAIL_USERNAME:
-    JARVICE_PORTAL_MAIL_PASSWORD:
-    JARVICE_PORTAL_MAIL_ADMINS:
     JARVICE_PORTAL_DB: nimbix_portal_ng
     JARVICE_PORTAL_DBHOST: # jarvice-db
     JARVICE_PORTAL_DBUSER: # root
     JARVICE_PORTAL_DBPASSWD: # Pass1234
-
-jarvice_api_experimental:  # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
-  enabled: false
-  loadBalancerIP:
-  ingressHost: # jarvice-api.my-domain.com
-  ingressPath: "/"  # Valid values are "/" (default) or "/api"
 

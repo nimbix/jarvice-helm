@@ -49,6 +49,8 @@ If installing to a different platform, visit the following link for the
 latest Terraform releases:
 https://www.terraform.io/downloads.html
 
+**Note:**  Terraform 0.12.6 or newer is required.  That will soon change to 0.13.0 or newer.
+
 ### Install Azure CLI
 
 If deploying JARVICE to Microsoft Azure AKS, it will be necessary to install
@@ -83,8 +85,8 @@ The `terraform.tfvars` file found in the top level of the `jarvice-helm`
 directory provides the variable settings which are used to configure
 the cluster creation and deployment with `terraform`.
 
-It is recommended that `terraform.tfvars` be copied to `terraform.auto.tfvars`.
-Customizations can then be made by editing `terraform.auto.tfvars`.
+It is recommended that `terraform.tfvars` be copied to `override.auto.tfvars`.
+Customizations can then be made by editing `override.auto.tfvars`.
 
 ### `override.yaml`
 

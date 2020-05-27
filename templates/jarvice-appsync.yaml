@@ -55,9 +55,7 @@ spec:
         livenessProbe:
           exec:
             command:
-            - /bin/sh
-            - -c
-            - /usr/bin/curl -s -k  https://jarvice-dal:8443/live | grep -q OK
+            - /bin/true
           initialDelaySeconds: 30
           periodSeconds: {{ .Values.jarvice_appsync.livenessProbe.periodSeconds }}
           timeoutSeconds: 5
@@ -79,7 +77,7 @@ spec:
           - name: JARVICE_DAL_URL
             value: "https://jarvice-dal:8443"
           - name: JARVICE_LOCAL_API_URL
-            value: "https://jarvice-api:7443"
+            value: "http://jarvice-api:8080"
           - name: JARVICE_APP_USER
             value: "jarvice"
           - name: JARVICE_REMOTE_API_URL

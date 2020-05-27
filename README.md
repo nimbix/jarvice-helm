@@ -1031,11 +1031,6 @@ The portal may be "skinned" with a custom look and feel by providing
 replacements for `default.png`, `favicon.png`, `logo.png`, `palette.json`,
 or `eula.txt`.
 
-Instead of editing the `jarvice_dal.env.JARVICE_CFG_NETWORK` and
-`jarvice_scheduler.env.MAIL_CONF` settings as found in the `values.yaml` file,
-it may be preferable to override them with the `cfg.network` and `mail.conf`
-files respectively.
-
 #### Step-by-step customization procedure for the aforementioned JARVICE settings
 
 Create directory for setting the JARVICE customizations:
@@ -1068,13 +1063,12 @@ signup_success.mailtemplate updates):
 $ kubectl --namespace jarvice-system delete pods -l component=jarvice-mc-portal
 ```
 
-Reload jarvice-scheduler pods (only to apply mail.conf, email.head, or
-email.tail update):
+Reload jarvice-scheduler pods (only to apply email.head or email.tail updates):
 ```bash
 $ kubectl --namespace jarvice-system delete pods -l component=jarvice-scheduler
 ```
 
-Reload jarvice-dal pods (only to apply cfg.network, dal_hook\*.sh update):
+Reload jarvice-dal pods (only to apply dal_hook\*.sh updates):
 ```bash
 $ kubectl --namespace jarvice-system delete pods -l component=jarvice-dal
 ```
