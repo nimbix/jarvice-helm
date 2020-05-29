@@ -56,7 +56,7 @@ properties|somekey=somevalue
 Notes:
 1. all other values should be set to something reasonable/appropriate; swap, scratch, and all slave resources are ignored on Kubernetes so they can just be set to non-zero values where a value is required
 2. ram at 188 was determined by checking the "Allocatable memory" value when running ```kubectl describe node``` on an idle machine of that type - in this case we were told ```197620404Ki``` which equates to 188GB.  For safety it may make sense to drop this by a couple more GB, to something like 184GB or 180GB.
-3. "somekey=somevalue" in properties should be used to identify some label (or labels, comma separated) that can be used as node selectors to ensure work gets placed on this nodes; you can use taints to make sure other work doesn't get placed, but that's controlled outside of JARVICE.  An example property may be ```node-role.kubernetes.io/jarvice-compute=``` to ask JARVICE to select nodes labeled with the ```jarvice-compute``` role.
+3. "somekey=somevalue" in properties should be used to identify some label (or labels, comma separated) that can be used as node selectors to ensure work gets placed on this nodes; you can use taints to make sure other work doesn't get placed, but that's controlled outside of JARVICE.  An example property may be ```node-role.kubernetes.io/jarvice-compute=true``` to ask JARVICE to select nodes labeled with the ```jarvice-compute``` role.
 
 See also: [Implementing Advanced Scheduling Techniques with Kubernetes](https://kublr.com/blog/implementing-advanced-scheduling-techniques-with-kubernetes/) for a good writeup on this
 
