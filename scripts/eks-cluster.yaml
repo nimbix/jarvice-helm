@@ -37,7 +37,7 @@ nodeGroups:
   # jarvice-system
   - name: ng-jarvice-system-0
     labels:
-        node-role.kubernetes.io/jarvice-system: ""
+        node-role.kubernetes.io/jarvice-system: "true"
     instanceType: m5.2xlarge  # https://aws.amazon.com/ec2/instance-types/
     #instanceType: m5.xlarge  # "downstream" cluster type
     minSize: 3
@@ -59,9 +59,9 @@ nodeGroups:
   # jarvice-compute - non-GPU node group
   - name: ng-jarvice-compute-0
     labels:
-        node-role.kubernetes.io/jarvice-compute: ""
+        node-role.kubernetes.io/jarvice-compute: "true"
     taints:
-        node-role.kubernetes.io/jarvice-compute: ":NoSchedule"
+        node-role.kubernetes.io/jarvice-compute: "true:NoSchedule"
     tags:
       k8s.io/cluster-autoscaler/enabled: "true"
       k8s.io/cluster-autoscaler/jarvice: "owned"  # Matches metadata.name
@@ -89,9 +89,9 @@ nodeGroups:
   # jarvice-compute - GPU node group
   #- name: ng-jarvice-compute-gpu-0
   #  labels:
-  #      node-role.kubernetes.io/jarvice-compute: ""
+  #      node-role.kubernetes.io/jarvice-compute: "true"
   #  taints:
-  #      node-role.kubernetes.io/jarvice-compute: ":NoSchedule"
+  #      node-role.kubernetes.io/jarvice-compute: "true:NoSchedule"
   #  tags:
   #    k8s.io/cluster-autoscaler/enabled: "true"
   #    k8s.io/cluster-autoscaler/jarvice: "owned"  # Matches metadata.name
