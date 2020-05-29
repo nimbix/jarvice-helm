@@ -411,8 +411,8 @@ $YQ d $config_file jarvice | $EKSCTL create cluster --config-file -
 
 echo
 echo "* Tainting jarvice-system nodes..."
-$KUBECTL taint nodes -l node-role.kubernetes.io/jarvice-system= \
-    node-role.kubernetes.io/jarvice-system=:NoSchedule
+$KUBECTL taint nodes -l node-role.kubernetes.io/jarvice-system=true \
+    node-role.kubernetes.io/jarvice-system=true:NoSchedule
 
 #if [ -n "$install_weave_plugin" ]; then
 #    echo
@@ -420,14 +420,14 @@ $KUBECTL taint nodes -l node-role.kubernetes.io/jarvice-system= \
 #    $KUBECTL apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 #fi
 
-JARVICE_MACHINES_ADD='[{"mc_name":"n0", "mc_description":"2 core, 16GB RAM (CPU only)", "mc_cores":"2", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"16", "mc_swap":"8", "mc_scratch":"64", "mc_devices":"", "mc_properties":"node-role.kubernetes.io/jarvice-compute=", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"16", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
-JARVICE_MACHINES_ADD+=', {"mc_name":"n1", "mc_description":"4 core, 32GB RAM (CPU Only)", "mc_cores":"4", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"32", "mc_swap":"16", "mc_scratch":"100", "mc_devices":"", "mc_properties":"node-role.kubernetes.io/jarvice-compute=", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"32", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
-JARVICE_MACHINES_ADD+=', {"mc_name":"n3", "mc_description":"16 core, 128GB RAM (CPU Only)", "mc_cores":"16", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"128", "mc_swap":"64", "mc_scratch":"500", "mc_devices":"", "mc_properties":"node-role.kubernetes.io/jarvice-compute=", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"128", "mc_scale_min":"1", "mc_scale_max":"256", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
+JARVICE_MACHINES_ADD='[{"mc_name":"n0", "mc_description":"2 core, 16GB RAM (CPU only)", "mc_cores":"2", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"16", "mc_swap":"8", "mc_scratch":"64", "mc_devices":"", "mc_properties":"node-role.kubernetes.io/jarvice-compute=true", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"16", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
+JARVICE_MACHINES_ADD+=', {"mc_name":"n1", "mc_description":"4 core, 32GB RAM (CPU Only)", "mc_cores":"4", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"32", "mc_swap":"16", "mc_scratch":"100", "mc_devices":"", "mc_properties":"node-role.kubernetes.io/jarvice-compute=true", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"32", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
+JARVICE_MACHINES_ADD+=', {"mc_name":"n3", "mc_description":"16 core, 128GB RAM (CPU Only)", "mc_cores":"16", "mc_slots":"16", "mc_gpus":"0", "mc_ram":"128", "mc_swap":"64", "mc_scratch":"500", "mc_devices":"", "mc_properties":"node-role.kubernetes.io/jarvice-compute=true", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"128", "mc_scale_min":"1", "mc_scale_max":"256", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
 if [ -n "$install_nvidia_plugin" ]; then
     kubectl_install_nvidia_plugin
-    JARVICE_MACHINES_ADD+=', {"mc_name":"ng0", "mc_description":"2 core, 16GB RAM with Nvidia GPU", "mc_cores":"2", "mc_slots":"16", "mc_gpus":"1", "mc_ram":"16", "mc_swap":"8", "mc_scratch":"64", "mc_devices":"", "mc_properties":"node-role.kubernetes.io/jarvice-compute=", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"16", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
-    JARVICE_MACHINES_ADD+=', {"mc_name":"ng1", "mc_description":"4 core, 32GB RAM with Nvidia GPU", "mc_cores":"4", "mc_slots":"16", "mc_gpus":"1", "mc_ram":"32", "mc_swap":"16", "mc_scratch":"100", "mc_devices":"", "mc_properties":"node-role.kubernetes.io/jarvice-compute=", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"32", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
-    JARVICE_MACHINES_ADD+=', {"mc_name":"ng3", "mc_description":"16 core, 128GB RAM with Nvidia GPU", "mc_cores":"16", "mc_slots":"16", "mc_gpus":"1", "mc_ram":"128", "mc_swap":"64", "mc_scratch":"500", "mc_devices":"", "mc_properties":"node-role.kubernetes.io/jarvice-compute=", "mc_slave_properties":"", "mc_slave_gpus":"1", "mc_slave_ram":"128", "mc_scale_min":"1", "mc_scale_max":"2", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
+    JARVICE_MACHINES_ADD+=', {"mc_name":"ng0", "mc_description":"2 core, 16GB RAM with Nvidia GPU", "mc_cores":"2", "mc_slots":"16", "mc_gpus":"1", "mc_ram":"16", "mc_swap":"8", "mc_scratch":"64", "mc_devices":"", "mc_properties":"node-role.kubernetes.io/jarvice-compute=true", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"16", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
+    JARVICE_MACHINES_ADD+=', {"mc_name":"ng1", "mc_description":"4 core, 32GB RAM with Nvidia GPU", "mc_cores":"4", "mc_slots":"16", "mc_gpus":"1", "mc_ram":"32", "mc_swap":"16", "mc_scratch":"100", "mc_devices":"", "mc_properties":"node-role.kubernetes.io/jarvice-compute=true", "mc_slave_properties":"", "mc_slave_gpus":"0", "mc_slave_ram":"32", "mc_scale_min":"1", "mc_scale_max":"1", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
+    JARVICE_MACHINES_ADD+=', {"mc_name":"ng3", "mc_description":"16 core, 128GB RAM with Nvidia GPU", "mc_cores":"16", "mc_slots":"16", "mc_gpus":"1", "mc_ram":"128", "mc_swap":"64", "mc_scratch":"500", "mc_devices":"", "mc_properties":"node-role.kubernetes.io/jarvice-compute=true", "mc_slave_properties":"", "mc_slave_gpus":"1", "mc_slave_ram":"128", "mc_scale_min":"1", "mc_scale_max":"2", "mc_scale_select":"", "mc_lesser":"1", "mc_price":"0.00", "mc_priority":"0", "mc_privs":"", "mc_arch":"x86_64"}'
 fi
 JARVICE_MACHINES_ADD+=']'
 
@@ -751,7 +751,7 @@ EOF
 echo "$cluster_autoscaler_yaml" | $KUBECTL --namespace kube-system create -f -
 
 #$HELM install --debug \
-#    --set nodeSelector."node-role\.kubernetes\.io/jarvice-system"="" \
+#    --set nodeSelector."node-role\.kubernetes\.io/jarvice-system"="true" \
 #    --set tolerations[0]."key"="node-role\.kubernetes\.io/jarvice-system" \
 #    --set tolerations[0]."effect"="NoSchedule" \
 #    --set tolerations[0]."operator"="Exists" \
@@ -777,7 +777,7 @@ traefik_lb_ip=$(get_yaml_value $config_file "jarvice.ingress.loadBalancerIP")
 HELM_NAME_CHART="traefik stable/traefik"
 [ -n "$HELM2" ] && HELM_NAME_CHART="stable/traefik --name traefik"
 $HELM install $HELM_NAME_CHART --namespace kube-system --debug \
-    --set nodeSelector."node-role\.kubernetes\.io/jarvice-system"="" \
+    --set nodeSelector."node-role\.kubernetes\.io/jarvice-system"="true" \
     --set tolerations[0]."key"="node-role\.kubernetes\.io/jarvice-system" \
     --set tolerations[0]."effect"="NoSchedule" \
     --set tolerations[0]."operator"="Exists" \
