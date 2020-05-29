@@ -36,7 +36,7 @@ jarvice:
   # jarvice.tolerations applies to all of the jarvice_* components below.
   # This can be overridden by updating tolerations in each jarvice_* stanza.
   tolerations: '[{"key": "node-role.kubernetes.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}]'
-  nodeSelector: # '{"node-role.kubernetes.io/jarvice-system": ""}'
+  nodeSelector: # '{"node-role.kubernetes.io/jarvice-system": "true"}'
 
   # JARVICE_DBHOST and JARVICE_DBUSER only need to change if using a database
   # not provided by this helm chart
@@ -88,32 +88,32 @@ jarvice:
   # If running multiple JARVICE deployments, enable daemonsets for only one.
   daemonsets:
     tolerations: '[{"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}]'
-    nodeSelector: # '{"node-role.kubernetes.io/jarvice-compute": ""}'
+    nodeSelector: # '{"node-role.kubernetes.io/jarvice-compute": "true"}'
     cache_pull:
       enabled: false
       tolerations: #'[{"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
-      nodeSelector: # '{"node-role.kubernetes.io/jarvice-compute": ""}'
+      nodeSelector: # '{"node-role.kubernetes.io/jarvice-compute": "true"}'
       image: nimbix/jarvice-cache-pull:latest
     lxcfs:
       enabled: false
       tolerations: #'[{"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
-      nodeSelector: # '{"node-role.kubernetes.io/jarvice-compute": ""}'
+      nodeSelector: # '{"node-role.kubernetes.io/jarvice-compute": "true"}'
       image: nimbix/lxcfs:3.0.3-3
     nvidia:
       enabled: false
       tolerations: #'[{"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
-      nodeSelector: # '{"node-role.kubernetes.io/jarvice-compute": ""}'
+      nodeSelector: # '{"node-role.kubernetes.io/jarvice-compute": "true"}'
       image: nvidia/k8s-device-plugin:1.11
     xilinx_fpga:
       enabled: false
       tolerations: #'[{"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       # Xilinx FPGA only support amd64 arch
-      nodeSelector: '{"kubernetes.io/arch": "amd64"}'  # '{"node-role.kubernetes.io/jarvice-compute": "", "kubernetes.io/arch": "amd64"}'
+      nodeSelector: '{"kubernetes.io/arch": "amd64"}'  # '{"node-role.kubernetes.io/jarvice-compute": "true", "kubernetes.io/arch": "amd64"}'
       image: xilinxatg/xilinx_k8s_fpga_plugin:latest
     rdma:
       enabled: false
       tolerations: #'[{"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}, {"key": "jarvice.com/rdma", "operator": "Exists",  "effect": "NoSchedule"}]'
-      nodeSelector: # '{"node-role.kubernetes.io/jarvice-compute": ""}'
+      nodeSelector: # '{"node-role.kubernetes.io/jarvice-compute": "true"}'
       image: jarvice/k8s-rdma-device:1.0.1
 
 
@@ -126,7 +126,7 @@ jarvice_db: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
       cpu: 250m
       memory: 2Gi
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-db", "effect": "NoSchedule", "operator": "Exists"}]'
-  nodeSelector: # '{"node-role.kubernetes.io/jarvice-db": ""}'
+  nodeSelector: # '{"node-role.kubernetes.io/jarvice-db": "true"}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   image: mysql:5.6.41
@@ -165,7 +165,7 @@ jarvice_db_dump: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     enabled: true
     keep: 14  # Number of dumps to keep
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-db", "effect": "NoSchedule", "operator": "Exists"}]'
-  nodeSelector: # '{"node-role.kubernetes.io/jarvice-db": ""}'
+  nodeSelector: # '{"node-role.kubernetes.io/jarvice-db": "true"}'
   persistence:
     # Set to "keep" to prevent removal or jarvice-db-dump-pvc on helm delete
     resourcePolicy: ""  # "keep"
@@ -195,7 +195,7 @@ jarvice_smtpd:
       cpu: 100m
       memory: 128Mi
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-smtpd", "effect": "NoSchedule", "operator": "Exists"}]'
-  nodeSelector: # '{"node-role.kubernetes.io/jarvice-smtpd": ""}'
+  nodeSelector: # '{"node-role.kubernetes.io/jarvice-smtpd": "true"}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   image: nimbix/postfix:3.11_3.4.9-r0
@@ -218,7 +218,7 @@ jarvice_idmapper: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
       cpu: 100m
       memory: 128Mi
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-idmapper", "effect": "NoSchedule", "operator": "Exists"}]'
-  nodeSelector: # '{"node-role.kubernetes.io/jarvice-idmapper": ""}'
+  nodeSelector: # '{"node-role.kubernetes.io/jarvice-idmapper": "true"}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   image: nimbix/idmapper
@@ -247,7 +247,7 @@ jarvice_memcached: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
       cpu: 250m
       memory: 512Mi
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-memcached", "effect": "NoSchedule", "operator": "Exists"}]'
-  nodeSelector: # '{"node-role.kubernetes.io/jarvice-memcached": ""}'
+  nodeSelector: # '{"node-role.kubernetes.io/jarvice-memcached": "true"}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   image: memcached:1.5
@@ -266,7 +266,7 @@ jarvice_registry:
       cpu: 250m
       memory: 512Mi
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-registry", "effect": "NoSchedule", "operator": "Exists"}]'
-  nodeSelector: # '{"node-role.kubernetes.io/jarvice-registry": ""}'
+  nodeSelector: # '{"node-role.kubernetes.io/jarvice-registry": "true"}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   image: registry:2
@@ -298,7 +298,7 @@ jarvice_dal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
       memory: 16Gi
   hostNetwork: false
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-dal", "effect": "NoSchedule", "operator": "Exists"}]'
-  nodeSelector: # '{"node-role.kubernetes.io/jarvice-dal": ""}'
+  nodeSelector: # '{"node-role.kubernetes.io/jarvice-dal": "true"}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   # jarvice.settings.configMap takes precedence over environment settings
@@ -349,7 +349,7 @@ jarvice_scheduler: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
       cpu: 1
       memory: 2Gi
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-scheduler", "effect": "NoSchedule", "operator": "Exists"}]'
-  nodeSelector: # '{"node-role.kubernetes.io/jarvice-scheduler": ""}'
+  nodeSelector: # '{"node-role.kubernetes.io/jarvice-scheduler": "true"}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   env:
@@ -374,14 +374,14 @@ jarvice_k8s_scheduler:
       cpu: 1
       memory: 2Gi
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-k8s-scheduler", "effect": "NoSchedule", "operator": "Exists"}]'
-  nodeSelector: # '{"node-role.kubernetes.io/jarvice-k8s-scheduler": ""}'
+  nodeSelector: # '{"node-role.kubernetes.io/jarvice-k8s-scheduler": "true"}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   env:
     JARVICE_UNFS_REQUEST_MEM: 1Gi
     JARVICE_UNFS_REQUEST_CPU: 1
     JARVICE_UNFS_EXPIRE_SECS: 90
-    JARVICE_UNFS_NODE_SELECTOR: # '{"node-role.kubernetes.io/jarvice-storage": ""}'
+    JARVICE_UNFS_NODE_SELECTOR: # '{"node-role.kubernetes.io/jarvice-storage": "true"}'
 
 jarvice_pod_scheduler:
   enabled: true
@@ -390,7 +390,7 @@ jarvice_pod_scheduler:
       cpu: 1
       memory: 1Gi
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-pod-scheduler", "effect": "NoSchedule", "operator": "Exists"}]'
-  nodeSelector: # '{"node-role.kubernetes.io/jarvice-pod-scheduler": ""}'
+  nodeSelector: # '{"node-role.kubernetes.io/jarvice-pod-scheduler": "true"}'
   env:
     JARVICE_POD_SCHED_NAME:  # auto-set, should not need to be updated
 
@@ -411,7 +411,7 @@ jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
       cpu: 250m
       memory: 512Mi
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-api", "effect": "NoSchedule", "operator": "Exists"}]'
-  nodeSelector: # '{"node-role.kubernetes.io/jarvice-api": ""}'
+  nodeSelector: # '{"node-role.kubernetes.io/jarvice-api": "true"}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   env:
@@ -419,11 +419,11 @@ jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 
 jarvice_dockerbuild: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-dockerbuildpull", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-dockerbuild", "effect": "NoSchedule", "operator": "Exists"}]'
-  nodeSelector: # '{"node-role.kubernetes.io/jarvice-dockerbuildpull": ""}'  # '{"node-role.kubernetes.io/jarvice-dockerbuild": ""}'
+  nodeSelector: # '{"node-role.kubernetes.io/jarvice-dockerbuildpull": "true"}'  # '{"node-role.kubernetes.io/jarvice-dockerbuild": "true"}'
 
 jarvice_dockerpull: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-dockerbuildpull", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-dockerpull", "effect": "NoSchedule", "operator": "Exists"}]'
-  nodeSelector: # '{"node-role.kubernetes.io/jarvice-dockerbuildpull": ""}'  # '{"node-role.kubernetes.io/jarvice-dockerpull": ""}'
+  nodeSelector: # '{"node-role.kubernetes.io/jarvice-dockerbuildpull": "true"}'  # '{"node-role.kubernetes.io/jarvice-dockerpull": "true"}'
 
 jarvice_appsync: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
@@ -433,7 +433,7 @@ jarvice_appsync: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
       cpu: 250m
       memory: 1Gi
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-appsync", "effect": "NoSchedule", "operator": "Exists"}]'
-  nodeSelector: # '{"node-role.kubernetes.io/jarvice-appsync": ""}'
+  nodeSelector: # '{"node-role.kubernetes.io/jarvice-appsync": "true"}'
   # If JARVICE_SYSTEM_REGISTRY and/or JARVICE_SYSTEM_REPO_BASE are not set in
   # jarvice_appsync.env, they will be set via the global jarvice stanza above.
   env:
@@ -460,7 +460,7 @@ jarvice_mc_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
       cpu: 250m
       memory: 2Gi
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-mc-portal", "effect": "NoSchedule", "operator": "Exists"}]'
-  nodeSelector: # '{"node-role.kubernetes.io/jarvice-mc-portal": ""}'
+  nodeSelector: # '{"node-role.kubernetes.io/jarvice-mc-portal": "true"}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   # JARVICE_PORTAL_DBHOST inherits from jarvice.JARVICE_DBHOST if unset
