@@ -181,7 +181,7 @@ spec:
 {{- end }}
         volumeMounts:
         - name: jarvice-settings
-          mountPath: /etc/jarvice/settings/jarvice-scheduler
+          mountPath: /etc/jarvice/settings
           readOnly: true
         resources:
 {{- if .Values.jarvice_scheduler.resources }}
