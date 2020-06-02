@@ -1,4 +1,3 @@
-
 variable "aks" {
     description = "Azure AKS Settings"
     type = object({
@@ -64,8 +63,7 @@ variable "aks" {
                 namespace = "jarvice-system"
                 override_yaml_file = "override.aks.yaml"
                 override_yaml_values = <<EOF
-# global_override_yaml_values take precedence over override_yaml_file.
-# Per cluster override_yaml_values take precedence over all other values.
+# override_yaml_values - takes precedence over all above values.
 EOF
             }
         }

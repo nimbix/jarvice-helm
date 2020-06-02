@@ -1,4 +1,3 @@
-
 variable "global_override_yaml_values" {
     type = string
     description = "Settings of common values that may be applied to all/some defined clusters"
@@ -69,8 +68,7 @@ variable "aks" {
                 namespace = "jarvice-system"
                 override_yaml_file = "override.aks.yaml"
                 override_yaml_values = <<EOF
-# global_override_yaml_values take precedence over override_yaml_file.
-# Per cluster override_yaml_values take precedence over all other values.
+# override_yaml_values - takes precedence over all above values.
 EOF
             }
         }

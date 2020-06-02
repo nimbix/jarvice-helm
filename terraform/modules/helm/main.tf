@@ -1,4 +1,3 @@
-
 provider "helm" {
     version = "~> 1.2"
 
@@ -14,20 +13,20 @@ provider "helm" {
 }
 
 resource "helm_release" "traefik" {
-  name = "traefik"
-  repository = "https://kubernetes-charts.storage.googleapis.com"
-  chart = "traefik"
-  #version = "1.85.0"
-  namespace = "kube-system"
-  reuse_values = false
-  reset_values = true
+    name = "traefik"
+    repository = "https://kubernetes-charts.storage.googleapis.com"
+    chart = "traefik"
+    #version = "1.85.0"
+    namespace = "kube-system"
+    reuse_values = false
+    reset_values = true
 
-  values = [var.traefik_values]
+    values = [var.traefik_values]
 }
 
 locals {
-  jarvice_override_yaml = yamldecode("${file("${var.jarvice["override_yaml_file"]}")}")
-  jarvice_override_values = <<EOF
+    jarvice_override_yaml = yamldecode("${file("${var.jarvice["override_yaml_file"]}")}")
+    jarvice_override_values = <<EOF
 # Helm module override values
 jarvice:
   nodeSelector: '${local.jarvice_override_yaml["jarvice"]["nodeSelector"] == null ? "{\"node-role.kubernetes.io/jarvice-system\": \"true\"}" : local.jarvice_override_yaml["jarvice"]["nodeSelector"]}'
@@ -40,22 +39,22 @@ EOF
 }
 
 resource "helm_release" "jarvice" {
-  name = "jarvice"
-  chart = "./"
-  #version = "3.0.0"
-  namespace = var.jarvice["namespace"]
-  create_namespace = true
-  reuse_values = false
-  reset_values = true
-  render_subchart_notes = true
-  timeout = 600
+    name = "jarvice"
+    chart = "./"
+    #version = "3.0.0"
+    namespace = var.jarvice["namespace"]
+    create_namespace = true
+    reuse_values = false
+    reset_values = true
+    render_subchart_notes = true
+    timeout = 600
 
-  values = [
-    "# values.yaml\n\n${file("values.yaml")}",
-    "# ${var.jarvice["override_yaml_file"]}\n\n${file("${var.jarvice["override_yaml_file"]}")}",
-    "${local.jarvice_override_values}",
-    "${var.jarvice["override_yaml_values"]}",
-    "${var.cluster_override_yaml}"
-  ]
+    values = [
+        "# values.yaml\n\n${file("values.yaml")}",
+        "# ${var.jarvice["override_yaml_file"]}\n\n${file("${var.jarvice["override_yaml_file"]}")}",
+        "${local.jarvice_override_values}",
+        "${var.jarvice["override_yaml_values"]}",
+        "${var.cluster_override_yaml}"
+    ]
 }
 

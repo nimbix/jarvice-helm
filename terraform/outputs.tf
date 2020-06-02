@@ -1,5 +1,5 @@
 
 output "AKS" {
-  value = module.aks.AKS
+    value = module.aks.AKS
 }
 

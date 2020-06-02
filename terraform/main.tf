@@ -1,6 +1,5 @@
 terraform {
-  #backend "azurerm" {}
-  backend "local" {}
+    backend "local" {}
 }
 
 module "aks" {
