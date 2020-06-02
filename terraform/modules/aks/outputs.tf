@@ -11,7 +11,7 @@ resource "local_file" "kube_config" {
 
 output "AKS" {
     value = <<EOF
-=======================================================================
+=========================================================================
 
 Execute the following to begin using kubectl/helm with the new cluster:
 
@@ -21,7 +21,7 @@ Open the portal URL to initialize JARVICE:
 
 https://${azurerm_public_ip.jarvice.fqdn}/
 
-==============================================================================
+===============================================================================
 EOF
 }
 
