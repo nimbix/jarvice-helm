@@ -9,27 +9,19 @@ resource "local_file" "kube_config" {
   content = azurerm_kubernetes_cluster.jarvice.kube_config_raw
 }
 
-output "kube_config" {
+output "AKS" {
   value = <<EOF
-================================================================
+=======================================================================
 
 Execute the following to begin using kubectl/helm with the new cluster:
 
 export KUBECONFIG=${local_file.kube_config.filename}
 
-Execute the following to get the JARVICE portal URL:
+Open the portal URL to initialize JARVICE:
 
-echo "http://$(kubectl -n jarvice-system get services jarvice-mc-portal-lb -o jsonpath='{.status.loadBalancer.ingress[0].ip}'):8080"
+https://${azurerm_public_ip.jarvice.fqdn}/
 
 ==============================================================================
 EOF
 }
-
-#output "azurerm_public_ip_jarvice_ip_address" {
-#  value = azurerm_public_ip.jarvice.ip_address
-#}
-
-#output "azurerm_public_ip_jarvice_fqdn" {
-#  value = azurerm_public_ip.jarvice.fqdn
-#}
 

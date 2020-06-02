@@ -28,6 +28,7 @@ resource "helm_release" "traefik" {
 locals {
   jarvice_override_yaml = yamldecode("${file("${var.jarvice["override_yaml_file"]}")}")
   jarvice_override_values = <<EOF
+# Helm module override values
 jarvice:
   nodeSelector: '${local.jarvice_override_yaml["jarvice"]["nodeSelector"] == null ? "{\"node-role.kubernetes.io/jarvice-system\": \"true\"}" : local.jarvice_override_yaml["jarvice"]["nodeSelector"]}'
 
@@ -50,8 +51,8 @@ resource "helm_release" "jarvice" {
   timeout = 600
 
   values = [
-    "${file("values.yaml")}",
-    "${file("${var.jarvice["override_yaml_file"]}")}",
+    "# values.yaml\n\n${file("values.yaml")}",
+    "# ${var.jarvice["override_yaml_file"]}\n\n${file("${var.jarvice["override_yaml_file"]}")}",
     "${local.jarvice_override_values}",
     "${var.jarvice["override_yaml_values"]}",
     "${var.cluster_override_yaml}"

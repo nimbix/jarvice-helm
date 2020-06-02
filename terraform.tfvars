@@ -2,6 +2,18 @@
 # and then any *.auto.tfvars files.  Visit the following link for more info:
 # https://www.terraform.io/docs/configuration/variables.html#variable-definitions-tfvars-files
 
+#######################
+### Global settings ###
+#######################
+global_override_yaml_values = <<EOF
+# global_override_yaml_values - applied to all defined clusters.
+# Update per cluster override_yaml_values to override global values.
+#jarvice:
+  # imagePullSecret is base64 encoded.
+  #imagePullSecret: # echo "_json_key:$(cat gcr.io.json)" | base64 -w 0
+  #JARVICE_LICENSE_LIC:
+EOF
+
 ###########################
 ### Kubernetes settings ###
 ###########################
@@ -49,7 +61,7 @@ aks = [
         # Visit the following link for Azure node size specs:
         # https://docs.microsoft.com/en-us/azure/cloud-services/cloud-services-sizes-specs
         system_node_pool = {
-            node_vm_size = "Standard_DS4_v2"
+            node_vm_size = "Standard_D5_v2"
             node_count = 3
         }
         compute_node_pools = [
@@ -70,11 +82,27 @@ aks = [
         ]
 
         helm = {
-            override_yaml = "override.aks.yaml"
-            JARVICE_PVC_VAULT_SIZE = "10"
-            JARVICE_PVC_VAULT_NAME = "persistent"
-            JARVICE_PVC_VAULT_STORAGECLASS = "jarvice-user"
-            JARVICE_PVC_VAULT_ACCESSMODES = "ReadWriteOnce"
+            jarvice = {
+                namespace = "jarvice-system"
+                override_yaml_file = "override.aks.yaml"
+                # global_override_yaml_values take precedence over
+                # override_yaml_file.
+                override_yaml_values = <<EOF
+# override_yaml_values - takes precedence over all above values.
+
+#jarvice:
+  # imagePullSecret is base64 encoded.
+  #imagePullSecret: # echo "_json_key:$(cat gcr.io.json)" | base64 -w 0
+  #JARVICE_LICENSE_LIC:
+
+  #nodeSelector: '{"node-role.kubernetes.io/jarvice-system": "true"}'
+
+  #JARVICE_PVC_VAULT_NAME: persistent
+  #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
+  #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
+  #JARVICE_PVC_VAULT_SIZE: 10
+EOF
+            }
         }
     },
 ]

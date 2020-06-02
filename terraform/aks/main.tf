@@ -1,8 +1,3 @@
-terraform {
-  #backend "azurerm" {}
-  backend "local" {}
-}
-
 
 provider "azurerm" {
   version = "~> 2.8"
@@ -12,18 +7,7 @@ provider "azurerm" {
 resource "azurerm_resource_group" "jarvice" {
   name = "${var.aks["cluster_name"]}-resource-group"
   location = var.aks["location"]
-  tags = {
-    cluster_name = var.aks["cluster_name"]
-  }
-}
 
-resource "azurerm_public_ip" "jarvice" {
-  name = "${var.aks["cluster_name"]}-public-ip"
-  resource_group_name = azurerm_resource_group.jarvice.name
-  location = azurerm_resource_group.jarvice.location
-  allocation_method = "Static"
-  ip_version = "IPv4"
-  sku = "standard"
   tags = {
     cluster_name = var.aks["cluster_name"]
   }
@@ -62,10 +46,6 @@ resource "azurerm_kubernetes_cluster" "jarvice" {
 
   network_profile {
     network_plugin = "kubenet"
-    load_balancer_sku = "Standard"
-    load_balancer_profile {
-      outbound_ip_address_ids = [ "${azurerm_public_ip.jarvice.id}" ]
-    }
   }
 
   addon_profile {
@@ -79,6 +59,24 @@ resource "azurerm_kubernetes_cluster" "jarvice" {
 
   tags = {
     cluster_name = var.aks["cluster_name"]
+  }
+}
+
+resource "azurerm_public_ip" "jarvice" {
+  name = "${var.aks["cluster_name"]}-public-ip"
+  resource_group_name = azurerm_kubernetes_cluster.jarvice.node_resource_group
+  location = azurerm_kubernetes_cluster.jarvice.location
+
+  allocation_method = "Static"
+  sku = "Standard"
+  domain_name_label = var.aks["cluster_name"]
+
+  tags = {
+    cluster_name = var.aks["cluster_name"]
+  }
+
+  timeouts {
+    delete = "15m"
   }
 }
 

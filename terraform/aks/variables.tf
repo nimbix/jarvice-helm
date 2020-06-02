@@ -27,7 +27,9 @@ variable "aks" {
             node_max_count = number
         }))
 
-        helm = map(string)
+        helm = object({
+            jarvice = map(string)
+        })
     })
     default = {
         #enabled = false
@@ -44,7 +46,7 @@ variable "aks" {
         ssh_public_key = "~/.ssh/id_rsa.pub"
 
         system_node_pool = {
-            node_vm_size = "Standard_DS4_v2"
+            node_vm_size = "Standard_D5_v2"
             node_count = 3
         }
         compute_node_pools = [
@@ -58,11 +60,14 @@ variable "aks" {
         ]
 
         helm = {
-            override_yaml = "override.aks.yaml"
-            JARVICE_PVC_VAULT_SIZE = "10"
-            JARVICE_PVC_VAULT_NAME = "persistent"
-            JARVICE_PVC_VAULT_STORAGECLASS = "jarvice-user"
-            JARVICE_PVC_VAULT_ACCESSMODES = "ReadWriteOnce"
+            jarvice = {
+                namespace = "jarvice-system"
+                override_yaml_file = "override.aks.yaml"
+                override_yaml_values = <<EOF
+# global_override_yaml_values take precedence over override_yaml_file.
+# Per cluster override_yaml_values take precedence over all other values.
+EOF
+            }
         }
     }
 }

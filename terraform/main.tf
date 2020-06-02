@@ -1,3 +1,7 @@
+terraform {
+  #backend "azurerm" {}
+  backend "local" {}
+}
 
 module "aks" {
     source = "./aks"
