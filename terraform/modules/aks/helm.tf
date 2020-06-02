@@ -1,11 +1,11 @@
 module "kubernetes" {
-    source = "../modules/kubernetes"
+    source = "../kubernetes"
 
     kube_config = azurerm_kubernetes_cluster.jarvice.kube_config[0]
 }
 
 module "helm" {
-    source = "../modules/helm"
+    source = "../helm"
 
     kube_config = azurerm_kubernetes_cluster.jarvice.kube_config[0]
 
