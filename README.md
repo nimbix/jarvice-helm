@@ -436,8 +436,8 @@ individual component node selectors are not additive.  They will override
 For example, if both `jarvice.nodeSelector` and
 `jarvice_dockerpull.nodeSelector` are specified on the `helm` command line:
 ```bash
---set jarvice.nodeSelector="\{\"node-role.kubernetes.io/jarvice-system\": \"true\"\}"
---set jarvice_dockerpull.nodeSelector="\{\"node-role.kubernetes.io/jarvice-dockerpull\": \"true\"\}"
+--set-string jarvice.nodeSelector="\{\"node-role.kubernetes.io/jarvice-system\": \"true\"\}"
+--set-string jarvice_dockerpull.nodeSelector="\{\"node-role.kubernetes.io/jarvice-dockerpull\": \"true\"\}"
 ```
 
 In the example above,
@@ -445,7 +445,7 @@ In the example above,
 applied to `jarvice_dockerpull.nodeSelector`.  In the case that both node
 selectors are desired for `jarvice_dockerpull.nodeSelector`, use:
 ```bash
---set jarvice_dockerpull.nodeSelector="\{\"node-role.kubernetes.io/jarvice-system\": \"true\"\, \"node-role.kubernetes.io/jarvice-dockerpull\": \"true\"\}"
+--set-string jarvice_dockerpull.nodeSelector="\{\"node-role.kubernetes.io/jarvice-system\": \"true\"\, \"node-role.kubernetes.io/jarvice-dockerpull\": \"true\"\}"
 ```
 
 For more information on assigning kubernetes node labels and using node
