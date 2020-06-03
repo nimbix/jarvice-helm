@@ -27,6 +27,7 @@ jarvice-settings*/
 .terraform/
 terraform/.terraform/
 terraform.*
+crash.log
 tmp*/
 *.bak/
 bak*/

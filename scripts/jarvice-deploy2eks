@@ -774,10 +774,10 @@ traefik_lb_ip=$(get_yaml_value $config_file "jarvice.ingress.loadBalancerIP")
     default_key="--set ssl.defaultKey=$default_key"
 [ -n "$traefik_lb_ip" ] && lb_ip="--set loadBalancerIP=$traefik_lb_ip"
 
+    #--set nodeSelector."node-role\.kubernetes\.io/jarvice-system"="true" \
 HELM_NAME_CHART="traefik stable/traefik"
 [ -n "$HELM2" ] && HELM_NAME_CHART="stable/traefik --name traefik"
 $HELM install $HELM_NAME_CHART --namespace kube-system --debug \
-    --set nodeSelector."node-role\.kubernetes\.io/jarvice-system"="true" \
     --set tolerations[0]."key"="node-role\.kubernetes\.io/jarvice-system" \
     --set tolerations[0]."effect"="NoSchedule" \
     --set tolerations[0]."operator"="Exists" \
