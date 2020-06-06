@@ -71,7 +71,7 @@ spec:
             optional: true
       containers:
       - name: jarvice-scheduler
-        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-upstream-scheduler:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}{{- include "jarvice.version" . }}
+        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-scheduler:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}{{- include "jarvice.version" . }}
         imagePullPolicy: Always
         ports:
           - name: https
@@ -181,7 +181,7 @@ spec:
 {{- end }}
         volumeMounts:
         - name: jarvice-settings
-          mountPath: /etc/jarvice/settings/jarvice-scheduler
+          mountPath: /etc/jarvice/settings
           readOnly: true
         resources:
 {{- if .Values.jarvice_scheduler.resources }}

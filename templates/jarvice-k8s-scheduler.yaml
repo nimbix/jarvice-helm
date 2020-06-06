@@ -63,14 +63,9 @@ spec:
         {{- end }}
       imagePullSecrets:
       - name: jarvice-docker
-      volumes:
-        - name: jarvice-settings
-          configMap:
-            name: {{ .Values.jarvice.settings.configMap }}
-            optional: true
       containers:
       - name: jarvice-k8s-scheduler
-        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-scheduler:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}{{- include "jarvice.version" . }}
+        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-k8s-scheduler:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}{{- include "jarvice.version" . }}
         imagePullPolicy: Always
         ports:
           - name: http
@@ -197,10 +192,6 @@ spec:
             value: "{{ .Values.jarvice.JARVICE_JOBS_LB_SERVICE }}"
           - name: JARVICE_K8S_SCHED_LOGLEVEL
             value: "{{ .Values.jarvice.JARVICE_K8S_SCHED_LOGLEVEL }}"
-        volumeMounts:
-        - name: jarvice-settings
-          mountPath: /etc/jarvice/settings/jarvice-scheduler
-          readOnly: true
         resources:
 {{- if .Values.jarvice_k8s_scheduler.resources }}
 {{ toYaml .Values.jarvice_k8s_scheduler.resources | indent 10 }}
