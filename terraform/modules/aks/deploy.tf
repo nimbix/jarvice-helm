@@ -44,17 +44,8 @@ EOF
 
     # JARVICE settings
     jarvice = var.aks.helm.jarvice
-
-    cluster_override_yaml = <<EOF
-# AKS cluster override yaml
-jarvice_api:
-  ingressHost: ${azurerm_public_ip.jarvice.fqdn}
-  ingressPath: "/api"
-
-jarvice_mc_portal:
-  ingressHost: ${azurerm_public_ip.jarvice.fqdn}
-  ingressPath: "/"
-EOF
+    global_override_yaml_values = var.global_override_yaml_values
+    cluster_override_yaml_values = local.cluster_override_yaml_values
 
 }
 

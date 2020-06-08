@@ -71,8 +71,8 @@ aks = [
         # Visit the following link for Azure node size specs:
         # https://docs.microsoft.com/en-us/azure/cloud-services/cloud-services-sizes-specs
         system_node_pool = {
-            node_vm_size = "Standard_D5_v2"
-            node_count = 3
+            node_vm_size = null  # auto-set if null specified
+            node_count = null    # auto-set if null specified
         }
         compute_node_pools = [
             {

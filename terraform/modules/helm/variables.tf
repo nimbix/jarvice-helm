@@ -14,7 +14,11 @@ variable "jarvice" {
     type = map(string)
 }
 
-variable "cluster_override_yaml" {
+variable "global_override_yaml_values" {
+    type = string
+}
+
+variable "cluster_override_yaml_values" {
     type = string
 }
 

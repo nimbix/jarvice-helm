@@ -84,8 +84,8 @@ resource "azurerm_kubernetes_cluster_node_pool" "jarvice_system" {
     availability_zones = azurerm_kubernetes_cluster.jarvice.default_node_pool[0].availability_zones
     kubernetes_cluster_id = azurerm_kubernetes_cluster.jarvice.id
 
-    vm_size = var.aks.system_node_pool["node_vm_size"]
-    node_count = var.aks.system_node_pool["node_count"]
+    vm_size = var.aks.system_node_pool["node_vm_size"] != null ? var.aks.system_node_pool["node_vm_size"] : local.system_node_vm_size
+    node_count = var.aks.system_node_pool["node_count"] != null ? var.aks.system_node_pool["node_count"] : local.system_node_vm_count
 
     node_labels = {"node-role.kubernetes.io/jarvice-system" = "true"}
     node_taints = ["node-role.kubernetes.io/jarvice-system=true:NoSchedule"]

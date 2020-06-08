@@ -50,8 +50,8 @@ variable "aks" {
         ssh_public_key = "~/.ssh/id_rsa.pub"
 
         system_node_pool = {
-            node_vm_size = "Standard_D5_v2"
-            node_count = 3
+            node_vm_size = null
+            node_count = null
         }
         compute_node_pools = [
             {
