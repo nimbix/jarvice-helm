@@ -24,22 +24,6 @@ resource "helm_release" "traefik" {
     values = [var.traefik_values]
 }
 
-locals {
-    jarvice_override_yaml_files = fileexists(var.jarvice["override_yaml_file"]) ? "${file("values.yaml")}\n\n${file("${var.jarvice["override_yaml_file"]}")}" : "${file("values.yaml")}"
-    jarvice_override_yaml = yamldecode(local.jarvice_override_yaml_files)
-
-    jarvice_override_values = <<EOF
-# Helm module override values
-jarvice:
-  nodeSelector: '${local.jarvice_override_yaml["jarvice"]["nodeSelector"] == null ? "{\"node-role.kubernetes.io/jarvice-system\": \"true\"}" : local.jarvice_override_yaml["jarvice"]["nodeSelector"]}'
-
-  JARVICE_PVC_VAULT_NAME: ${local.jarvice_override_yaml["jarvice"]["JARVICE_PVC_VAULT_NAME"] == null ? "persistent" : local.jarvice_override_yaml["jarvice"]["JARVICE_PVC_VAULT_NAME"]}
-  JARVICE_PVC_VAULT_STORAGECLASS: ${local.jarvice_override_yaml["jarvice"]["JARVICE_PVC_VAULT_STORAGECLASS"] == null ? "jarvice-user" : local.jarvice_override_yaml["jarvice"]["JARVICE_PVC_VAULT_STORAGECLASS"]}
-  JARVICE_PVC_VAULT_ACCESSMODES: ${local.jarvice_override_yaml["jarvice"]["JARVICE_PVC_VAULT_ACCESSMODES"] == null ? "ReadWriteOnce" : local.jarvice_override_yaml["jarvice"]["JARVICE_PVC_VAULT_ACCESSMODES"]}
-  JARVICE_PVC_VAULT_SIZE: ${local.jarvice_override_yaml["jarvice"]["JARVICE_PVC_VAULT_SIZE"] == null ? 10 : local.jarvice_override_yaml["jarvice"]["JARVICE_PVC_VAULT_SIZE"]}
-EOF
-}
-
 resource "helm_release" "jarvice" {
     name = "jarvice"
     chart = "./"
@@ -54,9 +38,9 @@ resource "helm_release" "jarvice" {
     values = [
         "# values.yaml\n\n${file("values.yaml")}",
         fileexists(var.jarvice["override_yaml_file"]) ? "# ${var.jarvice["override_yaml_file"]}\n\n${file("${var.jarvice["override_yaml_file"]}")}" : "",
-        "${local.jarvice_override_values}",
+        "${var.global["override_yaml_values"]}",
         "${var.jarvice["override_yaml_values"]}",
-        "${var.cluster_override_yaml}"
+        "${var.cluster_override_yaml_values}"
     ]
 }
 

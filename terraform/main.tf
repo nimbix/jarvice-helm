@@ -9,6 +9,7 @@ module "aks" {
     #count = length(var.aks)
     #aks = var.aks[count.index]
 
+    global = var.global
     aks = var.aks[0]
 }
 
