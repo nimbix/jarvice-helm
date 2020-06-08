@@ -61,7 +61,7 @@ variable "aks" {
         helm = {
             jarvice = {
                 namespace = "jarvice-system"
-                override_yaml_file = "override.aks.yaml"
+                override_yaml_file = "override-tf.aks.<zone>.<cluster_name>.yaml"
                 override_yaml_values = <<EOF
 # override_yaml_values - takes precedence over all above values.
 EOF
