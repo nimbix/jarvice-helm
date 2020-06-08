@@ -25,7 +25,9 @@ resource "helm_release" "traefik" {
 }
 
 locals {
-    jarvice_override_yaml = yamldecode("${file("${var.jarvice["override_yaml_file"]}")}")
+    jarvice_override_yaml_files = fileexists(var.jarvice["override_yaml_file"]) ? "${file("values.yaml")}\n\n${file("${var.jarvice["override_yaml_file"]}")}" : "${file("values.yaml")}"
+    jarvice_override_yaml = yamldecode(local.jarvice_override_yaml_files)
+
     jarvice_override_values = <<EOF
 # Helm module override values
 jarvice:
@@ -51,7 +53,7 @@ resource "helm_release" "jarvice" {
 
     values = [
         "# values.yaml\n\n${file("values.yaml")}",
-        "# ${var.jarvice["override_yaml_file"]}\n\n${file("${var.jarvice["override_yaml_file"]}")}",
+        fileexists(var.jarvice["override_yaml_file"]) ? "# ${var.jarvice["override_yaml_file"]}\n\n${file("${var.jarvice["override_yaml_file"]}")}" : "",
         "${local.jarvice_override_values}",
         "${var.jarvice["override_yaml_values"]}",
         "${var.cluster_override_yaml}"
