@@ -10,12 +10,12 @@ variable "traefik_values" {
     type = string
 }
 
-variable "jarvice" {
+variable "global" {
     type = map(string)
 }
 
-variable "global_override_yaml_values" {
-    type = string
+variable "jarvice" {
+    type = map(string)
 }
 
 variable "cluster_override_yaml_values" {

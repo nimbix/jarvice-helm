@@ -38,7 +38,7 @@ resource "helm_release" "jarvice" {
     values = [
         "# values.yaml\n\n${file("values.yaml")}",
         fileexists(var.jarvice["override_yaml_file"]) ? "# ${var.jarvice["override_yaml_file"]}\n\n${file("${var.jarvice["override_yaml_file"]}")}" : "",
-        "${var.global_override_yaml_values}",
+        "${var.global["override_yaml_values"]}",
         "${var.jarvice["override_yaml_values"]}",
         "${var.cluster_override_yaml_values}"
     ]

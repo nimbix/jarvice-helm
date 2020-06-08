@@ -9,7 +9,7 @@ module "aks" {
     #count = length(var.aks)
     #aks = var.aks[count.index]
 
-    global_override_yaml_values = var.global_override_yaml_values
+    global = var.global
     aks = var.aks[0]
 }
 

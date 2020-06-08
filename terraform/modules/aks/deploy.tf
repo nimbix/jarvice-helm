@@ -44,7 +44,7 @@ EOF
 
     # JARVICE settings
     jarvice = var.aks.helm.jarvice
-    global_override_yaml_values = var.global_override_yaml_values
+    global = var.global.helm.jarvice
     cluster_override_yaml_values = local.cluster_override_yaml_values
 
 }

@@ -5,8 +5,13 @@
 #######################
 ### Global settings ###
 #######################
-global_override_yaml_values = <<EOF
-# global_override_yaml_values - Uncomment or add any values that should be
+global = {
+    ssh_public_key = "~/.ssh/id_rsa.pub"
+
+    helm = {
+        jarvice = {
+            override_yaml_values = <<EOF
+# global override_yaml_values - Uncomment or add any values that should be
 # applied to all defined clusters.
 
 # Update per cluster override_yaml_values to override these global values.
@@ -23,6 +28,9 @@ global_override_yaml_values = <<EOF
   #JARVICE_REMOTE_APIKEY:
   #JARVICE_APPSYNC_USERONLY: false
 EOF
+        }
+    }
+}
 
 ###########################
 ### Kubernetes settings ###
@@ -66,7 +74,7 @@ aks = [
         location = "Central US"
         availability_zones = ["1"]
 
-        ssh_public_key = "~/.ssh/id_rsa.pub"
+        ssh_public_key = null  # global setting used if null specified
 
         # Visit the following link for Azure node size specs:
         # https://docs.microsoft.com/en-us/azure/cloud-services/cloud-services-sizes-specs
@@ -94,12 +102,12 @@ aks = [
         helm = {
             jarvice = {
                 namespace = "jarvice-system"
-                # global_override_yaml_values take precedence over
-                # override_yaml_file (ignored if the file does not exist)
+                # global override_yaml_values take precedence over cluster
+                # override_yaml_file (override_yaml_file ignored if not found)
                 override_yaml_file = "override-tf.aks.centralus.jarvice.yaml"
                 override_yaml_values = <<EOF
 # override_yaml_values - takes precedence over override_yaml_file and
-# global_override_yaml_values
+# global override_yaml_values
 
 #jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master

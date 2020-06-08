@@ -1,7 +1,7 @@
 locals {
     jarvice_helm_override_yaml = fileexists(var.aks.helm.jarvice["override_yaml_file"]) ? "${file("${var.aks.helm.jarvice["override_yaml_file"]}")}" : ""
 
-    jarvice_helm_values = merge(lookup(yamldecode("XXXdummy: value\n\n${file("values.yaml")}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${local.jarvice_helm_override_yaml}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${var.global_override_yaml_values}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${var.aks.helm.jarvice["override_yaml_values"]}"), "jarvice", {}))
+    jarvice_helm_values = merge(lookup(yamldecode("XXXdummy: value\n\n${file("values.yaml")}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${local.jarvice_helm_override_yaml}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${var.global.helm.jarvice["override_yaml_values"]}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${var.aks.helm.jarvice["override_yaml_values"]}"), "jarvice", {}))
 
     jarvice_cluster_type = local.jarvice_helm_values["JARVICE_CLUSTER_TYPE"] == "downstream" ? "downstream" : "upstream"
 }
