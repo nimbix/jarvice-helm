@@ -17,6 +17,9 @@ output "AKS" {
     value = <<EOF
 =========================================================================
 
+AKS cluster name: ${var.aks["cluster_name"]}
+AKS cluster zone: ${var.aks["location"]}
+
 Execute the following to begin using kubectl/helm with the new cluster:
 
 export KUBECONFIG=${local.kube_config}
