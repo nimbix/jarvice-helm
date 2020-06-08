@@ -2,8 +2,12 @@ provider "local" {
     version = "~> 1.4"
 }
 
+locals {
+    kube_config = "~/.kube/config-tf.aks.${azurerm_kubernetes_cluster.jarvice.location}.${var.aks["cluster_name"]}"
+}
+
 resource "local_file" "kube_config" {
-    filename = pathexpand("~/.kube/config.jarvice.tf.aks")
+    filename = pathexpand(local.kube_config)
     file_permission = "0600" 
     directory_permission = "0775"
     content = azurerm_kubernetes_cluster.jarvice.kube_config_raw
@@ -15,7 +19,7 @@ output "AKS" {
 
 Execute the following to begin using kubectl/helm with the new cluster:
 
-export KUBECONFIG=${local_file.kube_config.filename}
+export KUBECONFIG=${local.kube_config}
 
 Open the portal URL to initialize JARVICE:
 

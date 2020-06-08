@@ -6,12 +6,22 @@
 ### Global settings ###
 #######################
 global_override_yaml_values = <<EOF
-# global_override_yaml_values - applied to all defined clusters.
-# Update per cluster override_yaml_values to override global values.
+# global_override_yaml_values - Uncomment or add any values that should be
+# applied to all defined clusters.
+
+# Update per cluster override_yaml_values to override these global values.
+
 #jarvice:
-  # imagePullSecret is base64 encoded.
-  #imagePullSecret: # echo "_json_key:$(cat gcr.io.json)" | base64 -w 0
+  # imagePullSecret is a base64 encoded string.
+  # e.g. - echo "_json_key:$(cat gcr.io.json)" | base64 -w 0
+  #imagePullSecret:
   #JARVICE_LICENSE_LIC:
+
+  # JARVICE_REMOTE_* settings are used for application synchronization
+  #JARVICE_REMOTE_API_URL: https://api.jarvice.com
+  #JARVICE_REMOTE_USER:
+  #JARVICE_REMOTE_APIKEY:
+  #JARVICE_APPSYNC_USERONLY: false
 EOF
 
 ###########################
@@ -84,18 +94,23 @@ aks = [
         helm = {
             jarvice = {
                 namespace = "jarvice-system"
-                override_yaml_file = "override.aks.yaml"
                 # global_override_yaml_values take precedence over
-                # override_yaml_file.
+                # override_yaml_file (ignored if the file does not exist)
+                override_yaml_file = "override-tf.aks.centralus.jarvice.yaml"
                 override_yaml_values = <<EOF
-# override_yaml_values - takes precedence over all above values.
+# override_yaml_values - takes precedence over override_yaml_file and
+# global_override_yaml_values
 
 #jarvice:
-  # imagePullSecret is base64 encoded.
-  #imagePullSecret: # echo "_json_key:$(cat gcr.io.json)" | base64 -w 0
-  #JARVICE_LICENSE_LIC:
+  #JARVICE_IMAGES_TAG: jarvice-master
+  #JARVICE_IMAGES_VERSION:
 
-  #nodeSelector: '{"node-role.kubernetes.io/jarvice-system": "true"}'
+  # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
+  # settings in jarvice_* component stanzas are ignored.
+  #JARVICE_CLUSTER_TYPE: "upstream"  # "downstream"
+
+  # If deploying "downstream" cluster, be sure to set JARVICE_SCHED_SERVER_KEY
+  #JARVICE_SCHED_SERVER_KEY: # "jarvice-downstream:Pass1234"
 
   #JARVICE_PVC_VAULT_NAME: persistent
   #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
