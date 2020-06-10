@@ -94,6 +94,20 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202006102037 (BETA)
+
+* (2775) Added ability to selectively disable SSL certificate verification for downstream clusters via *Administration->Clusters*
+* (2864) Modernized `jarvice-k8s-scheduler` component
+* (2872) Added multi-zone support for the portal
+* (2997) Updated recommended labels/taints to use a value of `"true"` in the Helm chart
+* (3008) Fixed misleading error message on failed image pulls when using *PushToCompute* pull functionality
+* (3010) Added `%MACHINETYPE%` substitution for `CONST` values in AppDefs, to extract the machine type used for job submissions.  See *Parameter Type Reference* in the [JARVICE Application Definition Guide](https://jarvice.readthedocs.io/en/latest/appdef/) reference for details.
+* (3020) Fix routing of vault file listing to clusters in downstream zone; see General PersistentVolume vault [Known Issues](#general-1) for important information.
+* (3021) Corrected all known issues and specification mismatches with modernized `jarvice-api` component
+* (3056) Improved parsing of Docker container addresses and fixed bugs related to private registries with ports when using *PushToCompute* pull functionality
+* (3064) Fixed portal regression that prevented automatic app catalog refreshes when changes were detected
+* (3086) Removed `jobsub` JSON key from `/jarvice/teamjobs` API endpoint
+
 ## 3.0.0-1.202005272025
 
 * (2866) Modernized `jarvice-scheduler` component.
