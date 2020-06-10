@@ -1,3 +1,25 @@
+variable "global" {
+    description = "Global Cluster Settings"
+    type = object({
+        ssh_public_key = string
+
+        helm = object({
+            jarvice = map(string)
+        })
+    })
+    default = {
+        ssh_public_key = "~/.ssh/id_rsa.pub"
+
+        helm = {
+            jarvice = {
+                override_yaml_values = <<EOF
+# global override_yaml_values - Uncomment or add any values that should be
+# applied to all defined clusters.
+EOF
+            }
+        }
+    }
+}
 
 variable "aks" {
     description = "Azure AKS Settings"
@@ -27,7 +49,9 @@ variable "aks" {
             node_max_count = number
         }))
 
-        helm = map(string)
+        helm = object({
+            jarvice = map(string)
+        })
     }))
     default = [{
         #enabled = false
@@ -41,11 +65,11 @@ variable "aks" {
         location = "Central US"
         availability_zones = ["1"]
 
-        ssh_public_key = "~/.ssh/id_rsa.pub"
+        ssh_public_key = null
 
         system_node_pool = {
-            node_vm_size = "Standard_DS4_v2"
-            node_count = 3
+            node_vm_size = null
+            node_count = null
         }
         compute_node_pools = [
             {
@@ -58,11 +82,14 @@ variable "aks" {
         ]
 
         helm = {
-            override_yaml = "override.yaml"
-            JARVICE_PVC_VAULT_SIZE = "10"
-            JARVICE_PVC_VAULT_NAME = "persistent"
-            JARVICE_PVC_VAULT_STORAGECLASS = "jarvice-user"
-            JARVICE_PVC_VAULT_ACCESSMODES = "ReadWriteOnce"
+            jarvice = {
+                namespace = "jarvice-system"
+                override_yaml_file = "override-tf.<provider>.<zone_or_region>.<cluster_name>.yaml"
+                override_yaml_values = <<EOF
+# override_yaml_values - takes precedence over override_yaml_file and
+# global override_yaml_values
+EOF
+            }
         }
     }]
 }
