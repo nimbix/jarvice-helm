@@ -94,7 +94,7 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
-## 3.0.0-1.202006102037 (BETA)
+## 3.0.0-1.202006111530 (BETA)
 
 * (2775) Added ability to selectively disable SSL certificate verification for downstream clusters via *Administration->Clusters*
 * (2864) Modernized `jarvice-k8s-scheduler` component
