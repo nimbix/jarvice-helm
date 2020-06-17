@@ -82,6 +82,13 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 - JARVICE uses guaranteed QoS for filer pods.  By default it requests 1 CPU and 1 gigabyte of RAM.  The filer pod runs a userspace NFS service which may benefit from additional resources for larger deployments.  To adjust, set the environment variables `${JARVICE_UNFS_REQUEST_MEM}` and `${JARVICE_UNFS_REQUEST_CPU}` in the `jarvice-scheduler` deployment.  Note that the memory request is in standard Kubernetes resource format, so 1 Gigabyte is expressed as `1Gi`.
 - JARVICE runs filer pods with the node selector provided in `${JARVICE_UNFS_NODE_SELECTOR}`; when using the Helm chart, the values default to the "system" node selector(s), unless `jarvice_dal` has a node selector defined.
 
+### JARVICE API
+
+- The JARVICE API now limits the number of incoming requests to preserve system stability. Requests that can not be processed will receive Service Unavailable (503) HTTP status code. Each API pod will apply a timeout for each request and limit the number of concurrent request processed at a time. This limiting behavior is set by using JARVICE_API_TIMEOUT and JARVICE_API_MAX_CNCR environment variables.
+- JARVICE_API_TIMEOUT is the number of milliseconds a given request can stay queued before receiving Service Unavailable (503). The default value is 500ms
+- JARVICE_API_MAX_CNCR is the total number of request that can be processed in parallel on each API pod. The default value is 8
+- The JARVICE API deployment can be scaled out to increase the number of requests processed. Future guidance will be given for the appropriate values to use for JARVICE_API_TIMEOUT and JARVICE_API_MAX_CNCR to maximize system throughput and availability.
+
 ### Miscellaneous
 
 - Jobs that run for a very short period of time and fail may be shown as *Canceled* status versus *Completed with Error*; in rare cases jobs that complete successfully may also show up as *Canceled* if they run for a very short period of time (e.g. less than 1 second).
