@@ -70,13 +70,13 @@ User runs jobs in 2 different data centers and uses discrete data for each one (
 
 The following table describes the technical considerations when selecting single or multi-zoned setups; please note that these are guidelines only:
 
-Single zone|Single or multi-zone[^1]|Multi-zone
+Single zone|Single or multi-zone<sup>1</sup>|Multi-zone
 :---|:---|:---
 NFS/CephFS/(other NAS) is on the same physical network as compute|NFS/CephFS/(other NAS) is on a very low latency network to compute - e.g. across a campus, across data centers with dedicated connectivity - even Internet if using certain cloud storage|Against the law or policies to allow certain compute to access certain storage
 Vault is ephemeral|PVC vault points to PV *storageClass* and *volumeName* in different clusters mounting the exact same storage|Vault is geographically separated by a high latency network (e.g. control plane in U.S., storage in Asia)
 Storage is correctly replicated underneath JARVICE using 3rd party technology| |PVC vault points to a dynamically provisioned PV *storageClass*, where data will differ across clusters
 
-[^1]: *choosing multiple zones for the either/or case largely driven by network latency between storage and compute*
+1. choosing multiple zones for the either/or case largely driven by network latency between storage and compute
 
 
 
