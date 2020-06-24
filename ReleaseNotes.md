@@ -107,6 +107,18 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202006242047
+
+* (2870) Updated documentation for multi-zoned deployments.  Please see [JARVICE Multi-cluter Overview](MultiCluster.md) for details.
+* (3074) Added concurrency and request timeout limits to the API endpoints.  See [JARVICE API](#jarvice-api) in *Known Issues, Anomalies, and Caveats* above for configuration information.
+* (3084) Eliminated redundant AJAX call from web portal when applications were edited in the *PushToCompute* view.
+* (3121) Fixed regression in web portal when apps were reloaded in the *PushToCompute* view.
+* (3124) Fixed regression in web portal that prevented team admins from inheriting the *SAML/LDAP Admin* role.
+* (3129) Fixed regression in web portal that caused login events to be audit logged on page refreshes.
+* (3142) Fixed web portal to sort user names in alphabetical order in drop downs involving limits and app restrictions.
+* (3144) Fixed bug where system administrators could only query events for active jobs they submitted.
+* (3147) Fixed bug where shared vaults could prevent users from accessing apps and machines in the default zone.
+
 ## 3.0.0-1.202006111530 (BETA)
 
 * (2775) Added ability to selectively disable SSL certificate verification for downstream clusters via *Administration->Clusters*
