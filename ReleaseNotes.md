@@ -57,6 +57,7 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 - It is not necessary to explicitly pull in this version of JARVICE, as Kubernetes will do that implicitly, unless you are using a local registry (via `${JARVICE_LOCAL_REGISTRY}`); however it is a best practice, and is highly recommended so that application metadata can be updated in the service catalog.  If your container has JARVICE objects in it such as an `AppDef`, consider explicit pulls mandatory.
 - Complete logs for pulls and builds are available in the `${JARVICE_PULLS_NAMESPACE}` and `${JARVICE_BUILDS_NAMESPACE}` respectively, for pods called `dockerpull--<user>-<app>` and `dockerbuild--<user>-<app>`, where `<user>` is the user who initiated the pull or build, and `<app>` is the application target ID that was built or pulled into; these pods are not garbage collected so that errors can be troubleshooted more effectively.  It is safe to delete them manually if desired.
 - JARVICE manages pull secrets automatically for user apps, across any clusters it manages; if the user logs in to a Docker regsitry successfully in the web portal, JARVICE automatically generates and uses a pull secret for all associated app containers owned by that user; if the user logs out, JARVICE removes the pull secret.  Creation, patching, and removal of pull secrets happens at job submission time only.  These pull secrets are managed in the "jobs" namespace (controlled by `${JARVICE_JOBS_NAMESPACE}`).  As a best practice, once an app is set to public, the system administrator should create a permanent pull secret named `jarvice-docker-n`, where *n* is an integer, 0-9, in the `${JARVICE_JOBS_NAMESPACE}`.  This way, if the app owner logs out of the Docker registry for that container, the public app can still be used.
+- Creating a new app target as a system admin switched into the *None* zone and then attempting to click on that app card may result in a pop-up error indicating that the application is disabled because there are no valid values in its machine list; refresh the browser page to clear this error.
 
 ### Resource Limits and Cost Controls
 
@@ -81,6 +82,18 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 - JARVICE uses guaranteed QoS for filer pods.  By default it requests 1 CPU and 1 gigabyte of RAM.  The filer pod runs a userspace NFS service which may benefit from additional resources for larger deployments.  To adjust, set the environment variables `${JARVICE_UNFS_REQUEST_MEM}` and `${JARVICE_UNFS_REQUEST_CPU}` in the `jarvice-scheduler` deployment.  Note that the memory request is in standard Kubernetes resource format, so 1 Gigabyte is expressed as `1Gi`.
 - JARVICE runs filer pods with the node selector provided in `${JARVICE_UNFS_NODE_SELECTOR}`; when using the Helm chart, the values default to the "system" node selector(s), unless `jarvice_dal` has a node selector defined.
+
+### JARVICE API
+
+- The JARVICE API now limits the number of incoming requests to preserve system stability. Requests that can not be processed will receive Service Unavailable (503) HTTP status code. Each API pod will apply a timeout for each request and limit the number of concurrent request processed at a time. This limiting behavior is set by using JARVICE_API_TIMEOUT and JARVICE_API_MAX_CNCR environment variables.
+- JARVICE_API_TIMEOUT is the number of milliseconds a given request can stay queued before receiving Service Unavailable (503). The default value is 500ms
+- JARVICE_API_MAX_CNCR is the total number of request that can be processed in parallel on each API pod. The default value is 8
+- The JARVICE API deployment can be scaled out to increase the number of requests processed. Future guidance will be given for the appropriate values to use for JARVICE_API_TIMEOUT and JARVICE_API_MAX_CNCR to maximize system throughput and availability.
+
+### Clusters and Zones
+
+- Deleting a cluster that has machines assigned to it will result in an unhandled referential integrity error and may render the web portal inoperable; the best practice is to ensure no machine definitions are assigned to the cluster before deleting it.
+- Deleting a zone that has clusters or vaults assigned to it will result in an unhandled referential integrity error and may render the web portal inoperable; the best practice is to ensure no clusters and no user vaults are assigned to the zone before deleting it.
 
 ### Miscellaneous
 
