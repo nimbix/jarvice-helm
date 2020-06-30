@@ -1,9 +1,8 @@
-variable "kube_config" {
-    type = map(string)
-}
+# variables.tf - helm module variable definitions
 
 variable "traefik_deploy" {
     type = bool
+    default = true
 }
 
 variable "traefik_values" {

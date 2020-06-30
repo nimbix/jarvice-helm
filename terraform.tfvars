@@ -35,33 +35,33 @@ EOF
 ###########################
 ### Kubernetes settings ###
 ###########################
-#k8s = [
-#    {
+#k8s = {
+#    "k8s_cluster_00" = {
 #    },
-#]
+#}
 
 #################################
 ### Google Cloud GKE Settings ###
 #################################
-#gke = [
-#    {
+#gke = {
+#    "gke_cluster_00" = {
 #    },
-#]
+#}
 
 ###########################
 ### Amazon EKS Settings ###
 ###########################
-#eks = [
-#    {
+#eks = {
+#    "eks_cluster_00" = {
 #    },
-#]
+#}
 
 ##########################
 ### Azure AKS settings ###
 ##########################
-aks = [
-    {
-        #enabled = false # (currently a no-op, may be required in next release)
+aks = {
+    "aks_cluster_00" = {
+        enabled = false
 
         # Visit the following link for service principal creation information:
         # https://github.com/nimbix/jarvice-helm/blob/testing/Terraform.md#creating-a-service-principal-using-the-azure-cli
@@ -69,6 +69,75 @@ aks = [
         service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
         cluster_name = "jarvice"
+        kubernetes_version = "1.15.10"
+
+        location = "Central US"
+        availability_zones = ["1"]
+
+        ssh_public_key = null  # global setting used if null specified
+
+        # Visit the following link for Azure node size specs:
+        # https://docs.microsoft.com/en-us/azure/cloud-services/cloud-services-sizes-specs
+        system_node_pool = {
+            node_vm_size = null  # auto-set if null specified
+            node_count = null    # auto-set if null specified
+        }
+        compute_node_pools = [
+            {
+                node_vm_size = "Standard_D32_v3"
+                node_os_disk_size_gb = 128
+                node_count = 2
+                node_min_count = 1
+                node_max_count = 16
+            },
+            #{
+            #    node_vm_size = "Standard_D32_v3"
+            #    node_os_disk_size_gb = 128
+            #    node_count = 2
+            #    node_min_count = 1
+            #    node_max_count = 16
+            #},
+        ]
+
+        helm = {
+            jarvice = {
+                namespace = "jarvice-system"
+                # global override_yaml_values take precedence over cluster
+                # override_yaml_file (override_yaml_file ignored if not found)
+                override_yaml_file = "override-tf.aks.<location>.<cluster_name>.yaml"  # "override-tf.aks.centralus.jarvice.yaml"
+
+                override_yaml_values = <<EOF
+# override_yaml_values - takes precedence over override_yaml_file and
+# global override_yaml_values
+
+#jarvice:
+  #JARVICE_IMAGES_TAG: jarvice-master
+  #JARVICE_IMAGES_VERSION:
+
+  # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
+  # settings in jarvice_* component stanzas are ignored.
+  #JARVICE_CLUSTER_TYPE: "upstream"  # "downstream"
+
+  # If deploying "downstream" cluster, be sure to set JARVICE_SCHED_SERVER_KEY
+  #JARVICE_SCHED_SERVER_KEY: # "jarvice-downstream:Pass1234"
+
+  #JARVICE_PVC_VAULT_NAME: persistent
+  #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
+  #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
+  #JARVICE_PVC_VAULT_SIZE: 10
+EOF
+            }
+        }
+    },
+    "aks_cluster_01" = {
+        enabled = false
+
+        # Visit the following link for service principal creation information:
+        # https://github.com/nimbix/jarvice-helm/blob/testing/Terraform.md#creating-a-service-principal-using-the-azure-cli
+        service_principal_client_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+        cluster_name = "jarvice-downstream"
         kubernetes_version = "1.15.10"
 
         location = "Central US"
@@ -104,18 +173,19 @@ aks = [
                 namespace = "jarvice-system"
                 # global override_yaml_values take precedence over cluster
                 # override_yaml_file (override_yaml_file ignored if not found)
-                override_yaml_file = "override-tf.aks.centralus.jarvice.yaml"
+                override_yaml_file = "override-tf.aks.<location>.<cluster_name>.yaml"  # "override-tf.aks.centralus.jarvice-downstream.yaml"
+
                 override_yaml_values = <<EOF
 # override_yaml_values - takes precedence over override_yaml_file and
 # global override_yaml_values
 
-#jarvice:
+jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
   #JARVICE_IMAGES_VERSION:
 
   # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
   # settings in jarvice_* component stanzas are ignored.
-  #JARVICE_CLUSTER_TYPE: "upstream"  # "downstream"
+  JARVICE_CLUSTER_TYPE: "downstream"
 
   # If deploying "downstream" cluster, be sure to set JARVICE_SCHED_SERVER_KEY
   #JARVICE_SCHED_SERVER_KEY: # "jarvice-downstream:Pass1234"
@@ -128,5 +198,5 @@ EOF
             }
         }
     },
-]
+}
 

@@ -1,5 +1,9 @@
+# locals.tf - AKS module local variable definitions
+
 locals {
-    jarvice_helm_override_yaml = fileexists(var.aks.helm.jarvice["override_yaml_file"]) ? "${file("${var.aks.helm.jarvice["override_yaml_file"]}")}" : ""
+    jarvice_override_yaml_file = replace(replace("${var.aks.helm.jarvice["override_yaml_file"]}", "<location>", "${azurerm_kubernetes_cluster.jarvice.location}"), "<cluster_name>", "${var.aks["cluster_name"]}")
+
+    jarvice_helm_override_yaml = fileexists(local.jarvice_override_yaml_file) ? "${file("${local.jarvice_override_yaml_file}")}" : ""
 
     jarvice_helm_values = merge(lookup(yamldecode("XXXdummy: value\n\n${file("values.yaml")}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${local.jarvice_helm_override_yaml}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${var.global.helm.jarvice["override_yaml_values"]}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${var.aks.helm.jarvice["override_yaml_values"]}"), "jarvice", {}))
 
@@ -12,7 +16,13 @@ locals {
 }
 
 locals {
-    kube_config = "~/.kube/config-tf.aks.${azurerm_kubernetes_cluster.jarvice.location}.${var.aks["cluster_name"]}"
+    kube_config = {
+        "path" = "~/.kube/config-tf.aks.${azurerm_kubernetes_cluster.jarvice.location}.${var.aks["cluster_name"]}",
+        "client_certificate" = azurerm_kubernetes_cluster.jarvice.kube_config[0].client_certificate,
+        "client_key" = azurerm_kubernetes_cluster.jarvice.kube_config[0].client_key,
+        "cluster_ca_certificate" = azurerm_kubernetes_cluster.jarvice.kube_config[0].cluster_ca_certificate,
+        "host" = azurerm_kubernetes_cluster.jarvice.kube_config[0].host
+    }
 }
 
 locals {
@@ -26,11 +36,13 @@ jarvice_mc_portal:
   ingressHost: ${azurerm_public_ip.jarvice.fqdn}
   ingressPath: "/"
 EOF
+
     jarvice_ingress_downstream = <<EOF
 # AKS cluster override yaml
 jarvice_k8s_scheduler:
   ingressHost: ${azurerm_public_ip.jarvice.fqdn}
 EOF
+
     jarvice_ingress = local.jarvice_cluster_type == "downstream" ? local.jarvice_ingress_downstream : local.jarvice_ingress_upstream
 
     cluster_override_yaml_values = <<EOF
@@ -40,8 +52,13 @@ jarvice:
 
   JARVICE_PVC_VAULT_NAME: ${local.jarvice_helm_values["JARVICE_PVC_VAULT_NAME"] == null ? "persistent" : local.jarvice_helm_values["JARVICE_PVC_VAULT_NAME"]}
   JARVICE_PVC_VAULT_STORAGECLASS: ${local.jarvice_helm_values["JARVICE_PVC_VAULT_STORAGECLASS"] == null ? "jarvice-user" : local.jarvice_helm_values["JARVICE_PVC_VAULT_STORAGECLASS"]}
+  JARVICE_PVC_VAULT_STORAGECLASS_PROVISIONER: kubernetes.io/azure-disk
   JARVICE_PVC_VAULT_ACCESSMODES: ${local.jarvice_helm_values["JARVICE_PVC_VAULT_ACCESSMODES"] == null ? "ReadWriteOnce" : local.jarvice_helm_values["JARVICE_PVC_VAULT_ACCESSMODES"]}
   JARVICE_PVC_VAULT_SIZE: ${local.jarvice_helm_values["JARVICE_PVC_VAULT_SIZE"] == null ? 10 : local.jarvice_helm_values["JARVICE_PVC_VAULT_SIZE"]}
+
+jarvice_db:
+  persistence:
+    storageClassProvisioner: kubernetes.io/azure-disk
 
 ${local.jarvice_ingress}
 EOF

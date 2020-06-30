@@ -1,3 +1,5 @@
+# variables.tf - AKS module variable definitions
+
 variable "global" {
     description = "Global Cluster Settings"
     type = object({
@@ -24,7 +26,7 @@ EOF
 variable "aks" {
     description = "Azure AKS Settings"
     type = object({
-        #enabled = bool
+        enabled = bool
 
         service_principal_client_id = string
         service_principal_client_secret = string
@@ -54,7 +56,7 @@ variable "aks" {
         })
     })
     default = {
-        #enabled = false
+        enabled = false
 
         service_principal_client_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
         service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
@@ -84,7 +86,7 @@ variable "aks" {
         helm = {
             jarvice = {
                 namespace = "jarvice-system"
-                override_yaml_file = "override-tf.aks.<zone>.<cluster_name>.yaml"
+                override_yaml_file = "override-tf.aks.<location>.<cluster_name>.yaml"
                 override_yaml_values = <<EOF
 # override_yaml_values - takes precedence over override_yaml_file and
 # global override_yaml_values

@@ -1,15 +1,67 @@
+# main.tf - root module
+
 terraform {
-    backend "local" {}
+    required_version = "~> 0.12.24"
+    #backend "local" {}
 }
 
-module "aks" {
+# TODO: terraform-v0.13
+#module "aks" {
+#    for_each = local.aks
+#
+#    source = "./modules/aks"
+#
+#    aks = each.value
+#    global = var.global
+#
+#    providers = {
+#        aks = azurerm[each.key]
+#        helm = helm.aks
+#    }
+#}
+
+# Dynamically create clusters definition file until for_each is enabled and
+# working for modules and providers in terraform v0.13
+resource "local_file" "clusters" {
+    filename = "${path.module}/clusters.tf"
+    file_permission = "0664"
+
+    content = <<EOF
+%{ for key in keys(local.aks) }
+# AKS cluster configuration: ${key}
+provider "azurerm" {
+    alias = "${key}"
+    features {}
+}
+
+provider "helm" {
+    alias = "${key}"
+
+    kubernetes {
+        load_config_file = false
+        client_certificate = base64decode(module.${key}.kube_config_client_certificate)
+        client_key = base64decode(module.${key}.kube_config_client_key)
+        cluster_ca_certificate = base64decode(module.${key}.kube_config_cluster_ca_certificate)
+        host = module.${key}.kube_config_host
+    }
+}
+
+module "${key}" {
     source = "./modules/aks"
 
-    # count feature will be available in terraform v0.13.0
-    #count = length(var.aks)
-    #aks = var.aks[count.index]
-
+    aks = local.aks["${key}"]
     global = var.global
-    aks = var.aks[0]
+
+    providers = {
+        azurerm = azurerm.${key}
+        helm = helm.${key}
+    }
+}
+
+output "${key}" {
+    value = format("\n\nAKS Cluster Configuration: %s\n%s\n", "${key}", module.${key}.AKS)
+}
+%{ endfor }
+EOF
 }
 

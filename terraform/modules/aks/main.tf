@@ -1,10 +1,14 @@
-provider "azurerm" {
-    version = "~> 2.8"
-    features {}
+# main.tf - AKS module
+
+terraform {
+  required_providers {
+    azurerm = "~> 2.13"
+    local = "~> 1.4"
+  }
 }
 
 resource "azurerm_resource_group" "jarvice" {
-    name = "${var.aks["cluster_name"]}-resource-group"
+    name = var.aks["cluster_name"]
     location = var.aks["location"]
 
     tags = {
@@ -13,7 +17,7 @@ resource "azurerm_resource_group" "jarvice" {
 }
 
 resource "azurerm_kubernetes_cluster" "jarvice" {
-    name = "${var.aks["cluster_name"]}-kubernetes-cluster"
+    name = var.aks["cluster_name"]
     kubernetes_version = var.aks["kubernetes_version"]
     dns_prefix = var.aks["cluster_name"]
     resource_group_name = azurerm_resource_group.jarvice.name
@@ -32,8 +36,6 @@ resource "azurerm_kubernetes_cluster" "jarvice" {
         availability_zones = var.aks["availability_zones"]
         node_count = 2
         vm_size = "Standard_B2s"
-        #os_type = "Linux"
-        #os_disk_size_gb = 30
 
         node_labels = {"node-role.kubernetes.io/master" = "true"}
     }
@@ -62,7 +64,7 @@ resource "azurerm_kubernetes_cluster" "jarvice" {
 }
 
 resource "azurerm_public_ip" "jarvice" {
-    name = "${var.aks["cluster_name"]}-public-ip"
+    name = var.aks["cluster_name"]
     resource_group_name = azurerm_kubernetes_cluster.jarvice.node_resource_group
     location = azurerm_kubernetes_cluster.jarvice.location
 
@@ -85,6 +87,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "jarvice_system" {
     kubernetes_cluster_id = azurerm_kubernetes_cluster.jarvice.id
 
     vm_size = var.aks.system_node_pool["node_vm_size"] != null ? var.aks.system_node_pool["node_vm_size"] : local.system_node_vm_size
+    os_type = "Linux"
     node_count = var.aks.system_node_pool["node_count"] != null ? var.aks.system_node_pool["node_count"] : local.system_node_vm_count
 
     node_labels = {"node-role.kubernetes.io/jarvice-system" = "true"}
@@ -103,6 +106,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "jarvice_compute" {
     kubernetes_cluster_id = azurerm_kubernetes_cluster.jarvice.id
 
     vm_size = var.aks.compute_node_pools[count.index]["node_vm_size"]
+    os_type = "Linux"
     os_disk_size_gb = var.aks.compute_node_pools[count.index]["node_os_disk_size_gb"]
 
     enable_auto_scaling = true

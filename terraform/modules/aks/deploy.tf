@@ -1,13 +1,7 @@
-module "kubernetes" {
-    source = "../kubernetes"
-
-    kube_config = azurerm_kubernetes_cluster.jarvice.kube_config[0]
-}
+# deploy.tf - AKS module kubernetes/helm components deployment for JARVICE
 
 module "helm" {
     source = "../helm"
-
-    kube_config = azurerm_kubernetes_cluster.jarvice.kube_config[0]
 
     # Traefik settings
     traefik_deploy = true
@@ -43,7 +37,7 @@ rbac:
 EOF
 
     # JARVICE settings
-    jarvice = var.aks.helm.jarvice
+    jarvice = merge(var.aks.helm.jarvice, {"override_yaml_file"="${local.jarvice_override_yaml_file}"})
     global = var.global.helm.jarvice
     cluster_override_yaml_values = local.cluster_override_yaml_values
 

@@ -1,15 +1,9 @@
-provider "helm" {
-    version = "~> 1.2"
+# main.tf - helm module
 
-    kubernetes {
-        #config_path = "~/.kube/config"
-        load_config_file = false
-
-        client_certificate = base64decode(var.kube_config.client_certificate)
-        client_key = base64decode(var.kube_config.client_key)
-        cluster_ca_certificate = base64decode(var.kube_config.cluster_ca_certificate)
-        host = var.kube_config.host
-    }
+terraform {
+  required_providers {
+    helm = "~> 1.2"
+  }
 }
 
 resource "helm_release" "traefik" {
@@ -20,6 +14,8 @@ resource "helm_release" "traefik" {
     namespace = "kube-system"
     reuse_values = false
     reset_values = true
+    render_subchart_notes = false
+    timeout = 600
 
     values = [var.traefik_values]
 }
@@ -42,5 +38,7 @@ resource "helm_release" "jarvice" {
         "${var.jarvice["override_yaml_values"]}",
         "${var.cluster_override_yaml_values}"
     ]
+
+    #depends_on = var.traefik_deploy ? [helm_release.traefik] : []
 }
 
