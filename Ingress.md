@@ -64,6 +64,22 @@ See [Kubernetes load balancer](README.md#kubernetes-load-balancer) in the top-le
 |[Path-based Ingress](#path-based-ingress)|Single HTTPS certificate, ability to add DNS "A" record|best compromise of security and accessibility with minimum network configuration required, but may not be compatible with all applications|
 |[Load Balancer Only](#load-balancer-only)|Ability to reserve a potentially large IP range|Easiest to deploy, but diminishes user experience due to browser compatibility and security warnings|
 
+### Custom Ingress URLs for Jobs
+
+The `jarvice.JARVICE_JOBS_DOMAIN` parameter also supports URL specification in addition to just FQDN.  This should only be used if the ingress controller does not properly support HTTPS, or if it runs on a custom port other than 443.  Specifying this parameter as an FQDN defaults to `https://` scheme and port 443.
+
+To change the scheme and/or port, you must specify `jarvice.JARVICE_JOBS_DOMAIN` as a URL rathern than a FQDN.  For example, to generate user-facing ingress URLs using path-based ingress on a specified port, the parameter could be specified as:
+
+```
+http://myingress.io:8080/job$
+```
+
+Note that scheme can be either `http://` or `https://`, and must be specified if a custom port is used.  The above setting is not valid as just `myingress.io:8080`, it must include the scheme if you are overriding the default ports!
+
+Also note, Kubernetes does not support creating ingress objects that specify ports; the assumption is that the ingress controller will be listening on any non-443 or non-80 port you choose.  In terms of the *Ingress* object itself, it will still be created with the FQDN (minus any port override).
+
+Finally, using HTTP versus HTTPS has security implications, especially on public networks, as many application services will pass access keys in URLs for easy connection.  Use only if necessary or for specific purposes.  Using HTTPS with a valid certificate is always the best practice (see below).
+
 ### Additional Notes and Best Practices
 
 * Use CA-signed certificates to avoid browser compatibility and usability issues
