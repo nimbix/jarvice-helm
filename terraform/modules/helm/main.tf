@@ -22,23 +22,23 @@ resource "helm_release" "traefik" {
 
 resource "helm_release" "jarvice" {
     name = "jarvice"
-    chart = "./"
-    #version = "3.0.0"
+    repository = local.jarvice_chart_is_dir ? null : "https://jarvice-chartmuseum.k8s.dal1.jarvice.io"
+    chart = local.jarvice_chart_is_dir ? pathexpand(var.jarvice["version"]) : "jarvice"
+    version = local.jarvice_chart_is_dir ? null : var.jarvice["version"]
+
     namespace = var.jarvice["namespace"]
     create_namespace = true
     reuse_values = false
     reset_values = true
-    render_subchart_notes = true
+    render_subchart_notes = false
     timeout = 600
 
     values = [
-        "# values.yaml\n\n${file("values.yaml")}",
+        fileexists("values.yaml") ? "# values.yaml\n\n${file("values.yaml")}" : "",
         fileexists(var.jarvice["override_yaml_file"]) ? "# ${var.jarvice["override_yaml_file"]}\n\n${file("${var.jarvice["override_yaml_file"]}")}" : "",
         "${var.global["override_yaml_values"]}",
         "${var.jarvice["override_yaml_values"]}",
         "${var.cluster_override_yaml_values}"
     ]
-
-    #depends_on = var.traefik_deploy ? [helm_release.traefik] : []
 }
 

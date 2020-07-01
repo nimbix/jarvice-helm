@@ -27,6 +27,7 @@ resource "local_file" "clusters" {
     file_permission = "0664"
 
     content = <<EOF
+# clusters.tf - cluster definitions (dynamically created using cluster configs)
 %{ for key in keys(local.aks) }
 # AKS cluster configuration: ${key}
 provider "azurerm" {

@@ -101,6 +101,7 @@ aks = {
 
         helm = {
             jarvice = {
+                version = "./"
                 namespace = "jarvice-system"
                 # global override_yaml_values take precedence over cluster
                 # override_yaml_file (override_yaml_file ignored if not found)
@@ -170,6 +171,7 @@ EOF
 
         helm = {
             jarvice = {
+                version = "./"
                 namespace = "jarvice-system"
                 # global override_yaml_values take precedence over cluster
                 # override_yaml_file (override_yaml_file ignored if not found)
