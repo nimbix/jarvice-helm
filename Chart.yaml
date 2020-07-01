@@ -1,4 +1,4 @@
-apiVersion: v1
+apiVersion: v2
 
 version: 0.1
 deprecated: false
@@ -20,5 +20,4 @@ sources:
    - https://github.com/nimbix/jarvice-helm
 
 engine: gotpl
-#kubeVersion: ">=1.10"
-tillerVersion: ">=2.9"
+kubeVersion: ">=1.14"
