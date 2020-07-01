@@ -66,7 +66,7 @@ spec:
       - name: jarvice-docker
       containers:
       - name: jarvice-api
-        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-api:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}{{- include "jarvice.version" . }}
+        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-api:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
         imagePullPolicy: Always
         ports:
           - name: http
@@ -148,7 +148,7 @@ spec:
             value: {{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}
           - name: JARVICE_IMAGES_TAG
 {{- if empty .Values.jarvice_api.env.JARVICE_IMAGES_TAG }}
-            value: {{ .Values.jarvice.JARVICE_IMAGES_TAG }}{{- include "jarvice.version" . }}
+            value: {{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
 {{- else }}
             value: {{ .Values.jarvice_api.env.JARVICE_IMAGES_TAG }}
 {{- end }}
