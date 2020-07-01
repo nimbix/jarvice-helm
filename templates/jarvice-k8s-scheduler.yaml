@@ -65,7 +65,7 @@ spec:
       - name: jarvice-docker
       containers:
       - name: jarvice-k8s-scheduler
-        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-k8s-scheduler:{{ .Values.jarvice.JARVICE_IMAGES_TAG }}{{- include "jarvice.version" . }}
+        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-k8s-scheduler:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
         imagePullPolicy: Always
         ports:
           - name: http
@@ -138,7 +138,7 @@ spec:
           - name: JARVICE_SYSTEM_REPO_BASE
             value: {{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}
           - name: JARVICE_IMAGES_TAG
-            value: {{ .Values.jarvice.JARVICE_IMAGES_TAG }}{{- include "jarvice.version" . }}
+            value: {{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
           - name: JARVICE_LOCAL_REGISTRY
             value: {{ .Values.jarvice.JARVICE_LOCAL_REGISTRY }}
           - name: JARVICE_LOCAL_REPO_BASE
