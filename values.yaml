@@ -66,6 +66,10 @@ jarvice:
   JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 
+  # Set to "true" if using SELinux in enforcing mode on hosts targetted for
+  # computation, and see SELinux.md for details
+  JARVICE_SELINUX_ENFORCING: # "true"
+
   # Global setting for enabling a secure NetworkPolicy for all JARVICE services
   # The global setting can be overridden within individual services below
   networkPolicy:
