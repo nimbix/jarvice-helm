@@ -387,6 +387,8 @@ jarvice_k8s_scheduler:
     JARVICE_UNFS_REQUEST_CPU: 1
     JARVICE_UNFS_EXPIRE_SECS: 90
     JARVICE_UNFS_NODE_SELECTOR: # '{"node-role.kubernetes.io/jarvice-storage": "true"}'
+    JARVICE_UNFS3_IMAGE: # nimbix/unfs3 - change if mirroring locally
+    JARVICE_PVCLS_IMAGE: # alpine:3.8 - change if mirroring locally
 
 jarvice_pod_scheduler:
   enabled: true
