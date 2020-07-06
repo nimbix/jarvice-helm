@@ -188,11 +188,11 @@ spec:
 {{- end }}
 {{- if (not (empty .Values.jarvice_k8s_scheduler.env.JARVICE_UNFS3_IMAGE)) }}
           - name: JARVICE_UNFS3_IMAGE
-            value: '.Values.jarvice_k8s_scheduler.env.JARVICE_UNFS3_IMAGE'
+            value: '{{ .Values.jarvice_k8s_scheduler.env.JARVICE_UNFS3_IMAGE }}'
 {{- end }}
 {{- if (not (empty .Values.jarvice_k8s_scheduler.env.JARVICE_PVCLS_IMAGE)) }}
           - name: JARVICE_PVCLS_IMAGE
-            value: '.Values.jarvice_k8s_scheduler.env.JARVICE_PVCLS_IMAGE'
+            value: '{{ .Values.jarvice_k8s_scheduler.env.JARVICE_PVCLS_IMAGE }}'
 {{- end }}
           - name: JARVICE_JOBS_DOMAIN
             value: "{{ .Values.jarvice.JARVICE_JOBS_DOMAIN }}"
