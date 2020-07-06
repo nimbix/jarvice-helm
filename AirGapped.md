@@ -68,6 +68,11 @@ Once mirrored, edit the entries in the `override.yaml` file to the new tags, by 
 
 Appsync cannot be used in an air gapped configuration, so application containers must be mirrored individually.  A matching application target must be created manually in the JARVICE system (can be performed as the `root` user), and then those applications can be marked public in the *Administration->Apps* view of the portal.  Note that the desired list of application containers must be obtained from Nimbix.  Each application target should also be explicitly pulled after being created to download the in-container metadata (e.g. AppDef).
 
+## Additional Configuration
+
+1. The Jump node user must log in with the upstream service account for the JARVICE system and application containers.
+2. The `jarvice.imagePullSecret` value must be set to the secure registry's service account (or username/password) since the containers will be pulled from there to be executed.  Note that this is different than the upstream service account, which must be used on the Jump node.
+
 ## Updates
 
 Container mirroring should be repeated when the system is updated, including the Helm chart or overrides configuration.  The updated version of JARVICE will be deployed automatically by running a Helm upgrade after updating the configuration parameters.  Note that as a best practice, all containers should be mirrored, or at least checked, in case they changed between versions following the Git update of the `jarvice-helm` repository.
