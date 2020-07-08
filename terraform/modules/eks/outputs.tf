@@ -1,10 +1,10 @@
-# outputs.tf - AKS module outputs
+# outputs.tf - EKS module outputs
 
 resource "local_file" "kube_config" {
     filename = pathexpand(local.kube_config["path"])
     file_permission = "0600" 
     directory_permission = "0775"
-    content = azurerm_kubernetes_cluster.jarvice.kube_config_raw
+    content = module.eks.kubeconfig
 }
 
 output "kube_config_path" {
@@ -35,8 +35,8 @@ output "cluster_info" {
     value = <<EOF
 ===============================================================================
 
-    AKS cluster name: ${var.aks["cluster_name"]}
-AKS cluster location: ${var.aks["location"]}
+  EKS cluster name: ${var.eks["cluster_name"]}
+EKS cluster region: ${var.eks["region"]}
 
 Execute the following to begin using kubectl/helm with the new cluster:
 
@@ -44,7 +44,8 @@ export KUBECONFIG=${local.kube_config["path"]}
 
 ${local.cluster_output_message}:
 
-https://${azurerm_public_ip.jarvice.fqdn}/
+After setting KUBECONFIG, execute the following to get the host name:
+kubectl -n kube-system get services traefik -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
 
 ===============================================================================
 EOF

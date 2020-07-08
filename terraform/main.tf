@@ -25,9 +25,61 @@ terraform {
 resource "local_file" "clusters" {
     filename = "${path.module}/clusters.tf"
     file_permission = "0664"
+    directory_permission = "0775"
 
     content = <<EOF
 # clusters.tf - cluster definitions (dynamically created using cluster configs)
+
+##############################################################################
+%{ for key in keys(local.eks) }
+# EKS cluster configuration: ${key}
+provider "aws" {
+    alias = "${key}"
+    region  = local.eks["${key}"].region
+}
+
+provider "kubernetes" {
+    alias = "${key}"
+
+    load_config_file = false
+    host = module.${key}.kube_config_host
+    cluster_ca_certificate = base64decode(module.${key}.kube_config_cluster_ca_certificate)
+#    client_certificate = base64decode(module.${key}.kube_config_client_certificate)
+#    client_key = base64decode(module.${key}.kube_config_client_key)
+    token = module.${key}.kube_config_token
+}
+
+provider "helm" {
+    alias = "${key}"
+
+    kubernetes {
+        load_config_file = false
+        host = module.${key}.kube_config_host
+        cluster_ca_certificate = base64decode(module.${key}.kube_config_cluster_ca_certificate)
+#        client_certificate = base64decode(module.${key}.kube_config_client_certificate)
+#        client_key = base64decode(module.${key}.kube_config_client_key)
+        token = module.${key}.kube_config_token
+    }
+}
+
+module "${key}" {
+    source = "./modules/eks"
+
+    eks = local.eks["${key}"]
+    global = var.global
+
+    providers = {
+        aws = aws.${key}
+        kubernetes = kubernetes.${key}
+        helm = helm.${key}
+    }
+}
+
+output "${key}" {
+    value = format("\n\nEKS Cluster Configuration: %s\n%s\n", "${key}", module.${key}.cluster_info)
+}
+%{ endfor }
+##############################################################################
 %{ for key in keys(local.aks) }
 # AKS cluster configuration: ${key}
 provider "azurerm" {
@@ -40,10 +92,11 @@ provider "helm" {
 
     kubernetes {
         load_config_file = false
+        host = module.${key}.kube_config_host
+        cluster_ca_certificate = base64decode(module.${key}.kube_config_cluster_ca_certificate)
         client_certificate = base64decode(module.${key}.kube_config_client_certificate)
         client_key = base64decode(module.${key}.kube_config_client_key)
-        cluster_ca_certificate = base64decode(module.${key}.kube_config_cluster_ca_certificate)
-        host = module.${key}.kube_config_host
+        #token = module.${key}.kube_config_token
     }
 }
 
@@ -60,7 +113,7 @@ module "${key}" {
 }
 
 output "${key}" {
-    value = format("\n\nAKS Cluster Configuration: %s\n%s\n", "${key}", module.${key}.AKS)
+    value = format("\n\nAKS Cluster Configuration: %s\n%s\n", "${key}", module.${key}.cluster_info)
 }
 %{ endfor }
 EOF

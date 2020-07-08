@@ -51,10 +51,139 @@ EOF
 ###########################
 ### Amazon EKS Settings ###
 ###########################
-#eks = {
-#    "eks_cluster_00" = {
-#    },
-#}
+eks = {
+    "eks_cluster_00" = {
+        enabled = false
+
+        cluster_name = "tf-jarvice"
+        kubernetes_version = "1.15"
+
+        region = "us-west-2"
+        availability_zones = null
+
+        ssh_public_key = null  # global setting used if null specified
+
+        # Visit the following link for AWS instance type specs:
+        # https://aws.amazon.com/ec2/instance-types/
+        system_node_pool = {
+            instance_type = null  # auto-set if null specified
+            asg_desired_capacity = null    # auto-set if null specified
+        }
+        compute_node_pools = [
+            {
+                instance_type = "c5.18xlarge"
+                root_volume_size = 128
+                asg_desired_capacity = 2
+                asg_min_size = 1
+                asg_max_size = 16
+            },
+            #{
+            #    instance_type = "c5.18xlarge"
+            #    root_volume_size = 128
+            #    asg_desired_capacity = 2
+            #    asg_min_size = 1
+            #    asg_max_size = 16
+            #},
+        ]
+
+        helm = {
+            jarvice = {
+                version = "./"
+                namespace = "jarvice-system"
+                # global override_yaml_values take precedence over cluster
+                # override_yaml_file (override_yaml_file ignored if not found)
+                override_yaml_file = "override-tf.eks.<region>.<cluster_name>.yaml"  # "override-tf.eks.us-west-2.tf-jarvice.yaml"
+
+                override_yaml_values = <<EOF
+# override_yaml_values - takes precedence over override_yaml_file and
+# global override_yaml_values
+
+#jarvice:
+  #JARVICE_IMAGES_TAG: jarvice-master
+  #JARVICE_IMAGES_VERSION:
+
+  # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
+  # settings in jarvice_* component stanzas are ignored.
+  #JARVICE_CLUSTER_TYPE: "upstream"  # "downstream"
+
+  # If deploying "downstream" cluster, be sure to set JARVICE_SCHED_SERVER_KEY
+  #JARVICE_SCHED_SERVER_KEY: # "jarvice-downstream:Pass1234"
+
+  #JARVICE_PVC_VAULT_NAME: persistent
+  #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
+  #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
+  #JARVICE_PVC_VAULT_SIZE: 10
+EOF
+            }
+        }
+    },
+    "eks_cluster_01" = {
+        enabled = false
+
+        cluster_name = "tf-jarvice-downstream"
+        kubernetes_version = "1.15"
+
+        region = "us-west-2"
+        availability_zones = null
+
+        ssh_public_key = null  # global setting used if null specified
+
+        # Visit the following link for AWS instance type specs:
+        # https://aws.amazon.com/ec2/instance-types/
+        system_node_pool = {
+            instance_type = null  # auto-set if null specified
+            asg_desired_capacity = null    # auto-set if null specified
+        }
+        compute_node_pools = [
+            {
+                instance_type = "c5.18xlarge"
+                root_volume_size = 128
+                asg_desired_capacity = 2
+                asg_min_size = 1
+                asg_max_size = 16
+            },
+            #{
+            #    instance_type = "c5.18xlarge"
+            #    root_volume_size = 128
+            #    asg_desired_capacity = 2
+            #    asg_min_size = 1
+            #    asg_max_size = 16
+            #},
+        ]
+
+        helm = {
+            jarvice = {
+                version = "./"
+                namespace = "jarvice-system"
+                # global override_yaml_values take precedence over cluster
+                # override_yaml_file (override_yaml_file ignored if not found)
+                override_yaml_file = "override-tf.eks.<region>.<cluster_name>.yaml"  # "override-tf.eks.us-west-2.tf-jarvice-downstream.yaml"
+
+                override_yaml_values = <<EOF
+# override_yaml_values - takes precedence over override_yaml_file and
+# global override_yaml_values
+
+jarvice:
+  #JARVICE_IMAGES_TAG: jarvice-master
+  #JARVICE_IMAGES_VERSION:
+
+  # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
+  # settings in jarvice_* component stanzas are ignored.
+  JARVICE_CLUSTER_TYPE: "downstream"
+
+  # If deploying "downstream" cluster, be sure to set JARVICE_SCHED_SERVER_KEY
+  #JARVICE_SCHED_SERVER_KEY: # "jarvice-downstream:Pass1234"
+
+  #JARVICE_PVC_VAULT_NAME: persistent
+  #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
+  #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
+  #JARVICE_PVC_VAULT_SIZE: 10
+EOF
+            }
+        }
+    },
+}
+
 
 ##########################
 ### Azure AKS settings ###
@@ -68,7 +197,7 @@ aks = {
         service_principal_client_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
         service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
-        cluster_name = "jarvice"
+        cluster_name = "tf-jarvice"
         kubernetes_version = "1.15.10"
 
         location = "Central US"
@@ -105,7 +234,7 @@ aks = {
                 namespace = "jarvice-system"
                 # global override_yaml_values take precedence over cluster
                 # override_yaml_file (override_yaml_file ignored if not found)
-                override_yaml_file = "override-tf.aks.<location>.<cluster_name>.yaml"  # "override-tf.aks.centralus.jarvice.yaml"
+                override_yaml_file = "override-tf.aks.<location>.<cluster_name>.yaml"  # "override-tf.aks.centralus.tf-jarvice.yaml"
 
                 override_yaml_values = <<EOF
 # override_yaml_values - takes precedence over override_yaml_file and
@@ -138,7 +267,7 @@ EOF
         service_principal_client_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
         service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
-        cluster_name = "jarvice-downstream"
+        cluster_name = "tf-jarvice-downstream"
         kubernetes_version = "1.15.10"
 
         location = "Central US"
@@ -175,7 +304,7 @@ EOF
                 namespace = "jarvice-system"
                 # global override_yaml_values take precedence over cluster
                 # override_yaml_file (override_yaml_file ignored if not found)
-                override_yaml_file = "override-tf.aks.<location>.<cluster_name>.yaml"  # "override-tf.aks.centralus.jarvice-downstream.yaml"
+                override_yaml_file = "override-tf.aks.<location>.<cluster_name>.yaml"  # "override-tf.aks.centralus.tf-jarvice-downstream.yaml"
 
                 override_yaml_values = <<EOF
 # override_yaml_values - takes precedence over override_yaml_file and

@@ -55,44 +55,5 @@ variable "aks" {
             jarvice = map(string)
         })
     })
-    default = {
-        enabled = false
-
-        service_principal_client_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-        service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-
-        cluster_name = "jarvice"
-        kubernetes_version = "1.15.10"
-
-        location = "Central US"
-        availability_zones = ["1"]
-
-        ssh_public_key = null
-
-        system_node_pool = {
-            node_vm_size = null
-            node_count = null
-        }
-        compute_node_pools = [
-            {
-                node_vm_size = "Standard_D32_v3"
-                node_os_disk_size_gb = 100
-                node_count = 2
-                node_min_count = 1
-                node_max_count = 16
-            },
-        ]
-
-        helm = {
-            jarvice = {
-                namespace = "jarvice-system"
-                override_yaml_file = "override-tf.aks.<location>.<cluster_name>.yaml"
-                override_yaml_values = <<EOF
-# override_yaml_values - takes precedence over override_yaml_file and
-# global override_yaml_values
-EOF
-            }
-        }
-    }
 }
 
