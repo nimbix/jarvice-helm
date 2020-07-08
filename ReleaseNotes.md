@@ -101,6 +101,7 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 - Account variables for a given user account must be referenced in an application AppDef in order to be passed into the container.  Please see [Application Definition Guide](https://jarvice.readthedocs.io/en/latest/appdef/) for details.
 - *NetworkPolicy* may not work with all Kubernetes network plugins and configurations; if JARVICE system pods do not enter ready state as a result of failed connectivity to the `jarvice-db` or `jarvice-dal` service, consider disabling this in the Helm chart
 - Automatic mapping of user network home directories into container user home directory if `idmapper` is deployed has been removed.
+- If attempting to run compute jobs on hosts in SELinux "enforcing" mode, please see [SELinux Configuration for JARVICE](SELinux.md) for important information.
 
 ---
 

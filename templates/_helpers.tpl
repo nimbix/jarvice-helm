@@ -28,10 +28,12 @@ If release name contains chart name it will be used as a full name.
 JARVICE tag for images
 */}}
 {{- define "jarvice.tag" -}}
-{{- if (not (empty .Values.jarvice.JARVICE_IMAGES_TAG)) -}}
-{{- printf "%s" .Values.jarvice.JARVICE_IMAGES_VERSION -}}
+{{- if hasPrefix "jarvice-" .Chart.Annotations.tag -}}
+{{- printf "%s" .Chart.Annotations.tag -}}
+{{- else if (not (empty .Values.jarvice.JARVICE_IMAGES_TAG)) -}}
+{{- printf "%s" .Values.jarvice.JARVICE_IMAGES_TAG -}}
 {{- else -}}
-{{- printf "jarvice-master" -}}
+{{- print "jarvice-master" -}}
 {{- end -}}
 {{- end -}}
 
