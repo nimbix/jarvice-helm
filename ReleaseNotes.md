@@ -108,6 +108,13 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202007081950
+
+* (3080) Added `/jarvice/teamusers` API endpoint for a team admin to query a list of users on the team (other than his/herself); please see [The JARVICE API](https://jarvice.readthedocs.io/en/latest/api/) for details.
+* (3140) Added the ability to disable the use of `systemd` in application containers, to better support SELinux "enforcing" mode environments; please see [SELinux Configuration for JARVICE](SELinux.md) for details.
+* (3141) Added the ability to override scheme and/or port for job ingress URLs on the front-end; please see [Custom Ingress URLs for Jobs](Ingress.md#custom-ingress-urls-for-jobs) in *Ingress Patterns and Configuration* for details.
+* (3192) Added support and documentation for "air gapped" network deployments; please see [Air gapped Network Deployment](AirGapped.md) for details.
+
 ## 3.0.0-1.202006242047
 
 * (2870) Updated documentation for multi-zoned deployments.  Please see [JARVICE Multi-cluter Overview](MultiCluster.md) for details.
