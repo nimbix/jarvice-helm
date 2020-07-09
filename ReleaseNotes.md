@@ -108,6 +108,10 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202007092143
+
+* (3216) Fixed missing `%VNAME%` substitution in AppDef `CONST` parameters.
+
 ## 3.0.0-1.202007081950
 
 * (3080) Added `/jarvice/teamusers` API endpoint for a team admin to query a list of users on the team (other than his/herself); please see [The JARVICE API](https://jarvice.readthedocs.io/en/latest/api/) for details.
