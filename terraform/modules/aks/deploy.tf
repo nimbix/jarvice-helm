@@ -4,7 +4,6 @@ module "helm" {
     source = "../helm"
 
     # Traefik settings
-    traefik_deploy = true
     traefik_values = <<EOF
 loadBalancerIP: ${azurerm_public_ip.jarvice.ip_address}
 replicas: 2

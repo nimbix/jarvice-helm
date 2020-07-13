@@ -1,12 +1,18 @@
 # variables.tf - helm module variable definitions
 
-variable "traefik_deploy" {
-    type = bool
-    default = true
+variable "cluster_autoscaler_values" {
+    type = string
+    default = null
+}
+
+variable "external_dns_values" {
+    type = string
+    default = null
 }
 
 variable "traefik_values" {
     type = string
+    default = null
 }
 
 variable "global" {

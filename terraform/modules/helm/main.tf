@@ -6,7 +6,39 @@ terraform {
   }
 }
 
+resource "helm_release" "cluster_autoscaler" {
+    count = var.cluster_autoscaler_values != null ? 1 : 0
+
+    name = "cluster-autoscaler"
+    repository = "https://kubernetes-charts.storage.googleapis.com"
+    chart = "cluster-autoscaler"
+    namespace = "kube-system"
+    reuse_values = false
+    reset_values = true
+    render_subchart_notes = false
+    timeout = 600
+
+    values = [var.cluster_autoscaler_values]
+}
+
+resource "helm_release" "external_dns" {
+    count = var.external_dns_values != null ? 1 : 0
+
+    name = "external-dns"
+    repository = "https://charts.bitnami.com/bitnami"
+    chart = "external-dns"
+    namespace = "kube-system"
+    reuse_values = false
+    reset_values = true
+    render_subchart_notes = false
+    timeout = 600
+
+    values = [var.external_dns_values]
+}
+
 resource "helm_release" "traefik" {
+    count = var.traefik_values != null ? 1 : 0
+
     name = "traefik"
     repository = "https://kubernetes-charts.storage.googleapis.com"
     chart = "traefik"

@@ -4,7 +4,6 @@ module "helm" {
     source = "../helm"
 
     # Traefik settings
-    traefik_deploy = true
     traefik_values = <<EOF
 #loadBalancerIP: {aws_eip.nat[0].public_ip}
 replicas: 2
@@ -15,7 +14,7 @@ cpuLimit: 1
 
 nodeSelector:
   kubernetes.io/arch: "amd64"
-  #node-role.kubernetes.io/jarvice-system: "true"
+  node-role.kubernetes.io/jarvice-system: "true"
 tolerations:
   - key: node-role.kubernetes.io/jarvice-system
     effect: NoSchedule
@@ -40,7 +39,7 @@ dashboard:
     #service.beta.kubernetes.io/aws-load-balancer-connection-idle-timeout: "60"
     #service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
     #service.beta.kubernetes.io/aws-load-balancer-internal: 0.0.0.0/0
-    #service.beta.kubernetes.io/aws-load-balancer-subnets: "${aws_security_group.jarvice.id}"
+    #service.beta.kubernetes.io/aws-load-balancer-subnets: "{aws_security_group.jarvice.id}"
 
 rbac:
   enabled: true
