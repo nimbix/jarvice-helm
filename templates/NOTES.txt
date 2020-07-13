@@ -72,7 +72,7 @@ $ REGISTRY_IP=$(kubectl --namespace {{ .Release.Namespace }} get services \
 
 {{- end }}
 {{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
-{{- if (not (empty .Values.jarvice_mc_portal.ingressHost)) -}
+{{- if (not (empty .Values.jarvice_mc_portal.ingressHost)) }}
 Use https://{{ .Values.jarvice_mc_portal.ingressHost }}/ to initialize and/or log into JARVICE.
 {{- else }}
 {{- if (not (empty .Values.jarvice_mc_portal.loadBalancerIP)) -}
@@ -81,20 +81,20 @@ Use http://{{ .Values.jarvice_mc_portal.loadBalancerIP }}:8080/ to initialize an
 Use http://$PORTAL_IP:8080/ to initialize and/or log into JARVICE.
 {{- end }}
 {{- end }}
-{{- if (not (empty .Values.jarvice_api.ingressHost)) -}
+{{- if (not (empty .Values.jarvice_api.ingressHost)) }}
 Use https://{{ .Values.jarvice_api.ingressHost }}/jarvice/ as the API endpoint for JARVICE.
 {{- else }}
-{{- if (not (empty .Values.jarvice_api.loadBalancerIP)) -}
+{{- if (not (empty .Values.jarvice_api.loadBalancerIP)) }}
 Use http://{{ .Values.jarvice_api.loadBalancerIP }}:8080/jarvice/ as the API endpoint for JARVICE.
 {{- else }}
 Use http://$API_IP:8080/jarvice/ as the API endpoint for JARVICE.
 {{- end }}
 {{- end }}
 {{- else }}
-{{- if (not (empty .Values.jarvice_k8s_scheduler.ingressHost)) -}
+{{- if (not (empty .Values.jarvice_k8s_scheduler.ingressHost)) }}
 Use https://{{ .Values.jarvice_k8s_scheduler.ingressHost }}/ in the upstream JARVICE cluster configuration.
 {{- else }}
-{{- if (not (empty .Values.jarvice_k8s_scheduler.loadBalancerIP)) -}
+{{- if (not (empty .Values.jarvice_k8s_scheduler.loadBalancerIP)) }}
 Use http://{{ .Values.jarvice_k8s_scheduler.loadBalancerIP }}:8080/ in the upstream JARVICE cluster configuration.
 {{- else }}
 Use http://$SCHED_IP:8080/ in the upstream JARVICE cluster configuration.
