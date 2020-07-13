@@ -63,14 +63,15 @@ $ SCHED_IP=$(kubectl --namespace {{ .Release.Namespace }} get services \
     jarvice-k8s-scheduler-lb -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 $ echo "$SCHED_IP"
 {{- end }}
-
 {{- if .Values.jarvice_registry.enabled }}
+
 The registry IP address can be found with:
 
 $ REGISTRY_IP=$(kubectl --namespace {{ .Release.Namespace }} get services \
     jarvice-registry-lb -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-
 {{- end }}
+
+
 {{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if (not (empty .Values.jarvice_mc_portal.ingressHost)) }}
 Use https://{{ .Values.jarvice_mc_portal.ingressHost }}/ to initialize and/or log into JARVICE.
