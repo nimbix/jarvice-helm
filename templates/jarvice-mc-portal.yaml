@@ -128,6 +128,14 @@ spec:
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_USER_DEFAULT_ENABLED }}"
           - name: JARVICE_USER_DEFAULT_DEVELOPER
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_USER_DEFAULT_DEVELOPER }}"
+{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_REALM)) }}
+          - name: JARVICE_PORTAL_GSS_REALM
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_REALM }}"
+{{- end }}
+{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_DOMAIN)) }}
+          - name: JARVICE_PORTAL_GSS_DOMAIN
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_DOMAIN }}"
+{{- end }}
 {{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_WEB_HOST)) }}
           - name: JARVICE_PORTAL_WEB_HOST
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_WEB_HOST }}"
