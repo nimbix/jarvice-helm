@@ -75,7 +75,7 @@ $ REGISTRY_IP=$(kubectl --namespace {{ .Release.Namespace }} get services \
 {{- if (not (empty .Values.jarvice_mc_portal.ingressHost)) }}
 Use https://{{ .Values.jarvice_mc_portal.ingressHost }}/ to initialize and/or log into JARVICE.
 {{- else }}
-{{- if (not (empty .Values.jarvice_mc_portal.loadBalancerIP)) -}
+{{- if (not (empty .Values.jarvice_mc_portal.loadBalancerIP)) }}
 Use http://{{ .Values.jarvice_mc_portal.loadBalancerIP }}:8080/ to initialize and/or log into JARVICE.
 {{- else }}
 Use http://$PORTAL_IP:8080/ to initialize and/or log into JARVICE.
