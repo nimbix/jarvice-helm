@@ -75,7 +75,6 @@ spec:
         - name: krb5-keytab
           secret:
             secretName: krb5.keytab
-            optional: true
             defaultMode: 0644
             items:
             - key: krb5.keytab
