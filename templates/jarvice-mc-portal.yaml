@@ -72,6 +72,15 @@ spec:
           secret:
             secretName: jarvice-secrets
             optional: true
+        - name: krb5-keytab
+          secret:
+            secretName: krb5.keytab
+            optional: true
+            defaultMode: 0644
+            items:
+            - key: krb5.keytab
+              mode: 0644
+              path: krb5.keytab
       containers:
       - name: jarvice-mc-portal
         image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-mc-portal:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
@@ -232,6 +241,9 @@ spec:
         - name: jarvice-secrets
           mountPath: /etc/jarvice/secrets/jarvice-mc-portal
           readOnly: true
+        - name: krb5-keytab
+          mountPath: /etc/krb5.keytab
+          subPath: krb5.keytab
         resources:
 {{- if .Values.jarvice_mc_portal.resources }}
 {{ toYaml .Values.jarvice_mc_portal.resources | indent 10 }}
