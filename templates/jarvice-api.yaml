@@ -1,5 +1,6 @@
 {{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if .Values.jarvice_api.enabled }}
+{{- if gt .Values.jarvice_api.replicaCount 1 }}
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
@@ -10,6 +11,7 @@ spec:
       deployment: jarvice-api
   minAvailable: {{ .Values.jarvice_api.pdb.minAvailable }}
 ---
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:

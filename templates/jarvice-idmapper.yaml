@@ -1,4 +1,5 @@
 {{- if .Values.jarvice_idmapper.enabled }}
+{{- if gt .Values.jarvice_idmapper.replicaCount 1 }}
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
@@ -9,6 +10,7 @@ spec:
       deployment: jarvice-idmapper
   minAvailable: {{ .Values.jarvice_idmapper.pdb.minAvailable }}
 ---
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
