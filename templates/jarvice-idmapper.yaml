@@ -1,5 +1,5 @@
 {{- if .Values.jarvice_idmapper.enabled }}
-{{- if gt .Values.jarvice_idmapper.replicaCount 1 }}
+{{- if gt (.Values.jarvice_idmapper.replicaCount | int) 1 }}
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
