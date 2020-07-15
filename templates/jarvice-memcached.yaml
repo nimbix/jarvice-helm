@@ -1,6 +1,6 @@
 {{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if .Values.jarvice_memcached.enabled }}
-{{- if gt .Values.jarvice_memcached.replicaCount 1 }}
+{{- if gt (.Values.jarvice_memcached.replicaCount | int) 1 }}
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:

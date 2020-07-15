@@ -1,6 +1,6 @@
 {{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if .Values.jarvice_dal.enabled }}
-{{- if gt .Values.jarvice_dal.replicaCount 1 }}
+{{- if gt (.Values.jarvice_dal.replicaCount | int) 1 }}
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
