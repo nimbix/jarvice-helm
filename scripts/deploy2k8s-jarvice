@@ -1,5 +1,7 @@
 #!/bin/bash
 
+HELM_VER_REQ=3.2.0
+
 jarvice_chart_dir=$(realpath --relative-to=$(pwd) $(dirname $0)/..)
 args="$*"
 
@@ -25,6 +27,12 @@ Example:
 EOF
 }
 
+function strict_version {
+    ver=$1
+    ver_req=$2
+    python -c "from distutils.version import StrictVersion;print StrictVersion('$ver') >= StrictVersion('$ver_req');" 2>/dev/null || /bin/true
+}
+
 HELM=$(type -p helm)
 if [ -z "$HELM" ]; then
     cat <<EOF
@@ -33,6 +41,15 @@ Run 'install-helm' from the 'jarvice-helm/scripts' directory to install it.
 EOF
     exit 1
 fi
+
+HELM_VER=$($HELM version 2>/dev/null | grep 'Version:' | sed -E 's/.*Version:"v([.0-9]+)".*/\1/')
+if [ "$(strict_version $HELM_VER $HELM_VER_REQ)" != "True" ]; then
+    echo "helm version $HELM_VER_REQ or newer is required."
+    echo "Please upgrade helm or remove it."
+    echo "Run 'install-helm' from the 'jarvice-helm/scripts' directory to re-install it."
+    exit 1
+fi
+
 
 KUBECTL=$(type -p kubectl)
 if [ -z "$KUBECTL" ]; then
