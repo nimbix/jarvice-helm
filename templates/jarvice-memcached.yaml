@@ -1,5 +1,6 @@
 {{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if .Values.jarvice_memcached.enabled }}
+{{- if gt (.Values.jarvice_memcached.replicaCount | int) 1 }}
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
@@ -10,6 +11,7 @@ spec:
       deployment: jarvice-memcached
   minAvailable: {{ .Values.jarvice_memcached.pdb.minAvailable }}
 ---
+{{- end }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:

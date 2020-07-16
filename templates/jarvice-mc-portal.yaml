@@ -1,5 +1,6 @@
 {{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if .Values.jarvice_mc_portal.enabled }}
+{{- if gt (.Values.jarvice_mc_portal.replicaCount | int) 1 }}
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
 metadata:
@@ -10,6 +11,7 @@ spec:
       deployment: jarvice-mc-portal
   minAvailable: {{ .Values.jarvice_mc_portal.pdb.minAvailable }}
 ---
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -72,6 +74,14 @@ spec:
           secret:
             secretName: jarvice-secrets
             optional: true
+        - name: krb5-keytab
+          secret:
+            secretName: krb5.keytab
+            defaultMode: 0644
+            items:
+            - key: krb5.keytab
+              mode: 0644
+              path: krb5.keytab
       containers:
       - name: jarvice-mc-portal
         image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-mc-portal:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
@@ -128,6 +138,14 @@ spec:
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_USER_DEFAULT_ENABLED }}"
           - name: JARVICE_USER_DEFAULT_DEVELOPER
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_USER_DEFAULT_DEVELOPER }}"
+{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_REALM)) }}
+          - name: JARVICE_PORTAL_GSS_REALM
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_REALM }}"
+{{- end }}
+{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_DOMAIN)) }}
+          - name: JARVICE_PORTAL_GSS_DOMAIN
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_DOMAIN }}"
+{{- end }}
 {{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_WEB_HOST)) }}
           - name: JARVICE_PORTAL_WEB_HOST
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_WEB_HOST }}"
@@ -224,6 +242,9 @@ spec:
         - name: jarvice-secrets
           mountPath: /etc/jarvice/secrets/jarvice-mc-portal
           readOnly: true
+        - name: krb5-keytab
+          mountPath: /etc/krb5.keytab
+          subPath: krb5.keytab
         resources:
 {{- if .Values.jarvice_mc_portal.resources }}
 {{ toYaml .Values.jarvice_mc_portal.resources | indent 10 }}
