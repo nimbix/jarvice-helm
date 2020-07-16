@@ -245,6 +245,7 @@ spec:
         - name: krb5-keytab
           mountPath: /etc/krb5.keytab
           subPath: krb5.keytab
+          readOnly: true
         resources:
 {{- if .Values.jarvice_mc_portal.resources }}
 {{ toYaml .Values.jarvice_mc_portal.resources | indent 10 }}
