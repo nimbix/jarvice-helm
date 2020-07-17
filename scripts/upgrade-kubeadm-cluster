@@ -21,10 +21,30 @@ EOF
     [ "$(basename $0)" == "upgrade-kubeadm-cluster" ] && cat <<EOF
     --ssh-user      SSH user which will run upgrade on cluster nodes.
     --master-nodes  Only upgrade master nodes, skip worker nodes.
+                    (Use to continue previously interrupted upgrade process)
     --worker-nodes  Only upgrade worker nodes, skip master nodes.
+                    (Use to continue previously interrupted upgrade process)
 
-Example:
-    $0 --patch --ssh-user jarvice
+Example (dry run, check upgrade of installed 1.x to latest 1.x.y patch version):
+    $0 --patch --ssh-user jarvice --yes
+
+Example (non-dry run, perform a full cluster upgrade from 1.x.y to 1.x+1.y):
+    $0 --minor --ssh-user jarvice --no-dry-run
+
+If a previous cluster upgrade was interrupted, it will be necessary to use
+--master-nodes and/or --worker-nodes to continue where the upgrade left off.
+
+Example (non-dry run, upgrade remaining master nodes):
+    $0 --minor --ssh-user jarvice --no-dry-run \\
+            --master-nodes k8s-master-01 k8s-master-02
+
+Example (non-dry run, upgrade all worker nodes):
+    $0 --minor --ssh-user jarvice --no-dry-run \\
+            --worker-nodes
+
+Example (non-dry run, upgrade remaining worker nodes):
+    $0 --minor --ssh-user jarvice --no-dry-run \\
+            --worker-nodes k8s-worker-08 k8s-worker-09 k8s-worker-10
 
 EOF
     [ "$(basename $0)" == "upgrade-kubeadm" -a -f /etc/kubernetes/admin.conf ] && cat <<EOF
@@ -167,6 +187,16 @@ if [ "$(basename $0)" == "upgrade-kubeadm-cluster" ]; then
         usage
         echo "Only one of --master-nodes or --worker-nodes may be specified.  Exiting..."
         exit 1
+    fi
+    if [ -n "$MASTER_NODES" ]; then
+        echo
+        prompt_continue "The --master-nodes flag should only be used when continuing a previously interrupted cluster upgrade.  Are you certain that the first master node has been successfully upgraded?"
+        echo
+    fi
+    if [ -n "$WORKER_NODES" ]; then
+        echo
+        prompt_continue "The --worker-nodes flag should only be used when continuing a previously interrupted cluster upgrade.  Are you certain that all of the master nodes have been successfully upgraded?"
+        echo
     fi
 fi
 
