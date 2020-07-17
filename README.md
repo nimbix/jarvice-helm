@@ -91,6 +91,8 @@ If the script does not support the client machine's operating system,
 specific operating system instructions can be found here:
 https://github.com/helm/helm/releases
 
+**Note:** The JARVICE helm chart requires helm version 3.2.0 or newer.
+
 #### Add `stable` helm chart repository
 
 If `helm` was previously installed (without `install-helm`), it may be
