@@ -860,14 +860,15 @@ information.
 
 #### SSH access from a `kubectl` client machine
 
-The `upgrade-kubeadm-cluster` upgrade script also assumes that the cluster
-node names match their network host name that is directly accessible, via SSH,
-from the `kubectl` client machine that the script will be executed on.
+The `upgrade-kubeadm-cluster` script also assumes that the cluster
+node names match a DNS resolvable network host name that is directly
+accessible, via SSH, from the `kubectl` client machine that the script will
+be executed on.
 
 It is recommended that SSH keys are copied to the cluster nodes for the SSH
 user that has `sudo` access on each of those nodes.  That user will be used
-by the scripts.  SSH keys can be copied to the nodes with commands similar
-to the following:
+by the upgrade scripts.  SSH keys can be copied to the nodes with commands
+similar to the following:
 ```bash
 $ NODES=$(kubectl get nodes -o jsonpath='{.items[*].metadata.name}')
 $ USER=jarvice
@@ -942,7 +943,7 @@ https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/
 
 If not utilizing `upgrade-kubeadm-cluster`, this script will need to be run
 with the `--first` flag on the first master node before being executed on
-the rest of the master nodes with `--additional`.
+the remaining master nodes with `--additional`.
 
 Be sure that `upgrade-kubeadm` **and** `upgrade-kubelet` have been executed on
 all of the master nodes before executing this script on the worker nodes.
@@ -974,7 +975,7 @@ https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/
 #### `upgrade-kubelet`
 
 If not utilizing `upgrade-kubeadm-cluster`, this script will need to be run
-run on each cluster node **after** `upgrade-kubeadm` has been executed on them.
+on each cluster node **after** `upgrade-kubeadm` has been executed on them.
 
 Note that it should only be run on each master node after `upgrade-kubeadm`
 has been executed on **all** of the master nodes.
