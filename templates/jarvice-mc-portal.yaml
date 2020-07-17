@@ -146,6 +146,10 @@ spec:
           - name: JARVICE_PORTAL_GSS_DOMAIN
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_DOMAIN }}"
 {{- end }}
+{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_LOG)) }}
+          - name: JARVICE_PORTAL_GSS_LOG
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_LOG }}"
+{{- end }}
 {{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_WEB_HOST)) }}
           - name: JARVICE_PORTAL_WEB_HOST
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_WEB_HOST }}"
@@ -245,6 +249,7 @@ spec:
         - name: krb5-keytab
           mountPath: /etc/krb5.keytab
           subPath: krb5.keytab
+          readOnly: true
         resources:
 {{- if .Values.jarvice_mc_portal.resources }}
 {{ toYaml .Values.jarvice_mc_portal.resources | indent 10 }}

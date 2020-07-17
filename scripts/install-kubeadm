@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MAJOR_VER=1.16
+MAJOR_VER=1.18
 
 function usage {
     cat <<EOF
@@ -12,7 +12,7 @@ Options:
                                 (Default: $MAJOR_VER)
 
 Example:
-    $0 --major-version 1.14
+    $0 --major-version 1.16
 EOF
 }
 

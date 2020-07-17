@@ -67,6 +67,16 @@ a PoC cluster installation.
 * [Scaling Up the Kubernetes Cluster](#scaling-up-the-kubernetes-cluster)
     - [Adding kubernetes worker nodes](#adding-kubernetes-worker-nodes)
     - [Adding kubernetes master nodes](#adding-kubernetes-master-nodes)
+* [Upgrading the Kubernetes Cluster](#upgrading-the-kubernetes-cluster)
+    - [Prerequisites for cluster upgrade](#prerequisites-for-cluster-upgrade)
+        - [Package repository](#package-repository)
+        - [User with `sudo` access](#user-with-sudo-access)
+        - [SSH access from a `kubectl` client machine](#ssh-access-from-a-kubectl-client-machine)
+    - [Review kubernetes documentation](#review-kubernetes-documentation)
+    - [Upgrade scripts](#upgrade-scripts)
+        - [`upgrade-kubeadm-cluster`](#upgrade-kubeadm-cluster)
+        - [`upgrade-kubeadm`](#upgrade-kubeadm)
+        - [`upgrade-kubelet`](#upgrade-kubelet)
 * [Additional Resources](#additional-resources)
 
 ------------------------------------------------------------------------------
@@ -827,6 +837,169 @@ From a `kubectl` client machine, verify that the nodes have been added
 and are in the `Ready` state:
 ```bash
 $ kubectl get nodes
+```
+
+------------------------------------------------------------------------------
+
+## Upgrading the Kubernetes Cluster
+
+### Prerequisites for cluster upgrade
+
+#### Package repository
+
+The upgrade scripts referred to in this documentation assume that access to
+the `kubeadm` package repository is already configured on each cluster node.
+If the installation procedure in this documentation was followed, that
+repository is already set up on the nodes.
+
+#### User with `sudo` access
+
+It is also assumed that a user with `sudo` access already exists on each of
+the nodes.  See [access to cluster nodes](#access-to-cluster-nodes) for more
+information.
+
+#### SSH access from a `kubectl` client machine
+
+The `upgrade-kubeadm-cluster` script also assumes that the cluster
+node names match a DNS resolvable network host name that is directly
+accessible, via SSH, from the `kubectl` client machine that the script will
+be executed on.
+
+It is recommended that SSH keys are copied to the cluster nodes for the SSH
+user that has `sudo` access on each of those nodes.  That user will be used
+by the upgrade scripts.  SSH keys can be copied to the nodes with commands
+similar to the following:
+```bash
+$ NODES=$(kubectl get nodes -o jsonpath='{.items[*].metadata.name}')
+$ USER=jarvice
+$ for n in $NODES; do ssh-copy-id $USER@$n; done
+```
+
+### Review kubernetes documentation
+
+Before beginning any upgrade of your cluster, be sure to review
+the official kubernetes documentation for
+[upgrading kubeadm clusters](https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/).
+
+### Upgrade scripts
+
+#### `upgrade-kubeadm-cluster`
+
+This is the master script that should be used to upgrade the entire
+`kubeadm` cluster.  It will copy and execute the `upgrade-kubeadm` and
+`upgrade-kubelet` scripts onto the master and worker nodes in the appropriate
+order.
+
+If you are not able to execute `upgrade-kubeadm-cluster` from a host that has
+direct access to the cluster nodes, it will be necessary to manually copy
+`upgrade-kubeadm` and `upgrade-kubelet` to the nodes to execute them.
+
+Execute `upgrade-kubeadm-cluster` with the `--help` flag to see it's usage:
+
+```bash
+Usage:
+    ./scripts/upgrade-kubeadm-cluster [options]
+
+Options:
+    --minor         Upgrade to the next minor release.
+                    (e.g. 1.15->1.16, 1.16->1.17, 1.17->1.18, etc.)
+    --patch         Upgrade to the latest patch release.
+                    (e.g. 1.17.x->1.17.y, 1.18.x->1.18.y, etc.)
+    --no-dry-run    Do not execute in dry run mode.  Apply package upgrades
+                    and/or configuration updates.  (Dry run is default mode.)
+    --yes           Skip all continuation prompts.  Auto answer yes.
+    --ssh-user      SSH user which will run upgrade on cluster nodes.
+    --master-nodes  Only upgrade master nodes, skip worker nodes.
+                    (Use to continue previously interrupted upgrade process)
+    --worker-nodes  Only upgrade worker nodes, skip master nodes.
+                    (Use to continue previously interrupted upgrade process)
+
+Example (dry run, check upgrade of installed 1.x to latest 1.x.y patch version):
+    ./scripts/upgrade-kubeadm-cluster --patch --ssh-user jarvice --yes
+
+Example (non-dry run, perform a full cluster upgrade from 1.x.y to 1.x+1.y):
+    ./scripts/upgrade-kubeadm-cluster --minor --ssh-user jarvice --no-dry-run
+
+If a previous cluster upgrade was interrupted, it will be necessary to use
+--master-nodes and/or --worker-nodes to continue where the upgrade left off.
+
+Example (non-dry run, upgrade remaining master nodes):
+    ./scripts/upgrade-kubeadm-cluster --minor --ssh-user jarvice --no-dry-run \
+            --master-nodes k8s-master-01 k8s-master-02
+
+Example (non-dry run, upgrade all worker nodes):
+    ./scripts/upgrade-kubeadm-cluster --minor --ssh-user jarvice --no-dry-run \
+            --worker-nodes
+
+Example (non-dry run, upgrade remaining worker nodes):
+    ./scripts/upgrade-kubeadm-cluster --minor --ssh-user jarvice --no-dry-run \
+            --worker-nodes k8s-worker-08 k8s-worker-09 k8s-worker-10
+
+Review the kubeadm cluster upgrade documentation prior to beginning upgrade:
+https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/
+```
+
+#### `upgrade-kubeadm`
+
+If not utilizing `upgrade-kubeadm-cluster`, this script will need to be run
+with the `--first` flag on the first master node before being executed on
+the remaining master nodes with `--additional`.
+
+Be sure that `upgrade-kubeadm` **and** `upgrade-kubelet` have been executed on
+all of the master nodes before executing this script on the worker nodes.
+
+Execute `upgrade-kubeadm` with the `--help` flag to see it's usage:
+
+```bash
+Usage:
+    ./scripts/upgrade-kubeadm [options]
+
+Options:
+    --minor         Upgrade to the next minor release.
+                    (e.g. 1.15->1.16, 1.16->1.17, 1.17->1.18, etc.)
+    --patch         Upgrade to the latest patch release.
+                    (e.g. 1.17.x->1.17.y, 1.18.x->1.18.y, etc.)
+    --no-dry-run    Do not execute in dry run mode.  Apply package upgrades
+                    and/or configuration updates.  (Dry run is default mode.)
+    --yes           Skip all continuation prompts.  Auto answer yes.
+    --first         First master control plane node.  Apply new version.
+    --additional    Additional master control plane node.  Upgrade node.
+
+Example:
+    ./scripts/upgrade-kubeadm --patch --first
+
+Review the kubeadm cluster upgrade documentation prior to beginning upgrade:
+https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/
+```
+
+#### `upgrade-kubelet`
+
+If not utilizing `upgrade-kubeadm-cluster`, this script will need to be run
+on each cluster node **after** `upgrade-kubeadm` has been executed on them.
+
+Note that it should only be run on each master node after `upgrade-kubeadm`
+has been executed on **all** of the master nodes.
+
+Execute `upgrade-kubelet` with the `--help` flag to see it's usage:
+
+```bash
+Usage:
+    ./scripts/upgrade-kubelet [options]
+
+Options:
+    --minor         Upgrade to the next minor release.
+                    (e.g. 1.15->1.16, 1.16->1.17, 1.17->1.18, etc.)
+    --patch         Upgrade to the latest patch release.
+                    (e.g. 1.17.x->1.17.y, 1.18.x->1.18.y, etc.)
+    --no-dry-run    Do not execute in dry run mode.  Apply package upgrades
+                    and/or configuration updates.  (Dry run is default mode.)
+    --yes           Skip all continuation prompts.  Auto answer yes.
+
+Example:
+    ./scripts/upgrade-kubelet --patch
+
+Review the kubeadm cluster upgrade documentation prior to beginning upgrade:
+https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/
 ```
 
 ------------------------------------------------------------------------------
