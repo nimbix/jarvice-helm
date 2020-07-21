@@ -20,4 +20,4 @@ sources:
    - https://github.com/nimbix/jarvice-helm
 
 engine: gotpl
-kubeVersion: ">=1.14"
+#kubeVersion: ">=1.14"
