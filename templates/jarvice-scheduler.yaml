@@ -118,7 +118,11 @@ spec:
             value: "https://jarvice-dal:8443"
 {{- end }}
           - name: JARVICE_SCHED_URL
+{{- if (not (empty .Values.jarvice_scheduler.env.JARVICE_SCHED_URL)) }}
+            value: "{{ .Values.jarvice_scheduler.env.JARVICE_SCHED_URL }}"
+{{- else }}
             value: "https://jarvice-scheduler:9443"
+{{- end }}
           - name: JARVICE_LICENSE_LIC
             valueFrom:
               secretKeyRef:
