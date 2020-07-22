@@ -110,6 +110,11 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202007221912
+
+* (3133) Updated Kubernetes support statement; see [Kubernetes Support](#kubernetes-support) for details.
+* (3230) Improved handling of jobs with unknown status in scheduler, which was leading to auto-cancellation of queued jobs.
+
 ## 3.0.0-1.202007092149
 
 * (3216) Fixed missing `%VNAME%` substitution in AppDef `CONST` parameters.
