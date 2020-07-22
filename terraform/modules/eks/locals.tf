@@ -11,7 +11,7 @@ locals {
 }
 
 locals {
-    system_node_instance_type = local.jarvice_cluster_type == "downstream" ? "m5.2xlarge" : "m5.xlarge"
+    system_node_instance_type = local.jarvice_cluster_type == "downstream" ? "m5.xlarge" : "m5.2xlarge"
     system_node_asg_desired_capacity = local.jarvice_cluster_type == "downstream" ? 2 : 3
 }
 
