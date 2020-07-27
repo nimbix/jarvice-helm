@@ -7,28 +7,8 @@ resource "local_file" "kube_config" {
     content = azurerm_kubernetes_cluster.jarvice.kube_config_raw
 }
 
-output "kube_config_path" {
-    value = local.kube_config["path"]
-}
-
-output "kube_config_host" {
-    value = local.kube_config["host"]
-}
-
-output "kube_config_cluster_ca_certificate" {
-    value = local.kube_config["cluster_ca_certificate"]
-}
-
-output "kube_config_client_certificate" {
-    value = local.kube_config["client_certificate"]
-}
-
-output "kube_config_client_key" {
-    value = local.kube_config["client_key"]
-}
-
-output "kube_config_token" {
-    value = local.kube_config["token"]
+output "kube_config" {
+    value = local.kube_config
 }
 
 output "cluster_info" {

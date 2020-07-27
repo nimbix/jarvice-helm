@@ -7,28 +7,26 @@ resource "local_file" "kube_config" {
     content = module.eks.kubeconfig
 }
 
-output "kube_config_path" {
-    value = local.kube_config["path"]
+output "kube_config" {
+    value = local.kube_config
 }
 
-output "kube_config_host" {
-    value = local.kube_config["host"]
-}
+resource "null_resource" "ingress_host_file" {
+    triggers = {
+        path = local.jarvice_config["ingress_host_path"]
+        jarvice_revision = module.helm.metadata["jarvice"]["revision"]
+        jarvice_version = module.helm.metadata["jarvice"]["version"]
+        jarvice_values = module.helm.metadata["jarvice"]["values"]
+    }
 
-output "kube_config_cluster_ca_certificate" {
-    value = local.kube_config["cluster_ca_certificate"]
-}
+    provisioner "local-exec" {
+        command = "kubectl --kubeconfig ${local_file.kube_config.filename} -n ${var.eks.helm.jarvice["namespace"]} get ingress jarvice-mc-portal -o jsonpath='{.spec.rules[0].host}' >${pathexpand(local.jarvice_config["ingress_host_path"])}"
+    }
 
-output "kube_config_client_certificate" {
-    value = local.kube_config["client_certificate"]
-}
-
-output "kube_config_client_key" {
-    value = local.kube_config["client_key"]
-}
-
-output "kube_config_token" {
-    value = local.kube_config["token"]
+    provisioner "local-exec" {
+        when = destroy
+        command = fileexists(self.triggers.path) ? "rm -f ${self.triggers.path}" : null
+    }
 }
 
 output "cluster_info" {
@@ -44,8 +42,7 @@ export KUBECONFIG=${local.kube_config["path"]}
 
 ${local.cluster_output_message}:
 
-After setting KUBECONFIG, execute the following to get the host name:
-kubectl -n kube-system get services traefik -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+https://${file(lookup(null_resource.ingress_host_file.triggers, "path", null))}/
 
 ===============================================================================
 EOF
