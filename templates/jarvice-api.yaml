@@ -285,7 +285,11 @@ metadata:
     component: jarvice-api
 spec:
   rules:
+{{- if eq "lookup" .Values.jarvice_api.ingressHost }}
+  - host: '{{- (first (lookup "v1" "Service" .Values.jarvice_api.ingressServiceNamespace .Values.jarvice_api.ingressService).status.loadBalancer.ingress).hostname }}'
+{{- else }}
   - host: {{ .Values.jarvice_api.ingressHost }}
+{{- end }}
     http:
       paths:
 {{- if (eq "/api" .Values.jarvice_api.ingressPath) }}

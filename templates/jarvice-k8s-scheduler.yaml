@@ -294,7 +294,11 @@ metadata:
     component: jarvice-k8s-scheduler
 spec:
   rules:
+{{- if eq "lookup" .Values.jarvice_k8s_scheduler.ingressHost }}
+  - host: '{{- (first (lookup "v1" "Service" .Values.jarvice_k8s_scheduler.ingressServiceNamespace .Values.jarvice_k8s_scheduler.ingressService).status.loadBalancer.ingress).hostname }}'
+{{- else }}
   - host: {{ .Values.jarvice_k8s_scheduler.ingressHost }}
+{{- end }}
     http:
       paths:
       - backend:
