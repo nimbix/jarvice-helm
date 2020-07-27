@@ -64,6 +64,7 @@ resource "helm_release" "jarvice" {
     reset_values = true
     render_subchart_notes = false
     timeout = 600
+    wait = false
 
     values = [
         fileexists("values.yaml") ? "# values.yaml\n\n${file("values.yaml")}" : "",
@@ -72,5 +73,7 @@ resource "helm_release" "jarvice" {
         "${var.jarvice["override_yaml_values"]}",
         "${var.cluster_override_yaml_values}"
     ]
+
+    depends_on = [helm_release.traefik]
 }
 

@@ -1,5 +1,11 @@
 # variables.tf - helm module variable definitions
 
+#variable "values" {
+#    type = map(
+#        list(string)
+#    )
+#}
+
 variable "cluster_autoscaler_values" {
     type = string
     default = null
