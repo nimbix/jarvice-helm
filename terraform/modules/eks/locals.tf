@@ -1,7 +1,7 @@
 # locals.tf - EKS module local variable definitions
 
 locals {
-    jarvice_override_yaml_file = replace(replace("${var.eks.helm.jarvice["override_yaml_file"]}", "<region>", "${var.eks.region}"), "<cluster_name>", "${var.eks["cluster_name"]}")
+    jarvice_override_yaml_file = replace(replace("${var.eks.helm.jarvice["override_yaml_file"]}", "<region>", "${var.eks["region"]}"), "<cluster_name>", "${var.eks["cluster_name"]}")
 
     jarvice_helm_override_yaml = fileexists(local.jarvice_override_yaml_file) ? "${file("${local.jarvice_override_yaml_file}")}" : ""
 
@@ -17,7 +17,7 @@ locals {
 
 locals {
     kube_config = {
-        "path" = "~/.kube/config-tf.eks.${var.eks.region}.${var.eks["cluster_name"]}",
+        "path" = "~/.kube/config-tf.eks.${var.eks["region"]}.${var.eks["cluster_name"]}",
         "host" = data.aws_eks_cluster.cluster.endpoint,
         "cluster_ca_certificate" = data.aws_eks_cluster.cluster.certificate_authority.0.data,
         "token" = data.aws_eks_cluster_auth.cluster.token,
@@ -27,21 +27,36 @@ locals {
 }
 
 locals {
+    jarvice_config = {
+        "ingress_host_path" = "~/.terraform-jarvice/ingress-tf.eks.${var.eks.region}.${var.eks["cluster_name"]}"
+    }
+}
+
+locals {
     jarvice_ingress_upstream = <<EOF
 # EKS cluster override yaml
-#jarvice_api:
-#  ingressHost: {aws_eip.nat[0].public_dns}
-#  ingressPath: "/api"
+jarvice_api:
+  ingressPath: "/api"
+  #ingressHost: {aws_eip.nat[0].public_dns}
+  ingressHost: "lookup"
+  ingressService: "traefik"
+  ingressServiceNamespace: "kube-system"
 
-#jarvice_mc_portal:
-#  ingressHost: {aws_eip.nat[0].public_dns}
-#  ingressPath: "/"
+jarvice_mc_portal:
+  ingressPath: "/"
+  #ingressHost: {aws_eip.nat[0].public_dns}
+  ingressHost: "lookup"
+  ingressService: "traefik"
+  ingressServiceNamespace: "kube-system"
 EOF
 
     jarvice_ingress_downstream = <<EOF
 # EKS cluster override yaml
-#jarvice_k8s_scheduler:
-#  ingressHost: {aws_eip.nat[0].public_dns}
+jarvice_k8s_scheduler:
+  #ingressHost: {aws_eip.nat[0].public_dns}
+  ingressHost: "lookup"
+  ingressService: "traefik"
+  ingressServiceNamespace: "kube-system"
 EOF
 
     jarvice_ingress = local.jarvice_cluster_type == "downstream" ? local.jarvice_ingress_downstream : local.jarvice_ingress_upstream
@@ -49,7 +64,7 @@ EOF
     cluster_override_yaml_values = <<EOF
 # EKS cluster override values
 jarvice:
-  #nodeSelector: '${local.jarvice_helm_values["nodeSelector"] == null ? "{\"node-role.kubernetes.io/jarvice-system\": \"true\"}" : local.jarvice_helm_values["nodeSelector"]}'
+  nodeSelector: '${local.jarvice_helm_values["nodeSelector"] == null ? "{\"node-role.kubernetes.io/jarvice-system\": \"true\"}" : local.jarvice_helm_values["nodeSelector"]}'
 
   JARVICE_PVC_VAULT_NAME: ${local.jarvice_helm_values["JARVICE_PVC_VAULT_NAME"] == null ? "persistent" : local.jarvice_helm_values["JARVICE_PVC_VAULT_NAME"]}
   JARVICE_PVC_VAULT_STORAGECLASS: ${local.jarvice_helm_values["JARVICE_PVC_VAULT_STORAGECLASS"] == null ? "jarvice-user" : local.jarvice_helm_values["JARVICE_PVC_VAULT_STORAGECLASS"]}

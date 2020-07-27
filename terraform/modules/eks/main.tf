@@ -6,7 +6,7 @@ terraform {
         local = "~> 1.4"
 
         kubernetes = "~> 1.11"
-        random = "~> 2.1"
+        #random = "~> 2.1"
         null = "~> 2.1"
         template = "~> 2.1"
     }
@@ -23,44 +23,14 @@ data "aws_eks_cluster_auth" "cluster" {
 data "aws_availability_zones" "available" {
 }
 
-resource "random_string" "suffix" {
-    length  = 4
-    special = false
-}
+#resource "random_string" "suffix" {
+#    length  = 4
+#    special = false
+#}
 
 locals {
     #cluster_name = "${var.eks["cluster_name"]}-${random_string.suffix.result}"
     cluster_name = var.eks["cluster_name"]
-}
-
-resource "aws_security_group" "jarvice_system" {
-    name_prefix = "jarvice_system"
-    vpc_id = module.vpc.vpc_id
-
-    ingress {
-        from_port = 22
-        to_port = 22
-        protocol = "tcp"
-
-        cidr_blocks = [
-            "10.0.0.0/8",
-        ]
-    }
-}
-
-resource "aws_security_group" "jarvice_compute" {
-    name_prefix = "jarvice_compute"
-    vpc_id = module.vpc.vpc_id
-
-    ingress {
-        from_port = 22
-        to_port = 22
-        protocol = "tcp"
-
-        cidr_blocks = [
-            "192.168.0.0/16",
-        ]
-    }
 }
 
 resource "aws_security_group" "jarvice" {
@@ -80,11 +50,11 @@ resource "aws_security_group" "jarvice" {
     }
 }
 
-resource "aws_eip" "nat" {
-    count = 1
-
-    vpc = true
-}
+#resource "aws_eip" "nat" {
+#    count = 1
+#
+#    vpc = true
+#}
 
 module "vpc" {
     source = "terraform-aws-modules/vpc/aws"
@@ -99,8 +69,8 @@ module "vpc" {
     single_nat_gateway = true
     enable_dns_hostnames = true
 
-    reuse_nat_ips = true
-    external_nat_ip_ids = "${aws_eip.nat.*.id}"
+    #reuse_nat_ips = true
+    #external_nat_ip_ids = "${aws_eip.nat.*.id}"
 
     public_subnet_tags = {
         "kubernetes.io/cluster/${local.cluster_name}" = "shared"
@@ -114,6 +84,17 @@ module "vpc" {
 }
 
 locals {
+    default_nodes = [
+        {
+            "name" = "default",
+            "instance_type" = "t2.nano"
+            "asg_desired_capacity" = 2
+            "asg_min_size" = 2
+            "asg_max_size" = 2
+            "kubelet_extra_args" = "--node-labels=node-role.kubernetes.io/default=true"
+            "public_ip" = true
+        }
+    ]
     system_nodes = [
         {
             "name" = "jarvice-system",
@@ -121,7 +102,6 @@ locals {
             "asg_desired_capacity" = local.system_node_asg_desired_capacity
             "asg_min_size" = local.system_node_asg_desired_capacity
             "asg_max_size" = local.system_node_asg_desired_capacity
-            "additional_security_group_ids" = [aws_security_group.jarvice_system.id]
             "kubelet_extra_args" = "--node-labels=node-role.kubernetes.io/jarvice-system=true --register-with-taints=node-role.kubernetes.io/jarvice-system=true:NoSchedule"
             "public_ip" = true
         }
@@ -134,9 +114,21 @@ locals {
                 "asg_desired_capacity" = pool.asg_desired_capacity
                 "asg_min_size" = pool.asg_min_size
                 "asg_max_size" = pool.asg_max_size
-                "additional_security_group_ids" = [aws_security_group.jarvice_compute.id]
                 "kubelet_extra_args" = "--node-labels=node-role.kubernetes.io/jarvice-compute=true --register-with-taints=node-role.kubernetes.io/jarvice-compute=true:NoSchedule"
                 "public_ip" = true
+                "tags" = [
+                    {
+                        "key" = "k8s.io/cluster-autoscaler/enabled"
+                        "propagate_at_launch" = "false"
+                        "value" = "true"
+                    },
+                    {
+                        "key" = "k8s.io/cluster-autoscaler/${local.cluster_name}"
+                        "propagate_at_launch" = "false"
+                        "value" = "true"
+                    }
+                ]
+
             }
     ]
 }
@@ -148,12 +140,12 @@ module "eks" {
     subnets = module.vpc.private_subnets
 
     tags = {
-        cluster_name = var.eks["cluster_name"]
+        cluster_name = local.cluster_name
     }
 
     vpc_id = module.vpc.vpc_id
 
-    worker_groups = concat(local.system_nodes, local.compute_nodes)
+    worker_groups = concat(local.default_nodes, local.system_nodes, local.compute_nodes)
 
     worker_additional_security_group_ids = [aws_security_group.jarvice.id]
 }
