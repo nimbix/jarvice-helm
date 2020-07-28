@@ -20,7 +20,7 @@ resource "null_resource" "ingress_host_file" {
     }
 
     provisioner "local-exec" {
-        command = "mkdir -p ${dirname(pathexpand(local.jarvice_config["ingress_host_path"]))} && kubectl --kubeconfig ${local_file.kube_config.filename} -n ${var.eks.helm.jarvice["namespace"]} get ingress jarvice-mc-portal -o jsonpath='{.spec.rules[0].host}' >${pathexpand(local.jarvice_config["ingress_host_path"])}"
+        command = "mkdir -p ${dirname(pathexpand(self.triggers.path))} && kubectl --kubeconfig ${local_file.kube_config.filename} -n ${var.eks.helm.jarvice["namespace"]} get ingress ${local.jarvice_ingress_name} -o jsonpath='{.spec.rules[0].host}' >${pathexpand(self.triggers.path)}"
     }
 
     provisioner "local-exec" {
@@ -42,7 +42,7 @@ export KUBECONFIG=${local.kube_config["path"]}
 
 ${local.cluster_output_message}:
 
-https://${file(lookup(null_resource.ingress_host_file.triggers, "path", null))}/
+https://${fileexists(null_resource.ingress_host_file.triggers.path) ? file(null_resource.ingress_host_file.triggers.path) : "<undefined>"}/
 
 ===============================================================================
 EOF

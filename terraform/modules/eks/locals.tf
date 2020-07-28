@@ -60,6 +60,7 @@ jarvice_k8s_scheduler:
 EOF
 
     jarvice_ingress = local.jarvice_cluster_type == "downstream" ? local.jarvice_ingress_downstream : local.jarvice_ingress_upstream
+    jarvice_ingress_name = local.jarvice_cluster_type == "downstream" ? "jarvice-k8s-scheduler" : "jarvice-mc-portal"
 
     cluster_override_yaml_values = <<EOF
 # EKS cluster override values
