@@ -20,7 +20,7 @@ resource "null_resource" "ingress_host_file" {
     }
 
     provisioner "local-exec" {
-        command = "kubectl --kubeconfig ${local_file.kube_config.filename} -n ${var.eks.helm.jarvice["namespace"]} get ingress jarvice-mc-portal -o jsonpath='{.spec.rules[0].host}' >${pathexpand(local.jarvice_config["ingress_host_path"])}"
+        command = "mkdir -p ${dirname(pathexpand(local.jarvice_config["ingress_host_path"]))} && kubectl --kubeconfig ${local_file.kube_config.filename} -n ${var.eks.helm.jarvice["namespace"]} get ingress jarvice-mc-portal -o jsonpath='{.spec.rules[0].host}' >${pathexpand(local.jarvice_config["ingress_host_path"])}"
     }
 
     provisioner "local-exec" {
