@@ -3,7 +3,11 @@
 module "helm" {
     source = "../helm"
 
+    # depends_on for modules is coming with terraform v0.13.0
+    #depends_on = [module.iam_assumable_role_admin.this_iam_role_arn]
+
     # Cluster autoscaler settings
+    cluster_autoscaler_enabled = true
     cluster_autoscaler_values = <<EOF
 autoDiscovery:
   clusterName: ${var.eks["cluster_name"]}
@@ -23,9 +27,8 @@ nodeSelector:
 
 rbac:
   create: true
-#  serviceAccountAnnotations:
-#    eks.amazonaws.com/role-arn: "arn:aws:iam::<ACCOUNT ID>:role/cluster-autoscaler"
-
+  serviceAccountAnnotations:
+    eks.amazonaws.com/role-arn: "${module.iam_assumable_role_admin.this_iam_role_arn}"
 EOF
 
     # Traefik settings

@@ -6,6 +6,11 @@
 #    )
 #}
 
+variable "cluster_autoscaler_enabled" {
+    type = bool
+    default = false
+}
+
 variable "cluster_autoscaler_values" {
     type = string
     default = null

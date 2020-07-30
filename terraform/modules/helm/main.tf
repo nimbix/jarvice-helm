@@ -7,7 +7,8 @@ terraform {
 }
 
 resource "helm_release" "cluster_autoscaler" {
-    count = var.cluster_autoscaler_values != null ? 1 : 0
+    #count = var.cluster_autoscaler_values != null ? 1 : 0
+    count = var.cluster_autoscaler_enabled == true ? 1 : 0
 
     name = "cluster-autoscaler"
     repository = "https://kubernetes-charts.storage.googleapis.com"

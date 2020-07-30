@@ -3,12 +3,11 @@
 terraform {
     required_providers {
         aws = "~> 2.68.0"
-        local = "~> 1.4"
 
-        kubernetes = "~> 1.11"
-        #random = "~> 2.1"
         null = "~> 2.1"
+        local = "~> 1.4"
         template = "~> 2.1"
+        random = "~> 2.3"
     }
 }
 
@@ -21,16 +20,6 @@ data "aws_eks_cluster_auth" "cluster" {
 }
 
 data "aws_availability_zones" "available" {
-}
-
-#resource "random_string" "suffix" {
-#    length  = 4
-#    special = false
-#}
-
-locals {
-    #cluster_name = "${var.eks["cluster_name"]}-${random_string.suffix.result}"
-    cluster_name = var.eks["cluster_name"]
 }
 
 resource "aws_security_group" "jarvice" {
@@ -58,27 +47,28 @@ resource "aws_security_group" "jarvice" {
 
 module "vpc" {
     source = "terraform-aws-modules/vpc/aws"
-    version = "2.6.0"
+    version = "~> 2.44.0"
 
-    name = "${local.cluster_name}-vpc"
+    name = "${var.eks["cluster_name"]}-vpc"
     cidr = "10.0.0.0/16"
     azs = var.eks["availability_zones"] != null ? var.eks["availability_zones"] : data.aws_availability_zones.available.names
     private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
     public_subnets = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
+    enable_dns_hostnames = true
+
     enable_nat_gateway = true
     single_nat_gateway = true
-    enable_dns_hostnames = true
 
     #reuse_nat_ips = true
     #external_nat_ip_ids = "${aws_eip.nat.*.id}"
 
     public_subnet_tags = {
-        "kubernetes.io/cluster/${local.cluster_name}" = "shared"
+        "kubernetes.io/cluster/${var.eks["cluster_name"]}" = "shared"
         "kubernetes.io/role/elb" = "1"
     }
 
     private_subnet_tags = {
-        "kubernetes.io/cluster/${local.cluster_name}" = "shared"
+        "kubernetes.io/cluster/${var.eks["cluster_name"]}" = "shared"
         "kubernetes.io/role/internal-elb" = "1"
     }
 }
@@ -123,7 +113,7 @@ locals {
                         "value" = "true"
                     },
                     {
-                        "key" = "k8s.io/cluster-autoscaler/${local.cluster_name}"
+                        "key" = "k8s.io/cluster-autoscaler/${var.eks["cluster_name"]}"
                         "propagate_at_launch" = "false"
                         "value" = "true"
                     }
@@ -135,18 +125,86 @@ locals {
 
 module "eks" {
     source = "terraform-aws-modules/eks/aws"
-    cluster_name = local.cluster_name
-    cluster_version = var.eks["kubernetes_version"]
-    subnets = module.vpc.private_subnets
+    version = "~> 12.2.0"
 
-    tags = {
-        cluster_name = local.cluster_name
-    }
+    cluster_name = var.eks["cluster_name"]
+    cluster_version = var.eks["kubernetes_version"]
 
     vpc_id = module.vpc.vpc_id
+    enable_irsa = true
+
+    #subnets = module.vpc.public_subnets
+    subnets = module.vpc.private_subnets
 
     worker_groups = concat(local.default_nodes, local.system_nodes, local.compute_nodes)
-
     worker_additional_security_group_ids = [aws_security_group.jarvice.id]
+
+    tags = {
+        cluster_name = var.eks["cluster_name"]
+    }
+}
+
+data "aws_iam_policy_document" "cluster_autoscaler" {
+    statement {
+        sid = "clusterAutoscalerAll"
+        effect = "Allow"
+
+        actions = [
+            "autoscaling:DescribeAutoScalingGroups",
+            "autoscaling:DescribeAutoScalingInstances",
+            "autoscaling:DescribeLaunchConfigurations",
+            "autoscaling:DescribeTags",
+            "ec2:DescribeLaunchTemplateVersions",
+        ]
+
+        resources = ["*"]
+    }
+
+    statement {
+        sid = "clusterAutoscalerOwn"
+        effect = "Allow"
+
+        actions = [
+            "autoscaling:SetDesiredCapacity",
+            "autoscaling:TerminateInstanceInAutoScalingGroup",
+            "autoscaling:UpdateAutoScalingGroup",
+        ]
+
+        resources = ["*"]
+
+        condition {
+            test = "StringEquals"
+            variable = "autoscaling:ResourceTag/kubernetes.io/cluster/${module.eks.cluster_id}"
+            values = ["owned"]
+        }
+
+        condition {
+            test = "StringEquals"
+            variable = "autoscaling:ResourceTag/k8s.io/cluster-autoscaler/enabled"
+            values = ["true"]
+        }
+    }
+}
+
+resource "aws_iam_policy" "cluster_autoscaler" {
+    name_prefix = "cluster-autoscaler"
+    description = "EKS cluster-autoscaler policy for cluster ${module.eks.cluster_id}"
+    policy = data.aws_iam_policy_document.cluster_autoscaler.json
+}
+
+locals {
+    k8s_service_account_namespace = "kube-system"
+    k8s_service_account_name = "cluster-autoscaler-aws-cluster-autoscaler"
+}
+
+module "iam_assumable_role_admin" {
+    source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
+    version = "~> 2.12.0"
+
+    create_role = true
+    role_name = "cluster-autoscaler"
+    provider_url = replace(module.eks.cluster_oidc_issuer_url, "https://", "")
+    role_policy_arns = [aws_iam_policy.cluster_autoscaler.arn]
+    oidc_fully_qualified_subjects = ["system:serviceaccount:${local.k8s_service_account_namespace}:${local.k8s_service_account_name}"]
 }
 

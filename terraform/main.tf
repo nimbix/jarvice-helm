@@ -1,7 +1,7 @@
 # main.tf - root module
 
 terraform {
-    required_version = "~> 0.12.24"
+    required_version = "~> 0.12.29"
     #backend "local" {}
 }
 
