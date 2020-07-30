@@ -16,6 +16,10 @@ locals {
 }
 
 locals {
+    ssh_public_key = var.eks["ssh_public_key"] != null ? file(var.eks["ssh_public_key"]) : file(var.global["ssh_public_key"])
+}
+
+locals {
     kube_config = {
         "path" = "~/.kube/config-tf.eks.${var.eks["region"]}.${var.eks["cluster_name"]}",
         "host" = data.aws_eks_cluster.cluster.endpoint,

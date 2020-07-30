@@ -83,6 +83,12 @@ locals {
             "asg_max_size" = 2
             "kubelet_extra_args" = "--node-labels=node-role.kubernetes.io/default=true"
             "public_ip" = true
+            "key_name" = ""
+            "pre_userdata" = <<EOF
+# pre_userdata (executed before kubelet bootstrap and cluster join)
+# Add authorized ssh key
+echo "${local.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
+EOF
         }
     ]
     system_nodes = [
@@ -94,6 +100,12 @@ locals {
             "asg_max_size" = local.system_node_asg_desired_capacity
             "kubelet_extra_args" = "--node-labels=node-role.kubernetes.io/jarvice-system=true --register-with-taints=node-role.kubernetes.io/jarvice-system=true:NoSchedule"
             "public_ip" = true
+            "key_name" = ""
+            "pre_userdata" = <<EOF
+# pre_userdata (executed before kubelet bootstrap and cluster join)
+# Add authorized ssh key
+echo "${local.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
+EOF
         }
     ]
     compute_nodes = length(var.eks["compute_node_pools"]) == 0 ? null : [
@@ -106,6 +118,22 @@ locals {
                 "asg_max_size" = pool.asg_max_size
                 "kubelet_extra_args" = "--node-labels=node-role.kubernetes.io/jarvice-compute=true --register-with-taints=node-role.kubernetes.io/jarvice-compute=true:NoSchedule"
                 "public_ip" = true
+                "key_name" = ""
+                "pre_userdata" = <<EOF
+# pre_userdata (executed before kubelet bootstrap and cluster join)
+# Add authorized ssh key
+echo "${local.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
+
+# Disable hyper-threading.  Visit the following link for details:
+# https://aws.amazon.com/blogs/compute/disabling-intel-hyper-threading-technology-on-amazon-linux/
+for n in $(cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list | cut -s -d, -f2- | tr ',' '\n' | sort -un); do
+    echo "Disabling cpu$n..."
+    echo 0 > /sys/devices/system/cpu/cpu$n/online
+done
+EOF
+                "additional_userdata" = <<EOF
+# additional_userdata (executed after kubelet bootstrap and cluster join)
+EOF
                 "tags" = [
                     {
                         "key" = "k8s.io/cluster-autoscaler/enabled"
