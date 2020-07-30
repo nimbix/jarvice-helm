@@ -16,6 +16,10 @@ locals {
 }
 
 locals {
+    ssh_public_key = var.aks["ssh_public_key"] != null ? file(var.aks["ssh_public_key"]) : file(var.global["ssh_public_key"])
+}
+
+locals {
     kube_config = {
         "path" = "~/.kube/config-tf.aks.${azurerm_kubernetes_cluster.jarvice.location}.${var.aks["cluster_name"]}",
         "host" = azurerm_kubernetes_cluster.jarvice.kube_config[0].host

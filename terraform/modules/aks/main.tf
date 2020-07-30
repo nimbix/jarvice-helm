@@ -27,7 +27,7 @@ resource "azurerm_kubernetes_cluster" "jarvice" {
         admin_username = "jarvice"
 
         ssh_key {
-            key_data = var.aks["ssh_public_key"] != null ? file(var.aks["ssh_public_key"]) : file(var.global["ssh_public_key"])
+            key_data = local.ssh_public_key
         }
     }
 
