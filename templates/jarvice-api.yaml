@@ -149,10 +149,14 @@ spec:
           - name: JARVICE_SYSTEM_REPO_BASE
             value: {{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}
           - name: JARVICE_IMAGES_TAG
+{{- if .Values.jarvice_api.env }}
 {{- if empty .Values.jarvice_api.env.JARVICE_IMAGES_TAG }}
             value: {{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
 {{- else }}
             value: {{ .Values.jarvice_api.env.JARVICE_IMAGES_TAG }}
+{{- end }}
+{{- else }}
+            value: {{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
 {{- end }}
           - name: JARVICE_LOCAL_REGISTRY
             value: {{ .Values.jarvice.JARVICE_LOCAL_REGISTRY }}
@@ -204,13 +208,6 @@ spec:
               secretKeyRef:
                 name: jarvice-mail
                 key: JARVICE_MAIL_PASSWORD
-{{- end }}
-{{- if (not (empty .Values.jarvice_api.env.JARVICE_MAIL_CONF)) }}
-          - name: JARVICE_MAIL_CONF
-            value: {{ toYaml .Values.jarvice_api.env.JARVICE_MAIL_CONF | replace "jarvice-smtpd:25" $smtpd | indent 12 }}
-{{- else if (not (empty .Values.jarvice.JARVICE_MAIL_CONF)) }}
-          - name: JARVICE_MAIL_CONF
-            value: {{ toYaml .Values.jarvice.JARVICE_MAIL_CONF | replace "jarvice-smtpd:25" $smtpd | indent 12 }}
 {{- end }}
           - name: JARVICE_API_LOGLEVEL
             value: "{{ .Values.jarvice.JARVICE_API_LOGLEVEL }}"
