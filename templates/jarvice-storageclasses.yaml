@@ -1,0 +1,58 @@
+{{- if and .Values.jarvice_db.enabled .Values.jarvice_db.persistence.enabled (not (empty .Values.jarvice_db.persistence.storageClass)) (not (empty .Values.jarvice_db.persistence.storageClassProvisioner)) }}
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: {{ .Values.jarvice_db.persistence.storageClass }}
+reclaimPolicy: Delete
+provisioner: {{ .Values.jarvice_db.persistence.storageClassProvisioner }}
+{{- if (eq "kubernetes.io/aws-ebs" .Values.jarvice_db.persistence.storageClassProvisioner) }}
+parameters:
+  type: gp2
+mountOptions:
+  - debug
+{{- end }}
+{{- if (eq "kubernetes.io/gce-pd" .Values.jarvice_db.persistence.storageClassProvisioner) }}
+parameters:
+  type: pd-standard
+  replication-type: none
+mountOptions:
+  - debug
+{{- end }}
+{{- if (eq "kubernetes.io/azure-disk" .Values.jarvice_db.persistence.storageClassProvisioner) }}
+parameters:
+  cachingmode: ReadOnly
+  kind: Managed
+  storageaccounttype: StandardSSD_LRS
+volumeBindingMode: Immediate
+{{- end }}
+---
+{{- end }}
+{{- if and (not (empty .Values.jarvice.JARVICE_PVC_VAULT_STORAGECLASS)) (not (empty .Values.jarvice.JARVICE_PVC_VAULT_STORAGECLASS_PROVISIONER)) }}
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: {{ .Values.jarvice.JARVICE_PVC_VAULT_STORAGECLASS }}
+reclaimPolicy: Delete
+provisioner: {{ .Values.jarvice.JARVICE_PVC_VAULT_STORAGECLASS_PROVISIONER }}
+{{- if (eq "kubernetes.io/aws-ebs" .Values.jarvice.JARVICE_PVC_VAULT_STORAGECLASS_PROVISIONER) }}
+parameters:
+  type: gp2
+mountOptions:
+  - debug
+{{- end }}
+{{- if (eq "kubernetes.io/gce-pd" .Values.jarvice.JARVICE_PVC_VAULT_STORAGECLASS_PROVISIONER) }}
+parameters:
+  type: pd-standard
+  replication-type: none
+mountOptions:
+  - debug
+{{- end }}
+{{- if (eq "kubernetes.io/azure-disk" .Values.jarvice.JARVICE_PVC_VAULT_STORAGECLASS_PROVISIONER) }}
+parameters:
+  cachingmode: ReadOnly
+  kind: Managed
+  storageaccounttype: StandardSSD_LRS
+volumeBindingMode: Immediate
+{{- end }}
+---
+{{- end }}
