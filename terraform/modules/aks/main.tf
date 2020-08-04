@@ -3,7 +3,9 @@
 terraform {
   required_providers {
     azurerm = "~> 2.20"
+
     local = "~> 1.4"
+    random = "~> 2.3"
   }
 }
 
@@ -16,10 +18,14 @@ resource "azurerm_resource_group" "jarvice" {
     }
 }
 
+resource "random_id" "dns_prefix" {
+    byte_length = 6
+}
+
 resource "azurerm_kubernetes_cluster" "jarvice" {
     name = var.cluster["cluster_name"]
     kubernetes_version = var.cluster["kubernetes_version"]
-    dns_prefix = var.cluster["cluster_name"]
+    dns_prefix = contains(["jarvice", "tf-jarvice", "jarvice-downstream", "tf-jarvice-downstream"], var.cluster["cluster_name"]) ? "${var.cluster["cluster_name"]-random_id.dns_prefix.hex}" : var.cluster["cluster_name"]
     resource_group_name = azurerm_resource_group.jarvice.name
     location = azurerm_resource_group.jarvice.location
 
