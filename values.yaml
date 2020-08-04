@@ -57,6 +57,7 @@ jarvice:
   JARVICE_SCHED_PASS_LOGLEVEL: 30
   JARVICE_SCHED_LOGLEVEL: 30
   JARVICE_K8S_SCHED_LOGLEVEL: 30
+  JARVICE_API_LOGLEVEL: 30
 
   JARVICE_MAIL_SERVER: jarvice-smtpd:25
   JARVICE_MAIL_USERNAME: # "mail-username"
@@ -421,8 +422,6 @@ jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   nodeSelector: # '{"node-role.kubernetes.io/jarvice-api": "true"}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
-  env:
-    JARVICE_API_LOG_ENABLE:
 
 jarvice_dockerbuild: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   tolerations: # '[{"key": "node-role.kubernetes.io/jarvice-dockerbuildpull", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-dockerbuild", "effect": "NoSchedule", "operator": "Exists"}]'
