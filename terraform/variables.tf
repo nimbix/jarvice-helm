@@ -1,3 +1,5 @@
+# variables.tf - root module variable definitions
+
 variable "global" {
     description = "Global Cluster Settings"
     type = object({
@@ -21,10 +23,76 @@ EOF
     }
 }
 
+variable "gke" {
+    description = "Google GKE Settings"
+    type = map(object({
+        enabled = bool
+
+        project = string
+        credentials = string
+
+        cluster_name = string
+        kubernetes_version = string
+
+        location = string
+
+        ssh_public_key = string
+
+        system_node_pool = object({
+            machine_type = string
+            num_nodes = number
+        })
+        compute_node_pools = list(object({
+            machine_type = string
+            disk_size_gb = number
+            num_nodes = number
+            min_nodes = number
+            max_nodes = number
+        }))
+
+        helm = object({
+            jarvice = map(string)
+        })
+    }))
+    default = {}
+}
+
+variable "eks" {
+    description = "Amazon EKS Settings"
+    type = map(object({
+        enabled = bool
+
+        cluster_name = string
+        kubernetes_version = string
+
+        region = string
+        availability_zones = list(string)
+
+        ssh_public_key = string
+
+        system_node_pool = object({
+            instance_type = string
+            asg_desired_capacity = number
+        })
+        compute_node_pools = list(object({
+            instance_type = string
+            root_volume_size = number
+            asg_desired_capacity = number
+            asg_min_size = number
+            asg_max_size = number
+        }))
+
+        helm = object({
+            jarvice = map(string)
+        })
+    }))
+    default = {}
+}
+
 variable "aks" {
     description = "Azure AKS Settings"
-    type = list(object({
-        #enabled = bool
+    type = map(object({
+        enabled = bool
 
         service_principal_client_id = string
         service_principal_client_secret = string
@@ -53,44 +121,6 @@ variable "aks" {
             jarvice = map(string)
         })
     }))
-    default = [{
-        #enabled = false
-
-        service_principal_client_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-        service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-
-        cluster_name = "jarvice"
-        kubernetes_version = "1.15.10"
-
-        location = "Central US"
-        availability_zones = ["1"]
-
-        ssh_public_key = null
-
-        system_node_pool = {
-            node_vm_size = null
-            node_count = null
-        }
-        compute_node_pools = [
-            {
-                node_vm_size = "Standard_D32_v3"
-                node_os_disk_size_gb = 100
-                node_count = 2
-                node_min_count = 1
-                node_max_count = 16
-            },
-        ]
-
-        helm = {
-            jarvice = {
-                namespace = "jarvice-system"
-                override_yaml_file = "override-tf.<provider>.<zone_or_region>.<cluster_name>.yaml"
-                override_yaml_values = <<EOF
-# override_yaml_values - takes precedence over override_yaml_file and
-# global override_yaml_values
-EOF
-            }
-        }
-    }]
+    default = {}
 }
 

@@ -1,24 +1,26 @@
-provider "local" {
-    version = "~> 1.4"
-}
+# outputs.tf - AKS module outputs
 
 resource "local_file" "kube_config" {
-    filename = pathexpand(local.kube_config)
+    filename = pathexpand(local.kube_config["path"])
     file_permission = "0600" 
     directory_permission = "0775"
     content = azurerm_kubernetes_cluster.jarvice.kube_config_raw
 }
 
-output "AKS" {
-    value = <<EOF
-=========================================================================
+output "kube_config" {
+    value = local.kube_config
+}
 
-AKS cluster name: ${var.aks["cluster_name"]}
-AKS cluster zone: ${var.aks["location"]}
+output "cluster_info" {
+    value = <<EOF
+===============================================================================
+
+    AKS cluster name: ${var.cluster["cluster_name"]}
+AKS cluster location: ${var.cluster["location"]}
 
 Execute the following to begin using kubectl/helm with the new cluster:
 
-export KUBECONFIG=${local.kube_config}
+export KUBECONFIG=${local.kube_config["path"]}
 
 ${local.cluster_output_message}:
 
