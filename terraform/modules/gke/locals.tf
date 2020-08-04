@@ -1,7 +1,7 @@
-# locals.tf - AKS module local variable definitions
+# locals.tf - GKE module local variable definitions
 
 locals {
-    jarvice_override_yaml_file = replace(replace("${var.cluster.helm.jarvice["override_yaml_file"]}", "<location>", "${azurerm_kubernetes_cluster.jarvice.location}"), "<cluster_name>", "${var.cluster["cluster_name"]}")
+    jarvice_override_yaml_file = replace(replace("${var.cluster.helm.jarvice["override_yaml_file"]}", "<location>", "${var.cluster["location"]}"), "<cluster_name>", "${var.cluster["cluster_name"]}")
 
     jarvice_helm_override_yaml = fileexists(local.jarvice_override_yaml_file) ? "${file("${local.jarvice_override_yaml_file}")}" : ""
 
@@ -11,8 +11,8 @@ locals {
 }
 
 locals {
-    system_node_vm_size = local.jarvice_cluster_type == "downstream" ? "Standard_D3_v2" : "Standard_D5_v2"
-    system_node_vm_count = local.jarvice_cluster_type == "downstream" ? 2 : 3
+    system_node_machine_type = local.jarvice_cluster_type == "downstream" ? "n1-standard-4" : "n1-standard-8"
+    system_num_nodes = local.jarvice_cluster_type == "downstream" ? 2 : 3
 }
 
 locals {
@@ -21,42 +21,50 @@ locals {
 
 locals {
     kube_config = {
-        "path" = "~/.kube/config-tf.aks.${azurerm_kubernetes_cluster.jarvice.location}.${var.cluster["cluster_name"]}",
-        "host" = azurerm_kubernetes_cluster.jarvice.kube_config[0].host
-        "cluster_ca_certificate" = azurerm_kubernetes_cluster.jarvice.kube_config[0].cluster_ca_certificate,
-        "client_certificate" = azurerm_kubernetes_cluster.jarvice.kube_config[0].client_certificate,
-        "client_key" = azurerm_kubernetes_cluster.jarvice.kube_config[0].client_key,
+        "path" = "~/.kube/config-tf.gke.${var.cluster["location"]}.${var.cluster["cluster_name"]}",
+        "host" = google_container_cluster.jarvice.endpoint,
+        "cluster_ca_certificate" = google_container_cluster.jarvice.master_auth.0.cluster_ca_certificate,
+        "client_certificate" = google_container_cluster.jarvice.master_auth.0.client_certificate,
+        "client_key" = google_container_cluster.jarvice.master_auth.0.client_key,
         "token" = null,
-        "username" = null,
-        "password" = null
+        "username" = google_container_cluster.jarvice.master_auth.0.username,
+        "password" = google_container_cluster.jarvice.master_auth.0.password
+    }
+}
+
+locals {
+    jarvice_config = {
+        "ingress_host_path" = "~/.terraform-jarvice/ingress-tf.gke.${var.cluster.location}.${var.cluster["cluster_name"]}"
     }
 }
 
 locals {
     jarvice_ingress_upstream = <<EOF
-# AKS cluster override yaml
+# GKE cluster override yaml
 jarvice_api:
-  ingressHost: ${azurerm_public_ip.jarvice.fqdn}
   ingressPath: "/api"
+  ingressHost: "-"
 
 jarvice_mc_portal:
-  ingressHost: ${azurerm_public_ip.jarvice.fqdn}
   ingressPath: "/"
+  ingressHost: "-"
 EOF
 
     jarvice_ingress_downstream = <<EOF
-# AKS cluster override yaml
+# GKE cluster override yaml
 jarvice_k8s_scheduler:
-  ingressHost: ${azurerm_public_ip.jarvice.fqdn}
+  ingressHost: "-"
 EOF
 
     jarvice_ingress = local.jarvice_cluster_type == "downstream" ? local.jarvice_ingress_downstream : local.jarvice_ingress_upstream
+    jarvice_ingress_name = local.jarvice_cluster_type == "downstream" ? "jarvice-k8s-scheduler" : "jarvice-mc-portal"
 
-    storage_class_provisioner = "kubernetes.io/azure-disk"
+    storage_class_provisioner = "kubernetes.io/gce-pd"
     cluster_override_yaml_values = <<EOF
-# AKS cluster override values
+# GKE cluster override values
 jarvice:
   nodeSelector: '${local.jarvice_helm_values["nodeSelector"] == null ? "{\"node-role.jarvice.io/jarvice-system\": \"true\"}" : local.jarvice_helm_values["nodeSelector"]}'
+  #nodeSelector: '${local.jarvice_helm_values["nodeSelector"] == null ? "{\"node-role.kubernetes.io/jarvice-system\": \"true\"}" : local.jarvice_helm_values["nodeSelector"]}'
 
   JARVICE_PVC_VAULT_NAME: ${local.jarvice_helm_values["JARVICE_PVC_VAULT_NAME"] == null ? "persistent" : local.jarvice_helm_values["JARVICE_PVC_VAULT_NAME"]}
   JARVICE_PVC_VAULT_STORAGECLASS: ${local.jarvice_helm_values["JARVICE_PVC_VAULT_STORAGECLASS"] == null ? "jarvice-user" : local.jarvice_helm_values["JARVICE_PVC_VAULT_STORAGECLASS"]}

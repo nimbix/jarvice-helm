@@ -23,8 +23,8 @@ EOF
     }
 }
 
-variable "aks" {
-    description = "Azure AKS Settings"
+variable "cluster" {
+    description = "Cluster Settings"
     type = object({
         enabled = bool
 

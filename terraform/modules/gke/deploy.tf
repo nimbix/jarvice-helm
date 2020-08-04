@@ -1,11 +1,10 @@
-# deploy.tf - AKS module kubernetes/helm components deployment for JARVICE
+# deploy.tf - GKE module kubernetes/helm components deployment for JARVICE
 
 module "helm" {
     source = "../helm"
 
     # Traefik settings
     traefik_values = <<EOF
-loadBalancerIP: ${azurerm_public_ip.jarvice.ip_address}
 replicas: 2
 memoryRequest: 1Gi
 memoryLimit: 1Gi
@@ -14,6 +13,7 @@ cpuLimit: 1
 
 nodeSelector:
   kubernetes.io/arch: "amd64"
+  #node-role.kubernetes.io/jarvice-system: "true"
   node-role.jarvice.io/jarvice-system: "true"
 tolerations:
   - key: node-role.kubernetes.io/jarvice-system
@@ -27,9 +27,8 @@ ssl:
   insecureSkipVerify: true
   generateTLS: true
 
-service:
-  annotations:
-    service.beta.kubernetes.io/azure-load-balancer-resource-group: ${azurerm_kubernetes_cluster.jarvice.node_resource_group}
+dashboard:
+  enabled: false
 
 rbac:
   enabled: true
@@ -39,6 +38,5 @@ EOF
     jarvice = merge(var.cluster.helm.jarvice, {"override_yaml_file"="${local.jarvice_override_yaml_file}"})
     global = var.global.helm.jarvice
     cluster_override_yaml_values = local.cluster_override_yaml_values
-
 }
 

@@ -20,7 +20,7 @@ resource "null_resource" "ingress_host_file" {
     }
 
     provisioner "local-exec" {
-        command = "mkdir -p ${dirname(pathexpand(self.triggers.path))} && kubectl --kubeconfig ${local_file.kube_config.filename} -n ${var.eks.helm.jarvice["namespace"]} get ingress ${local.jarvice_ingress_name} -o jsonpath='{.spec.rules[0].host}' >${pathexpand(self.triggers.path)}"
+        command = "mkdir -p ${dirname(pathexpand(self.triggers.path))} && kubectl --kubeconfig ${local_file.kube_config.filename} -n ${var.cluster.helm.jarvice["namespace"]} get ingress ${local.jarvice_ingress_name} -o jsonpath='{.spec.rules[0].host}' >${pathexpand(self.triggers.path)}"
     }
 
     provisioner "local-exec" {
@@ -33,8 +33,8 @@ output "cluster_info" {
     value = <<EOF
 ===============================================================================
 
-  EKS cluster name: ${var.eks["cluster_name"]}
-EKS cluster region: ${var.eks["region"]}
+  EKS cluster name: ${var.cluster["cluster_name"]}
+EKS cluster region: ${var.cluster["region"]}
 
 Execute the following to begin using kubectl/helm with the new cluster:
 
@@ -42,7 +42,7 @@ export KUBECONFIG=${local.kube_config["path"]}
 
 ${local.cluster_output_message}:
 
-https://${fileexists(null_resource.ingress_host_file.triggers.path) ? file(null_resource.ingress_host_file.triggers.path) : "<undefined>"}/
+https://${fileexists(null_resource.ingress_host_file.triggers.path) ? file(null_resource.ingress_host_file.triggers.path) : "<unknown>"}/
 
 ===============================================================================
 EOF

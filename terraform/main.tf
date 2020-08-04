@@ -11,7 +11,7 @@ terraform {
 #
 #    source = "./modules/aks"
 #
-#    aks = each.value
+#    cluster = each.value
 #    global = var.global
 #
 #    providers = {
@@ -31,6 +31,72 @@ resource "local_file" "clusters" {
 # clusters.tf - cluster definitions (dynamically created using cluster configs)
 
 ##############################################################################
+%{ for key in keys(local.gke) }
+# GKE cluster configuration: ${key}
+provider "google" {
+    alias = "${key}"
+    zone = local.gke["${key}"].location
+    region = join("-", slice(split("-", local.gke["${key}"].location), 0, 2))
+    project = local.gke["${key}"].project
+    credentials = local.gke["${key}"].credentials
+}
+
+provider "google-beta" {
+    alias = "${key}"
+    zone = local.gke["${key}"].location
+    region = join("-", slice(split("-", local.gke["${key}"].location), 0, 2))
+    project = local.gke["${key}"].project
+    credentials = local.gke["${key}"].credentials
+}
+
+provider "kubernetes" {
+    version = "~> 1.11"
+    alias = "${key}"
+
+    load_config_file = false
+    host = module.${key}.kube_config["host"]
+    cluster_ca_certificate = base64decode(module.${key}.kube_config["cluster_ca_certificate"])
+    client_certificate = base64decode(module.${key}.kube_config["client_certificate"])
+    client_key = base64decode(module.${key}.kube_config["client_key"])
+    token = module.${key}.kube_config["token"]
+    username = module.${key}.kube_config["username"]
+    password = module.${key}.kube_config["password"]
+}
+
+provider "helm" {
+    alias = "${key}"
+
+    kubernetes {
+        load_config_file = false
+        host = module.${key}.kube_config["host"]
+        cluster_ca_certificate = base64decode(module.${key}.kube_config["cluster_ca_certificate"])
+        client_certificate = base64decode(module.${key}.kube_config["client_certificate"])
+        client_key = base64decode(module.${key}.kube_config["client_key"])
+        token = module.${key}.kube_config["token"]
+        username = module.${key}.kube_config["username"]
+        password = module.${key}.kube_config["password"]
+    }
+}
+
+module "${key}" {
+    source = "./modules/gke"
+
+    cluster = local.gke["${key}"]
+    global = var.global
+
+    providers = {
+        google = google.${key}
+        google-beta = google-beta.${key}
+        kubernetes = kubernetes.${key}
+        helm = helm.${key}
+    }
+}
+
+output "${key}" {
+    value = format("\n\nGKE Cluster Configuration: %s\n%s\n", "${key}", module.${key}.cluster_info)
+}
+%{ endfor }
+##############################################################################
 %{ for key in keys(local.eks) }
 # EKS cluster configuration: ${key}
 provider "aws" {
@@ -39,6 +105,7 @@ provider "aws" {
 }
 
 provider "kubernetes" {
+    version = "~> 1.11"
     alias = "${key}"
 
     load_config_file = false
@@ -65,7 +132,7 @@ provider "helm" {
 module "${key}" {
     source = "./modules/eks"
 
-    eks = local.eks["${key}"]
+    cluster = local.eks["${key}"]
     global = var.global
 
     providers = {
@@ -103,7 +170,7 @@ provider "helm" {
 module "${key}" {
     source = "./modules/aks"
 
-    aks = local.aks["${key}"]
+    cluster = local.aks["${key}"]
     global = var.global
 
     providers = {

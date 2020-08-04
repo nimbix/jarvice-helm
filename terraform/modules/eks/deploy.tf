@@ -10,10 +10,10 @@ module "helm" {
     cluster_autoscaler_enabled = true
     cluster_autoscaler_values = <<EOF
 autoDiscovery:
-  clusterName: ${var.eks["cluster_name"]}
+  clusterName: ${var.cluster["cluster_name"]}
   enabled: true
 
-awsRegion: "${var.eks["region"]}"
+awsRegion: "${var.cluster["region"]}"
 
 cloudProvider: aws
 
@@ -23,7 +23,7 @@ tolerations:
     operator: Exists
 nodeSelector:
   kubernetes.io/arch: "amd64"
-  node-role.kubernetes.io/jarvice-system: "true"
+  node-role.jarvice.io/jarvice-system: "true"
 
 rbac:
   create: true
@@ -43,7 +43,7 @@ cpuLimit: 1
 
 nodeSelector:
   kubernetes.io/arch: "amd64"
-  node-role.kubernetes.io/jarvice-system: "true"
+  node-role.jarvice.io/jarvice-system: "true"
 tolerations:
   - key: node-role.kubernetes.io/jarvice-system
     effect: NoSchedule
@@ -73,7 +73,7 @@ rbac:
 EOF
 
     # JARVICE settings
-    jarvice = merge(var.eks.helm.jarvice, {"override_yaml_file"="${local.jarvice_override_yaml_file}"})
+    jarvice = merge(var.cluster.helm.jarvice, {"override_yaml_file"="${local.jarvice_override_yaml_file}"})
     global = var.global.helm.jarvice
     cluster_override_yaml_values = local.cluster_override_yaml_values
 }

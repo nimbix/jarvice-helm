@@ -321,12 +321,7 @@ metadata:
     component: jarvice-mc-portal
 spec:
   rules:
-{{- if eq "lookup" .Values.jarvice_mc_portal.ingressHost }}
-  - host: '{{- (first (lookup "v1" "Service" .Values.jarvice_mc_portal.ingressServiceNamespace .Values.jarvice_mc_portal.ingressService).status.loadBalancer.ingress).hostname }}'
-{{- else }}
-  - host: {{ .Values.jarvice_mc_portal.ingressHost }}
-{{- end }}
-    http:
+  - http:
       paths:
 {{- if (eq "/portal" .Values.jarvice_mc_portal.ingressPath) }}
       - backend:
@@ -346,6 +341,13 @@ spec:
           serviceName: jarvice-mc-portal
           servicePort: http
         path: /
+{{- end }}
+{{- if ne "-" .Values.jarvice_mc_portal.ingressHost }}
+{{- if eq "lookup" .Values.jarvice_mc_portal.ingressHost }}
+    host: '{{- (first (lookup "v1" "Service" .Values.jarvice_mc_portal.ingressServiceNamespace .Values.jarvice_mc_portal.ingressService).status.loadBalancer.ingress).hostname }}'
+{{- else }}
+    host: {{ .Values.jarvice_mc_portal.ingressHost }}
+{{- end }}
 {{- end }}
 ---
 {{- end }}

@@ -15,8 +15,8 @@ output "cluster_info" {
     value = <<EOF
 ===============================================================================
 
-    AKS cluster name: ${var.aks["cluster_name"]}
-AKS cluster location: ${var.aks["location"]}
+    AKS cluster name: ${var.cluster["cluster_name"]}
+AKS cluster location: ${var.cluster["location"]}
 
 Execute the following to begin using kubectl/helm with the new cluster:
 

@@ -22,6 +22,40 @@ data "aws_eks_cluster_auth" "cluster" {
 data "aws_availability_zones" "available" {
 }
 
+#resource "aws_eip" "nat" {
+#    count = 1
+#
+#    vpc = true
+#}
+
+module "vpc" {
+    source = "terraform-aws-modules/vpc/aws"
+    version = "~> 2.44.0"
+
+    name = "${var.cluster["cluster_name"]}-vpc"
+    cidr = "10.0.0.0/16"
+    azs = var.cluster["availability_zones"] != null ? var.cluster["availability_zones"] : data.aws_availability_zones.available.names
+    public_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+    private_subnets = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
+    enable_dns_hostnames = true
+
+    #enable_nat_gateway = true
+    #single_nat_gateway = true
+
+    #reuse_nat_ips = true
+    #external_nat_ip_ids = "${aws_eip.nat.*.id}"
+
+    public_subnet_tags = {
+        "kubernetes.io/cluster/${var.cluster["cluster_name"]}" = "shared"
+        "kubernetes.io/role/elb" = "1"
+    }
+
+    private_subnet_tags = {
+        "kubernetes.io/cluster/${var.cluster["cluster_name"]}" = "shared"
+        "kubernetes.io/role/internal-elb" = "1"
+    }
+}
+
 resource "aws_security_group" "jarvice" {
     name_prefix = "jarvice"
     vpc_id = module.vpc.vpc_id
@@ -39,40 +73,6 @@ resource "aws_security_group" "jarvice" {
     }
 }
 
-#resource "aws_eip" "nat" {
-#    count = 1
-#
-#    vpc = true
-#}
-
-module "vpc" {
-    source = "terraform-aws-modules/vpc/aws"
-    version = "~> 2.44.0"
-
-    name = "${var.eks["cluster_name"]}-vpc"
-    cidr = "10.0.0.0/16"
-    azs = var.eks["availability_zones"] != null ? var.eks["availability_zones"] : data.aws_availability_zones.available.names
-    private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-    public_subnets = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
-    enable_dns_hostnames = true
-
-    enable_nat_gateway = true
-    single_nat_gateway = true
-
-    #reuse_nat_ips = true
-    #external_nat_ip_ids = "${aws_eip.nat.*.id}"
-
-    public_subnet_tags = {
-        "kubernetes.io/cluster/${var.eks["cluster_name"]}" = "shared"
-        "kubernetes.io/role/elb" = "1"
-    }
-
-    private_subnet_tags = {
-        "kubernetes.io/cluster/${var.eks["cluster_name"]}" = "shared"
-        "kubernetes.io/role/internal-elb" = "1"
-    }
-}
-
 locals {
     default_nodes = [
         {
@@ -81,7 +81,7 @@ locals {
             "asg_desired_capacity" = 2
             "asg_min_size" = 2
             "asg_max_size" = 2
-            "kubelet_extra_args" = "--node-labels=node-role.kubernetes.io/default=true"
+            "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/default=true,node-role.kubernetes.io/default=true"
             "public_ip" = true
             "key_name" = ""
             "pre_userdata" = <<EOF
@@ -98,7 +98,7 @@ EOF
             "asg_desired_capacity" = local.system_node_asg_desired_capacity
             "asg_min_size" = local.system_node_asg_desired_capacity
             "asg_max_size" = local.system_node_asg_desired_capacity
-            "kubelet_extra_args" = "--node-labels=node-role.kubernetes.io/jarvice-system=true --register-with-taints=node-role.kubernetes.io/jarvice-system=true:NoSchedule"
+            "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-system=true,node-role.kubernetes.io/jarvice-system=true --register-with-taints=node-role.kubernetes.io/jarvice-system=true:NoSchedule"
             "public_ip" = true
             "key_name" = ""
             "pre_userdata" = <<EOF
@@ -108,15 +108,15 @@ echo "${local.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
 EOF
         }
     ]
-    compute_nodes = length(var.eks["compute_node_pools"]) == 0 ? null : [
-        for index, pool in var.eks["compute_node_pools"]:
+    compute_nodes = length(var.cluster["compute_node_pools"]) == 0 ? null : [
+        for index, pool in var.cluster["compute_node_pools"]:
             {
                 "name" = "jarvice-compute-${index}"
                 "instance_type" = pool.instance_type
                 "asg_desired_capacity" = pool.asg_desired_capacity
                 "asg_min_size" = pool.asg_min_size
                 "asg_max_size" = pool.asg_max_size
-                "kubelet_extra_args" = "--node-labels=node-role.kubernetes.io/jarvice-compute=true --register-with-taints=node-role.kubernetes.io/jarvice-compute=true:NoSchedule"
+                "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-compute=true,node-role.kubernetes.io/jarvice-compute=true --register-with-taints=node-role.kubernetes.io/jarvice-compute=true:NoSchedule"
                 "public_ip" = true
                 "key_name" = ""
                 "pre_userdata" = <<EOF
@@ -141,7 +141,7 @@ EOF
                         "value" = "true"
                     },
                     {
-                        "key" = "k8s.io/cluster-autoscaler/${var.eks["cluster_name"]}"
+                        "key" = "k8s.io/cluster-autoscaler/${var.cluster["cluster_name"]}"
                         "propagate_at_launch" = "false"
                         "value" = "true"
                     }
@@ -155,20 +155,20 @@ module "eks" {
     source = "terraform-aws-modules/eks/aws"
     version = "~> 12.2.0"
 
-    cluster_name = var.eks["cluster_name"]
-    cluster_version = var.eks["kubernetes_version"]
+    cluster_name = var.cluster["cluster_name"]
+    cluster_version = var.cluster["kubernetes_version"]
 
     vpc_id = module.vpc.vpc_id
     enable_irsa = true
 
-    #subnets = module.vpc.public_subnets
-    subnets = module.vpc.private_subnets
+    subnets = module.vpc.public_subnets
+    #subnets = module.vpc.private_subnets
 
     worker_groups = concat(local.default_nodes, local.system_nodes, local.compute_nodes)
     worker_additional_security_group_ids = [aws_security_group.jarvice.id]
 
     tags = {
-        cluster_name = var.eks["cluster_name"]
+        cluster_name = var.cluster["cluster_name"]
     }
 }
 

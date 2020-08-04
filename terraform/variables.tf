@@ -23,6 +23,40 @@ EOF
     }
 }
 
+variable "gke" {
+    description = "Google GKE Settings"
+    type = map(object({
+        enabled = bool
+
+        project = string
+        credentials = string
+
+        cluster_name = string
+        kubernetes_version = string
+
+        location = string
+
+        ssh_public_key = string
+
+        system_node_pool = object({
+            machine_type = string
+            num_nodes = number
+        })
+        compute_node_pools = list(object({
+            machine_type = string
+            disk_size_gb = number
+            num_nodes = number
+            min_nodes = number
+            max_nodes = number
+        }))
+
+        helm = object({
+            jarvice = map(string)
+        })
+    }))
+    default = {}
+}
+
 variable "eks" {
     description = "Amazon EKS Settings"
     type = map(object({
@@ -52,45 +86,7 @@ variable "eks" {
             jarvice = map(string)
         })
     }))
-    default = {
-        "eks_cluster_00" = {
-            enabled = false
-
-            cluster_name = "jarvice"
-            kubernetes_version = "1.16.8"
-
-            region = "us-west-2"
-            availability_zones = ["us-west-2a"]
-
-            ssh_public_key = null
-
-            system_node_pool = {
-                instance_type = null
-                asg_desired_capacity = null
-            }
-            compute_node_pools = [
-                {
-                    instance_type = "m5.2xlarge"
-                    root_volume_size = 128
-                    asg_desired_capacity = 2
-                    asg_min_size = 1
-                    asg_max_size = 16
-                },
-            ]
-
-            helm = {
-                jarvice = {
-                    version = "./"
-                    namespace = "jarvice-system"
-                    override_yaml_file = "override-tf.<provider>.<location>.<cluster_name>.yaml"
-                    override_yaml_values = <<EOF
-# override_yaml_values - takes precedence over override_yaml_file and
-# global override_yaml_values
-EOF
-                }
-            }
-        }
-    }
+    default = {}
 }
 
 variable "aks" {
@@ -125,47 +121,6 @@ variable "aks" {
             jarvice = map(string)
         })
     }))
-    default = {
-        "aks_cluster_00" = {
-            enabled = false
-
-            service_principal_client_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-            service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-
-            cluster_name = "jarvice"
-            kubernetes_version = "1.15.10"
-
-            location = "Central US"
-            availability_zones = ["1"]
-
-            ssh_public_key = null
-
-            system_node_pool = {
-                node_vm_size = null
-                node_count = null
-            }
-            compute_node_pools = [
-                {
-                    node_vm_size = "Standard_D32_v3"
-                    node_os_disk_size_gb = 128
-                    node_count = 2
-                    node_min_count = 1
-                    node_max_count = 16
-                },
-            ]
-
-            helm = {
-                jarvice = {
-                    version = "./"
-                    namespace = "jarvice-system"
-                    override_yaml_file = "override-tf.<provider>.<location>.<cluster_name>.yaml"
-                    override_yaml_values = <<EOF
-# override_yaml_values - takes precedence over override_yaml_file and
-# global override_yaml_values
-EOF
-                }
-            }
-        }
-    }
+    default = {}
 }
 
