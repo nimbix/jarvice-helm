@@ -111,6 +111,11 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202008051905
+
+* (3182) Experimental (undocumented) support for EKS using Terraform.
+* (3243) Fixed regression with LoadBalancer-only (no ingress) clusters that prevented jobs from being submitted due to a scheduler error.
+
 ## 3.0.0-1.202007221912
 
 * (3133) Updated Kubernetes support statement; see [Kubernetes Support](#kubernetes-support) for details.
