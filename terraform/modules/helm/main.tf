@@ -38,7 +38,8 @@ resource "helm_release" "external_dns" {
 }
 
 resource "helm_release" "traefik" {
-    count = var.traefik_values != null ? 1 : 0
+    #count = var.traefik_values != null ? 1 : 0
+    count = var.traefik_enabled == true ? 1 : 0
 
     name = "traefik"
     repository = "https://kubernetes-charts.storage.googleapis.com"

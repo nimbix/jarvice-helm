@@ -25,7 +25,8 @@ locals {
         "https://www.googleapis.com/auth/service.management.readonly",
         "https://www.googleapis.com/auth/servicecontrol",
         "https://www.googleapis.com/auth/trace.append",
-        "https://www.googleapis.com/auth/compute"
+        "https://www.googleapis.com/auth/compute",
+        "https://www.googleapis.com/auth/cloud-platform"
     ]
 }
 
@@ -38,25 +39,25 @@ resource "random_id" "password" {
 }
 
 data "google_container_engine_versions" "kubernetes_version" {
-    provider = google-beta
+    #provider = google-beta
 
     location = local.zone
     version_prefix = "${var.cluster["kubernetes_version"]}."
 }
 
 resource "google_container_cluster" "jarvice" {
-    provider = google-beta
+    #provider = google-beta
 
     name = var.cluster["cluster_name"]
     location = local.region
     node_locations = [local.zone]
 
-    min_master_version = data.google_container_engine_versions.kubernetes_version.release_channel_default_version["STABLE"]
-    node_version = data.google_container_engine_versions.kubernetes_version.release_channel_default_version["STABLE"]
+    min_master_version = data.google_container_engine_versions.kubernetes_version.latest_master_version
+    node_version = data.google_container_engine_versions.kubernetes_version.latest_node_version
 
-    release_channel {
-        channel = "STABLE"
-    }
+    #release_channel {
+    #    channel = "STABLE"
+    #}
 
     initial_node_count = 1
     remove_default_node_pool = true
@@ -95,12 +96,14 @@ resource "google_container_cluster" "jarvice" {
 }
 
 resource "google_container_node_pool" "jarvice_default" {
+    #provider = google-beta
+
     name = "jxedefault"
     location = local.region
     node_locations = [local.zone]
 
     cluster = google_container_cluster.jarvice.name
-    version = data.google_container_engine_versions.kubernetes_version.release_channel_default_version["STABLE"]
+    version = data.google_container_engine_versions.kubernetes_version.latest_node_version
 
     node_count = 2
 
@@ -133,17 +136,20 @@ EOF
 }
 
 resource "google_container_node_pool" "jarvice_system" {
+    #provider = google-beta
+
     name = "jxesystem"
     location = local.region
     node_locations = [local.zone]
 
     cluster = google_container_cluster.jarvice.name
-    version = data.google_container_engine_versions.kubernetes_version.release_channel_default_version["STABLE"]
+    version = data.google_container_engine_versions.kubernetes_version.latest_node_version
 
-    initial_node_count = var.cluster.system_node_pool["num_nodes"] != null ? var.cluster.system_node_pool["num_nodes"] : local.system_num_nodes
+    #node_count = local.system_nodes_num
+    initial_node_count = local.system_nodes_num
     autoscaling {
-        min_node_count = var.cluster.system_node_pool["num_nodes"] != null ? var.cluster.system_node_pool["num_nodes"] : local.system_num_nodes
-        max_node_count = var.cluster.system_node_pool["num_nodes"] != null ? var.cluster.system_node_pool["num_nodes"] * 2 : local.system_num_nodes * 2
+        min_node_count = local.system_nodes_num
+        max_node_count = local.system_nodes_num * 2
     }
 
     management {
@@ -152,7 +158,7 @@ resource "google_container_node_pool" "jarvice_system" {
     }
 
     node_config {
-        machine_type = local.system_node_machine_type
+        machine_type = local.system_nodes_type
         image_type = "UBUNTU"
 
         service_account = "default"
@@ -182,6 +188,8 @@ EOF
 }
 
 resource "google_container_node_pool" "jarvice_compute" {
+    #provider = google-beta
+
     count = length(var.cluster["compute_node_pools"])
 
     name = "jxecompute${count.index}"
@@ -189,12 +197,12 @@ resource "google_container_node_pool" "jarvice_compute" {
     node_locations = [local.zone]
 
     cluster = google_container_cluster.jarvice.name
-    version = data.google_container_engine_versions.kubernetes_version.release_channel_default_version["STABLE"]
+    version = data.google_container_engine_versions.kubernetes_version.latest_node_version
 
-    initial_node_count = var.cluster.compute_node_pools[count.index]["num_nodes"]
+    initial_node_count = var.cluster.compute_node_pools[count.index]["nodes_num"]
     autoscaling {
-        min_node_count = var.cluster.compute_node_pools[count.index]["min_nodes"]
-        max_node_count = var.cluster.compute_node_pools[count.index]["max_nodes"]
+        min_node_count = var.cluster.compute_node_pools[count.index]["nodes_min"]
+        max_node_count = var.cluster.compute_node_pools[count.index]["nodes_max"]
     }
 
     management {
@@ -203,8 +211,8 @@ resource "google_container_node_pool" "jarvice_compute" {
     }
 
     node_config {
-        machine_type = var.cluster.compute_node_pools[count.index]["machine_type"]
-        disk_size_gb = var.cluster.compute_node_pools[count.index]["disk_size_gb"]
+        machine_type = var.cluster.compute_node_pools[count.index]["nodes_type"]
+        disk_size_gb = var.cluster.compute_node_pools[count.index]["nodes_disk_size_gb"]
         image_type = "UBUNTU"
         min_cpu_platform = "Intel Skylake"
         disk_type = "pd-ssd"
