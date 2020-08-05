@@ -21,6 +21,11 @@ variable "external_dns_values" {
     default = null
 }
 
+variable "traefik_enabled" {
+    type = bool
+    default = true
+}
+
 variable "traefik_values" {
     type = string
     default = null

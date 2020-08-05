@@ -11,8 +11,8 @@ locals {
 }
 
 locals {
-    system_node_machine_type = local.jarvice_cluster_type == "downstream" ? "n1-standard-4" : "n1-standard-8"
-    system_num_nodes = local.jarvice_cluster_type == "downstream" ? 2 : 3
+    system_nodes_type = var.cluster.system_node_pool["nodes_type"] != null ? var.cluster.system_node_pool["nodes_type"] : local.jarvice_cluster_type == "downstream" ? "n1-standard-4" : "n1-standard-8"
+    system_nodes_num = var.cluster.system_node_pool["nodes_num"] != null ? var.cluster.system_node_pool["nodes_num"] : local.jarvice_cluster_type == "downstream" ? 2 : 3
 }
 
 locals {

@@ -32,23 +32,23 @@ variable "cluster" {
         service_principal_client_secret = string
 
         cluster_name = string
-        kubernetes_version = string
-
         location = string
         availability_zones = list(string)
+
+        kubernetes_version = string
 
         ssh_public_key = string
 
         system_node_pool = object({
-            node_vm_size = string
-            node_count = number
+            nodes_type = string
+            nodes_num = number
         })
         compute_node_pools = list(object({
-            node_vm_size = string
-            node_os_disk_size_gb = number
-            node_count = number
-            node_min_count = number
-            node_max_count = number
+            nodes_type = string
+            nodes_disk_size_gb = number
+            nodes_num = number
+            nodes_min = number
+            nodes_max = number
         }))
 
         helm = object({

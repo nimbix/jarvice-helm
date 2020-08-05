@@ -55,32 +55,32 @@ gke = {
         credentials = null
 
         cluster_name = "tf-jarvice"
-        kubernetes_version = "1.15"
-
         location = "us-west1-a"
+
+        kubernetes_version = "1.15"
 
         ssh_public_key = null  # global setting used if null specified
 
         # Visit the following link for GCP machine type specs:
         # https://cloud.google.com/compute/docs/machine-types
         system_node_pool = {
-            machine_type = null  # auto-set if null specified
-            num_nodes = null    # auto-set if null specified
+            nodes_type = null  # auto-set if null specified
+            nodes_num = null   # auto-set if null specified
         }
         compute_node_pools = [
             {
-                machine_type = "n1-standard-96"
-                disk_size_gb = 128
-                num_nodes = 2
-                min_nodes = 1
-                max_nodes = 16
+                nodes_type = "n1-standard-96"
+                nodes_disk_size_gb = 100
+                nodes_num = 2
+                nodes_min = 1
+                nodes_max = 16
             },
             #{
-            #    machine_type = "n1-standard-96"
-            #    disk_size_gb = 128
-            #    num_nodes = 2
-            #    min_nodes = 1
-            #    max_nodes = 16
+            #    nodes_type = "n1-standard-96"
+            #    nodes_disk_size_gb = 100
+            #    nodes_num = 2
+            #    nodes_min = 1
+            #    nodes_max = 16
             #},
         ]
 
@@ -122,32 +122,32 @@ EOF
         credentials = null
 
         cluster_name = "tf-jarvice-downstream"
-        kubernetes_version = "1.15"
-
         location = "us-west1-a"
+
+        kubernetes_version = "1.15"
 
         ssh_public_key = null  # global setting used if null specified
 
         # Visit the following link for GCP machine type specs:
         # https://cloud.google.com/compute/docs/machine-types
         system_node_pool = {
-            machine_type = null  # auto-set if null specified
-            num_nodes = null    # auto-set if null specified
+            nodes_type = null  # auto-set if null specified
+            nodes_num = null   # auto-set if null specified
         }
         compute_node_pools = [
             {
-                machine_type = "n1-standard-96"
-                disk_size_gb = 128
-                num_nodes = 2
-                min_nodes = 1
-                max_nodes = 16
+                nodes_type = "n1-standard-96"
+                nodes_disk_size_gb = 100
+                nodes_num = 2
+                nodes_min = 1
+                nodes_max = 16
             },
             #{
-            #    machine_type = "n1-standard-96"
-            #    disk_size_gb = 128
-            #    num_nodes = 2
-            #    min_nodes = 1
-            #    max_nodes = 16
+            #    nodes_type = "n1-standard-96"
+            #    nodes_disk_size_gb = 100
+            #    nodes_num = 2
+            #    nodes_min = 1
+            #    nodes_max = 16
             #},
         ]
 
@@ -192,34 +192,37 @@ eks = {
     "eks_cluster_00" = {
         enabled = false
 
-        cluster_name = "tf-jarvice"
-        kubernetes_version = "1.15"
+        access_key = null
+        secret_key = null
 
+        cluster_name = "tf-jarvice"
         region = "us-west-2"
         availability_zones = null
+
+        kubernetes_version = "1.15"
 
         ssh_public_key = null  # global setting used if null specified
 
         # Visit the following link for AWS instance type specs:
         # https://aws.amazon.com/ec2/instance-types/
         system_node_pool = {
-            instance_type = null  # auto-set if null specified
-            asg_desired_capacity = null    # auto-set if null specified
+            nodes_type = null  # auto-set if null specified
+            nodes_num = null   # auto-set if null specified
         }
         compute_node_pools = [
             {
-                instance_type = "c5.18xlarge"
-                root_volume_size = 128
-                asg_desired_capacity = 2
-                asg_min_size = 1
-                asg_max_size = 16
+                nodes_type = "c5.18xlarge"
+                nodes_disk_size_gb = 100
+                nodes_num = 2
+                nodes_min = 1
+                nodes_max = 16
             },
             #{
-            #    instance_type = "c5.18xlarge"
-            #    root_volume_size = 128
-            #    asg_desired_capacity = 2
-            #    asg_min_size = 1
-            #    asg_max_size = 16
+            #    nodes_type = "c5.18xlarge"
+            #    nodes_disk_size_gb = 100
+            #    nodes_num = 2
+            #    nodes_min = 1
+            #    nodes_max = 16
             #},
         ]
 
@@ -257,34 +260,37 @@ EOF
     "eks_cluster_01" = {
         enabled = false
 
-        cluster_name = "tf-jarvice-downstream"
-        kubernetes_version = "1.15"
+        access_key = null
+        secret_key = null
 
+        cluster_name = "tf-jarvice-downstream"
         region = "us-west-2"
         availability_zones = null
+
+        kubernetes_version = "1.15"
 
         ssh_public_key = null  # global setting used if null specified
 
         # Visit the following link for AWS instance type specs:
         # https://aws.amazon.com/ec2/instance-types/
         system_node_pool = {
-            instance_type = null  # auto-set if null specified
-            asg_desired_capacity = null    # auto-set if null specified
+            nodes_type = null  # auto-set if null specified
+            nodes_num = null   # auto-set if null specified
         }
         compute_node_pools = [
             {
-                instance_type = "c5.18xlarge"
-                root_volume_size = 128
-                asg_desired_capacity = 2
-                asg_min_size = 1
-                asg_max_size = 16
+                nodes_type = "c5.18xlarge"
+                nodes_disk_size_gb = 100
+                nodes_num = 2
+                nodes_min = 1
+                nodes_max = 16
             },
             #{
-            #    instance_type = "c5.18xlarge"
-            #    root_volume_size = 128
-            #    asg_desired_capacity = 2
-            #    asg_min_size = 1
-            #    asg_max_size = 16
+            #    nodes_type = "c5.18xlarge"
+            #    nodes_disk_size_gb = 100
+            #    nodes_num = 2
+            #    nodes_min = 1
+            #    nodes_max = 16
             #},
         ]
 
@@ -335,33 +341,33 @@ aks = {
         service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
         cluster_name = "tf-jarvice"
-        kubernetes_version = "1.15.10"
-
         location = "Central US"
         availability_zones = ["1"]
+
+        kubernetes_version = "1.15.12"
 
         ssh_public_key = null  # global setting used if null specified
 
         # Visit the following link for Azure node size specs:
         # https://docs.microsoft.com/en-us/azure/cloud-services/cloud-services-sizes-specs
         system_node_pool = {
-            node_vm_size = null  # auto-set if null specified
-            node_count = null    # auto-set if null specified
+            nodes_type = null  # auto-set if null specified
+            nodes_num = null   # auto-set if null specified
         }
         compute_node_pools = [
             {
-                node_vm_size = "Standard_D32_v3"
-                node_os_disk_size_gb = 128
-                node_count = 2
-                node_min_count = 1
-                node_max_count = 16
+                nodes_type = "Standard_D32_v3"
+                nodes_disk_size_gb = 100
+                nodes_num = 2
+                nodes_min = 1
+                nodes_max = 16
             },
             #{
-            #    node_vm_size = "Standard_D32_v3"
-            #    node_os_disk_size_gb = 128
-            #    node_count = 2
-            #    node_min_count = 1
-            #    node_max_count = 16
+            #    nodes_type = "Standard_D32_v3"
+            #    nodes_disk_size_gb = 100
+            #    nodes_num = 2
+            #    nodes_min = 1
+            #    nodes_max = 16
             #},
         ]
 
@@ -405,33 +411,33 @@ EOF
         service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
         cluster_name = "tf-jarvice-downstream"
-        kubernetes_version = "1.15.10"
-
         location = "Central US"
         availability_zones = ["1"]
+
+        kubernetes_version = "1.15.12"
 
         ssh_public_key = null  # global setting used if null specified
 
         # Visit the following link for Azure node size specs:
         # https://docs.microsoft.com/en-us/azure/cloud-services/cloud-services-sizes-specs
         system_node_pool = {
-            node_vm_size = null  # auto-set if null specified
-            node_count = null    # auto-set if null specified
+            nodes_type = null  # auto-set if null specified
+            nodes_num = null   # auto-set if null specified
         }
         compute_node_pools = [
             {
-                node_vm_size = "Standard_D32_v3"
-                node_os_disk_size_gb = 100
-                node_count = 2
-                node_min_count = 1
-                node_max_count = 16
+                nodes_type = "Standard_D32_v3"
+                nodes_disk_size_gb = 100
+                nodes_num = 2
+                nodes_min = 1
+                nodes_max = 16
             },
             #{
-            #    node_vm_size = "Standard_D32_v3"
-            #    node_os_disk_size_gb = 100
-            #    node_count = 2
-            #    node_min_count = 1
-            #    node_max_count = 16
+            #    nodes_type = "Standard_D32_v3"
+            #    nodes_disk_size_gb = 100
+            #    nodes_num = 2
+            #    nodes_min = 1
+            #    nodes_max = 16
             #},
         ]
 

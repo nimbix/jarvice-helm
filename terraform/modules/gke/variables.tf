@@ -20,22 +20,22 @@ variable "cluster" {
         credentials = string
 
         cluster_name = string
-        kubernetes_version = string
-
         location = string
+
+        kubernetes_version = string
 
         ssh_public_key = string
 
         system_node_pool = object({
-            machine_type = string
-            num_nodes = number
+            nodes_type = string
+            nodes_num = number
         })
         compute_node_pools = list(object({
-            machine_type = string
-            disk_size_gb = number
-            num_nodes = number
-            min_nodes = number
-            max_nodes = number
+            nodes_type = string
+            nodes_disk_size_gb = number
+            nodes_num = number
+            nodes_min = number
+            nodes_max = number
         }))
 
         helm = object({

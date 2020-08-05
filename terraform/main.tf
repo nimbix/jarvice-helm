@@ -3,6 +3,21 @@
 terraform {
     required_version = "~> 0.12.29"
     #backend "local" {}
+
+    required_providers {
+        google = "~> 3.32.0"
+        google-beta = "~> 3.32.0"
+        aws = "~> 2.68.0"
+        azurerm = "~> 2.20"
+
+        helm = "~> 1.2"
+        kubernetes = "~> 1.11"
+
+        null = "~> 2.1"
+        local = "~> 1.4"
+        template = "~> 2.1"
+        random = "~> 2.3"
+    }
 }
 
 # TODO: terraform-v0.13
@@ -50,7 +65,6 @@ provider "google-beta" {
 }
 
 provider "kubernetes" {
-    version = "~> 1.11"
     alias = "${key}"
 
     load_config_file = false
@@ -102,10 +116,11 @@ output "${key}" {
 provider "aws" {
     alias = "${key}"
     region  = local.eks["${key}"].region
+    access_key  = local.eks["${key}"].access_key
+    secret_key  = local.eks["${key}"].secret_key
 }
 
 provider "kubernetes" {
-    version = "~> 1.11"
     alias = "${key}"
 
     load_config_file = false

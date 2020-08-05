@@ -25,7 +25,7 @@ resource "random_id" "dns_prefix" {
 resource "azurerm_kubernetes_cluster" "jarvice" {
     name = var.cluster["cluster_name"]
     kubernetes_version = var.cluster["kubernetes_version"]
-    dns_prefix = contains(["jarvice", "tf-jarvice", "jarvice-downstream", "tf-jarvice-downstream"], var.cluster["cluster_name"]) ? "${var.cluster["cluster_name"]-random_id.dns_prefix.hex}" : var.cluster["cluster_name"]
+    dns_prefix = contains(["jarvice", "tf-jarvice", "jarvice-downstream", "tf-jarvice-downstream"], var.cluster["cluster_name"]) ? format("%s-%s", var.cluster["cluster_name"], random_id.dns_prefix.hex) : var.cluster["cluster_name"]
     resource_group_name = azurerm_resource_group.jarvice.name
     location = azurerm_resource_group.jarvice.location
 
@@ -92,9 +92,12 @@ resource "azurerm_kubernetes_cluster_node_pool" "jarvice_system" {
     availability_zones = azurerm_kubernetes_cluster.jarvice.default_node_pool[0].availability_zones
     kubernetes_cluster_id = azurerm_kubernetes_cluster.jarvice.id
 
-    vm_size = var.cluster.system_node_pool["node_vm_size"] != null ? var.cluster.system_node_pool["node_vm_size"] : local.system_node_vm_size
+    vm_size = local.system_nodes_type
     os_type = "Linux"
-    node_count = var.cluster.system_node_pool["node_count"] != null ? var.cluster.system_node_pool["node_count"] : local.system_node_vm_count
+    enable_auto_scaling = true
+    node_count = local.system_nodes_num
+    min_count = local.system_nodes_num
+    max_count = local.system_nodes_num * 2
 
     node_labels = {
         "node-role.jarvice.io/jarvice-system" = "true",
@@ -114,14 +117,14 @@ resource "azurerm_kubernetes_cluster_node_pool" "jarvice_compute" {
     availability_zones = azurerm_kubernetes_cluster.jarvice.default_node_pool[0].availability_zones
     kubernetes_cluster_id = azurerm_kubernetes_cluster.jarvice.id
 
-    vm_size = var.cluster.compute_node_pools[count.index]["node_vm_size"]
+    vm_size = var.cluster.compute_node_pools[count.index]["nodes_type"]
     os_type = "Linux"
-    os_disk_size_gb = var.cluster.compute_node_pools[count.index]["node_os_disk_size_gb"]
+    os_disk_size_gb = var.cluster.compute_node_pools[count.index]["nodes_disk_size_gb"]
 
     enable_auto_scaling = true
-    node_count = var.cluster.compute_node_pools[count.index]["node_count"]
-    min_count = var.cluster.compute_node_pools[count.index]["node_min_count"]
-    max_count = var.cluster.compute_node_pools[count.index]["node_max_count"]
+    node_count = var.cluster.compute_node_pools[count.index]["nodes_num"]
+    min_count = var.cluster.compute_node_pools[count.index]["nodes_min"]
+    max_count = var.cluster.compute_node_pools[count.index]["nodes_max"]
 
     node_labels = {
         "node-role.jarvice.io/jarvice-compute" = "true",
