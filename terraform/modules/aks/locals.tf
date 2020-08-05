@@ -11,8 +11,8 @@ locals {
 }
 
 locals {
-    system_node_vm_size = local.jarvice_cluster_type == "downstream" ? "Standard_D3_v2" : "Standard_D5_v2"
-    system_node_vm_count = local.jarvice_cluster_type == "downstream" ? 2 : 3
+    system_nodes_type = var.cluster.system_node_pool["nodes_type"] != null ? var.cluster.system_node_pool["nodes_type"] : local.jarvice_cluster_type == "downstream" ? "Standard_D3_v2" : "Standard_D5_v2"
+    system_nodes_num = var.cluster.system_node_pool["nodes_num"] != null ? var.cluster.system_node_pool["nodes_num"] : local.jarvice_cluster_type == "downstream" ? 2 : 3
 }
 
 locals {

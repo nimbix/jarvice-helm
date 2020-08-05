@@ -94,10 +94,10 @@ EOF
     system_nodes = [
         {
             "name" = "jarvice-system",
-            "instance_type" = local.system_node_instance_type
-            "asg_desired_capacity" = local.system_node_asg_desired_capacity
-            "asg_min_size" = local.system_node_asg_desired_capacity
-            "asg_max_size" = local.system_node_asg_desired_capacity
+            "instance_type" = local.system_nodes_type
+            "asg_desired_capacity" = local.system_nodes_num
+            "asg_min_size" = local.system_nodes_num
+            "asg_max_size" = local.system_nodes_num * 2
             "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-system=true,node-role.kubernetes.io/jarvice-system=true --register-with-taints=node-role.kubernetes.io/jarvice-system=true:NoSchedule"
             "public_ip" = true
             "key_name" = ""
@@ -112,10 +112,11 @@ EOF
         for index, pool in var.cluster["compute_node_pools"]:
             {
                 "name" = "jarvice-compute-${index}"
-                "instance_type" = pool.instance_type
-                "asg_desired_capacity" = pool.asg_desired_capacity
-                "asg_min_size" = pool.asg_min_size
-                "asg_max_size" = pool.asg_max_size
+                "instance_type" = pool.nodes_type
+                "root_volume_size" = pool.nodes_disk_size_gb
+                "asg_desired_capacity" = pool.nodes_num
+                "asg_min_size" = pool.nodes_min
+                "asg_max_size" = pool.nodes_max
                 "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-compute=true,node-role.kubernetes.io/jarvice-compute=true --register-with-taints=node-role.kubernetes.io/jarvice-compute=true:NoSchedule"
                 "public_ip" = true
                 "key_name" = ""

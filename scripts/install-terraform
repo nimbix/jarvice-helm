@@ -2,6 +2,7 @@
 
 TF=$(type -p terraform)
 TF_VER_REQ=0.12.24
+TF_VER_REQ=0.13.0
 
 function strict_version {
     ver=$1
