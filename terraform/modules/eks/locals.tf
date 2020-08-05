@@ -1,7 +1,7 @@
-# locals.tf - AKS module local variable definitions
+# locals.tf - EKS module local variable definitions
 
 locals {
-    jarvice_override_yaml_file = replace(replace("${var.cluster.helm.jarvice["override_yaml_file"]}", "<location>", "${azurerm_kubernetes_cluster.jarvice.location}"), "<cluster_name>", "${var.cluster["cluster_name"]}")
+    jarvice_override_yaml_file = replace(replace("${var.cluster.helm.jarvice["override_yaml_file"]}", "<region>", "${var.cluster["region"]}"), "<cluster_name>", "${var.cluster["cluster_name"]}")
 
     jarvice_helm_override_yaml = fileexists(local.jarvice_override_yaml_file) ? "${file("${local.jarvice_override_yaml_file}")}" : ""
 
@@ -11,7 +11,7 @@ locals {
 }
 
 locals {
-    system_nodes_type = var.cluster.system_node_pool["nodes_type"] != null ? var.cluster.system_node_pool["nodes_type"] : local.jarvice_cluster_type == "downstream" ? "Standard_D3_v2" : "Standard_D5_v2"
+    system_nodes_type = var.cluster.system_node_pool["nodes_type"] != null ? var.cluster.system_node_pool["nodes_type"] : local.jarvice_cluster_type == "downstream" ? "m5.xlarge" : "m5.2xlarge"
     system_nodes_num = var.cluster.system_node_pool["nodes_num"] != null ? var.cluster.system_node_pool["nodes_num"] : local.jarvice_cluster_type == "downstream" ? 2 : 3
 }
 
@@ -21,40 +21,56 @@ locals {
 
 locals {
     kube_config = {
-        "path" = "~/.kube/config-tf.aks.${azurerm_kubernetes_cluster.jarvice.location}.${var.cluster["cluster_name"]}",
-        "host" = azurerm_kubernetes_cluster.jarvice.kube_config[0].host
-        "cluster_ca_certificate" = azurerm_kubernetes_cluster.jarvice.kube_config[0].cluster_ca_certificate,
-        "client_certificate" = azurerm_kubernetes_cluster.jarvice.kube_config[0].client_certificate,
-        "client_key" = azurerm_kubernetes_cluster.jarvice.kube_config[0].client_key,
-        "token" = null,
+        "path" = "~/.kube/config-tf.eks.${var.cluster["region"]}.${var.cluster["cluster_name"]}",
+        "host" = data.aws_eks_cluster.cluster.endpoint,
+        "cluster_ca_certificate" = data.aws_eks_cluster.cluster.certificate_authority.0.data,
+        "client_certificate" = null,
+        "client_key" = null,
+        "token" = data.aws_eks_cluster_auth.cluster.token,
         "username" = null,
         "password" = null
     }
 }
 
 locals {
+    jarvice_config = {
+        "ingress_host_path" = "~/.terraform-jarvice/ingress-tf.eks.${var.cluster.region}.${var.cluster["cluster_name"]}"
+    }
+}
+
+locals {
     jarvice_ingress_upstream = <<EOF
-# AKS cluster override yaml
+# EKS cluster override yaml
 jarvice_api:
-  ingressHost: ${azurerm_public_ip.jarvice.fqdn}
   ingressPath: "/api"
+  #ingressHost: {aws_eip.nat[0].public_dns}
+  ingressHost: "lookup"
+  ingressService: "traefik"
+  ingressServiceNamespace: "kube-system"
 
 jarvice_mc_portal:
-  ingressHost: ${azurerm_public_ip.jarvice.fqdn}
   ingressPath: "/"
+  #ingressHost: {aws_eip.nat[0].public_dns}
+  ingressHost: "lookup"
+  ingressService: "traefik"
+  ingressServiceNamespace: "kube-system"
 EOF
 
     jarvice_ingress_downstream = <<EOF
-# AKS cluster override yaml
+# EKS cluster override yaml
 jarvice_k8s_scheduler:
-  ingressHost: ${azurerm_public_ip.jarvice.fqdn}
+  #ingressHost: {aws_eip.nat[0].public_dns}
+  ingressHost: "lookup"
+  ingressService: "traefik"
+  ingressServiceNamespace: "kube-system"
 EOF
 
     jarvice_ingress = local.jarvice_cluster_type == "downstream" ? local.jarvice_ingress_downstream : local.jarvice_ingress_upstream
+    jarvice_ingress_name = local.jarvice_cluster_type == "downstream" ? "jarvice-k8s-scheduler" : "jarvice-mc-portal"
 
-    storage_class_provisioner = "kubernetes.io/azure-disk"
+    storage_class_provisioner = "kubernetes.io/aws-ebs"
     cluster_override_yaml_values = <<EOF
-# AKS cluster override values
+# EKS cluster override values
 jarvice:
   nodeSelector: '${local.jarvice_helm_values["nodeSelector"] == null ? "{\"node-role.jarvice.io/jarvice-system\": \"true\"}" : local.jarvice_helm_values["nodeSelector"]}'
 

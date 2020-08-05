@@ -1,13 +1,34 @@
-variable "kube_config" {
-    type = map(string)
+# variables.tf - helm module variable definitions
+
+#variable "values" {
+#    type = map(
+#        list(string)
+#    )
+#}
+
+variable "cluster_autoscaler_enabled" {
+    type = bool
+    default = false
 }
 
-variable "traefik_deploy" {
+variable "cluster_autoscaler_values" {
+    type = string
+    default = null
+}
+
+variable "external_dns_values" {
+    type = string
+    default = null
+}
+
+variable "traefik_enabled" {
     type = bool
+    default = true
 }
 
 variable "traefik_values" {
     type = string
+    default = null
 }
 
 variable "global" {

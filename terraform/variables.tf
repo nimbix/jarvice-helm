@@ -1,3 +1,5 @@
+# variables.tf - root module variable definitions
+
 variable "global" {
     description = "Global Cluster Settings"
     type = object({
@@ -21,76 +23,107 @@ EOF
     }
 }
 
-variable "aks" {
-    description = "Azure AKS Settings"
-    type = list(object({
-        #enabled = bool
+variable "gke" {
+    description = "Google GKE Settings"
+    type = map(object({
+        enabled = bool
 
-        service_principal_client_id = string
-        service_principal_client_secret = string
+        project = string
+        credentials = string
 
         cluster_name = string
-        kubernetes_version = string
-
         location = string
-        availability_zones = list(string)
+
+        kubernetes_version = string
 
         ssh_public_key = string
 
         system_node_pool = object({
-            node_vm_size = string
-            node_count = number
+            nodes_type = string
+            nodes_num = number
         })
         compute_node_pools = list(object({
-            node_vm_size = string
-            node_os_disk_size_gb = number
-            node_count = number
-            node_min_count = number
-            node_max_count = number
+            nodes_type = string
+            nodes_disk_size_gb = number
+            nodes_num = number
+            nodes_min = number
+            nodes_max = number
         }))
 
         helm = object({
             jarvice = map(string)
         })
     }))
-    default = [{
-        #enabled = false
+    default = {}
+}
 
-        service_principal_client_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-        service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+variable "eks" {
+    description = "Amazon EKS Settings"
+    type = map(object({
+        enabled = bool
 
-        cluster_name = "jarvice"
-        kubernetes_version = "1.15.10"
+        access_key = string
+        secret_key = string
 
-        location = "Central US"
-        availability_zones = ["1"]
+        cluster_name = string
+        region = string
+        availability_zones = list(string)
 
-        ssh_public_key = null
+        kubernetes_version = string
 
-        system_node_pool = {
-            node_vm_size = null
-            node_count = null
-        }
-        compute_node_pools = [
-            {
-                node_vm_size = "Standard_D32_v3"
-                node_os_disk_size_gb = 100
-                node_count = 2
-                node_min_count = 1
-                node_max_count = 16
-            },
-        ]
+        ssh_public_key = string
 
-        helm = {
-            jarvice = {
-                namespace = "jarvice-system"
-                override_yaml_file = "override-tf.<provider>.<zone_or_region>.<cluster_name>.yaml"
-                override_yaml_values = <<EOF
-# override_yaml_values - takes precedence over override_yaml_file and
-# global override_yaml_values
-EOF
-            }
-        }
-    }]
+        system_node_pool = object({
+            nodes_type = string
+            nodes_num = number
+        })
+        compute_node_pools = list(object({
+            nodes_type = string
+            nodes_disk_size_gb = number
+            nodes_num = number
+            nodes_min = number
+            nodes_max = number
+        }))
+
+        helm = object({
+            jarvice = map(string)
+        })
+    }))
+    default = {}
+}
+
+variable "aks" {
+    description = "Azure AKS Settings"
+    type = map(object({
+        enabled = bool
+
+        service_principal_client_id = string
+        service_principal_client_secret = string
+
+        cluster_name = string
+        location = string
+        availability_zones = list(string)
+
+        kubernetes_version = string
+
+        ssh_public_key = string
+
+        system_node_pool = object({
+            nodes_type = string
+            nodes_num = number
+        })
+        compute_node_pools = list(object({
+            nodes_type = string
+            nodes_disk_size_gb = number
+            nodes_num = number
+            nodes_min = number
+            nodes_max = number
+        }))
+
+        helm = object({
+            jarvice = map(string)
+        })
+    }))
+    default = {}
 }
 

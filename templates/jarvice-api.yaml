@@ -149,10 +149,14 @@ spec:
           - name: JARVICE_SYSTEM_REPO_BASE
             value: {{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}
           - name: JARVICE_IMAGES_TAG
+{{- if .Values.jarvice_api.env }}
 {{- if empty .Values.jarvice_api.env.JARVICE_IMAGES_TAG }}
             value: {{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
 {{- else }}
             value: {{ .Values.jarvice_api.env.JARVICE_IMAGES_TAG }}
+{{- end }}
+{{- else }}
+            value: {{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
 {{- end }}
           - name: JARVICE_LOCAL_REGISTRY
             value: {{ .Values.jarvice.JARVICE_LOCAL_REGISTRY }}
@@ -205,17 +209,8 @@ spec:
                 name: jarvice-mail
                 key: JARVICE_MAIL_PASSWORD
 {{- end }}
-{{- if (not (empty .Values.jarvice_api.env.JARVICE_MAIL_CONF)) }}
-          - name: JARVICE_MAIL_CONF
-            value: {{ toYaml .Values.jarvice_api.env.JARVICE_MAIL_CONF | replace "jarvice-smtpd:25" $smtpd | indent 12 }}
-{{- else if (not (empty .Values.jarvice.JARVICE_MAIL_CONF)) }}
-          - name: JARVICE_MAIL_CONF
-            value: {{ toYaml .Values.jarvice.JARVICE_MAIL_CONF | replace "jarvice-smtpd:25" $smtpd | indent 12 }}
-{{- end }}
-{{- if (not (empty .Values.jarvice_api.env.JARVICE_API_LOG_ENABLE)) }}
-          - name: JARVICE_API_LOG_ENABLE
-            value: "true"
-{{- end }}
+          - name: JARVICE_API_LOGLEVEL
+            value: "{{ .Values.jarvice.JARVICE_API_LOGLEVEL }}"
         resources:
 {{ toYaml .Values.jarvice_api.resources | indent 10 }}
 ---
@@ -285,8 +280,7 @@ metadata:
     component: jarvice-api
 spec:
   rules:
-  - host: {{ .Values.jarvice_api.ingressHost }}
-    http:
+  - http:
       paths:
 {{- if (eq "/api" .Values.jarvice_api.ingressPath) }}
       - backend:
@@ -298,6 +292,13 @@ spec:
           serviceName: jarvice-api
           servicePort: http
         path: /
+{{- end }}
+{{- if ne "-" .Values.jarvice_api.ingressHost }}
+{{- if eq "lookup" .Values.jarvice_api.ingressHost }}
+    host: '{{- (first (lookup "v1" "Service" .Values.jarvice_api.ingressServiceNamespace .Values.jarvice_api.ingressService).status.loadBalancer.ingress).hostname }}'
+{{- else }}
+    host: {{ .Values.jarvice_api.ingressHost }}
+{{- end }}
 {{- end }}
 ---
 {{- end }}
