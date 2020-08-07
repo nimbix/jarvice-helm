@@ -725,6 +725,23 @@ e.g. `JARVICE_JOBS_DOMAIN=my-domain.com/path/to/jobs$`
 JARVICE will replace `$` with the job number to enable access to interactive
 jobs over HTTPS.
 
+### Additional LoadBalancer service annotation for jobs
+
+On some platforms/deployments, the LoadBalancer service type must be annotated for it to properly assign an address.  The value for `jarvice.JARVICE_JOBS_LB_ANNOTATIONS` should be set to a JSON dictionary of name/value pairs as needed.
+
+#### Example: using an internal LoadBalancer on AWS
+
+Set the parameter `jarvice.JARVICE_JOBS_LB_ANNOTATIONS` to the following value:
+```
+'{"service.beta.kubernetes.io/aws-load-balancer-internal": "true"}'
+```
+(note the single quotes needed to properly encapsulate the JSON format)
+
+See [https://docs.aws.amazon.com/eks/latest/userguide/load-balancing.html](https://docs.aws.amazon.com/eks/latest/userguide/load-balancing.html) for additional details.
+
+Please note that this parameter is ignored when Ingress is used unless the application specifically requests a LoadBalancer address via its configuration.
+
+
 ### Site specific configuration
 
 The easiest way to configure all of the JARVICE options is to copy the default
@@ -736,6 +753,7 @@ $ cp jarvice-helm/values.yaml jarvice-helm/override.yaml
 $ helm upgrade jarvice ./jarvice-helm --namespace jarvice-system --install \
     --values jarvice-helm/override.yaml
 ```
+
 
 #### JARVICE helm deployment script
 
