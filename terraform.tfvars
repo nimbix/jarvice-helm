@@ -69,14 +69,14 @@ gke = {
         }
         compute_node_pools = [
             {
-                nodes_type = "n1-standard-96"
+                nodes_type = "n1-standard-32"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
             },
             #{
-            #    nodes_type = "n1-standard-96"
+            #    nodes_type = "n1-standard-32"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
@@ -136,14 +136,14 @@ EOF
         }
         compute_node_pools = [
             {
-                nodes_type = "n1-standard-96"
+                nodes_type = "n1-standard-32"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
             },
             #{
-            #    nodes_type = "n1-standard-96"
+            #    nodes_type = "n1-standard-32"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
