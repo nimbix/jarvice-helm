@@ -18,14 +18,37 @@ resource "azurerm_resource_group" "jarvice" {
     }
 }
 
-resource "random_id" "dns_prefix" {
-    byte_length = 6
+resource "azurerm_public_ip" "jarvice" {
+    name = var.cluster["cluster_name"]
+    resource_group_name = azurerm_resource_group.jarvice.name
+    location = azurerm_resource_group.jarvice.location
+
+    allocation_method = "Static"
+    sku = "Standard"
+    domain_name_label = contains(["jarvice", "tf-jarvice", "jarvice-downstream", "tf-jarvice-downstream"], var.cluster["cluster_name"]) ? format("%s-%s", var.cluster["cluster_name"], random_id.jarvice.hex) : var.cluster["cluster_name"]
+
+    tags = {
+        cluster_name = var.cluster["cluster_name"]
+    }
+}
+
+data "azurerm_kubernetes_service_versions" "kubernetes_version" {
+    location = azurerm_resource_group.jarvice.location
+    version_prefix = var.cluster["kubernetes_version"]
+    include_preview = false
+
+    depends_on = [azurerm_resource_group.jarvice]
+}
+
+resource "random_id" "jarvice" {
+    byte_length = 4
 }
 
 resource "azurerm_kubernetes_cluster" "jarvice" {
     name = var.cluster["cluster_name"]
-    kubernetes_version = var.cluster["kubernetes_version"]
-    dns_prefix = contains(["jarvice", "tf-jarvice", "jarvice-downstream", "tf-jarvice-downstream"], var.cluster["cluster_name"]) ? format("%s-%s", var.cluster["cluster_name"], random_id.dns_prefix.hex) : var.cluster["cluster_name"]
+    kubernetes_version = data.azurerm_kubernetes_service_versions.kubernetes_version.latest_version
+
+    dns_prefix = var.cluster["cluster_name"]
     resource_group_name = azurerm_resource_group.jarvice.name
     location = azurerm_resource_group.jarvice.location
 
@@ -38,12 +61,14 @@ resource "azurerm_kubernetes_cluster" "jarvice" {
     }
 
     default_node_pool {
-        name = "jxemaster"
+        name = "jxedefault"
         availability_zones = var.cluster["availability_zones"]
         node_count = 2
         vm_size = "Standard_B2s"
 
-        node_labels = {"node-role.kubernetes.io/master" = "true"}
+        node_labels = {
+            "node-role.jarvice.io/default" = "true"
+        }
     }
 
     service_principal {
@@ -67,24 +92,8 @@ resource "azurerm_kubernetes_cluster" "jarvice" {
     tags = {
         cluster_name = var.cluster["cluster_name"]
     }
-}
 
-resource "azurerm_public_ip" "jarvice" {
-    name = var.cluster["cluster_name"]
-    resource_group_name = azurerm_kubernetes_cluster.jarvice.node_resource_group
-    location = azurerm_kubernetes_cluster.jarvice.location
-
-    allocation_method = "Static"
-    sku = "Standard"
-    domain_name_label = var.cluster["cluster_name"]
-
-    tags = {
-        cluster_name = var.cluster["cluster_name"]
-    }
-
-    timeouts {
-        delete = "15m"
-    }
+    depends_on = [azurerm_public_ip.jarvice]
 }
 
 resource "azurerm_kubernetes_cluster_node_pool" "jarvice_system" {
@@ -100,13 +109,16 @@ resource "azurerm_kubernetes_cluster_node_pool" "jarvice_system" {
     max_count = local.system_nodes_num * 2
 
     node_labels = {
-        "node-role.jarvice.io/jarvice-system" = "true",
-        "node-role.kubernetes.io/jarvice-system" = "true"
+        "node-role.jarvice.io/jarvice-system" = "true"
     }
-    node_taints = ["node-role.kubernetes.io/jarvice-system=true:NoSchedule"]
+    node_taints = ["node-role.jarvice.io/jarvice-system=true:NoSchedule"]
 
     tags = {
         cluster_name = var.cluster["cluster_name"]
+    }
+
+    lifecycle {
+        ignore_changes = [node_count]
     }
 }
 
@@ -127,13 +139,16 @@ resource "azurerm_kubernetes_cluster_node_pool" "jarvice_compute" {
     max_count = var.cluster.compute_node_pools[count.index]["nodes_max"]
 
     node_labels = {
-        "node-role.jarvice.io/jarvice-compute" = "true",
-        "node-role.kubernetes.io/jarvice-compute" = "true"
+        "node-role.jarvice.io/jarvice-compute" = "true"
     }
-    node_taints = ["node-role.kubernetes.io/jarvice-compute=true:NoSchedule"]
+    node_taints = ["node-role.jarvice.io/jarvice-compute=true:NoSchedule"]
 
     tags = {
         cluster_name = var.cluster["cluster_name"]
+    }
+
+    lifecycle {
+        ignore_changes = [node_count]
     }
 }
 

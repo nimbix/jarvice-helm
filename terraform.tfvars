@@ -57,7 +57,7 @@ gke = {
         cluster_name = "tf-jarvice"
         location = "us-west1-a"
 
-        kubernetes_version = "1.15"
+        kubernetes_version = "1.16"
 
         ssh_public_key = null  # global setting used if null specified
 
@@ -124,7 +124,7 @@ EOF
         cluster_name = "tf-jarvice-downstream"
         location = "us-west1-a"
 
-        kubernetes_version = "1.15"
+        kubernetes_version = "1.16"
 
         ssh_public_key = null  # global setting used if null specified
 
@@ -199,7 +199,7 @@ eks = {
         region = "us-west-2"
         availability_zones = null
 
-        kubernetes_version = "1.15"
+        kubernetes_version = "1.16"
 
         ssh_public_key = null  # global setting used if null specified
 
@@ -267,7 +267,7 @@ EOF
         region = "us-west-2"
         availability_zones = null
 
-        kubernetes_version = "1.15"
+        kubernetes_version = "1.16"
 
         ssh_public_key = null  # global setting used if null specified
 
@@ -344,7 +344,7 @@ aks = {
         location = "Central US"
         availability_zones = ["1"]
 
-        kubernetes_version = "1.15.12"
+        kubernetes_version = "1.16"
 
         ssh_public_key = null  # global setting used if null specified
 
@@ -414,7 +414,7 @@ EOF
         location = "Central US"
         availability_zones = ["1"]
 
-        kubernetes_version = "1.15.12"
+        kubernetes_version = "1.16"
 
         ssh_public_key = null  # global setting used if null specified
 

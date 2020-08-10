@@ -23,7 +23,8 @@ resource "helm_release" "cluster_autoscaler" {
 }
 
 resource "helm_release" "external_dns" {
-    count = var.external_dns_values != null ? 1 : 0
+    #count = var.external_dns_values != null ? 1 : 0
+    count = var.external_dns_enabled == true ? 1 : 0
 
     name = "external-dns"
     repository = "https://charts.bitnami.com/bitnami"

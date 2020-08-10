@@ -4,6 +4,7 @@ module "helm" {
     source = "../helm"
 
     # Traefik settings
+    traefik_enabled = true
     traefik_values = <<EOF
 loadBalancerIP: ${azurerm_public_ip.jarvice.ip_address}
 replicas: 2
@@ -16,6 +17,9 @@ nodeSelector:
   kubernetes.io/arch: "amd64"
   node-role.jarvice.io/jarvice-system: "true"
 tolerations:
+  - key: node-role.jarvice.io/jarvice-system
+    effect: NoSchedule
+    operator: Exists
   - key: node-role.kubernetes.io/jarvice-system
     effect: NoSchedule
     operator: Exists
@@ -29,7 +33,7 @@ ssl:
 
 service:
   annotations:
-    service.beta.kubernetes.io/azure-load-balancer-resource-group: ${azurerm_kubernetes_cluster.jarvice.node_resource_group}
+    service.beta.kubernetes.io/azure-load-balancer-resource-group: ${azurerm_resource_group.jarvice.name}
 
 rbac:
   enabled: true
