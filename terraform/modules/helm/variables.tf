@@ -16,6 +16,11 @@ variable "cluster_autoscaler_values" {
     default = null
 }
 
+variable "external_dns_enabled" {
+    type = bool
+    default = false
+}
+
 variable "external_dns_values" {
     type = string
     default = null
@@ -23,7 +28,7 @@ variable "external_dns_values" {
 
 variable "traefik_enabled" {
     type = bool
-    default = true
+    default = false
 }
 
 variable "traefik_values" {

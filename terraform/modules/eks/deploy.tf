@@ -18,6 +18,9 @@ awsRegion: "${var.cluster["region"]}"
 cloudProvider: aws
 
 tolerations:
+  - key: node-role.jarvice.io/jarvice-system
+    effect: NoSchedule
+    operator: Exists
   - key: node-role.kubernetes.io/jarvice-system
     effect: NoSchedule
     operator: Exists
@@ -32,6 +35,7 @@ rbac:
 EOF
 
     # Traefik settings
+    traefik_enabled = true
     traefik_values = <<EOF
 # TODO: use eip allocations with NLB
 #loadBalancerIP: {aws_eip.nat[0].public_ip}
@@ -45,6 +49,9 @@ nodeSelector:
   kubernetes.io/arch: "amd64"
   node-role.jarvice.io/jarvice-system: "true"
 tolerations:
+  - key: node-role.jarvice.io/jarvice-system
+    effect: NoSchedule
+    operator: Exists
   - key: node-role.kubernetes.io/jarvice-system
     effect: NoSchedule
     operator: Exists

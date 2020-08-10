@@ -14,9 +14,7 @@ terraform {
 locals {
     zone = var.cluster["location"]
     region = join("-", slice(split("-", var.cluster["location"]), 0, 2))
-}
 
-locals {
     oauth_scopes = [
         "https://www.googleapis.com/auth/devstorage.read_only",
         "https://www.googleapis.com/auth/logging.write",
@@ -28,9 +26,7 @@ locals {
         "https://www.googleapis.com/auth/compute",
         "https://www.googleapis.com/auth/cloud-platform"
     ]
-}
 
-locals {
     username = "kubernetes-admin"
 }
 
@@ -45,6 +41,11 @@ data "google_container_engine_versions" "kubernetes_version" {
     version_prefix = "${var.cluster["kubernetes_version"]}."
 }
 
+locals {
+    master_version = data.google_container_engine_versions.kubernetes_version.latest_master_version
+    node_version = data.google_container_engine_versions.kubernetes_version.latest_node_version
+}
+
 resource "google_container_cluster" "jarvice" {
     #provider = google-beta
 
@@ -52,65 +53,15 @@ resource "google_container_cluster" "jarvice" {
     location = local.region
     node_locations = [local.zone]
 
-    min_master_version = data.google_container_engine_versions.kubernetes_version.latest_master_version
-    node_version = data.google_container_engine_versions.kubernetes_version.latest_node_version
+    min_master_version = local.master_version
+    node_version = local.node_version
 
     #release_channel {
     #    channel = "STABLE"
     #}
 
-    initial_node_count = 1
-    remove_default_node_pool = true
-
-    #cluster_autoscaling {
-    #    enabled = true
-    #    resource_limits {
-    #        resource_type = "cpu"
-    #        minimum = 1
-    #        maximum = 999999999
-    #    }
-    #    resource_limits {
-    #        resource_type = "memory"
-    #        minimum = 1
-    #        maximum = 999999999
-    #    }
-    #}
-
-    addons_config {
-        horizontal_pod_autoscaling {
-            disabled = true
-        }
-        http_load_balancing {
-            disabled = false
-        }
-    }
-
-    master_auth {
-        username = local.username
-        password = random_id.password.hex
-
-        client_certificate_config {
-            issue_client_certificate = true
-        }
-    }
-}
-
-resource "google_container_node_pool" "jarvice_default" {
-    #provider = google-beta
-
-    name = "jxedefault"
-    location = local.region
-    node_locations = [local.zone]
-
-    cluster = google_container_cluster.jarvice.name
-    version = data.google_container_engine_versions.kubernetes_version.latest_node_version
-
-    node_count = 2
-
-    management {
-        auto_upgrade = false
-        auto_repair = false
-    }
+    initial_node_count = 2
+    remove_default_node_pool = false
 
     node_config {
         machine_type = "n1-standard-1"
@@ -127,11 +78,38 @@ EOF
         }
 
         labels = {
-            #"node-role.kubernetes.io/default" = "true",
             "node-role.jarvice.io/default" = "true"
         }
 
-        tags = [google_container_cluster.jarvice.name, "jxedefault"]
+        tags = [var.cluster["cluster_name"], "jxedefault"]
+    }
+
+    ip_allocation_policy {
+        cluster_ipv4_cidr_block = ""
+        services_ipv4_cidr_block = ""
+    }
+    default_max_pods_per_node = 110
+
+    #addons_config {
+    #    horizontal_pod_autoscaling {
+    #        disabled = false
+    #    }
+    #    http_load_balancing {
+    #        disabled = false
+    #    }
+    #}
+
+    master_auth {
+        username = local.username
+        password = random_id.password.hex
+
+        client_certificate_config {
+            issue_client_certificate = true
+        }
+    }
+
+    resource_labels = {
+        "cluster_name" = var.cluster["cluster_name"]
     }
 }
 
@@ -143,9 +121,8 @@ resource "google_container_node_pool" "jarvice_system" {
     node_locations = [local.zone]
 
     cluster = google_container_cluster.jarvice.name
-    version = data.google_container_engine_versions.kubernetes_version.latest_node_version
+    version = local.node_version
 
-    #node_count = local.system_nodes_num
     initial_node_count = local.system_nodes_num
     autoscaling {
         min_node_count = local.system_nodes_num
@@ -153,8 +130,8 @@ resource "google_container_node_pool" "jarvice_system" {
     }
 
     management {
+        auto_repair = true
         auto_upgrade = false
-        auto_repair = false
     }
 
     node_config {
@@ -172,12 +149,11 @@ EOF
         }
 
         labels = {
-            #"node-role.kubernetes.io/jarvice-system" = "true",
             "node-role.jarvice.io/jarvice-system" = "true"
         }
         taint = [
             {
-                key = "node-role.kubernetes.io/jarvice-system"
+                key = "node-role.jarvice.io/jarvice-system"
                 value = "true"
                 effect = "NO_SCHEDULE"
             }
@@ -197,7 +173,7 @@ resource "google_container_node_pool" "jarvice_compute" {
     node_locations = [local.zone]
 
     cluster = google_container_cluster.jarvice.name
-    version = data.google_container_engine_versions.kubernetes_version.latest_node_version
+    version = local.node_version
 
     initial_node_count = var.cluster.compute_node_pools[count.index]["nodes_num"]
     autoscaling {
@@ -206,16 +182,16 @@ resource "google_container_node_pool" "jarvice_compute" {
     }
 
     management {
-        auto_upgrade = false
         auto_repair = false
+        auto_upgrade = false
     }
 
     node_config {
         machine_type = var.cluster.compute_node_pools[count.index]["nodes_type"]
         disk_size_gb = var.cluster.compute_node_pools[count.index]["nodes_disk_size_gb"]
         image_type = "UBUNTU"
-        min_cpu_platform = "Intel Skylake"
-        disk_type = "pd-ssd"
+        #min_cpu_platform = "Intel Skylake"
+        #disk_type = "pd-ssd"
 
         #guest_accelerator {
         #    type = "nvidia-tesla-p100"
@@ -233,12 +209,11 @@ EOF
         }
 
         labels = {
-            #"node-role.kubernetes.io/jarvice-compute" = "true",
             "node-role.jarvice.io/jarvice-compute" = "true"
         }
         taint = [
             {
-                key = "node-role.kubernetes.io/jarvice-compute"
+                key = "node-role.jarvice.io/jarvice-compute"
                 value = "true"
                 effect = "NO_SCHEDULE"
             }

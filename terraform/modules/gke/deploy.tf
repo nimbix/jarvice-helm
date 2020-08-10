@@ -4,6 +4,7 @@ module "helm" {
     source = "../helm"
 
     # Traefik settings
+    traefik_enabled = true
     traefik_values = <<EOF
 replicas: 2
 memoryRequest: 1Gi
@@ -13,9 +14,11 @@ cpuLimit: 1
 
 nodeSelector:
   kubernetes.io/arch: "amd64"
-  #node-role.kubernetes.io/jarvice-system: "true"
   node-role.jarvice.io/jarvice-system: "true"
 tolerations:
+  - key: node-role.jarvice.io/jarvice-system
+    effect: NoSchedule
+    operator: Exists
   - key: node-role.kubernetes.io/jarvice-system
     effect: NoSchedule
     operator: Exists

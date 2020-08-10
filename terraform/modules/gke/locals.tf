@@ -64,7 +64,6 @@ EOF
 # GKE cluster override values
 jarvice:
   nodeSelector: '${local.jarvice_helm_values["nodeSelector"] == null ? "{\"node-role.jarvice.io/jarvice-system\": \"true\"}" : local.jarvice_helm_values["nodeSelector"]}'
-  #nodeSelector: '${local.jarvice_helm_values["nodeSelector"] == null ? "{\"node-role.kubernetes.io/jarvice-system\": \"true\"}" : local.jarvice_helm_values["nodeSelector"]}'
 
   JARVICE_PVC_VAULT_NAME: ${local.jarvice_helm_values["JARVICE_PVC_VAULT_NAME"] == null ? "persistent" : local.jarvice_helm_values["JARVICE_PVC_VAULT_NAME"]}
   JARVICE_PVC_VAULT_STORAGECLASS: ${local.jarvice_helm_values["JARVICE_PVC_VAULT_STORAGECLASS"] == null ? "jarvice-user" : local.jarvice_helm_values["JARVICE_PVC_VAULT_STORAGECLASS"]}

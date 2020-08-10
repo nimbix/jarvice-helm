@@ -33,8 +33,8 @@ output "cluster_info" {
     value = <<EOF
 ===============================================================================
 
-  EKS cluster name: ${var.cluster["cluster_name"]}
-EKS cluster region: ${var.cluster["region"]}
+    EKS cluster name: ${var.cluster["cluster_name"]}
+EKS cluster location: ${var.cluster["region"]}
 
 Execute the following to begin using kubectl/helm with the new cluster:
 
