@@ -21,7 +21,7 @@ locals {
 
 locals {
     kube_config = {
-        "path" = "~/.kube/config-tf.gke.${var.cluster["location"]}.${var.cluster["cluster_name"]}",
+        "config_path" = "~/.kube/config-tf.gke.${var.cluster["location"]}.${var.cluster["cluster_name"]}",
         "host" = google_container_cluster.jarvice.endpoint,
         "cluster_ca_certificate" = google_container_cluster.jarvice.master_auth.0.cluster_ca_certificate,
         "client_certificate" = google_container_cluster.jarvice.master_auth.0.client_certificate,

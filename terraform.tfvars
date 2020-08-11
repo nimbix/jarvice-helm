@@ -39,10 +39,124 @@ EOF
 ###########################
 ### Kubernetes settings ###
 ###########################
-#k8s = {
-#    "k8s_cluster_00" = {
-#    },
-#}
+k8s = {
+    "k8s_cluster_00" = {
+        enabled = false
+
+        kube_config = "~/.kube/config"
+
+        cluster_name = "tf-jarvice"
+
+        helm = {
+            jarvice = {
+                version = "./"
+                namespace = "jarvice-system"
+                # global override_yaml_values take precedence over cluster
+                # override_yaml_file (override_yaml_file ignored if not found)
+                override_yaml_file = "override-tf.k8s.<cluster_name>.yaml"  # "override-tf.k8s.tf-jarvice.yaml"
+
+                override_yaml_values = <<EOF
+# override_yaml_values - takes precedence over override_yaml_file and
+# global override_yaml_values
+
+#jarvice:
+  #JARVICE_IMAGES_TAG: jarvice-master
+  #JARVICE_IMAGES_VERSION:
+
+  # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
+  # settings in jarvice_* component stanzas are ignored.
+  #JARVICE_CLUSTER_TYPE: "upstream"  # "downstream"
+
+  # If deploying "downstream" cluster, be sure to set JARVICE_SCHED_SERVER_KEY
+  #JARVICE_SCHED_SERVER_KEY: # "jarvice-downstream:Pass1234"
+
+  # JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
+  #JARVICE_JOBS_DOMAIN: # my-domain.com  # (host based ingress)
+  #JARVICE_JOBS_LB_SERVICE: false
+
+  #JARVICE_PVC_VAULT_NAME: persistent
+  #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
+  #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
+  #JARVICE_PVC_VAULT_SIZE: 10
+
+#jarvice_k8s_scheduler:
+  # loadBalancerIP and ingressHost are only applicable when
+  # jarvice.JARVICE_CLUSTER_TYPE is set to "downstream"
+  #loadBalancerIP:
+  #ingressHost: # jarvice-k8s-scheduler.my-domain.com
+
+#jarvice_api:
+  #loadBalancerIP:
+  #ingressHost: # jarvice-api.my-domain.com
+  #ingressPath: "/"  # Valid values are "/" (default) or "/api"
+
+#jarvice_mc_portal:
+  #loadBalancerIP:
+  #ingressHost: # jarvice.my-domain.com
+  #ingressPath: "/"  # Valid values are "/" (default) or "/portal"
+EOF
+            }
+        }
+    },
+    "k8s_cluster_01" = {
+        enabled = false
+
+        kube_config = "~/.kube/config.downstream"
+
+        cluster_name = "tf-jarvice-downstream"
+
+        helm = {
+            jarvice = {
+                version = "./"
+                namespace = "jarvice-downstream"
+                # global override_yaml_values take precedence over cluster
+                # override_yaml_file (override_yaml_file ignored if not found)
+                override_yaml_file = "override-tf.k8s.<cluster_name>.yaml"  # "override-tf.k8s.tf-jarvice-downstream.yaml"
+
+                override_yaml_values = <<EOF
+# override_yaml_values - takes precedence over override_yaml_file and
+# global override_yaml_values
+
+jarvice:
+  #JARVICE_IMAGES_TAG: jarvice-master
+  #JARVICE_IMAGES_VERSION:
+
+  # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
+  # settings in jarvice_* component stanzas are ignored.
+  JARVICE_CLUSTER_TYPE: "downstream"
+
+  # If deploying "downstream" cluster, be sure to set JARVICE_SCHED_SERVER_KEY
+  #JARVICE_SCHED_SERVER_KEY: # "jarvice-downstream:Pass1234"
+
+  # JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
+  #JARVICE_JOBS_DOMAIN: # my-domain.com  # (host based ingress)
+  #JARVICE_JOBS_LB_SERVICE: false
+
+  #JARVICE_PVC_VAULT_NAME: persistent
+  #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
+  #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
+  #JARVICE_PVC_VAULT_SIZE: 10
+
+#jarvice_k8s_scheduler:
+  # loadBalancerIP and ingressHost are only applicable when
+  # jarvice.JARVICE_CLUSTER_TYPE is set to "downstream"
+  #loadBalancerIP:
+  #ingressHost: # jarvice-k8s-scheduler.my-domain.com
+
+#jarvice_api:
+  #loadBalancerIP:
+  #ingressHost: # jarvice-api.my-domain.com
+  #ingressPath: "/"  # Valid values are "/" (default) or "/api"
+
+#jarvice_mc_portal:
+  #loadBalancerIP:
+  #ingressHost: # jarvice.my-domain.com
+  #ingressPath: "/"  # Valid values are "/" (default) or "/portal"
+EOF
+            }
+        }
+    },
+}
 
 #################################
 ### Google Cloud GKE Settings ###

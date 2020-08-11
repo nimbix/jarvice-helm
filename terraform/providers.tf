@@ -1,8 +1,8 @@
 # providers.tf - root module providers
 
-provider "local" {
-    version = "~> 1.4"
-}
+#provider "local" {
+#    version = "~> 1.4"
+#}
 
 # TODO: terraform-v0.13
 #provider "google" {
@@ -28,10 +28,10 @@ provider "local" {
 #    features {}
 #}
 
-provider "azurerm" {
-    version = "~> 2.13"
-    features {}
-}
+#provider "azurerm" {
+#    version = "~> 2.13"
+#    features {}
+#}
 
 # TODO: terraform-v0.13
 #provider "helm" {

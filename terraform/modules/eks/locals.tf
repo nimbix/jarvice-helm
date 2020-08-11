@@ -21,7 +21,7 @@ locals {
 
 locals {
     kube_config = {
-        "path" = "~/.kube/config-tf.eks.${var.cluster["region"]}.${var.cluster["cluster_name"]}",
+        "config_path" = "~/.kube/config-tf.eks.${var.cluster["region"]}.${var.cluster["cluster_name"]}",
         "host" = data.aws_eks_cluster.cluster.endpoint,
         "cluster_ca_certificate" = data.aws_eks_cluster.cluster.certificate_authority.0.data,
         "client_certificate" = null,

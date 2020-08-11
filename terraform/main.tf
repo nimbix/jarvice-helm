@@ -2,6 +2,7 @@
 
 terraform {
     required_version = "~> 0.12.29"
+    #required_version = "~> 0.13.0"
     #backend "local" {}
 
     required_providers {
@@ -11,7 +12,7 @@ terraform {
         azurerm = "~> 2.20"
 
         helm = "~> 1.2"
-        kubernetes = "~> 1.11"
+        kubernetes = "~> 1.12"
 
         null = "~> 2.1"
         local = "~> 1.4"
@@ -45,6 +46,41 @@ resource "local_file" "clusters" {
     content = <<EOF
 # clusters.tf - cluster definitions (dynamically created using cluster configs)
 
+##############################################################################
+%{ for key in keys(local.k8s) }
+# K8s cluster configuration: ${key}
+provider "kubernetes" {
+    alias = "${key}"
+
+    load_config_file = true
+    config_path = module.${key}.kube_config["config_path"]
+}
+
+provider "helm" {
+    alias = "${key}"
+
+    kubernetes {
+        load_config_file = true
+        config_path = module.${key}.kube_config["config_path"]
+    }
+}
+
+module "${key}" {
+    source = "./modules/k8s"
+
+    cluster = local.k8s["${key}"]
+    global = var.global
+
+    providers = {
+        kubernetes = kubernetes.${key}
+        helm = helm.${key}
+    }
+}
+
+output "${key}" {
+    value = format("\n\nK8s Cluster Configuration: %s\n%s\n", "${key}", module.${key}.cluster_info)
+}
+%{ endfor }
 ##############################################################################
 %{ for key in keys(local.gke) }
 # GKE cluster configuration: ${key}
