@@ -1,7 +1,7 @@
 # outputs.tf - EKS module outputs
 
 resource "local_file" "kube_config" {
-    filename = pathexpand(local.kube_config["path"])
+    filename = pathexpand(local.kube_config["config_path"])
     file_permission = "0600" 
     directory_permission = "0775"
     content = module.eks.kubeconfig
@@ -38,7 +38,7 @@ EKS cluster location: ${var.cluster["region"]}
 
 Execute the following to begin using kubectl/helm with the new cluster:
 
-export KUBECONFIG=${local.kube_config["path"]}
+export KUBECONFIG=${local.kube_config["config_path"]}
 
 ${local.cluster_output_message}:
 

@@ -3,7 +3,7 @@
 terraform {
     required_providers {
         google = "~> 3.32.0"
-        google-beta = "~> 3.32.0"
+        #google-beta = "~> 3.32.0"
 
         null = "~> 2.1"
         local = "~> 1.4"

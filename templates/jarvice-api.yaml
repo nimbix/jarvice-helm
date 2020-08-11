@@ -243,12 +243,16 @@ spec:
   policyTypes:
   - Ingress
   ingress:
+{{- if (empty .Values.jarvice_api.ingressHost) }}
+  - {}
+{{- else }}
   - from:
     - namespaceSelector: {}
     - podSelector: {}
     ports:
     - protocol: TCP
       port: 8080
+{{- end }}
 ---
 {{- end }}
 {{- if (empty .Values.jarvice_api.ingressHost) }}

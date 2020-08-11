@@ -23,6 +23,22 @@ EOF
     }
 }
 
+variable "k8s" {
+    description = "Cluster K8s Settings"
+    type = map(object({
+        enabled = bool
+
+        kube_config = string
+
+        cluster_name = string
+
+        helm = object({
+            jarvice = map(string)
+        })
+    }))
+    default = {}
+}
+
 variable "gke" {
     description = "Google GKE Settings"
     type = map(object({
