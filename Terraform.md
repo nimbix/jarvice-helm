@@ -122,8 +122,7 @@ https://cloud.google.com/sdk/gcloud/reference/config/set
 #### AWS for EKS: `aws`
 
 If deploying JARVICE to EKS on AWS, it will be necessary to install
-the `az` executable and log in to your Azure account.  Please visit the
-following link for more details:
+the `aws` executable.  Please visit the following link for more details:
 https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html
 
 ##### AWS Credentials
