@@ -37,7 +37,7 @@ https://github.com/nimbix/jarvice-helm
     - [Apply and create cluster definitions](#apply-and-create-cluster-definitions)
     - [Applying `terraform` configuration](#applying-terraform-configuration)
     - [Initialize JARVICE deployment(s) from the portal(s)](#initialize-jarvice-deployments-from-the-portals)
-    - [Destroying the deployments and cluster(s)](#destroying-the-deployments-and-clusters)
+    - [Destroying the deployment(s) and cluster(s)](#destroying-the-deployments-and-clusters)
 * [Additional Resources](#additional-resources)
 
 ------------------------------------------------------------------------------
@@ -289,14 +289,14 @@ https://a568758ba79d641f0b08fce671e9a693-115733088.us-west-2.elb.amazonaws.com/
 ===============================================================================
 ```
 
-**Note:**  It may take several minutes before the portal to become available.
+**Note:**  It may take several minutes before the portal(s) become available.
 
 ### Initialize JARVICE deployment(s) from the portal(s)
 
-After successfully deploying JARVICE, visit the portal URL provided above
-and initialize the new deployment.
+After successfully deploying JARVICE, visit the portal URL(s) provided above
+and initialize the new deployment(s).
 
-### Destroying the deployments and cluster(s)
+### Destroying the deployment(s) and cluster(s)
 
 To remove the cluster(s) and delete all provisioned resources, execute the
 following from the top level directory of `jarvice-helm` to deploy JARVICE:
