@@ -11,6 +11,8 @@ See [README.md](README.md) in the top level of this repository for more
 in depth details on JARVICE Helm chart installations:
 https://github.com/nimbix/jarvice-helm
 
+------------------------------------------------------------------------------
+
 ## Table of Contents
 
 * [Prerequisites](#prerequisites)
@@ -36,6 +38,9 @@ https://github.com/nimbix/jarvice-helm
     - [Applying `terraform` configuration](#applying-terraform-configuration)
     - [Initialize JARVICE deployment(s) from the portal(s)](#initialize-jarvice-deployments-from-the-portals)
     - [Destroying the deployments and cluster(s)](#destroying-the-deployments-and-clusters)
+* [Additional Resources](#additional-resources)
+
+------------------------------------------------------------------------------
 
 ## Prerequisites
 
@@ -188,6 +193,8 @@ See the following link for more details regarding Azure service principal
 creation:
 https://www.terraform.io/docs/providers/azurerm/guides/service_principal_client_secret.html
 
+------------------------------------------------------------------------------
+
 ## Terraform Configuration
 
 The JARVICE terraform module can simultaneously manage an arbitrary number of
@@ -223,6 +230,8 @@ chart values are passed to the helm deployment in the following order
 See [README.md](README.md) in the top level of this repository for more
 in depth details on JARVICE Helm chart settings:
 https://github.com/nimbix/jarvice-helm
+
+------------------------------------------------------------------------------
 
 ## Deploying JARVICE
 
@@ -301,4 +310,10 @@ $ terraform destroy ./terraform
 kubernetes services, the associated volumes/disks will also be deleted.  Be
 sure to backup any essential data from those volumes/disks before running
 `destroy` on those clusters.
+
+------------------------------------------------------------------------------
+
+## Additional Resources
+
+- JARVICE cloud platform helm chart [README.md](README.md)
 
