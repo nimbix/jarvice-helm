@@ -32,7 +32,7 @@ https://github.com/nimbix/jarvice-helm
 * [Deploying JARVICE](#deploying-jarvice)
     - [Initialize `terraform`](#initialize-terraform)
     - [Configure `terraform` variables and `helm` values](#configure-terraform-variables-and-helm-values)
-    - [Apply and create cluster definitions](#apply-and-create-cluster-definitiones)
+    - [Apply and create cluster definitions](#apply-and-create-cluster-definitions)
     - [Applying `terraform` configuration](#applying-terraform-configuration)
     - [Initialize JARVICE deployment(s) from the portal(s)](#initialize-jarvice-deployments-from-the-portals)
     - [Destroying the deployments and cluster(s)](#destroying-the-deployments-and-clusters)
