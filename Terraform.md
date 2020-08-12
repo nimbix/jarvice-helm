@@ -11,6 +11,32 @@ See [README.md](README.md) in the top level of this repository for more
 in depth details on JARVICE Helm chart installations:
 https://github.com/nimbix/jarvice-helm
 
+## Table of Contents
+
+* [Prerequisites](#prerequisites)
+    - [Code repository](#code-repository)
+    - [`kubectl`](#kubectl)
+    - [`helm`](#helm)
+    - [`terraform`](#terraform)
+    - [Cloud provider command line interface (CLI)](#cloud-provider-command-line-interface-cli)
+        - [GCP for GKE: `gcloud`](#gcp-for-gke-gcloud)
+            - [GCP Credentials](#gcp-credentials)
+        - [AWS for EKS: `aws`](#aws-for-eks-aws)
+            - [AWS Credentials](#aws-credentials)
+        - [Azure for AKS: `az`](#azure-for-aks-az)
+            - [Azure Credentials](#azure-credentials)
+                - [Creating a Service Principal using the Azure CLI](#creating-a-service-principal-using-the-azure-cli)
+* [Terraform Configuration](#terraform-configuration)
+    - [Terraform variable definitions](#terraform-variable-definitions)
+    - [JARVICE helm chart values](#jarvice-helm-chart-values)
+* [Deploying JARVICE](#deploying-jarvice)
+    - [Initialize `terraform`](#initialize-terraform)
+    - [Configure `terraform` variables and `helm` values](#configure-terraform-variables-and-helm-values)
+    - [Apply and create cluster definitions](#apply-and-create-cluster-definitiones)
+    - [Applying `terraform` configuration](#applying-terraform-configuration)
+    - [Initialize JARVICE deployment(s) from the portal(s)](#initialize-jarvice-deployments-from-the-portals)
+    - [Destroying the deployments and cluster(s)](#destroying-the-deployments-and-clusters)
+
 ## Prerequisites
 
 ### Code repository
@@ -257,7 +283,7 @@ https://a568758ba79d641f0b08fce671e9a693-115733088.us-west-2.elb.amazonaws.com/
 
 **Note:**  It may take several minutes before the portal to become available.
 
-### Initialize JARVICE from the portal
+### Initialize JARVICE deployment(s) from the portal(s)
 
 After successfully deploying JARVICE, visit the portal URL provided above
 and initialize the new deployment.
