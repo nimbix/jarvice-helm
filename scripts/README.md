@@ -1,5 +1,10 @@
 # JARVICE Helm chart deployment scripts
 
+**Note:** The `jarvice-deploy2gke` and `jarvice-deploy2eks` scripts are now
+**deprecated**.  Please see the
+[JARVICE Deployment with Terraform](../Terraform.md) documentation for the
+preferred EKS and GKE deployment method.
+
 This directory contains helper scripts for JARVICE Helm chart deployments.
 Helper scripts are avalable to deploy JARVICE to a
 Google Kubernetes Engine (GKE) cluster on Google Cloud Platform (GCP) and to a
