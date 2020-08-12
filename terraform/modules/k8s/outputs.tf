@@ -51,7 +51,8 @@ output "cluster_info" {
     value = <<EOF
 ===============================================================================
 
-    K8s cluster name: ${var.cluster["cluster_name"]}
+     K8s cluster name: ${var.cluster["cluster_name"]}
+K8s cluster namespace: ${var.cluster["helm"]["jarvice"]["namespace"]}
 
 Execute the following to begin using kubectl/helm with the new cluster:
 
