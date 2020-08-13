@@ -185,8 +185,8 @@ $ az ad sp create-for-rbac --name jarvice-terraform
 
 The above command will output an `appId` and `password`.  Be sure to save
 those values.  They will be used when configuring the
-`azure_service_principal_client_id` and
-`azure_service_principal_client_secret` variables respectively.
+`service_principal_client_id` and `service_principal_client_secret`
+authentication options respectively.
 
 See the following link for more details regarding Azure service principal
 creation:

@@ -43,7 +43,9 @@ k8s = {
     "k8s_cluster_00" = {
         enabled = false
 
-        kube_config = "~/.kube/config"
+        auth = {
+            kube_config = "~/.kube/config"
+        }
 
         cluster_name = "tf-jarvice"
 
@@ -101,7 +103,9 @@ EOF
     "k8s_cluster_01" = {
         enabled = false
 
-        kube_config = "~/.kube/config.downstream"
+        auth = {
+            kube_config = "~/.kube/config.downstream"
+        }
 
         cluster_name = "tf-jarvice-downstream"
 
@@ -165,8 +169,10 @@ gke = {
     "gke_cluster_00" = {
         enabled = false
 
-        project = null
-        credentials = null
+        auth = {
+            project = null
+            credentials = null
+        }
 
         cluster_name = "tf-jarvice"
         location = "us-west1-a"
@@ -232,8 +238,10 @@ EOF
     "gke_cluster_01" = {
         enabled = false
 
-        project = null
-        credentials = null
+        auth = {
+            project = null
+            credentials = null
+        }
 
         cluster_name = "tf-jarvice-downstream"
         location = "us-west1-a"
@@ -306,8 +314,10 @@ eks = {
     "eks_cluster_00" = {
         enabled = false
 
-        access_key = null
-        secret_key = null
+        auth = {
+            access_key = null
+            secret_key = null
+        }
 
         cluster_name = "tf-jarvice"
         region = "us-west-2"
@@ -374,8 +384,10 @@ EOF
     "eks_cluster_01" = {
         enabled = false
 
-        access_key = null
-        secret_key = null
+        auth = {
+            access_key = null
+            secret_key = null
+        }
 
         cluster_name = "tf-jarvice-downstream"
         region = "us-west-2"
@@ -451,8 +463,10 @@ aks = {
 
         # Visit the following link for service principal creation information:
         # https://github.com/nimbix/jarvice-helm/blob/testing/Terraform.md#creating-a-service-principal-using-the-azure-cli
-        service_principal_client_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-        service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        auth = {
+            service_principal_client_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+            service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        }
 
         cluster_name = "tf-jarvice"
         location = "Central US"
@@ -521,8 +535,10 @@ EOF
 
         # Visit the following link for service principal creation information:
         # https://github.com/nimbix/jarvice-helm/blob/testing/Terraform.md#creating-a-service-principal-using-the-azure-cli
-        service_principal_client_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-        service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        auth = {
+            service_principal_client_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+            service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        }
 
         cluster_name = "tf-jarvice-downstream"
         location = "Central US"

@@ -1,4 +1,4 @@
-# variables.tf - AKS module variable definitions
+# variables.tf - EKS module variable definitions
 
 variable "global" {
     description = "Global Cluster Settings"
@@ -16,8 +16,7 @@ variable "cluster" {
     type = object({
         enabled = bool
 
-        access_key = string
-        secret_key = string
+        auth = map(string)
 
         cluster_name = string
         region = string

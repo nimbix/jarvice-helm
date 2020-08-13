@@ -16,7 +16,7 @@ variable "cluster" {
     type = object({
         enabled = bool
 
-        kube_config = string
+        auth = map(string)
 
         cluster_name = string
 

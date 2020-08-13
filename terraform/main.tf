@@ -88,16 +88,16 @@ provider "google" {
     alias = "${key}"
     zone = local.gke["${key}"].location
     region = join("-", slice(split("-", local.gke["${key}"].location), 0, 2))
-    project = local.gke["${key}"].project
-    credentials = local.gke["${key}"].credentials
+    project = local.gke["${key}"].auth["project"]
+    credentials = local.gke["${key}"].auth["credentials"]
 }
 
 provider "google-beta" {
     alias = "${key}"
     zone = local.gke["${key}"].location
     region = join("-", slice(split("-", local.gke["${key}"].location), 0, 2))
-    project = local.gke["${key}"].project
-    credentials = local.gke["${key}"].credentials
+    project = local.gke["${key}"].auth["project"]
+    credentials = local.gke["${key}"].auth["credentials"]
 }
 
 provider "kubernetes" {
@@ -152,8 +152,8 @@ output "${key}" {
 provider "aws" {
     alias = "${key}"
     region  = local.eks["${key}"].region
-    access_key  = local.eks["${key}"].access_key
-    secret_key  = local.eks["${key}"].secret_key
+    access_key  = local.eks["${key}"].auth["access_key"]
+    secret_key  = local.eks["${key}"].auth["secret_key"]
 }
 
 provider "kubernetes" {
