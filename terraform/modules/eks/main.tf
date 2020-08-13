@@ -30,7 +30,7 @@ data "aws_availability_zones" "available" {
 
 module "vpc" {
     source = "terraform-aws-modules/vpc/aws"
-    version = "~> 2.44.0"
+    version = "~> 2.47.0"
 
     name = "${var.cluster["cluster_name"]}-vpc"
     cidr = "10.0.0.0/16"
@@ -240,7 +240,7 @@ locals {
 
 module "iam_assumable_role_admin" {
     source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-    version = "~> 2.12.0"
+    version = "~> 2.13.0"
 
     create_role = true
     role_name = "${var.cluster["cluster_name"]}-cluster-autoscaler"
