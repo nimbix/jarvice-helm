@@ -72,8 +72,8 @@ resource "azurerm_kubernetes_cluster" "jarvice" {
     }
 
     service_principal {
-        client_id = var.cluster["service_principal_client_id"]
-        client_secret = var.cluster["service_principal_client_secret"]
+        client_id = var.cluster["auth"]["service_principal_client_id"]
+        client_secret = var.cluster["auth"]["service_principal_client_secret"]
     }
 
     network_profile {

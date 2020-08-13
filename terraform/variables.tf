@@ -28,7 +28,7 @@ variable "k8s" {
     type = map(object({
         enabled = bool
 
-        kube_config = string
+        auth = map(string)
 
         cluster_name = string
 
@@ -44,8 +44,7 @@ variable "gke" {
     type = map(object({
         enabled = bool
 
-        project = string
-        credentials = string
+        auth = map(string)
 
         cluster_name = string
         location = string
@@ -78,8 +77,7 @@ variable "eks" {
     type = map(object({
         enabled = bool
 
-        access_key = string
-        secret_key = string
+        auth = map(string)
 
         cluster_name = string
         region = string
@@ -113,8 +111,7 @@ variable "aks" {
     type = map(object({
         enabled = bool
 
-        service_principal_client_id = string
-        service_principal_client_secret = string
+        auth = map(string)
 
         cluster_name = string
         location = string

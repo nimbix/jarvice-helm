@@ -12,7 +12,7 @@ locals {
 
 locals {
     kube_config = {
-        "config_path" = var.cluster["kube_config"],
+        "config_path" = var.cluster["auth"]["kube_config"],
         "host" = null,
         "cluster_ca_certificate" = null,
         "client_certificate" = null,
