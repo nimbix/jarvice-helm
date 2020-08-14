@@ -47,12 +47,18 @@ locals {
     jarvice_url = local.ingress_host != "" ? format("https://%s/", local.ingress_host) : local.loadbalancer_host != "" ? format("http://%s:8080/", local.loadbalancer_host) : "<undefined>"
 }
 
+locals {
+    jarvice_chart = module.helm.metadata["jarvice"]["version"] != "0.1" ? module.helm.metadata["jarvice"]["version"] : contains(keys(var.cluster.helm.jarvice), "version") ? var.cluster.helm.jarvice.version : var.global.helm.jarvice.version
+}
+
 output "cluster_info" {
     value = <<EOF
 ===============================================================================
 
-     K8s cluster name: ${var.cluster["cluster_name"]}
-K8s cluster namespace: ${var.cluster["helm"]["jarvice"]["namespace"]}
+ K8s cluster name: ${var.cluster["cluster_name"]}
+
+    JARVICE chart: ${local.jarvice_chart}
+JARVICE namespace: ${module.helm.metadata["jarvice"]["namespace"]}
 
 Execute the following to begin using kubectl/helm with the new cluster:
 
