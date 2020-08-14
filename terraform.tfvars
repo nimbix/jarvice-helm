@@ -14,6 +14,8 @@ global = {
 
     helm = {
         jarvice = {
+            version = "./"
+
             override_yaml_values = <<EOF
 # global override_yaml_values - Uncomment or add any values that should be
 # applied to all defined clusters.
@@ -31,6 +33,14 @@ global = {
   #JARVICE_REMOTE_USER:
   #JARVICE_REMOTE_APIKEY:
   #JARVICE_APPSYNC_USERONLY: false
+
+  #JARVICE_MAIL_SERVER: jarvice-smtpd:25
+  #JARVICE_MAIL_USERNAME: # "mail-username"
+  #JARVICE_MAIL_PASSWORD: # "Pass1234"
+  #JARVICE_MAIL_ADMINS: # "admin1@my-domain.com,admin2@my-domain.com"
+  #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 EOF
         }
     }
@@ -51,8 +61,9 @@ k8s = {
 
         helm = {
             jarvice = {
-                version = "./"
+                # version = "./"  # Uncomment to override global version
                 namespace = "jarvice-system"
+
                 # global override_yaml_values take precedence over cluster
                 # override_yaml_file (override_yaml_file ignored if not found)
                 override_yaml_file = "override-tf.k8s.<cluster_name>.yaml"  # "override-tf.k8s.tf-jarvice.yaml"
@@ -80,6 +91,14 @@ k8s = {
   #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
+
+  #JARVICE_MAIL_SERVER: jarvice-smtpd:25
+  #JARVICE_MAIL_USERNAME: # "mail-username"
+  #JARVICE_MAIL_PASSWORD: # "Pass1234"
+  #JARVICE_MAIL_ADMINS: # "admin1@my-domain.com,admin2@my-domain.com"
+  #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 
 #jarvice_k8s_scheduler:
   # loadBalancerIP and ingressHost are only applicable when
@@ -111,8 +130,9 @@ EOF
 
         helm = {
             jarvice = {
-                version = "./"
+                # version = "./"  # Uncomment to override global version
                 namespace = "jarvice-downstream"
+
                 # global override_yaml_values take precedence over cluster
                 # override_yaml_file (override_yaml_file ignored if not found)
                 override_yaml_file = "override-tf.k8s.<cluster_name>.yaml"  # "override-tf.k8s.tf-jarvice-downstream.yaml"
@@ -140,6 +160,14 @@ jarvice:
   #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
+
+  #JARVICE_MAIL_SERVER: jarvice-smtpd:25
+  #JARVICE_MAIL_USERNAME: # "mail-username"
+  #JARVICE_MAIL_PASSWORD: # "Pass1234"
+  #JARVICE_MAIL_ADMINS: # "admin1@my-domain.com,admin2@my-domain.com"
+  #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 
 #jarvice_k8s_scheduler:
   # loadBalancerIP and ingressHost are only applicable when
@@ -206,8 +234,9 @@ gke = {
 
         helm = {
             jarvice = {
-                version = "./"
+                # version = "./"  # Uncomment to override global version
                 namespace = "jarvice-system"
+
                 # global override_yaml_values take precedence over cluster
                 # override_yaml_file (override_yaml_file ignored if not found)
                 override_yaml_file = "override-tf.gke.<location>.<cluster_name>.yaml"  # "override-tf.gke.us-west1-a.tf-jarvice.yaml"
@@ -231,6 +260,14 @@ gke = {
   #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
+
+  #JARVICE_MAIL_SERVER: jarvice-smtpd:25
+  #JARVICE_MAIL_USERNAME: # "mail-username"
+  #JARVICE_MAIL_PASSWORD: # "Pass1234"
+  #JARVICE_MAIL_ADMINS: # "admin1@my-domain.com,admin2@my-domain.com"
+  #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 EOF
             }
         }
@@ -275,8 +312,9 @@ EOF
 
         helm = {
             jarvice = {
-                version = "./"
+                # version = "./"  # Uncomment to override global version
                 namespace = "jarvice-system"
+
                 # global override_yaml_values take precedence over cluster
                 # override_yaml_file (override_yaml_file ignored if not found)
                 override_yaml_file = "override-tf.gke.<location>.<cluster_name>.yaml"  # "override-tf.gke.us-west1-a.tf-jarvice-downstream.yaml"
@@ -300,6 +338,14 @@ jarvice:
   #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
+
+  #JARVICE_MAIL_SERVER: jarvice-smtpd:25
+  #JARVICE_MAIL_USERNAME: # "mail-username"
+  #JARVICE_MAIL_PASSWORD: # "Pass1234"
+  #JARVICE_MAIL_ADMINS: # "admin1@my-domain.com,admin2@my-domain.com"
+  #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 EOF
             }
         }
@@ -352,8 +398,9 @@ eks = {
 
         helm = {
             jarvice = {
-                version = "./"
+                # version = "./"  # Uncomment to override global version
                 namespace = "jarvice-system"
+
                 # global override_yaml_values take precedence over cluster
                 # override_yaml_file (override_yaml_file ignored if not found)
                 override_yaml_file = "override-tf.eks.<region>.<cluster_name>.yaml"  # "override-tf.eks.us-west-2.tf-jarvice.yaml"
@@ -377,6 +424,14 @@ eks = {
   #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
+
+  #JARVICE_MAIL_SERVER: jarvice-smtpd:25
+  #JARVICE_MAIL_USERNAME: # "mail-username"
+  #JARVICE_MAIL_PASSWORD: # "Pass1234"
+  #JARVICE_MAIL_ADMINS: # "admin1@my-domain.com,admin2@my-domain.com"
+  #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 EOF
             }
         }
@@ -422,8 +477,9 @@ EOF
 
         helm = {
             jarvice = {
-                version = "./"
+                # version = "./"  # Uncomment to override global version
                 namespace = "jarvice-system"
+
                 # global override_yaml_values take precedence over cluster
                 # override_yaml_file (override_yaml_file ignored if not found)
                 override_yaml_file = "override-tf.eks.<region>.<cluster_name>.yaml"  # "override-tf.eks.us-west-2.tf-jarvice-downstream.yaml"
@@ -447,6 +503,14 @@ jarvice:
   #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
+
+  #JARVICE_MAIL_SERVER: jarvice-smtpd:25
+  #JARVICE_MAIL_USERNAME: # "mail-username"
+  #JARVICE_MAIL_PASSWORD: # "Pass1234"
+  #JARVICE_MAIL_ADMINS: # "admin1@my-domain.com,admin2@my-domain.com"
+  #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 EOF
             }
         }
@@ -501,8 +565,9 @@ aks = {
 
         helm = {
             jarvice = {
-                version = "./"
+                # version = "./"  # Uncomment to override global version
                 namespace = "jarvice-system"
+
                 # global override_yaml_values take precedence over cluster
                 # override_yaml_file (override_yaml_file ignored if not found)
                 override_yaml_file = "override-tf.aks.<location>.<cluster_name>.yaml"  # "override-tf.aks.centralus.tf-jarvice.yaml"
@@ -526,6 +591,14 @@ aks = {
   #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
+
+  #JARVICE_MAIL_SERVER: jarvice-smtpd:25
+  #JARVICE_MAIL_USERNAME: # "mail-username"
+  #JARVICE_MAIL_PASSWORD: # "Pass1234"
+  #JARVICE_MAIL_ADMINS: # "admin1@my-domain.com,admin2@my-domain.com"
+  #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 EOF
             }
         }
@@ -573,8 +646,9 @@ EOF
 
         helm = {
             jarvice = {
-                version = "./"
+                # version = "./"  # Uncomment to override global version
                 namespace = "jarvice-system"
+
                 # global override_yaml_values take precedence over cluster
                 # override_yaml_file (override_yaml_file ignored if not found)
                 override_yaml_file = "override-tf.aks.<location>.<cluster_name>.yaml"  # "override-tf.aks.centralus.tf-jarvice-downstream.yaml"
@@ -598,6 +672,14 @@ jarvice:
   #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
+
+  #JARVICE_MAIL_SERVER: jarvice-smtpd:25
+  #JARVICE_MAIL_USERNAME: # "mail-username"
+  #JARVICE_MAIL_PASSWORD: # "Pass1234"
+  #JARVICE_MAIL_ADMINS: # "admin1@my-domain.com,admin2@my-domain.com"
+  #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 EOF
             }
         }
