@@ -1,14 +1,9 @@
 # deploy.tf - EKS module kubernetes/helm components deployment for JARVICE
 
-module "helm" {
-    source = "../helm"
-
-    # depends_on for modules is coming with terraform v0.13.0
-    #depends_on = [module.iam_assumable_role_admin.this_iam_role_arn]
-
-    # Cluster autoscaler settings
-    cluster_autoscaler_enabled = true
-    cluster_autoscaler_values = <<EOF
+locals {
+    charts = {
+        "cluster-autoscaler" = {
+            "values" = <<EOF
 autoDiscovery:
   clusterName: ${var.cluster["cluster_name"]}
   enabled: true
@@ -33,10 +28,9 @@ rbac:
   serviceAccountAnnotations:
     eks.amazonaws.com/role-arn: "${module.iam_assumable_role_admin.this_iam_role_arn}"
 EOF
-
-    # Traefik settings
-    traefik_enabled = true
-    traefik_values = <<EOF
+        },
+        "traefik" =  {
+            "values" = <<EOF
 # TODO: use eip allocations with NLB
 #loadBalancerIP: {aws_eip.nat[0].public_ip}
 replicas: 2
@@ -78,6 +72,14 @@ dashboard:
 rbac:
   enabled: true
 EOF
+        }
+    }
+}
+
+module "helm" {
+    source = "../helm"
+
+    charts = local.charts
 
     # JARVICE settings
     jarvice = merge(var.cluster.helm.jarvice, {"override_yaml_file"="${local.jarvice_override_yaml_file}"})

@@ -1,11 +1,9 @@
 # deploy.tf - GKE module kubernetes/helm components deployment for JARVICE
 
-module "helm" {
-    source = "../helm"
-
-    # Traefik settings
-    traefik_enabled = true
-    traefik_values = <<EOF
+locals {
+    charts = {
+        "traefik" = {
+            "values" = <<EOF
 replicas: 2
 memoryRequest: 1Gi
 memoryLimit: 1Gi
@@ -36,6 +34,14 @@ dashboard:
 rbac:
   enabled: true
 EOF
+        }
+    }
+}
+
+module "helm" {
+    source = "../helm"
+
+    charts = local.charts
 
     # JARVICE settings
     jarvice = merge(var.cluster.helm.jarvice, {"override_yaml_file"="${local.jarvice_override_yaml_file}"})

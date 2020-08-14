@@ -7,8 +7,7 @@ terraform {
 }
 
 resource "helm_release" "cluster_autoscaler" {
-    #count = var.cluster_autoscaler_values != null ? 1 : 0
-    count = var.cluster_autoscaler_enabled == true ? 1 : 0
+    count = contains(keys(var.charts), "cluster-autoscaler") ? 1 : 0
 
     name = "cluster-autoscaler"
     repository = "https://kubernetes-charts.storage.googleapis.com"
@@ -19,12 +18,11 @@ resource "helm_release" "cluster_autoscaler" {
     render_subchart_notes = false
     timeout = 600
 
-    values = [var.cluster_autoscaler_values]
+    values = [var.charts["cluster-autoscaler"]["values"]]
 }
 
 resource "helm_release" "external_dns" {
-    #count = var.external_dns_values != null ? 1 : 0
-    count = var.external_dns_enabled == true ? 1 : 0
+    count = contains(keys(var.charts), "external-dns") ? 1 : 0
 
     name = "external-dns"
     repository = "https://charts.bitnami.com/bitnami"
@@ -35,12 +33,11 @@ resource "helm_release" "external_dns" {
     render_subchart_notes = false
     timeout = 600
 
-    values = [var.external_dns_values]
+    values = [var.charts["external-dns"]["values"]]
 }
 
 resource "helm_release" "traefik" {
-    #count = var.traefik_values != null ? 1 : 0
-    count = var.traefik_enabled == true ? 1 : 0
+    count = contains(keys(var.charts), "traefik") ? 1 : 0
 
     name = "traefik"
     repository = "https://kubernetes-charts.storage.googleapis.com"
@@ -52,7 +49,7 @@ resource "helm_release" "traefik" {
     render_subchart_notes = false
     timeout = 600
 
-    values = [var.traefik_values]
+    values = [var.charts["traefik"]["values"]]
 }
 
 resource "helm_release" "jarvice" {
