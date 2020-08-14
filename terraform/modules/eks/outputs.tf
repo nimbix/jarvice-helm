@@ -29,12 +29,19 @@ resource "null_resource" "ingress_host_file" {
     }
 }
 
+locals {
+    jarvice_chart = module.helm.metadata["jarvice"]["version"] != "0.1" ? module.helm.metadata["jarvice"]["version"] : contains(keys(var.cluster.helm.jarvice), "version") ? var.cluster.helm.jarvice.version : var.global.helm.jarvice.version
+}
+
 output "cluster_info" {
     value = <<EOF
 ===============================================================================
 
     EKS cluster name: ${var.cluster["cluster_name"]}
 EKS cluster location: ${var.cluster["region"]}
+
+       JARVICE chart: ${local.jarvice_chart}
+   JARVICE namespace: ${module.helm.metadata["jarvice"]["namespace"]}
 
 Execute the following to begin using kubectl/helm with the new cluster:
 
