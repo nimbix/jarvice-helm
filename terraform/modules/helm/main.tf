@@ -54,9 +54,9 @@ resource "helm_release" "traefik" {
 
 resource "helm_release" "jarvice" {
     name = "jarvice"
-    repository = local.jarvice_chart_is_dir ? null : "https://jarvice-chartmuseum.k8s.dal1.jarvice.io"
-    chart = local.jarvice_chart_is_dir ? pathexpand(var.jarvice["version"]) : "jarvice"
-    version = local.jarvice_chart_is_dir ? null : var.jarvice["version"]
+    repository = local.jarvice_chart_is_dir ? null : local.jarvice_chart_repository
+    chart = local.jarvice_chart_is_dir ? pathexpand(local.jarvice_chart_version) : "jarvice"
+    version = local.jarvice_chart_is_dir ? null : local.jarvice_chart_version
 
     namespace = var.jarvice["namespace"]
     create_namespace = true

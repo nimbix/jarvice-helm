@@ -221,7 +221,7 @@ For each cluster `enabled` in the `.tfvars` configuration(s), the helm
 chart values are passed to the helm deployment in the following order
 (listed from least to highest precedence):
 
-* Local `values.yaml` file
+* Local `values.yaml` file (if file exists)
 * Per cluster `override_yaml_file` (if the cluster `override_yaml_file` file exists)
 * Global `override_yaml_values` found in the `.tfvars` configuration(s)
 * Per cluster `override_yaml_values` found in the `.tfvars` configuration(s)
