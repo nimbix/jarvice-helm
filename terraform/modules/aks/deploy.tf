@@ -1,11 +1,9 @@
 # deploy.tf - AKS module kubernetes/helm components deployment for JARVICE
 
-module "helm" {
-    source = "../helm"
-
-    # Traefik settings
-    traefik_enabled = true
-    traefik_values = <<EOF
+locals {
+    charts = {
+        "traefik" = {
+            "values" = <<EOF
 loadBalancerIP: ${azurerm_public_ip.jarvice.ip_address}
 replicas: 2
 memoryRequest: 1Gi
@@ -38,6 +36,14 @@ service:
 rbac:
   enabled: true
 EOF
+        }
+    }
+}
+
+module "helm" {
+    source = "../helm"
+
+    charts = local.charts
 
     # JARVICE settings
     jarvice = merge(var.cluster.helm.jarvice, {"override_yaml_file"="${local.jarvice_override_yaml_file}"})
