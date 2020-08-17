@@ -34,9 +34,9 @@ module "vpc" {
 
     name = "${var.cluster["cluster_name"]}-vpc"
     cidr = "10.0.0.0/16"
-    azs = var.cluster["availability_zones"] != null ? var.cluster["availability_zones"] : data.aws_availability_zones.available.names
+    azs = var.cluster["availability_zones"] != null ? distinct(concat(var.cluster["availability_zones"], data.aws_availability_zones.available.names)) : data.aws_availability_zones.available.names
     public_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-    private_subnets = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
+    #private_subnets = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
     enable_dns_hostnames = true
 
     #enable_nat_gateway = true
@@ -50,10 +50,10 @@ module "vpc" {
         "kubernetes.io/role/elb" = "1"
     }
 
-    private_subnet_tags = {
-        "kubernetes.io/cluster/${var.cluster["cluster_name"]}" = "shared"
-        "kubernetes.io/role/internal-elb" = "1"
-    }
+    #private_subnet_tags = {
+    #    "kubernetes.io/cluster/${var.cluster["cluster_name"]}" = "shared"
+    #    "kubernetes.io/role/internal-elb" = "1"
+    #}
 }
 
 locals {
@@ -112,6 +112,7 @@ EOF
             "asg_max_size" = local.system_nodes_num * 2
             "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-system=true --register-with-taints=node-role.jarvice.io/jarvice-system=true:NoSchedule"
             "public_ip" = true
+            "subnets" = var.cluster["availability_zones"] != null ? slice(module.vpc.public_subnets, 0, length(var.cluster["availability_zones"])) : null
             "key_name" = ""
             "pre_userdata" = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
@@ -131,6 +132,7 @@ EOF
                 "asg_max_size" = pool.nodes_max
                 "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-compute=true --register-with-taints=node-role.jarvice.io/jarvice-compute=true:NoSchedule"
                 "public_ip" = true
+                "subnets" = var.cluster["availability_zones"] != null ? slice(module.vpc.public_subnets, 0, length(var.cluster["availability_zones"])) : null
                 "key_name" = ""
                 "pre_userdata" = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
