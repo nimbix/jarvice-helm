@@ -95,6 +95,7 @@ locals {
             "asg_max_size" = 2
             "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/default=true"
             "public_ip" = true
+            #"subnets" = var.cluster["availability_zones"] != null ? slice(module.vpc.public_subnets, 0, length(var.cluster["availability_zones"])) : null
             "key_name" = ""
             "pre_userdata" = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
@@ -112,7 +113,7 @@ EOF
             "asg_max_size" = local.system_nodes_num * 2
             "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-system=true --register-with-taints=node-role.jarvice.io/jarvice-system=true:NoSchedule"
             "public_ip" = true
-            "subnets" = var.cluster["availability_zones"] != null ? slice(module.vpc.public_subnets, 0, length(var.cluster["availability_zones"])) : null
+            #"subnets" = var.cluster["availability_zones"] != null ? slice(module.vpc.public_subnets, 0, length(var.cluster["availability_zones"])) : null
             "key_name" = ""
             "pre_userdata" = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
@@ -132,7 +133,7 @@ EOF
                 "asg_max_size" = pool.nodes_max
                 "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-compute=true --register-with-taints=node-role.jarvice.io/jarvice-compute=true:NoSchedule"
                 "public_ip" = true
-                "subnets" = var.cluster["availability_zones"] != null ? slice(module.vpc.public_subnets, 0, length(var.cluster["availability_zones"])) : null
+                #"subnets" = var.cluster["availability_zones"] != null ? slice(module.vpc.public_subnets, 0, length(var.cluster["availability_zones"])) : null
                 "key_name" = ""
                 "pre_userdata" = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
