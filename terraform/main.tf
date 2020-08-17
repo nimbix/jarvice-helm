@@ -20,7 +20,55 @@ terraform {
     }
 }
 
-# TODO: terraform-v0.13
+# TODO: Uncomment and enable when count/for_each for providers is implemented:
+# https://github.com/hashicorp/terraform/issues/9448
+# https://github.com/hashicorp/terraform/issues/24476
+
+#module "k8s" {
+#    for_each = local.k8s
+#
+#    source = "./modules/k8s"
+#
+#    cluster = each.value
+#    global = var.global
+#
+#    providers = {
+#        kubernetes = kubernetes[each.key]
+#        helm = helm[each.key]
+#    }
+#}
+
+#module "gke" {
+#    for_each = local.gke
+#
+#    source = "./modules/gke"
+#
+#    cluster = each.value
+#    global = var.global
+#
+#    providers = {
+#        google = google[each.key]
+#        google-beta = google-beta[each.key]
+#        kubernetes = kubernetes[each.key]
+#        helm = helm[each.key]
+#    }
+#}
+
+#module "eks" {
+#    for_each = local.eks
+#
+#    source = "./modules/eks"
+#
+#    cluster = each.value
+#    global = var.global
+#
+#    providers = {
+#        aws = aws[each.key]
+#        kubernetes = kubernetes[each.key]
+#        helm = helm[each.key]
+#    }
+#}
+
 #module "aks" {
 #    for_each = local.aks
 #
@@ -30,13 +78,14 @@ terraform {
 #    global = var.global
 #
 #    providers = {
-#        aks = azurerm[each.key]
-#        helm = helm.aks
+#        azurerm = azurerm[each.key]
+#        kubernetes = kubernetes[each.key]
+#        helm = helm[each.key]
 #    }
 #}
 
 # Dynamically create clusters definition file until for_each is enabled and
-# working for modules and providers in terraform v0.13
+# working for modules and providers in terraform v0.13.X
 resource "local_file" "clusters" {
     filename = "${path.module}/clusters.tf"
     file_permission = "0664"
