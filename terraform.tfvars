@@ -367,7 +367,7 @@ eks = {
 
         cluster_name = "tf-jarvice"
         region = "us-west-2"
-        availability_zones = null
+        availability_zones = ["us-west-2a"]
 
         kubernetes_version = "1.16"
 
@@ -446,7 +446,7 @@ EOF
 
         cluster_name = "tf-jarvice-downstream"
         region = "us-west-2"
-        availability_zones = null
+        availability_zones = ["us-west-2a"]
 
         kubernetes_version = "1.16"
 
