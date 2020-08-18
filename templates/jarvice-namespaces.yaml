@@ -1,4 +1,4 @@
-{{- if .Values.jarvice_scheduler.enabled }}
+{{- if or .Values.jarvice_scheduler.enabled .Values.jarvice_k8s_scheduler.enabled }}
 apiVersion: v1
 kind: Namespace
 metadata:
