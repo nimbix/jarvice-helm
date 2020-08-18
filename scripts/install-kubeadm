@@ -82,7 +82,7 @@ EOF
     $SUDO apt-get install -y $ver_install_pkgs
     $SUDO apt-mark hold $install_pkgs
 else
-    cat <<EOF >/etc/yum.repos.d/kubernetes.repo
+    cat <<EOF | $SUDO tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
 #baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el$VERSION_ID-$(arch)
