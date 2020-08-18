@@ -70,7 +70,7 @@ if [ "$ID" = "ubuntu" ]; then
     $SUDO apt-mark hold $install_pkgs containerd.io
 else
     $SUDO yum install -y device-mapper-persistent-data lvm2 # yum-utils
-    cat <<EOF >/etc/yum.repos.d/docker-ce.repo
+    cat <<EOF | $SUDO tee /etc/yum.repos.d/docker-ce.repo
 [docker-ce-stable]
 name=Docker CE Stable - \$basearch
 #baseurl=https://download.docker.com/linux/centos/$VERSION_ID/\$basearch/stable
