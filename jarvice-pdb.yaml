@@ -1,11 +1,12 @@
 {{- if or .Values.jarvice_scheduler.enabled .Values.jarvice_k8s_scheduler.enabled }}
-apiVersion: v1
-kind: Namespace
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
 metadata:
+  name: jarvice-jobs
 {{- if empty .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
-  name: {{ .Release.Namespace }}-jobs
+  namespace: {{ .Release.Namespace }}-jobs
 {{- else }}
-  name: {{ .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
+  namespace: {{ .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
 {{- end }}
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
@@ -15,17 +16,22 @@ metadata:
 {{- else }}
     name: {{ .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
 {{- end }}
+spec:
+  selector:
+    matchLabels:
+      jarvice-job: "true"
+  maxUnvailable: 0
 ---
 {{- end }}
-{{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if .Values.jarvice_api.enabled }}
-apiVersion: v1
-kind: Namespace
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
 metadata:
+  name: jarvice-builds
 {{- if empty .Values.jarvice.JARVICE_BUILDS_NAMESPACE }}
-  name: {{ .Release.Namespace }}-builds
+  namespace: {{ .Release.Namespace }}-builds
 {{- else }}
-  name: {{ .Values.jarvice.JARVICE_BUILDS_NAMESPACE }}
+  namespace: {{ .Values.jarvice.JARVICE_BUILDS_NAMESPACE }}
 {{- end }}
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
@@ -35,14 +41,20 @@ metadata:
 {{- else }}
     name: {{ .Values.jarvice.JARVICE_BUILDS_NAMESPACE }}
 {{- end }}
+spec:
+  selector:
+    matchLabels:
+      jarvice-build: "true"
+  maxUnvailable: 0
 ---
-apiVersion: v1
-kind: Namespace
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
 metadata:
+  name: jarvice-pulls
 {{- if empty .Values.jarvice.JARVICE_PULLS_NAMESPACE }}
-  name: {{ .Release.Namespace }}-pulls
+  namespace: {{ .Release.Namespace }}-pulls
 {{- else }}
-  name: {{ .Values.jarvice.JARVICE_PULLS_NAMESPACE }}
+  namespace: {{ .Values.jarvice.JARVICE_PULLS_NAMESPACE }}
 {{- end }}
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
@@ -52,25 +64,10 @@ metadata:
 {{- else }}
     name: {{ .Values.jarvice.JARVICE_PULLS_NAMESPACE }}
 {{- end }}
----
-{{- end }}
-{{- end }}
-{{- if or .Values.jarvice.daemonsets.cache_pull.enabled .Values.jarvice.daemonsets.lxcfs.enabled .Values.jarvice.daemonsets.nvidia.enabled .Values.jarvice.daemonsets.xilinx_fpga.enabled .Values.jarvice.daemonsets.rdma.enabled }}
-apiVersion: v1
-kind: Namespace
-metadata:
-{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
-  name: {{ .Release.Namespace }}-daemonsets
-{{- else }}
-  name: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
-{{- end }}
-  labels:
-    {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-system
-{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
-    name: {{ .Release.Namespace }}-daemonsets
-{{- else }}
-    name: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
-{{- end }}
+spec:
+  selector:
+    matchLabels:
+      jarvice-pull: "true"
+  maxUnvailable: 0
 ---
 {{- end }}
