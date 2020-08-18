@@ -20,7 +20,7 @@ spec:
   selector:
     matchLabels:
       jarvice-job: "true"
-  maxUnvailable: 0
+  maxUnavailable: 0
 ---
 {{- end }}
 {{- if .Values.jarvice_api.enabled }}
@@ -45,7 +45,7 @@ spec:
   selector:
     matchLabels:
       jarvice-build: "true"
-  maxUnvailable: 0
+  maxUnavailable: 0
 ---
 apiVersion: policy/v1beta1
 kind: PodDisruptionBudget
@@ -68,6 +68,6 @@ spec:
   selector:
     matchLabels:
       jarvice-pull: "true"
-  maxUnvailable: 0
+  maxUnavailable: 0
 ---
 {{- end }}
