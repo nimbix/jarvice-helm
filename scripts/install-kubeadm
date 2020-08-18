@@ -94,7 +94,8 @@ gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cl
 # Prevent accidental package updates
 exclude=kube*
 EOF
-    ver=$(yum list -y --quiet --showduplicates --disableexcludes=kubernetes kubectl 2>/dev/null | grep ^kubectl | awk '{print $2}' | sort -r | grep -P "^[\d+:]*$MAJOR_VER\." | head -1)
+    $SUDO yum list -y --quiet --showduplicates --disableexcludes=kubernetes kubectl >/dev/null 2>&1
+    ver=$($SUDO yum list -y --quiet --showduplicates --disableexcludes=kubernetes kubectl 2>/dev/null | grep ^kubectl | awk '{print $2}' | sort -r | grep -P "^[\d+:]*$MAJOR_VER\." | head -1)
     ver_install_pkgs=$(printf "%s-$ver " $install_pkgs)
     $SUDO yum install -y --disableexcludes=kubernetes $ver_install_pkgs
 
