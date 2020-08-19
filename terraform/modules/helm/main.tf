@@ -67,11 +67,11 @@ resource "helm_release" "jarvice" {
     wait = false
 
     values = [
-        fileexists("values.yaml") ? "# values.yaml\n\n${file("values.yaml")}" : "",
-        fileexists(var.jarvice["override_yaml_file"]) ? "# ${var.jarvice["override_yaml_file"]}\n\n${file("${var.jarvice["override_yaml_file"]}")}" : "",
-        "${var.global["override_yaml_values"]}",
-        "${var.jarvice["override_yaml_values"]}",
-        "${var.cluster_override_yaml_values}"
+        fileexists(var.global["values_file"]) ? "# ${var.global["values_file"]}\n\n${file(var.global["values_file"])}" : "",
+        fileexists(var.jarvice["values_file"]) ? "# ${var.jarvice["values_file"]}\n\n${file("${var.jarvice["values_file"]}")}" : "",
+        "${var.global["values_yaml"]}",
+        "${var.jarvice["values_yaml"]}",
+        "${var.cluster_values_yaml}"
     ]
 
     depends_on = [helm_release.traefik]

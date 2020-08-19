@@ -61,8 +61,8 @@ output "cluster_info" {
     value = <<EOF
 ===============================================================================
 
-    GKE cluster name: ${var.cluster["cluster_name"]}
-GKE cluster location: ${var.cluster["location"]}
+    GKE cluster name: ${var.cluster.meta["cluster_name"]}
+GKE cluster location: ${var.cluster.location["region"]}
 
        JARVICE chart: ${local.jarvice_chart}
    JARVICE namespace: ${module.helm.metadata["jarvice"]["namespace"]}

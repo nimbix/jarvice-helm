@@ -1,11 +1,11 @@
 # locals.tf - AKS module local variable definitions
 
 locals {
-    jarvice_override_yaml_file = replace(replace("${var.cluster.helm.jarvice["override_yaml_file"]}", "<location>", "${azurerm_kubernetes_cluster.jarvice.location}"), "<cluster_name>", "${var.cluster["cluster_name"]}")
+    jarvice_values_file = replace(replace("${var.cluster.helm.jarvice["values_file"]}", "<region>", "${azurerm_kubernetes_cluster.jarvice.location}"), "<cluster_name>", "${var.cluster.meta["cluster_name"]}")
 
-    jarvice_helm_override_yaml = fileexists(local.jarvice_override_yaml_file) ? "${file("${local.jarvice_override_yaml_file}")}" : ""
+    jarvice_helm_override_yaml = fileexists(local.jarvice_values_file) ? "${file("${local.jarvice_values_file}")}" : ""
 
-    jarvice_helm_values = merge(lookup(yamldecode("XXXdummy: value\n\n${fileexists("values.yaml") ? file("values.yaml") : ""}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${local.jarvice_helm_override_yaml}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${var.global.helm.jarvice["override_yaml_values"]}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${var.cluster.helm.jarvice["override_yaml_values"]}"), "jarvice", {}))
+    jarvice_helm_values = merge(lookup(yamldecode("XXXdummy: value\n\n${fileexists(var.global.helm.jarvice["values_file"]) ? file(var.global.helm.jarvice["values_file"]) : ""}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${local.jarvice_helm_override_yaml}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${var.global.helm.jarvice["values_yaml"]}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${var.cluster.helm.jarvice["values_yaml"]}"), "jarvice", {}))
 
     jarvice_cluster_type = local.jarvice_helm_values["JARVICE_CLUSTER_TYPE"] == "downstream" ? "downstream" : "upstream"
 }
@@ -16,12 +16,12 @@ locals {
 }
 
 locals {
-    ssh_public_key = var.cluster["ssh_public_key"] != null ? file(var.cluster["ssh_public_key"]) : file(var.global["ssh_public_key"])
+    ssh_public_key = var.cluster.meta["ssh_public_key"] != null ? file(var.cluster.meta["ssh_public_key"]) : file(var.global.meta["ssh_public_key"])
 }
 
 locals {
     kube_config = {
-        "config_path" = "~/.kube/config-tf.aks.${azurerm_kubernetes_cluster.jarvice.location}.${var.cluster["cluster_name"]}",
+        "config_path" = "~/.kube/config-tf.aks.${azurerm_kubernetes_cluster.jarvice.location}.${var.cluster.meta["cluster_name"]}",
         "host" = azurerm_kubernetes_cluster.jarvice.kube_config[0].host
         "cluster_ca_certificate" = azurerm_kubernetes_cluster.jarvice.kube_config[0].cluster_ca_certificate,
         "client_certificate" = azurerm_kubernetes_cluster.jarvice.kube_config[0].client_certificate,
@@ -53,7 +53,7 @@ EOF
     jarvice_ingress = local.jarvice_cluster_type == "downstream" ? local.jarvice_ingress_downstream : local.jarvice_ingress_upstream
 
     storage_class_provisioner = "kubernetes.io/azure-disk"
-    cluster_override_yaml_values = <<EOF
+    cluster_values_yaml = <<EOF
 # AKS cluster override values
 jarvice:
   nodeSelector: '${local.jarvice_helm_values["nodeSelector"] == null ? "{\"node-role.jarvice.io/jarvice-system\": \"true\"}" : local.jarvice_helm_values["nodeSelector"]}'

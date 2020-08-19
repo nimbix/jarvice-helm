@@ -55,7 +55,7 @@ output "cluster_info" {
     value = <<EOF
 ===============================================================================
 
- K8s cluster name: ${var.cluster["cluster_name"]}
+ K8s cluster name: ${var.cluster.meta["cluster_name"]}
 
     JARVICE chart: ${local.jarvice_chart}
 JARVICE namespace: ${module.helm.metadata["jarvice"]["namespace"]}

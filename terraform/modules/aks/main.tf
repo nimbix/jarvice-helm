@@ -10,31 +10,31 @@ terraform {
 }
 
 resource "azurerm_resource_group" "jarvice" {
-    name = var.cluster["cluster_name"]
-    location = var.cluster["location"]
+    name = var.cluster.meta["cluster_name"]
+    location = var.cluster.location["region"]
 
     tags = {
-        cluster_name = var.cluster["cluster_name"]
+        cluster_name = var.cluster.meta["cluster_name"]
     }
 }
 
 resource "azurerm_public_ip" "jarvice" {
-    name = var.cluster["cluster_name"]
+    name = var.cluster.meta["cluster_name"]
     resource_group_name = azurerm_resource_group.jarvice.name
     location = azurerm_resource_group.jarvice.location
 
     allocation_method = "Static"
     sku = "Standard"
-    domain_name_label = contains(["jarvice", "tf-jarvice", "jarvice-downstream", "tf-jarvice-downstream"], var.cluster["cluster_name"]) ? format("%s-%s", var.cluster["cluster_name"], random_id.jarvice.hex) : var.cluster["cluster_name"]
+    domain_name_label = contains(["jarvice", "tf-jarvice", "jarvice-downstream", "tf-jarvice-downstream"], var.cluster.meta["cluster_name"]) ? format("%s-%s", var.cluster.meta["cluster_name"], random_id.jarvice.hex) : var.cluster.meta["cluster_name"]
 
     tags = {
-        cluster_name = var.cluster["cluster_name"]
+        cluster_name = var.cluster.meta["cluster_name"]
     }
 }
 
 data "azurerm_kubernetes_service_versions" "kubernetes_version" {
     location = azurerm_resource_group.jarvice.location
-    version_prefix = var.cluster["kubernetes_version"]
+    version_prefix = var.cluster.meta["kubernetes_version"]
     include_preview = false
 
     depends_on = [azurerm_resource_group.jarvice]
@@ -45,10 +45,10 @@ resource "random_id" "jarvice" {
 }
 
 resource "azurerm_kubernetes_cluster" "jarvice" {
-    name = var.cluster["cluster_name"]
+    name = var.cluster.meta["cluster_name"]
     kubernetes_version = data.azurerm_kubernetes_service_versions.kubernetes_version.latest_version
 
-    dns_prefix = var.cluster["cluster_name"]
+    dns_prefix = var.cluster.meta["cluster_name"]
     resource_group_name = azurerm_resource_group.jarvice.name
     location = azurerm_resource_group.jarvice.location
 
@@ -62,7 +62,7 @@ resource "azurerm_kubernetes_cluster" "jarvice" {
 
     default_node_pool {
         name = "jxedefault"
-        availability_zones = var.cluster["availability_zones"]
+        availability_zones = var.cluster.location["zones"]
         node_count = 2
         vm_size = "Standard_B2s"
 
@@ -72,8 +72,8 @@ resource "azurerm_kubernetes_cluster" "jarvice" {
     }
 
     service_principal {
-        client_id = var.cluster["auth"]["service_principal_client_id"]
-        client_secret = var.cluster["auth"]["service_principal_client_secret"]
+        client_id = var.cluster.auth["service_principal_client_id"]
+        client_secret = var.cluster.auth["service_principal_client_secret"]
     }
 
     network_profile {
@@ -90,7 +90,7 @@ resource "azurerm_kubernetes_cluster" "jarvice" {
     }
 
     tags = {
-        cluster_name = var.cluster["cluster_name"]
+        cluster_name = var.cluster.meta["cluster_name"]
     }
 
     depends_on = [azurerm_public_ip.jarvice]
@@ -114,7 +114,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "jarvice_system" {
     node_taints = ["node-role.jarvice.io/jarvice-system=true:NoSchedule"]
 
     tags = {
-        cluster_name = var.cluster["cluster_name"]
+        cluster_name = var.cluster.meta["cluster_name"]
     }
 
     lifecycle {
@@ -144,7 +144,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "jarvice_compute" {
     node_taints = ["node-role.jarvice.io/jarvice-compute=true:NoSchedule"]
 
     tags = {
-        cluster_name = var.cluster["cluster_name"]
+        cluster_name = var.cluster.meta["cluster_name"]
     }
 
     lifecycle {

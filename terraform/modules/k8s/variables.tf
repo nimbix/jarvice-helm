@@ -3,11 +3,11 @@
 variable "global" {
     description = "Global Cluster Settings"
     type = object({
-        ssh_public_key = string
+        meta = map(string)
 
-        helm = object({
-            jarvice = map(string)
-        })
+        helm = map(
+            map(string)
+        )
     })
 }
 
@@ -17,12 +17,11 @@ variable "cluster" {
         enabled = bool
 
         auth = map(string)
+        meta = map(string)
 
-        cluster_name = string
-
-        helm = object({
-            jarvice = map(string)
-        })
+        helm = map(
+            map(string)
+        )
     })
 }
 

@@ -10,17 +10,20 @@
 ### Global settings ###
 #######################
 global = {
-    ssh_public_key = "~/.ssh/id_rsa.pub"
+    meta = {
+        ssh_public_key = "~/.ssh/id_rsa.pub"
+    }
 
     helm = {
         jarvice = {
             version = "./"
 
-            override_yaml_values = <<EOF
-# global override_yaml_values - Uncomment or add any values that should be
+            values_file = "values.yaml"  # ignored if file does not exist
+            values_yaml = <<EOF
+# global values_yaml - Uncomment or add any values that should be
 # applied to all defined clusters.
 
-# Update per cluster override_yaml_values to override these global values.
+# Update per cluster values_yaml to override these global values.
 
 #jarvice:
   # imagePullSecret is a base64 encoded string.
@@ -57,20 +60,21 @@ k8s = {
             kube_config = "~/.kube/config"
         }
 
-        cluster_name = "tf-jarvice"
+        meta = {
+            cluster_name = "tf-jarvice"
+        }
 
         helm = {
             jarvice = {
                 # version = "./"  # Uncomment to override global version
                 namespace = "jarvice-system"
 
-                # global override_yaml_values take precedence over cluster
-                # override_yaml_file (override_yaml_file ignored if not found)
-                override_yaml_file = "override-tf.k8s.<cluster_name>.yaml"  # "override-tf.k8s.tf-jarvice.yaml"
+                # global values_yaml take precedence over cluster
+                # values_file (values_file ignored if not found)
+                values_file = "override-tf.k8s.<cluster_name>.yaml"  # "override-tf.k8s.tf-jarvice.yaml"
 
-                override_yaml_values = <<EOF
-# override_yaml_values - takes precedence over override_yaml_file and
-# global override_yaml_values
+                values_yaml = <<EOF
+# values_yaml - takes precedence over values_file and global values_yaml
 
 #jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
@@ -126,20 +130,21 @@ EOF
             kube_config = "~/.kube/config.downstream"
         }
 
-        cluster_name = "tf-jarvice-downstream"
+        meta = {
+            cluster_name = "tf-jarvice-downstream"
+        }
 
         helm = {
             jarvice = {
                 # version = "./"  # Uncomment to override global version
                 namespace = "jarvice-downstream"
 
-                # global override_yaml_values take precedence over cluster
-                # override_yaml_file (override_yaml_file ignored if not found)
-                override_yaml_file = "override-tf.k8s.<cluster_name>.yaml"  # "override-tf.k8s.tf-jarvice-downstream.yaml"
+                # global values_yaml take precedence over cluster
+                # values_file (values_file ignored if not found)
+                values_file = "override-tf.k8s.<cluster_name>.yaml"  # "override-tf.k8s.tf-jarvice-downstream.yaml"
 
-                override_yaml_values = <<EOF
-# override_yaml_values - takes precedence over override_yaml_file and
-# global override_yaml_values
+                values_yaml = <<EOF
+# values_yaml - takes precedence over values_file and global values_yaml
 
 jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
@@ -202,12 +207,17 @@ gke = {
             credentials = null
         }
 
-        cluster_name = "tf-jarvice"
-        location = "us-west1-a"
+        meta = {
+            cluster_name = "tf-jarvice"
+            kubernetes_version = "1.16"
 
-        kubernetes_version = "1.16"
+            ssh_public_key = null  # global setting used if null specified
+        }
 
-        ssh_public_key = null  # global setting used if null specified
+        location = {
+            region = "us-west1"
+            zones = ["us-west1-a"]
+        }
 
         # Visit the following link for GCP machine type specs:
         # https://cloud.google.com/compute/docs/machine-types
@@ -237,13 +247,12 @@ gke = {
                 # version = "./"  # Uncomment to override global version
                 namespace = "jarvice-system"
 
-                # global override_yaml_values take precedence over cluster
-                # override_yaml_file (override_yaml_file ignored if not found)
-                override_yaml_file = "override-tf.gke.<location>.<cluster_name>.yaml"  # "override-tf.gke.us-west1-a.tf-jarvice.yaml"
+                # global values_yaml take precedence over cluster
+                # values_file (values_file ignored if not found)
+                values_file = "override-tf.gke.<region>.<cluster_name>.yaml"  # "override-tf.gke.us-west1.tf-jarvice.yaml"
 
-                override_yaml_values = <<EOF
-# override_yaml_values - takes precedence over override_yaml_file and
-# global override_yaml_values
+                values_yaml = <<EOF
+# values_yaml - takes precedence over values_file and global values_yaml
 
 #jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
@@ -280,12 +289,17 @@ EOF
             credentials = null
         }
 
-        cluster_name = "tf-jarvice-downstream"
-        location = "us-west1-a"
+        meta = {
+            cluster_name = "tf-jarvice-downstream"
+            kubernetes_version = "1.16"
 
-        kubernetes_version = "1.16"
+            ssh_public_key = null  # global setting used if null specified
+        }
 
-        ssh_public_key = null  # global setting used if null specified
+        location = {
+            region = "us-west1"
+            zones = ["us-west1-a"]
+        }
 
         # Visit the following link for GCP machine type specs:
         # https://cloud.google.com/compute/docs/machine-types
@@ -315,13 +329,12 @@ EOF
                 # version = "./"  # Uncomment to override global version
                 namespace = "jarvice-system"
 
-                # global override_yaml_values take precedence over cluster
-                # override_yaml_file (override_yaml_file ignored if not found)
-                override_yaml_file = "override-tf.gke.<location>.<cluster_name>.yaml"  # "override-tf.gke.us-west1-a.tf-jarvice-downstream.yaml"
+                # global values_yaml take precedence over cluster
+                # values_file (values_file ignored if not found)
+                values_file = "override-tf.gke.<region>.<cluster_name>.yaml"  # "override-tf.gke.us-west1.tf-jarvice-downstream.yaml"
 
-                override_yaml_values = <<EOF
-# override_yaml_values - takes precedence over override_yaml_file and
-# global override_yaml_values
+                values_yaml = <<EOF
+# values_yaml - takes precedence over values_file and global values_yaml
 
 jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
@@ -365,13 +378,17 @@ eks = {
             secret_key = null
         }
 
-        cluster_name = "tf-jarvice"
-        region = "us-west-2"
-        availability_zones = ["us-west-2a"]
+        meta = {
+            cluster_name = "tf-jarvice"
+            kubernetes_version = "1.16"
 
-        kubernetes_version = "1.16"
+            ssh_public_key = null  # global setting used if null specified
+        }
 
-        ssh_public_key = null  # global setting used if null specified
+        location = {
+            region = "us-west-2"
+            zones = ["us-west-2a"]
+        }
 
         # Visit the following link for AWS instance type specs:
         # https://aws.amazon.com/ec2/instance-types/
@@ -401,13 +418,12 @@ eks = {
                 # version = "./"  # Uncomment to override global version
                 namespace = "jarvice-system"
 
-                # global override_yaml_values take precedence over cluster
-                # override_yaml_file (override_yaml_file ignored if not found)
-                override_yaml_file = "override-tf.eks.<region>.<cluster_name>.yaml"  # "override-tf.eks.us-west-2.tf-jarvice.yaml"
+                # global values_yaml take precedence over cluster
+                # values_file (values_file ignored if not found)
+                values_file = "override-tf.eks.<region>.<cluster_name>.yaml"  # "override-tf.eks.us-west-2.tf-jarvice.yaml"
 
-                override_yaml_values = <<EOF
-# override_yaml_values - takes precedence over override_yaml_file and
-# global override_yaml_values
+                values_yaml = <<EOF
+# values_yaml - takes precedence over values_file and global values_yaml
 
 #jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
@@ -444,13 +460,17 @@ EOF
             secret_key = null
         }
 
-        cluster_name = "tf-jarvice-downstream"
-        region = "us-west-2"
-        availability_zones = ["us-west-2a"]
+        meta = {
+            cluster_name = "tf-jarvice-downstream"
+            kubernetes_version = "1.16"
 
-        kubernetes_version = "1.16"
+            ssh_public_key = null  # global setting used if null specified
+        }
 
-        ssh_public_key = null  # global setting used if null specified
+        location = {
+            region = "us-west-2"
+            zones = ["us-west-2a"]
+        }
 
         # Visit the following link for AWS instance type specs:
         # https://aws.amazon.com/ec2/instance-types/
@@ -480,13 +500,12 @@ EOF
                 # version = "./"  # Uncomment to override global version
                 namespace = "jarvice-system"
 
-                # global override_yaml_values take precedence over cluster
-                # override_yaml_file (override_yaml_file ignored if not found)
-                override_yaml_file = "override-tf.eks.<region>.<cluster_name>.yaml"  # "override-tf.eks.us-west-2.tf-jarvice-downstream.yaml"
+                # global values_yaml take precedence over cluster
+                # values_file (values_file ignored if not found)
+                values_file = "override-tf.eks.<region>.<cluster_name>.yaml"  # "override-tf.eks.us-west-2.tf-jarvice-downstream.yaml"
 
-                override_yaml_values = <<EOF
-# override_yaml_values - takes precedence over override_yaml_file and
-# global override_yaml_values
+                values_yaml = <<EOF
+# values_yaml - takes precedence over values_file and global values_yaml
 
 jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
@@ -532,13 +551,17 @@ aks = {
             service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
         }
 
-        cluster_name = "tf-jarvice"
-        location = "Central US"
-        availability_zones = ["1"]
+        meta = {
+            cluster_name = "tf-jarvice"
+            kubernetes_version = "1.16"
 
-        kubernetes_version = "1.16"
+            ssh_public_key = null  # global setting used if null specified
+        }
 
-        ssh_public_key = null  # global setting used if null specified
+        location = {
+            region = "Central US"
+            zones = ["1"]
+        }
 
         # Visit the following link for Azure node size specs:
         # https://docs.microsoft.com/en-us/azure/cloud-services/cloud-services-sizes-specs
@@ -568,13 +591,12 @@ aks = {
                 # version = "./"  # Uncomment to override global version
                 namespace = "jarvice-system"
 
-                # global override_yaml_values take precedence over cluster
-                # override_yaml_file (override_yaml_file ignored if not found)
-                override_yaml_file = "override-tf.aks.<location>.<cluster_name>.yaml"  # "override-tf.aks.centralus.tf-jarvice.yaml"
+                # global values_yaml take precedence over cluster
+                # values_file (values_file ignored if not found)
+                values_file = "override-tf.aks.<region>.<cluster_name>.yaml"  # "override-tf.aks.centralus.tf-jarvice.yaml"
 
-                override_yaml_values = <<EOF
-# override_yaml_values - takes precedence over override_yaml_file and
-# global override_yaml_values
+                values_yaml = <<EOF
+# values_yaml - takes precedence over values_file and global values_yaml
 
 #jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
@@ -613,13 +635,17 @@ EOF
             service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
         }
 
-        cluster_name = "tf-jarvice-downstream"
-        location = "Central US"
-        availability_zones = ["1"]
+        meta = {
+            cluster_name = "tf-jarvice-downstream"
+            kubernetes_version = "1.16"
 
-        kubernetes_version = "1.16"
+            ssh_public_key = null  # global setting used if null specified
+        }
 
-        ssh_public_key = null  # global setting used if null specified
+        location = {
+            region = "Central US"
+            zones = ["1"]
+        }
 
         # Visit the following link for Azure node size specs:
         # https://docs.microsoft.com/en-us/azure/cloud-services/cloud-services-sizes-specs
@@ -649,13 +675,12 @@ EOF
                 # version = "./"  # Uncomment to override global version
                 namespace = "jarvice-system"
 
-                # global override_yaml_values take precedence over cluster
-                # override_yaml_file (override_yaml_file ignored if not found)
-                override_yaml_file = "override-tf.aks.<location>.<cluster_name>.yaml"  # "override-tf.aks.centralus.tf-jarvice-downstream.yaml"
+                # global values_yaml take precedence over cluster
+                # values_file (values_file ignored if not found)
+                values_file = "override-tf.aks.<region>.<cluster_name>.yaml"  # "override-tf.aks.centralus.tf-jarvice-downstream.yaml"
 
-                override_yaml_values = <<EOF
-# override_yaml_values - takes precedence over override_yaml_file and
-# global override_yaml_values
+                values_yaml = <<EOF
+# values_yaml - takes precedence over values_file and global values_yaml
 
 jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master

@@ -3,19 +3,21 @@
 variable "global" {
     description = "Global Cluster Settings"
     type = object({
-        ssh_public_key = string
+        meta = map(string)
 
-        helm = object({
-            jarvice = map(string)
-        })
+        helm = map(
+            map(string)
+        )
     })
     default = {
-        ssh_public_key = "~/.ssh/id_rsa.pub"
+        meta = {
+            ssh_public_key = "~/.ssh/id_rsa.pub"
+        }
 
         helm = {
             jarvice = {
-                override_yaml_values = <<EOF
-# global override_yaml_values - Uncomment or add any values that should be
+                values_yaml = <<EOF
+# global values_yaml - Uncomment or add any values that should be
 # applied to all defined clusters.
 EOF
             }
@@ -29,12 +31,11 @@ variable "k8s" {
         enabled = bool
 
         auth = map(string)
+        meta = map(string)
 
-        cluster_name = string
-
-        helm = object({
-            jarvice = map(string)
-        })
+        helm = map(
+            map(string)
+        )
     }))
     default = {}
 }
@@ -45,13 +46,12 @@ variable "gke" {
         enabled = bool
 
         auth = map(string)
+        meta = map(string)
 
-        cluster_name = string
-        location = string
-
-        kubernetes_version = string
-
-        ssh_public_key = string
+        location = object({
+            region = string
+            zones = list(string)
+        })
 
         system_node_pool = object({
             nodes_type = string
@@ -65,9 +65,9 @@ variable "gke" {
             nodes_max = number
         }))
 
-        helm = object({
-            jarvice = map(string)
-        })
+        helm = map(
+            map(string)
+        )
     }))
     default = {}
 }
@@ -78,14 +78,12 @@ variable "eks" {
         enabled = bool
 
         auth = map(string)
+        meta = map(string)
 
-        cluster_name = string
-        region = string
-        availability_zones = list(string)
-
-        kubernetes_version = string
-
-        ssh_public_key = string
+        location = object({
+            region = string
+            zones = list(string)
+        })
 
         system_node_pool = object({
             nodes_type = string
@@ -99,9 +97,9 @@ variable "eks" {
             nodes_max = number
         }))
 
-        helm = object({
-            jarvice = map(string)
-        })
+        helm = map(
+            map(string)
+        )
     }))
     default = {}
 }
@@ -112,14 +110,12 @@ variable "aks" {
         enabled = bool
 
         auth = map(string)
+        meta = map(string)
 
-        cluster_name = string
-        location = string
-        availability_zones = list(string)
-
-        kubernetes_version = string
-
-        ssh_public_key = string
+        location = object({
+            region = string
+            zones = list(string)
+        })
 
         system_node_pool = object({
             nodes_type = string
@@ -133,9 +129,9 @@ variable "aks" {
             nodes_max = number
         }))
 
-        helm = object({
-            jarvice = map(string)
-        })
+        helm = map(
+            map(string)
+        )
     }))
     default = {}
 }
