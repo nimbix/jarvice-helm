@@ -2,9 +2,9 @@
 # and then any *.auto.tfvars files.  e.g. Copy terraform.tfvars to
 # override.auto.tfvars and make any configuration edits there.
 #
-# Visit the following link for more information on how terraform handles
-# variable definitions:
-# https://www.terraform.io/docs/configuration/variables.html#variable-definitions-tfvars-files
+# See the JARVICE Terraform Configuration documentation for more information
+# on terraform variable definitions and JARVICE helm chart values:
+# https://github.com/nimbix/jarvice-helm/blob/testing/Terraform.md#terraform-configuration
 
 #######################
 ### Global settings ###
