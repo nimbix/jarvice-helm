@@ -112,6 +112,18 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202008191936
+
+* (3194) GA Support for GKE and EKS using Terraform; please see [JARVICE Deployment with Terraform](Terraform.md) for details.
+* (3269) Added PodDisruptionBudget to JARVICE job, build, and pull pods to avoid eviction when draining nodes.
+* (3272) Added `%CONNECTURL%` substitution in app container help text/html for better compatibility with Ingress.
+* (3278) Removed deprecated internal image code from DAL.
+* (3293) Fixed bug in portal that would render dialog boxes without values after cancelling a confirmation.
+* (3297) Experimental support for Kerberos logins to the potral; see [documentation](Kerberos.md) for details.
+* (3329) Support for *LoadBalancer* service annotations in downstream scheduler; see [Additional LoadBalancer service annotation for jobs](README.md#additional-loadbalancer-service-annotation-for-jobs) for details.
+* (3333) Updated job and UNFS3 pod tolerations to support the new `node-role.jarvice.io` domain.
+* (3343) Security update for self-service team admin-initiated user invites in portal.
+
 ## 3.0.0-1.202008051905
 
 * (3182) Experimental (undocumented) support for EKS using Terraform.
