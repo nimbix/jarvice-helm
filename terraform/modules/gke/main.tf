@@ -12,8 +12,8 @@ terraform {
 }
 
 locals {
-    zone = var.cluster["location"]
-    region = join("-", slice(split("-", var.cluster["location"]), 0, 2))
+    region = var.cluster.location["region"]
+    zones = var.cluster.location["zones"]
 
     oauth_scopes = [
         "https://www.googleapis.com/auth/devstorage.read_only",
@@ -37,8 +37,8 @@ resource "random_id" "password" {
 data "google_container_engine_versions" "kubernetes_version" {
     #provider = google-beta
 
-    location = local.zone
-    version_prefix = "${var.cluster["kubernetes_version"]}."
+    location = local.region
+    version_prefix = "${var.cluster.meta["kubernetes_version"]}."
 }
 
 locals {
@@ -49,9 +49,9 @@ locals {
 resource "google_container_cluster" "jarvice" {
     #provider = google-beta
 
-    name = var.cluster["cluster_name"]
+    name = var.cluster.meta["cluster_name"]
     location = local.region
-    node_locations = [local.zone]
+    node_locations = local.zones
 
     min_master_version = local.master_version
     node_version = local.node_version
@@ -81,7 +81,7 @@ EOF
             "node-role.jarvice.io/default" = "true"
         }
 
-        tags = [var.cluster["cluster_name"], "jxedefault"]
+        tags = [var.cluster.meta["cluster_name"], "jxedefault"]
     }
 
     ip_allocation_policy {
@@ -109,7 +109,7 @@ EOF
     }
 
     resource_labels = {
-        "cluster_name" = var.cluster["cluster_name"]
+        "cluster_name" = var.cluster.meta["cluster_name"]
     }
 }
 
@@ -118,7 +118,7 @@ resource "google_container_node_pool" "jarvice_system" {
 
     name = "jxesystem"
     location = local.region
-    node_locations = [local.zone]
+    node_locations = local.zones
 
     cluster = google_container_cluster.jarvice.name
     version = local.node_version
@@ -170,7 +170,7 @@ resource "google_container_node_pool" "jarvice_compute" {
 
     name = "jxecompute${count.index}"
     location = local.region
-    node_locations = [local.zone]
+    node_locations = local.zones
 
     cluster = google_container_cluster.jarvice.name
     version = local.node_version

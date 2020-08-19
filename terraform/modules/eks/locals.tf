@@ -1,11 +1,11 @@
 # locals.tf - EKS module local variable definitions
 
 locals {
-    jarvice_override_yaml_file = replace(replace("${var.cluster.helm.jarvice["override_yaml_file"]}", "<region>", "${var.cluster["region"]}"), "<cluster_name>", "${var.cluster["cluster_name"]}")
+    jarvice_values_file = replace(replace("${var.cluster.helm.jarvice["values_file"]}", "<region>", "${var.cluster.location["region"]}"), "<cluster_name>", "${var.cluster.meta["cluster_name"]}")
 
-    jarvice_helm_override_yaml = fileexists(local.jarvice_override_yaml_file) ? "${file("${local.jarvice_override_yaml_file}")}" : ""
+    jarvice_helm_override_yaml = fileexists(local.jarvice_values_file) ? "${file("${local.jarvice_values_file}")}" : ""
 
-    jarvice_helm_values = merge(lookup(yamldecode("XXXdummy: value\n\n${fileexists("values.yaml") ? file("values.yaml") : ""}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${local.jarvice_helm_override_yaml}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${var.global.helm.jarvice["override_yaml_values"]}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${var.cluster.helm.jarvice["override_yaml_values"]}"), "jarvice", {}))
+    jarvice_helm_values = merge(lookup(yamldecode("XXXdummy: value\n\n${fileexists(var.global.helm.jarvice["values_file"]) ? file(var.global.helm.jarvice["values_file"]) : ""}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${local.jarvice_helm_override_yaml}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${var.global.helm.jarvice["values_yaml"]}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${var.cluster.helm.jarvice["values_yaml"]}"), "jarvice", {}))
 
     jarvice_cluster_type = local.jarvice_helm_values["JARVICE_CLUSTER_TYPE"] == "downstream" ? "downstream" : "upstream"
 }
@@ -16,12 +16,12 @@ locals {
 }
 
 locals {
-    ssh_public_key = var.cluster["ssh_public_key"] != null ? file(var.cluster["ssh_public_key"]) : file(var.global["ssh_public_key"])
+    ssh_public_key = var.cluster.meta["ssh_public_key"] != null ? file(var.cluster.meta["ssh_public_key"]) : file(var.global.meta["ssh_public_key"])
 }
 
 locals {
     kube_config = {
-        "config_path" = "~/.kube/config-tf.eks.${var.cluster["region"]}.${var.cluster["cluster_name"]}",
+        "config_path" = "~/.kube/config-tf.eks.${var.cluster.location["region"]}.${var.cluster.meta["cluster_name"]}",
         "host" = data.aws_eks_cluster.cluster.endpoint,
         "cluster_ca_certificate" = data.aws_eks_cluster.cluster.certificate_authority.0.data,
         "client_certificate" = null,
@@ -34,7 +34,7 @@ locals {
 
 locals {
     jarvice_config = {
-        "ingress_host_path" = "~/.terraform-jarvice/ingress-tf.eks.${var.cluster.region}.${var.cluster["cluster_name"]}"
+        "ingress_host_path" = "~/.terraform-jarvice/ingress-tf.eks.${var.cluster.location.region}.${var.cluster.meta["cluster_name"]}"
     }
 }
 
@@ -69,7 +69,7 @@ EOF
     jarvice_ingress_name = local.jarvice_cluster_type == "downstream" ? "jarvice-k8s-scheduler" : "jarvice-mc-portal"
 
     storage_class_provisioner = "kubernetes.io/aws-ebs"
-    cluster_override_yaml_values = <<EOF
+    cluster_values_yaml = <<EOF
 # EKS cluster override values
 jarvice:
   nodeSelector: '${local.jarvice_helm_values["nodeSelector"] == null ? "{\"node-role.jarvice.io/jarvice-system\": \"true\"}" : local.jarvice_helm_values["nodeSelector"]}'

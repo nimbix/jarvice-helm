@@ -134,16 +134,16 @@ output "${key}" {
 # GKE cluster configuration: ${key}
 provider "google" {
     alias = "${key}"
-    zone = local.gke["${key}"].location
-    region = join("-", slice(split("-", local.gke["${key}"].location), 0, 2))
+
+    region = local.gke["${key}"].location["region"]
     project = local.gke["${key}"].auth["project"]
     credentials = local.gke["${key}"].auth["credentials"]
 }
 
 provider "google-beta" {
     alias = "${key}"
-    zone = local.gke["${key}"].location
-    region = join("-", slice(split("-", local.gke["${key}"].location), 0, 2))
+
+    region = local.gke["${key}"].location["region"]
     project = local.gke["${key}"].auth["project"]
     credentials = local.gke["${key}"].auth["credentials"]
 }
@@ -199,7 +199,8 @@ output "${key}" {
 # EKS cluster configuration: ${key}
 provider "aws" {
     alias = "${key}"
-    region  = local.eks["${key}"].region
+
+    region  = local.eks["${key}"].location["region"]
     access_key  = local.eks["${key}"].auth["access_key"]
     secret_key  = local.eks["${key}"].auth["secret_key"]
 }
@@ -250,6 +251,7 @@ output "${key}" {
 # AKS cluster configuration: ${key}
 provider "azurerm" {
     alias = "${key}"
+
     features {}
 }
 

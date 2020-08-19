@@ -19,8 +19,8 @@ output "cluster_info" {
     value = <<EOF
 ===============================================================================
 
-    AKS cluster name: ${var.cluster["cluster_name"]}
-AKS cluster location: ${var.cluster["location"]}
+    AKS cluster name: ${var.cluster.meta["cluster_name"]}
+AKS cluster location: ${var.cluster.location["region"]}
 
        JARVICE chart: ${local.jarvice_chart}
    JARVICE namespace: ${module.helm.metadata["jarvice"]["namespace"]}

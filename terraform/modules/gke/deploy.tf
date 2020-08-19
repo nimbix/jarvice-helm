@@ -44,8 +44,8 @@ module "helm" {
     charts = local.charts
 
     # JARVICE settings
-    jarvice = merge(var.cluster.helm.jarvice, {"override_yaml_file"="${local.jarvice_override_yaml_file}"})
+    jarvice = merge(var.cluster.helm.jarvice, {"values_file"="${local.jarvice_values_file}"})
     global = var.global.helm.jarvice
-    cluster_override_yaml_values = local.cluster_override_yaml_values
+    cluster_values_yaml = local.cluster_values_yaml
 }
 

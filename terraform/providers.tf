@@ -8,8 +8,7 @@
 #    for_each = local.gke
 #    alias = each.key
 #
-#    zone = local.gke[each.key].location
-#    region = join("-", slice(split("-", local.gke[each.key].location), 0, 2))
+#    region = local.gke[each.key].location["region"]
 #    project = local.gke[each.key].auth["project"]
 #    credentials = local.gke[each.key].auth["credentials"]
 #}
@@ -18,8 +17,7 @@
 #    for_each = local.gke
 #    alias = each.key
 #
-#    zone = local.gke[each.key].location
-#    region = join("-", slice(split("-", local.gke[each.key].location), 0, 2))
+#    region = local.gke[each.key].location["region"]
 #    project = local.gke[each.key].auth["project"]
 #    credentials = local.gke[each.key].auth["credentials"]
 #}
