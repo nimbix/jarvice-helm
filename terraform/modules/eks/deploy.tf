@@ -1,23 +1,21 @@
 # deploy.tf - EKS module kubernetes/helm components deployment for JARVICE
 
-module "helm" {
-    source = "../helm"
-
-    # depends_on for modules is coming with terraform v0.13.0
-    #depends_on = [module.iam_assumable_role_admin.this_iam_role_arn]
-
-    # Cluster autoscaler settings
-    cluster_autoscaler_enabled = true
-    cluster_autoscaler_values = <<EOF
+locals {
+    charts = {
+        "cluster-autoscaler" = {
+            "values" = <<EOF
 autoDiscovery:
-  clusterName: ${var.cluster["cluster_name"]}
+  clusterName: ${var.cluster.meta["cluster_name"]}
   enabled: true
 
-awsRegion: "${var.cluster["region"]}"
+awsRegion: "${var.cluster.location["region"]}"
 
 cloudProvider: aws
 
 tolerations:
+  - key: node-role.jarvice.io/jarvice-system
+    effect: NoSchedule
+    operator: Exists
   - key: node-role.kubernetes.io/jarvice-system
     effect: NoSchedule
     operator: Exists
@@ -30,9 +28,9 @@ rbac:
   serviceAccountAnnotations:
     eks.amazonaws.com/role-arn: "${module.iam_assumable_role_admin.this_iam_role_arn}"
 EOF
-
-    # Traefik settings
-    traefik_values = <<EOF
+        },
+        "traefik" =  {
+            "values" = <<EOF
 # TODO: use eip allocations with NLB
 #loadBalancerIP: {aws_eip.nat[0].public_ip}
 replicas: 2
@@ -45,6 +43,9 @@ nodeSelector:
   kubernetes.io/arch: "amd64"
   node-role.jarvice.io/jarvice-system: "true"
 tolerations:
+  - key: node-role.jarvice.io/jarvice-system
+    effect: NoSchedule
+    operator: Exists
   - key: node-role.kubernetes.io/jarvice-system
     effect: NoSchedule
     operator: Exists
@@ -71,10 +72,18 @@ dashboard:
 rbac:
   enabled: true
 EOF
+        }
+    }
+}
+
+module "helm" {
+    source = "../helm"
+
+    charts = local.charts
 
     # JARVICE settings
-    jarvice = merge(var.cluster.helm.jarvice, {"override_yaml_file"="${local.jarvice_override_yaml_file}"})
+    jarvice = merge(var.cluster.helm.jarvice, {"values_file"="${local.jarvice_values_file}"})
     global = var.global.helm.jarvice
-    cluster_override_yaml_values = local.cluster_override_yaml_values
+    cluster_values_yaml = local.cluster_values_yaml
 }
 

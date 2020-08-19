@@ -1,7 +1,7 @@
 # main.tf - root module
 
 terraform {
-    required_version = "~> 0.12.29"
+    required_version = "~> 0.13.0"
     #backend "local" {}
 
     required_providers {
@@ -11,7 +11,7 @@ terraform {
         azurerm = "~> 2.20"
 
         helm = "~> 1.2"
-        kubernetes = "~> 1.11"
+        kubernetes = "~> 1.12"
 
         null = "~> 2.1"
         local = "~> 1.4"
@@ -20,7 +20,55 @@ terraform {
     }
 }
 
-# TODO: terraform-v0.13
+# TODO: Uncomment and enable when count/for_each for providers is implemented:
+# https://github.com/hashicorp/terraform/issues/9448
+# https://github.com/hashicorp/terraform/issues/24476
+
+#module "k8s" {
+#    for_each = local.k8s
+#
+#    source = "./modules/k8s"
+#
+#    cluster = each.value
+#    global = var.global
+#
+#    providers = {
+#        kubernetes = kubernetes[each.key]
+#        helm = helm[each.key]
+#    }
+#}
+
+#module "gke" {
+#    for_each = local.gke
+#
+#    source = "./modules/gke"
+#
+#    cluster = each.value
+#    global = var.global
+#
+#    providers = {
+#        google = google[each.key]
+#        google-beta = google-beta[each.key]
+#        kubernetes = kubernetes[each.key]
+#        helm = helm[each.key]
+#    }
+#}
+
+#module "eks" {
+#    for_each = local.eks
+#
+#    source = "./modules/eks"
+#
+#    cluster = each.value
+#    global = var.global
+#
+#    providers = {
+#        aws = aws[each.key]
+#        kubernetes = kubernetes[each.key]
+#        helm = helm[each.key]
+#    }
+#}
+
 #module "aks" {
 #    for_each = local.aks
 #
@@ -30,13 +78,14 @@ terraform {
 #    global = var.global
 #
 #    providers = {
-#        aks = azurerm[each.key]
-#        helm = helm.aks
+#        azurerm = azurerm[each.key]
+#        kubernetes = kubernetes[each.key]
+#        helm = helm[each.key]
 #    }
 #}
 
 # Dynamically create clusters definition file until for_each is enabled and
-# working for modules and providers in terraform v0.13
+# working for modules and providers in terraform v0.13.X
 resource "local_file" "clusters" {
     filename = "${path.module}/clusters.tf"
     file_permission = "0664"
@@ -46,22 +95,57 @@ resource "local_file" "clusters" {
 # clusters.tf - cluster definitions (dynamically created using cluster configs)
 
 ##############################################################################
+%{ for key in keys(local.k8s) }
+# K8s cluster configuration: ${key}
+provider "kubernetes" {
+    alias = "${key}"
+
+    load_config_file = true
+    config_path = module.${key}.kube_config["config_path"]
+}
+
+provider "helm" {
+    alias = "${key}"
+
+    kubernetes {
+        load_config_file = true
+        config_path = module.${key}.kube_config["config_path"]
+    }
+}
+
+module "${key}" {
+    source = "./modules/k8s"
+
+    cluster = local.k8s["${key}"]
+    global = var.global
+
+    providers = {
+        kubernetes = kubernetes.${key}
+        helm = helm.${key}
+    }
+}
+
+output "${key}" {
+    value = format("\n\nK8s Cluster Configuration: %s\n%s\n", "${key}", module.${key}.cluster_info)
+}
+%{ endfor }
+##############################################################################
 %{ for key in keys(local.gke) }
 # GKE cluster configuration: ${key}
 provider "google" {
     alias = "${key}"
-    zone = local.gke["${key}"].location
-    region = join("-", slice(split("-", local.gke["${key}"].location), 0, 2))
-    project = local.gke["${key}"].project
-    credentials = local.gke["${key}"].credentials
+
+    region = local.gke["${key}"].location["region"]
+    project = local.gke["${key}"].auth["project"]
+    credentials = local.gke["${key}"].auth["credentials"]
 }
 
 provider "google-beta" {
     alias = "${key}"
-    zone = local.gke["${key}"].location
-    region = join("-", slice(split("-", local.gke["${key}"].location), 0, 2))
-    project = local.gke["${key}"].project
-    credentials = local.gke["${key}"].credentials
+
+    region = local.gke["${key}"].location["region"]
+    project = local.gke["${key}"].auth["project"]
+    credentials = local.gke["${key}"].auth["credentials"]
 }
 
 provider "kubernetes" {
@@ -115,9 +199,10 @@ output "${key}" {
 # EKS cluster configuration: ${key}
 provider "aws" {
     alias = "${key}"
-    region  = local.eks["${key}"].region
-    access_key  = local.eks["${key}"].access_key
-    secret_key  = local.eks["${key}"].secret_key
+
+    region  = local.eks["${key}"].location["region"]
+    access_key  = local.eks["${key}"].auth["access_key"]
+    secret_key  = local.eks["${key}"].auth["secret_key"]
 }
 
 provider "kubernetes" {
@@ -166,6 +251,7 @@ output "${key}" {
 # AKS cluster configuration: ${key}
 provider "azurerm" {
     alias = "${key}"
+
     features {}
 }
 

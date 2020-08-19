@@ -1,48 +1,74 @@
 # providers.tf - root module providers
 
-provider "local" {
-    version = "~> 1.4"
-}
+# TODO: Uncomment and enable when count/for_each for providers is implemented:
+# https://github.com/hashicorp/terraform/issues/9448
+# https://github.com/hashicorp/terraform/issues/24476
 
-# TODO: terraform-v0.13
 #provider "google" {
-#  version     = "~> 3.27.0"
-  #credentials = file("account.json")
-  #project     = var.gcp_project
-  #region      = var.gcp_region
+#    for_each = local.gke
+#    alias = each.key
+#
+#    region = local.gke[each.key].location["region"]
+#    project = local.gke[each.key].auth["project"]
+#    credentials = local.gke[each.key].auth["credentials"]
 #}
 
-# TODO: terraform-v0.13
+#provider "google-beta" {
+#    for_each = local.gke
+#    alias = each.key
+#
+#    region = local.gke[each.key].location["region"]
+#    project = local.gke[each.key].auth["project"]
+#    credentials = local.gke[each.key].auth["credentials"]
+#}
+
 #provider "aws" {
-#  version = "~> 2.68.0"
-#  #region  = var.aws_region
-#  #profile = var.aws_profile
+#    for_each  = local.eks
+#    alias = each.key
+#
+#    region  = local.eks[each.key].region
+#    access_key  = local.eks[each.key].auth["access_key"]
+#    secret_key  = local.eks[each.key].auth["secret_key"]
 #}
 
-# TODO: terraform-v0.13
 #provider "azurerm" {
 #    for_each = local.aks
-#
 #    alias = each.key
-#    version = "~> 2.13"
+#
 #    features {}
 #}
 
-provider "azurerm" {
-    version = "~> 2.13"
-    features {}
-}
-
-# TODO: terraform-v0.13
-#provider "helm" {
-#    for_each = local.aks
+#provider "kubernetes" {
+#    for_each = local.all_enabled
+#    alias = "${key}"
 #
-#    alias = each.key
-#    version = "~> 1.2"
+#    load_config_file = module[each.key].kube_config["host"] == null ? true : false
+#
+#    config_path = module[each.key].kube_config["config_path"]
+#    host = module[each.key].kube_config["host"]
+#    cluster_ca_certificate = base64decode(module[each.key].kube_config["cluster_ca_certificate"])
+#    client_certificate = base64decode(module[each.key].kube_config["client_certificate"])
+#    client_key = base64decode(module[each.key].kube_config["client_key"])
+#    token = module[each.key].kube_config["token"]
+#    username = module[each.key].kube_config["username"]
+#    password = module[each.key].kube_config["password"]
+#}
+
+#provider "helm" {
+#    for_each = local.all_enabled
+#    alias = "${key}"
 #
 #    kubernetes {
-#        load_config_file = true
-#        config_path = pathexpand("~/.kube/config-tf.aks")
+#        load_config_file = module[each.key].kube_config["host"] == null ? true : false
+#
+#        config_path = module[each.key].kube_config["config_path"]
+#        host = module[each.key].kube_config["host"]
+#        cluster_ca_certificate = base64decode(module[each.key].kube_config["cluster_ca_certificate"])
+#        client_certificate = base64decode(module[each.key].kube_config["client_certificate"])
+#        client_key = base64decode(module[each.key].kube_config["client_key"])
+#        token = module[each.key].kube_config["token"]
+#        username = module[each.key].kube_config["username"]
+#        password = module[each.key].kube_config["password"]
 #    }
 #}
 

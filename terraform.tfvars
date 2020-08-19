@@ -2,23 +2,28 @@
 # and then any *.auto.tfvars files.  e.g. Copy terraform.tfvars to
 # override.auto.tfvars and make any configuration edits there.
 #
-# Visit the following link for more information on how terraform handles
-# variable definitions:
-# https://www.terraform.io/docs/configuration/variables.html#variable-definitions-tfvars-files
+# See the JARVICE Terraform Configuration documentation for more information
+# on terraform variable definitions and JARVICE helm chart values:
+# https://github.com/nimbix/jarvice-helm/blob/master/Terraform.md#terraform-configuration
 
 #######################
 ### Global settings ###
 #######################
 global = {
-    ssh_public_key = "~/.ssh/id_rsa.pub"
+    meta = {
+        ssh_public_key = "~/.ssh/id_rsa.pub"
+    }
 
     helm = {
         jarvice = {
-            override_yaml_values = <<EOF
-# global override_yaml_values - Uncomment or add any values that should be
+            version = "./"
+
+            values_file = "values.yaml"  # ignored if file does not exist
+            values_yaml = <<EOF
+# global values_yaml - Uncomment or add any values that should be
 # applied to all defined clusters.
 
-# Update per cluster override_yaml_values to override these global values.
+# Update per cluster values_yaml to override these global values.
 
 #jarvice:
   # imagePullSecret is a base64 encoded string.
@@ -31,6 +36,14 @@ global = {
   #JARVICE_REMOTE_USER:
   #JARVICE_REMOTE_APIKEY:
   #JARVICE_APPSYNC_USERONLY: false
+
+  #JARVICE_MAIL_SERVER: jarvice-smtpd:25
+  #JARVICE_MAIL_USERNAME: # "mail-username"
+  #JARVICE_MAIL_PASSWORD: # "Pass1234"
+  #JARVICE_MAIL_ADMINS: # "admin1@my-domain.com,admin2@my-domain.com"
+  #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 EOF
         }
     }
@@ -39,10 +52,148 @@ EOF
 ###########################
 ### Kubernetes settings ###
 ###########################
-#k8s = {
-#    "k8s_cluster_00" = {
-#    },
-#}
+k8s = {
+    "k8s_cluster_00" = {
+        enabled = false
+
+        auth = {
+            kube_config = "~/.kube/config"
+        }
+
+        meta = {
+            cluster_name = "tf-jarvice"
+        }
+
+        helm = {
+            jarvice = {
+                # version = "./"  # Uncomment to override global version
+                namespace = "jarvice-system"
+
+                # global values_yaml take precedence over cluster
+                # values_file (values_file ignored if not found)
+                values_file = "override-tf.k8s.<cluster_name>.yaml"  # "override-tf.k8s.tf-jarvice.yaml"
+
+                values_yaml = <<EOF
+# values_yaml - takes precedence over values_file and global values_yaml
+
+#jarvice:
+  #JARVICE_IMAGES_TAG: jarvice-master
+  #JARVICE_IMAGES_VERSION:
+
+  # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
+  # settings in jarvice_* component stanzas are ignored.
+  #JARVICE_CLUSTER_TYPE: "upstream"  # "downstream"
+
+  # If deploying "downstream" cluster, be sure to set JARVICE_SCHED_SERVER_KEY
+  #JARVICE_SCHED_SERVER_KEY: # "jarvice-downstream:Pass1234"
+
+  # JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
+  #JARVICE_JOBS_DOMAIN: # my-domain.com  # (host based ingress)
+  #JARVICE_JOBS_LB_SERVICE: false
+
+  #JARVICE_PVC_VAULT_NAME: persistent
+  #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
+  #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
+  #JARVICE_PVC_VAULT_SIZE: 10
+
+  #JARVICE_MAIL_SERVER: jarvice-smtpd:25
+  #JARVICE_MAIL_USERNAME: # "mail-username"
+  #JARVICE_MAIL_PASSWORD: # "Pass1234"
+  #JARVICE_MAIL_ADMINS: # "admin1@my-domain.com,admin2@my-domain.com"
+  #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
+
+#jarvice_k8s_scheduler:
+  # loadBalancerIP and ingressHost are only applicable when
+  # jarvice.JARVICE_CLUSTER_TYPE is set to "downstream"
+  #loadBalancerIP:
+  #ingressHost: # jarvice-k8s-scheduler.my-domain.com
+
+#jarvice_api:
+  #loadBalancerIP:
+  #ingressHost: # jarvice-api.my-domain.com
+  #ingressPath: "/"  # Valid values are "/" (default) or "/api"
+
+#jarvice_mc_portal:
+  #loadBalancerIP:
+  #ingressHost: # jarvice.my-domain.com
+  #ingressPath: "/"  # Valid values are "/" (default) or "/portal"
+EOF
+            }
+        }
+    },
+    "k8s_cluster_01" = {
+        enabled = false
+
+        auth = {
+            kube_config = "~/.kube/config.downstream"
+        }
+
+        meta = {
+            cluster_name = "tf-jarvice-downstream"
+        }
+
+        helm = {
+            jarvice = {
+                # version = "./"  # Uncomment to override global version
+                namespace = "jarvice-downstream"
+
+                # global values_yaml take precedence over cluster
+                # values_file (values_file ignored if not found)
+                values_file = "override-tf.k8s.<cluster_name>.yaml"  # "override-tf.k8s.tf-jarvice-downstream.yaml"
+
+                values_yaml = <<EOF
+# values_yaml - takes precedence over values_file and global values_yaml
+
+jarvice:
+  #JARVICE_IMAGES_TAG: jarvice-master
+  #JARVICE_IMAGES_VERSION:
+
+  # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
+  # settings in jarvice_* component stanzas are ignored.
+  JARVICE_CLUSTER_TYPE: "downstream"
+
+  # If deploying "downstream" cluster, be sure to set JARVICE_SCHED_SERVER_KEY
+  #JARVICE_SCHED_SERVER_KEY: # "jarvice-downstream:Pass1234"
+
+  # JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
+  #JARVICE_JOBS_DOMAIN: # my-domain.com  # (host based ingress)
+  #JARVICE_JOBS_LB_SERVICE: false
+
+  #JARVICE_PVC_VAULT_NAME: persistent
+  #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
+  #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
+  #JARVICE_PVC_VAULT_SIZE: 10
+
+  #JARVICE_MAIL_SERVER: jarvice-smtpd:25
+  #JARVICE_MAIL_USERNAME: # "mail-username"
+  #JARVICE_MAIL_PASSWORD: # "Pass1234"
+  #JARVICE_MAIL_ADMINS: # "admin1@my-domain.com,admin2@my-domain.com"
+  #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
+
+#jarvice_k8s_scheduler:
+  # loadBalancerIP and ingressHost are only applicable when
+  # jarvice.JARVICE_CLUSTER_TYPE is set to "downstream"
+  #loadBalancerIP:
+  #ingressHost: # jarvice-k8s-scheduler.my-domain.com
+
+#jarvice_api:
+  #loadBalancerIP:
+  #ingressHost: # jarvice-api.my-domain.com
+  #ingressPath: "/"  # Valid values are "/" (default) or "/api"
+
+#jarvice_mc_portal:
+  #loadBalancerIP:
+  #ingressHost: # jarvice.my-domain.com
+  #ingressPath: "/"  # Valid values are "/" (default) or "/portal"
+EOF
+            }
+        }
+    },
+}
 
 #################################
 ### Google Cloud GKE Settings ###
@@ -51,15 +202,22 @@ gke = {
     "gke_cluster_00" = {
         enabled = false
 
-        project = null
-        credentials = null
+        auth = {
+            project = null
+            credentials = null
+        }
 
-        cluster_name = "tf-jarvice"
-        location = "us-west1-a"
+        meta = {
+            cluster_name = "tf-jarvice"
+            kubernetes_version = "1.16"
 
-        kubernetes_version = "1.15"
+            ssh_public_key = null  # global setting used if null specified
+        }
 
-        ssh_public_key = null  # global setting used if null specified
+        location = {
+            region = "us-west1"
+            zones = ["us-west1-a"]
+        }
 
         # Visit the following link for GCP machine type specs:
         # https://cloud.google.com/compute/docs/machine-types
@@ -69,14 +227,14 @@ gke = {
         }
         compute_node_pools = [
             {
-                nodes_type = "n1-standard-96"
+                nodes_type = "n1-standard-32"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
             },
             #{
-            #    nodes_type = "n1-standard-96"
+            #    nodes_type = "n1-standard-32"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
@@ -86,15 +244,15 @@ gke = {
 
         helm = {
             jarvice = {
-                version = "./"
+                # version = "./"  # Uncomment to override global version
                 namespace = "jarvice-system"
-                # global override_yaml_values take precedence over cluster
-                # override_yaml_file (override_yaml_file ignored if not found)
-                override_yaml_file = "override-tf.gke.<location>.<cluster_name>.yaml"  # "override-tf.gke.us-west1-a.tf-jarvice.yaml"
 
-                override_yaml_values = <<EOF
-# override_yaml_values - takes precedence over override_yaml_file and
-# global override_yaml_values
+                # global values_yaml take precedence over cluster
+                # values_file (values_file ignored if not found)
+                values_file = "override-tf.gke.<region>.<cluster_name>.yaml"  # "override-tf.gke.us-west1.tf-jarvice.yaml"
+
+                values_yaml = <<EOF
+# values_yaml - takes precedence over values_file and global values_yaml
 
 #jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
@@ -111,6 +269,14 @@ gke = {
   #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
+
+  #JARVICE_MAIL_SERVER: jarvice-smtpd:25
+  #JARVICE_MAIL_USERNAME: # "mail-username"
+  #JARVICE_MAIL_PASSWORD: # "Pass1234"
+  #JARVICE_MAIL_ADMINS: # "admin1@my-domain.com,admin2@my-domain.com"
+  #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 EOF
             }
         }
@@ -118,15 +284,22 @@ EOF
     "gke_cluster_01" = {
         enabled = false
 
-        project = null
-        credentials = null
+        auth = {
+            project = null
+            credentials = null
+        }
 
-        cluster_name = "tf-jarvice-downstream"
-        location = "us-west1-a"
+        meta = {
+            cluster_name = "tf-jarvice-downstream"
+            kubernetes_version = "1.16"
 
-        kubernetes_version = "1.15"
+            ssh_public_key = null  # global setting used if null specified
+        }
 
-        ssh_public_key = null  # global setting used if null specified
+        location = {
+            region = "us-west1"
+            zones = ["us-west1-a"]
+        }
 
         # Visit the following link for GCP machine type specs:
         # https://cloud.google.com/compute/docs/machine-types
@@ -136,14 +309,14 @@ EOF
         }
         compute_node_pools = [
             {
-                nodes_type = "n1-standard-96"
+                nodes_type = "n1-standard-32"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
             },
             #{
-            #    nodes_type = "n1-standard-96"
+            #    nodes_type = "n1-standard-32"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
@@ -153,15 +326,15 @@ EOF
 
         helm = {
             jarvice = {
-                version = "./"
+                # version = "./"  # Uncomment to override global version
                 namespace = "jarvice-system"
-                # global override_yaml_values take precedence over cluster
-                # override_yaml_file (override_yaml_file ignored if not found)
-                override_yaml_file = "override-tf.gke.<location>.<cluster_name>.yaml"  # "override-tf.gke.us-west1-a.tf-jarvice-downstream.yaml"
 
-                override_yaml_values = <<EOF
-# override_yaml_values - takes precedence over override_yaml_file and
-# global override_yaml_values
+                # global values_yaml take precedence over cluster
+                # values_file (values_file ignored if not found)
+                values_file = "override-tf.gke.<region>.<cluster_name>.yaml"  # "override-tf.gke.us-west1.tf-jarvice-downstream.yaml"
+
+                values_yaml = <<EOF
+# values_yaml - takes precedence over values_file and global values_yaml
 
 jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
@@ -178,6 +351,14 @@ jarvice:
   #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
+
+  #JARVICE_MAIL_SERVER: jarvice-smtpd:25
+  #JARVICE_MAIL_USERNAME: # "mail-username"
+  #JARVICE_MAIL_PASSWORD: # "Pass1234"
+  #JARVICE_MAIL_ADMINS: # "admin1@my-domain.com,admin2@my-domain.com"
+  #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 EOF
             }
         }
@@ -192,16 +373,22 @@ eks = {
     "eks_cluster_00" = {
         enabled = false
 
-        access_key = null
-        secret_key = null
+        auth = {
+            access_key = null
+            secret_key = null
+        }
 
-        cluster_name = "tf-jarvice"
-        region = "us-west-2"
-        availability_zones = null
+        meta = {
+            cluster_name = "tf-jarvice"
+            kubernetes_version = "1.16"
 
-        kubernetes_version = "1.15"
+            ssh_public_key = null  # global setting used if null specified
+        }
 
-        ssh_public_key = null  # global setting used if null specified
+        location = {
+            region = "us-west-2"
+            zones = null
+        }
 
         # Visit the following link for AWS instance type specs:
         # https://aws.amazon.com/ec2/instance-types/
@@ -228,15 +415,15 @@ eks = {
 
         helm = {
             jarvice = {
-                version = "./"
+                # version = "./"  # Uncomment to override global version
                 namespace = "jarvice-system"
-                # global override_yaml_values take precedence over cluster
-                # override_yaml_file (override_yaml_file ignored if not found)
-                override_yaml_file = "override-tf.eks.<region>.<cluster_name>.yaml"  # "override-tf.eks.us-west-2.tf-jarvice.yaml"
 
-                override_yaml_values = <<EOF
-# override_yaml_values - takes precedence over override_yaml_file and
-# global override_yaml_values
+                # global values_yaml take precedence over cluster
+                # values_file (values_file ignored if not found)
+                values_file = "override-tf.eks.<region>.<cluster_name>.yaml"  # "override-tf.eks.us-west-2.tf-jarvice.yaml"
+
+                values_yaml = <<EOF
+# values_yaml - takes precedence over values_file and global values_yaml
 
 #jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
@@ -253,6 +440,14 @@ eks = {
   #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
+
+  #JARVICE_MAIL_SERVER: jarvice-smtpd:25
+  #JARVICE_MAIL_USERNAME: # "mail-username"
+  #JARVICE_MAIL_PASSWORD: # "Pass1234"
+  #JARVICE_MAIL_ADMINS: # "admin1@my-domain.com,admin2@my-domain.com"
+  #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 EOF
             }
         }
@@ -260,16 +455,22 @@ EOF
     "eks_cluster_01" = {
         enabled = false
 
-        access_key = null
-        secret_key = null
+        auth = {
+            access_key = null
+            secret_key = null
+        }
 
-        cluster_name = "tf-jarvice-downstream"
-        region = "us-west-2"
-        availability_zones = null
+        meta = {
+            cluster_name = "tf-jarvice-downstream"
+            kubernetes_version = "1.16"
 
-        kubernetes_version = "1.15"
+            ssh_public_key = null  # global setting used if null specified
+        }
 
-        ssh_public_key = null  # global setting used if null specified
+        location = {
+            region = "us-west-2"
+            zones = null
+        }
 
         # Visit the following link for AWS instance type specs:
         # https://aws.amazon.com/ec2/instance-types/
@@ -296,15 +497,15 @@ EOF
 
         helm = {
             jarvice = {
-                version = "./"
+                # version = "./"  # Uncomment to override global version
                 namespace = "jarvice-system"
-                # global override_yaml_values take precedence over cluster
-                # override_yaml_file (override_yaml_file ignored if not found)
-                override_yaml_file = "override-tf.eks.<region>.<cluster_name>.yaml"  # "override-tf.eks.us-west-2.tf-jarvice-downstream.yaml"
 
-                override_yaml_values = <<EOF
-# override_yaml_values - takes precedence over override_yaml_file and
-# global override_yaml_values
+                # global values_yaml take precedence over cluster
+                # values_file (values_file ignored if not found)
+                values_file = "override-tf.eks.<region>.<cluster_name>.yaml"  # "override-tf.eks.us-west-2.tf-jarvice-downstream.yaml"
+
+                values_yaml = <<EOF
+# values_yaml - takes precedence over values_file and global values_yaml
 
 jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
@@ -321,6 +522,14 @@ jarvice:
   #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
+
+  #JARVICE_MAIL_SERVER: jarvice-smtpd:25
+  #JARVICE_MAIL_USERNAME: # "mail-username"
+  #JARVICE_MAIL_PASSWORD: # "Pass1234"
+  #JARVICE_MAIL_ADMINS: # "admin1@my-domain.com,admin2@my-domain.com"
+  #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 EOF
             }
         }
@@ -337,16 +546,22 @@ aks = {
 
         # Visit the following link for service principal creation information:
         # https://github.com/nimbix/jarvice-helm/blob/testing/Terraform.md#creating-a-service-principal-using-the-azure-cli
-        service_principal_client_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-        service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        auth = {
+            service_principal_client_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+            service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        }
 
-        cluster_name = "tf-jarvice"
-        location = "Central US"
-        availability_zones = ["1"]
+        meta = {
+            cluster_name = "tf-jarvice"
+            kubernetes_version = "1.16"
 
-        kubernetes_version = "1.15.12"
+            ssh_public_key = null  # global setting used if null specified
+        }
 
-        ssh_public_key = null  # global setting used if null specified
+        location = {
+            region = "Central US"
+            zones = ["1"]
+        }
 
         # Visit the following link for Azure node size specs:
         # https://docs.microsoft.com/en-us/azure/cloud-services/cloud-services-sizes-specs
@@ -373,15 +588,15 @@ aks = {
 
         helm = {
             jarvice = {
-                version = "./"
+                # version = "./"  # Uncomment to override global version
                 namespace = "jarvice-system"
-                # global override_yaml_values take precedence over cluster
-                # override_yaml_file (override_yaml_file ignored if not found)
-                override_yaml_file = "override-tf.aks.<location>.<cluster_name>.yaml"  # "override-tf.aks.centralus.tf-jarvice.yaml"
 
-                override_yaml_values = <<EOF
-# override_yaml_values - takes precedence over override_yaml_file and
-# global override_yaml_values
+                # global values_yaml take precedence over cluster
+                # values_file (values_file ignored if not found)
+                values_file = "override-tf.aks.<region>.<cluster_name>.yaml"  # "override-tf.aks.centralus.tf-jarvice.yaml"
+
+                values_yaml = <<EOF
+# values_yaml - takes precedence over values_file and global values_yaml
 
 #jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
@@ -398,6 +613,14 @@ aks = {
   #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
+
+  #JARVICE_MAIL_SERVER: jarvice-smtpd:25
+  #JARVICE_MAIL_USERNAME: # "mail-username"
+  #JARVICE_MAIL_PASSWORD: # "Pass1234"
+  #JARVICE_MAIL_ADMINS: # "admin1@my-domain.com,admin2@my-domain.com"
+  #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 EOF
             }
         }
@@ -407,16 +630,22 @@ EOF
 
         # Visit the following link for service principal creation information:
         # https://github.com/nimbix/jarvice-helm/blob/testing/Terraform.md#creating-a-service-principal-using-the-azure-cli
-        service_principal_client_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-        service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        auth = {
+            service_principal_client_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+            service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        }
 
-        cluster_name = "tf-jarvice-downstream"
-        location = "Central US"
-        availability_zones = ["1"]
+        meta = {
+            cluster_name = "tf-jarvice-downstream"
+            kubernetes_version = "1.16"
 
-        kubernetes_version = "1.15.12"
+            ssh_public_key = null  # global setting used if null specified
+        }
 
-        ssh_public_key = null  # global setting used if null specified
+        location = {
+            region = "Central US"
+            zones = ["1"]
+        }
 
         # Visit the following link for Azure node size specs:
         # https://docs.microsoft.com/en-us/azure/cloud-services/cloud-services-sizes-specs
@@ -443,15 +672,15 @@ EOF
 
         helm = {
             jarvice = {
-                version = "./"
+                # version = "./"  # Uncomment to override global version
                 namespace = "jarvice-system"
-                # global override_yaml_values take precedence over cluster
-                # override_yaml_file (override_yaml_file ignored if not found)
-                override_yaml_file = "override-tf.aks.<location>.<cluster_name>.yaml"  # "override-tf.aks.centralus.tf-jarvice-downstream.yaml"
 
-                override_yaml_values = <<EOF
-# override_yaml_values - takes precedence over override_yaml_file and
-# global override_yaml_values
+                # global values_yaml take precedence over cluster
+                # values_file (values_file ignored if not found)
+                values_file = "override-tf.aks.<region>.<cluster_name>.yaml"  # "override-tf.aks.centralus.tf-jarvice-downstream.yaml"
+
+                values_yaml = <<EOF
+# values_yaml - takes precedence over values_file and global values_yaml
 
 jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
@@ -468,6 +697,14 @@ jarvice:
   #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
+
+  #JARVICE_MAIL_SERVER: jarvice-smtpd:25
+  #JARVICE_MAIL_USERNAME: # "mail-username"
+  #JARVICE_MAIL_PASSWORD: # "Pass1234"
+  #JARVICE_MAIL_ADMINS: # "admin1@my-domain.com,admin2@my-domain.com"
+  #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
+  #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 EOF
             }
         }

@@ -1,10 +1,9 @@
 # deploy.tf - GKE module kubernetes/helm components deployment for JARVICE
 
-module "helm" {
-    source = "../helm"
-
-    # Traefik settings
-    traefik_values = <<EOF
+locals {
+    charts = {
+        "traefik" = {
+            "values" = <<EOF
 replicas: 2
 memoryRequest: 1Gi
 memoryLimit: 1Gi
@@ -13,9 +12,11 @@ cpuLimit: 1
 
 nodeSelector:
   kubernetes.io/arch: "amd64"
-  #node-role.kubernetes.io/jarvice-system: "true"
   node-role.jarvice.io/jarvice-system: "true"
 tolerations:
+  - key: node-role.jarvice.io/jarvice-system
+    effect: NoSchedule
+    operator: Exists
   - key: node-role.kubernetes.io/jarvice-system
     effect: NoSchedule
     operator: Exists
@@ -33,10 +34,18 @@ dashboard:
 rbac:
   enabled: true
 EOF
+        }
+    }
+}
+
+module "helm" {
+    source = "../helm"
+
+    charts = local.charts
 
     # JARVICE settings
-    jarvice = merge(var.cluster.helm.jarvice, {"override_yaml_file"="${local.jarvice_override_yaml_file}"})
+    jarvice = merge(var.cluster.helm.jarvice, {"values_file"="${local.jarvice_values_file}"})
     global = var.global.helm.jarvice
-    cluster_override_yaml_values = local.cluster_override_yaml_values
+    cluster_values_yaml = local.cluster_values_yaml
 }
 

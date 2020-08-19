@@ -3,24 +3,12 @@
 variable "global" {
     description = "Global Cluster Settings"
     type = object({
-        ssh_public_key = string
+        meta = map(string)
 
-        helm = object({
-            jarvice = map(string)
-        })
+        helm = map(
+            map(string)
+        )
     })
-    default = {
-        ssh_public_key = "~/.ssh/id_rsa.pub"
-
-        helm = {
-            jarvice = {
-                override_yaml_values = <<EOF
-# global override_yaml_values - Uncomment or add any values that should be
-# applied to all defined clusters.
-EOF
-            }
-        }
-    }
 }
 
 variable "cluster" {
@@ -28,16 +16,13 @@ variable "cluster" {
     type = object({
         enabled = bool
 
-        service_principal_client_id = string
-        service_principal_client_secret = string
+        auth = map(string)
+        meta = map(string)
 
-        cluster_name = string
-        location = string
-        availability_zones = list(string)
-
-        kubernetes_version = string
-
-        ssh_public_key = string
+        location = object({
+            region = string
+            zones = list(string)
+        })
 
         system_node_pool = object({
             nodes_type = string
@@ -51,9 +36,9 @@ variable "cluster" {
             nodes_max = number
         }))
 
-        helm = object({
-            jarvice = map(string)
-        })
+        helm = map(
+            map(string)
+        )
     })
 }
 

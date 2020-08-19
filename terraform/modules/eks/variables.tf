@@ -1,13 +1,13 @@
-# variables.tf - AKS module variable definitions
+# variables.tf - EKS module variable definitions
 
 variable "global" {
     description = "Global Cluster Settings"
     type = object({
-        ssh_public_key = string
+        meta = map(string)
 
-        helm = object({
-            jarvice = map(string)
-        })
+        helm = map(
+            map(string)
+        )
     })
 }
 
@@ -16,16 +16,13 @@ variable "cluster" {
     type = object({
         enabled = bool
 
-        access_key = string
-        secret_key = string
+        auth = map(string)
+        meta = map(string)
 
-        cluster_name = string
-        region = string
-        availability_zones = list(string)
-
-        kubernetes_version = string
-
-        ssh_public_key = string
+        location = object({
+            region = string
+            zones = list(string)
+        })
 
         system_node_pool = object({
             nodes_type = string
@@ -39,9 +36,9 @@ variable "cluster" {
             nodes_max = number
         }))
 
-        helm = object({
-            jarvice = map(string)
-        })
+        helm = map(
+            map(string)
+        )
     })
 }
 

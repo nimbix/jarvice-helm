@@ -30,13 +30,13 @@ data "aws_availability_zones" "available" {
 
 module "vpc" {
     source = "terraform-aws-modules/vpc/aws"
-    version = "~> 2.44.0"
+    version = "~> 2.47.0"
 
-    name = "${var.cluster["cluster_name"]}-vpc"
+    name = "${var.cluster.meta["cluster_name"]}-vpc"
     cidr = "10.0.0.0/16"
-    azs = var.cluster["availability_zones"] != null ? var.cluster["availability_zones"] : data.aws_availability_zones.available.names
+    azs = var.cluster.location["zones"] != null ? distinct(concat(var.cluster.location["zones"], data.aws_availability_zones.available.names)) : data.aws_availability_zones.available.names
     public_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-    private_subnets = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
+    #private_subnets = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
     enable_dns_hostnames = true
 
     #enable_nat_gateway = true
@@ -46,24 +46,36 @@ module "vpc" {
     #external_nat_ip_ids = "${aws_eip.nat.*.id}"
 
     public_subnet_tags = {
-        "kubernetes.io/cluster/${var.cluster["cluster_name"]}" = "shared"
+        "kubernetes.io/cluster/${var.cluster.meta["cluster_name"]}" = "shared"
         "kubernetes.io/role/elb" = "1"
     }
 
-    private_subnet_tags = {
-        "kubernetes.io/cluster/${var.cluster["cluster_name"]}" = "shared"
-        "kubernetes.io/role/internal-elb" = "1"
+    #private_subnet_tags = {
+    #    "kubernetes.io/cluster/${var.cluster.meta["cluster_name"]}" = "shared"
+    #    "kubernetes.io/role/internal-elb" = "1"
+    #}
+}
+
+locals {
+    sg_ports = {
+        "ssh" = {
+            "from_port" = 22,
+            "to_port" = 22,
+            "protocol" = "tcp"
+        }
     }
 }
 
 resource "aws_security_group" "jarvice" {
-    name_prefix = "jarvice"
+    for_each = local.sg_ports
+
+    name_prefix = var.cluster.meta["cluster_name"]
     vpc_id = module.vpc.vpc_id
 
     ingress {
-        from_port = 22
-        to_port = 22
-        protocol = "tcp"
+        from_port = local.sg_ports[each.key]["from_port"]
+        to_port = local.sg_ports[each.key]["to_port"]
+        protocol = local.sg_ports[each.key]["protocol"]
 
         cidr_blocks = [
             "10.0.0.0/8",
@@ -81,8 +93,9 @@ locals {
             "asg_desired_capacity" = 2
             "asg_min_size" = 2
             "asg_max_size" = 2
-            "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/default=true,node-role.kubernetes.io/default=true"
+            "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/default=true"
             "public_ip" = true
+            #"subnets" = var.cluster.location["zones"] != null ? slice(module.vpc.public_subnets, 0, length(var.cluster.location["zones"])) : null
             "key_name" = ""
             "pre_userdata" = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
@@ -98,8 +111,9 @@ EOF
             "asg_desired_capacity" = local.system_nodes_num
             "asg_min_size" = local.system_nodes_num
             "asg_max_size" = local.system_nodes_num * 2
-            "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-system=true,node-role.kubernetes.io/jarvice-system=true --register-with-taints=node-role.kubernetes.io/jarvice-system=true:NoSchedule"
+            "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-system=true --register-with-taints=node-role.jarvice.io/jarvice-system=true:NoSchedule"
             "public_ip" = true
+            #"subnets" = var.cluster.location["zones"] != null ? slice(module.vpc.public_subnets, 0, length(var.cluster.location["zones"])) : null
             "key_name" = ""
             "pre_userdata" = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
@@ -117,8 +131,9 @@ EOF
                 "asg_desired_capacity" = pool.nodes_num
                 "asg_min_size" = pool.nodes_min
                 "asg_max_size" = pool.nodes_max
-                "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-compute=true,node-role.kubernetes.io/jarvice-compute=true --register-with-taints=node-role.kubernetes.io/jarvice-compute=true:NoSchedule"
+                "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-compute=true --register-with-taints=node-role.jarvice.io/jarvice-compute=true:NoSchedule"
                 "public_ip" = true
+                #"subnets" = var.cluster.location["zones"] != null ? slice(module.vpc.public_subnets, 0, length(var.cluster.location["zones"])) : null
                 "key_name" = ""
                 "pre_userdata" = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
@@ -142,7 +157,7 @@ EOF
                         "value" = "true"
                     },
                     {
-                        "key" = "k8s.io/cluster-autoscaler/${var.cluster["cluster_name"]}"
+                        "key" = "k8s.io/cluster-autoscaler/${var.cluster.meta["cluster_name"]}"
                         "propagate_at_launch" = "false"
                         "value" = "true"
                     }
@@ -156,8 +171,8 @@ module "eks" {
     source = "terraform-aws-modules/eks/aws"
     version = "~> 12.2.0"
 
-    cluster_name = var.cluster["cluster_name"]
-    cluster_version = var.cluster["kubernetes_version"]
+    cluster_name = var.cluster.meta["cluster_name"]
+    cluster_version = var.cluster.meta["kubernetes_version"]
 
     vpc_id = module.vpc.vpc_id
     enable_irsa = true
@@ -166,10 +181,10 @@ module "eks" {
     #subnets = module.vpc.private_subnets
 
     worker_groups = concat(local.default_nodes, local.system_nodes, local.compute_nodes)
-    worker_additional_security_group_ids = [aws_security_group.jarvice.id]
+    worker_additional_security_group_ids = [for sg in aws_security_group.jarvice : sg.id]
 
     tags = {
-        cluster_name = var.cluster["cluster_name"]
+        cluster_name = var.cluster.meta["cluster_name"]
     }
 }
 
@@ -216,7 +231,7 @@ data "aws_iam_policy_document" "cluster_autoscaler" {
 }
 
 resource "aws_iam_policy" "cluster_autoscaler" {
-    name_prefix = "cluster-autoscaler"
+    name_prefix = "${var.cluster.meta["cluster_name"]}-cluster-autoscaler"
     description = "EKS cluster-autoscaler policy for cluster ${module.eks.cluster_id}"
     policy = data.aws_iam_policy_document.cluster_autoscaler.json
 }
@@ -228,10 +243,10 @@ locals {
 
 module "iam_assumable_role_admin" {
     source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-    version = "~> 2.12.0"
+    version = "~> 2.13.0"
 
     create_role = true
-    role_name = "${var.cluster["cluster_name"]}-cluster-autoscaler"
+    role_name = "${var.cluster.meta["cluster_name"]}-cluster-autoscaler"
     provider_url = replace(module.eks.cluster_oidc_issuer_url, "https://", "")
     role_policy_arns = [aws_iam_policy.cluster_autoscaler.arn]
     oidc_fully_qualified_subjects = ["system:serviceaccount:${local.k8s_service_account_namespace}:${local.k8s_service_account_name}"]

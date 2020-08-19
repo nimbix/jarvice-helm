@@ -1,34 +1,10 @@
 # variables.tf - helm module variable definitions
 
-#variable "values" {
-#    type = map(
-#        list(string)
-#    )
-#}
-
-variable "cluster_autoscaler_enabled" {
-    type = bool
-    default = false
-}
-
-variable "cluster_autoscaler_values" {
-    type = string
-    default = null
-}
-
-variable "external_dns_values" {
-    type = string
-    default = null
-}
-
-variable "traefik_enabled" {
-    type = bool
-    default = true
-}
-
-variable "traefik_values" {
-    type = string
-    default = null
+variable "charts" {
+    type = map(
+        map(string)
+    )
+    default = {}
 }
 
 variable "global" {
@@ -39,7 +15,7 @@ variable "jarvice" {
     type = map(string)
 }
 
-variable "cluster_override_yaml_values" {
+variable "cluster_values_yaml" {
     type = string
 }
 

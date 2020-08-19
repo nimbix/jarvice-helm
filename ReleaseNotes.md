@@ -60,6 +60,7 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 - JARVICE manages pull secrets automatically for user apps, across any clusters it manages; if the user logs in to a Docker regsitry successfully in the web portal, JARVICE automatically generates and uses a pull secret for all associated app containers owned by that user; if the user logs out, JARVICE removes the pull secret.  Creation, patching, and removal of pull secrets happens at job submission time only.  These pull secrets are managed in the "jobs" namespace (controlled by `${JARVICE_JOBS_NAMESPACE}`).  As a best practice, once an app is set to public, the system administrator should create a permanent pull secret named `jarvice-docker-n`, where *n* is an integer, 0-9, in the `${JARVICE_JOBS_NAMESPACE}`.  This way, if the app owner logs out of the Docker registry for that container, the public app can still be used.
 - Creating a new app target as a system admin switched into the *None* zone and then attempting to click on that app card may result in a pop-up error indicating that the application is disabled because there are no valid values in its machine list; refresh the browser page to clear this error.
 - The *Build* function may not be supported on some managed Kubernetes systems such as Amazon EKS, resulting in container build failures when used.
+- Attempting to create an app target with an ID that already exists results in undefined behavior.
 
 ### Resource Limits and Cost Controls
 

@@ -7,8 +7,7 @@ terraform {
 }
 
 resource "helm_release" "cluster_autoscaler" {
-    #count = var.cluster_autoscaler_values != null ? 1 : 0
-    count = var.cluster_autoscaler_enabled == true ? 1 : 0
+    count = contains(keys(var.charts), "cluster-autoscaler") ? 1 : 0
 
     name = "cluster-autoscaler"
     repository = "https://kubernetes-charts.storage.googleapis.com"
@@ -19,11 +18,11 @@ resource "helm_release" "cluster_autoscaler" {
     render_subchart_notes = false
     timeout = 600
 
-    values = [var.cluster_autoscaler_values]
+    values = [var.charts["cluster-autoscaler"]["values"]]
 }
 
 resource "helm_release" "external_dns" {
-    count = var.external_dns_values != null ? 1 : 0
+    count = contains(keys(var.charts), "external-dns") ? 1 : 0
 
     name = "external-dns"
     repository = "https://charts.bitnami.com/bitnami"
@@ -34,12 +33,11 @@ resource "helm_release" "external_dns" {
     render_subchart_notes = false
     timeout = 600
 
-    values = [var.external_dns_values]
+    values = [var.charts["external-dns"]["values"]]
 }
 
 resource "helm_release" "traefik" {
-    #count = var.traefik_values != null ? 1 : 0
-    count = var.traefik_enabled == true ? 1 : 0
+    count = contains(keys(var.charts), "traefik") ? 1 : 0
 
     name = "traefik"
     repository = "https://kubernetes-charts.storage.googleapis.com"
@@ -51,14 +49,14 @@ resource "helm_release" "traefik" {
     render_subchart_notes = false
     timeout = 600
 
-    values = [var.traefik_values]
+    values = [var.charts["traefik"]["values"]]
 }
 
 resource "helm_release" "jarvice" {
     name = "jarvice"
-    repository = local.jarvice_chart_is_dir ? null : "https://jarvice-chartmuseum.k8s.dal1.jarvice.io"
-    chart = local.jarvice_chart_is_dir ? pathexpand(var.jarvice["version"]) : "jarvice"
-    version = local.jarvice_chart_is_dir ? null : var.jarvice["version"]
+    repository = local.jarvice_chart_is_dir ? null : local.jarvice_chart_repository
+    chart = local.jarvice_chart_is_dir ? pathexpand(local.jarvice_chart_version) : "jarvice"
+    version = local.jarvice_chart_is_dir ? null : local.jarvice_chart_version
 
     namespace = var.jarvice["namespace"]
     create_namespace = true
@@ -69,11 +67,11 @@ resource "helm_release" "jarvice" {
     wait = false
 
     values = [
-        fileexists("values.yaml") ? "# values.yaml\n\n${file("values.yaml")}" : "",
-        fileexists(var.jarvice["override_yaml_file"]) ? "# ${var.jarvice["override_yaml_file"]}\n\n${file("${var.jarvice["override_yaml_file"]}")}" : "",
-        "${var.global["override_yaml_values"]}",
-        "${var.jarvice["override_yaml_values"]}",
-        "${var.cluster_override_yaml_values}"
+        fileexists(var.global["values_file"]) ? "# ${var.global["values_file"]}\n\n${file(var.global["values_file"])}" : "",
+        fileexists(var.jarvice["values_file"]) ? "# ${var.jarvice["values_file"]}\n\n${file("${var.jarvice["values_file"]}")}" : "",
+        "${var.global["values_yaml"]}",
+        "${var.jarvice["values_yaml"]}",
+        "${var.cluster_values_yaml}"
     ]
 
     depends_on = [helm_release.traefik]
