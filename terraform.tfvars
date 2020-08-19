@@ -4,7 +4,7 @@
 #
 # See the JARVICE Terraform Configuration documentation for more information
 # on terraform variable definitions and JARVICE helm chart values:
-# https://github.com/nimbix/jarvice-helm/blob/testing/Terraform.md#terraform-configuration
+# https://github.com/nimbix/jarvice-helm/blob/master/Terraform.md#terraform-configuration
 
 #######################
 ### Global settings ###
