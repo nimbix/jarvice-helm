@@ -660,18 +660,21 @@ specific node for JARVICE application builds, add `k8s-worker-04` to the
 node list:
 ```bash
 $ NODES="k8s-worker-00 k8s-worker-01 k8s-worker-02 k8s-worker-03"
+$ kubectl label nodes $NODES node-role.jarvice.io/jarvice-system=true
 $ kubectl label nodes $NODES node-role.kubernetes.io/jarvice-system=true
 ```
 
 If you will be designating a specific `jarvice-dockerbuild` node:
 ```bash
 $ NODES="k8s-worker-04"
+$ kubectl label nodes $NODES node-role.jarvice.io/jarvice-dockerbuild=true
 $ kubectl label nodes $NODES node-role.kubernetes.io/jarvice-dockerbuild=true
 ```
 
 Label the `jarvice-compute` nodes:
 ```bash
 $ NODES="k8s-worker-10 k8s-worker-11"
+$ kubectl label nodes $NODES node-role.jarvice.io/jarvice-compute=true
 $ kubectl label nodes $NODES node-role.kubernetes.io/jarvice-compute=true
 ```
 
@@ -687,20 +690,20 @@ $ kubectl get nodes
 
 Taint the `jarvice-system` nodes:
 ```bash
-$ kubectl taint nodes -l node-role.kubernetes.io/jarvice-system=true \
-    node-role.kubernetes.io/jarvice-system=true:NoSchedule
+$ kubectl taint nodes -l node-role.jarvice.io/jarvice-system=true \
+    node-role.jarvice.io/jarvice-system=true:NoSchedule
 ```
 
 Taint the `jarvice-dockerbuild` nodes:
 ```bash
-$ kubectl taint nodes -l node-role.kubernetes.io/jarvice-dockerbuild=true \
-    node-role.kubernetes.io/jarvice-dockerbuild=true:NoSchedule
+$ kubectl taint nodes -l node-role.jarvice.io/jarvice-dockerbuild=true \
+    node-role.jarvice.io/jarvice-dockerbuild=true:NoSchedule
 ```
 
 Taint the `jarvice-compute` nodes:
 ```bash
-$ kubectl taint nodes -l node-role.kubernetes.io/jarvice-compute=true \
-    node-role.kubernetes.io/jarvice-compute=true:NoSchedule
+$ kubectl taint nodes -l node-role.jarvice.io/jarvice-compute=true \
+    node-role.jarvice.io/jarvice-compute=true:NoSchedule
 ```
 
 ------------------------------------------------------------------------------

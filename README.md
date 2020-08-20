@@ -420,6 +420,7 @@ do not run on particular nodes.
 The following example commands show how one may label kubernetes nodes so
 that JARVICE can assign pods to them with node selectors:
 ```bash
+$ kubectl label nodes <node_name> node-role.jarvice.io/jarvice-system=true
 $ kubectl label nodes <node_name> node-role.kubernetes.io/jarvice-system=true
 ```
 
@@ -438,16 +439,16 @@ individual component node selectors are not additive.  They will override
 For example, if both `jarvice.nodeSelector` and
 `jarvice_dockerpull.nodeSelector` are specified on the `helm` command line:
 ```bash
---set-string jarvice.nodeSelector="\{\"node-role.kubernetes.io/jarvice-system\": \"true\"\}"
---set-string jarvice_dockerpull.nodeSelector="\{\"node-role.kubernetes.io/jarvice-dockerpull\": \"true\"\}"
+--set-string jarvice.nodeSelector="\{\"node-role.jarvice.io/jarvice-system\": \"true\"\}"
+--set-string jarvice_dockerpull.nodeSelector="\{\"node-role.jarvice.io/jarvice-dockerpull\": \"true\"\}"
 ```
 
 In the example above,
-`node-role.kubernetes.io/jarvice-system` will not be
+`node-role.jarvice.io/jarvice-system` will not be
 applied to `jarvice_dockerpull.nodeSelector`.  In the case that both node
 selectors are desired for `jarvice_dockerpull.nodeSelector`, use:
 ```bash
---set-string jarvice_dockerpull.nodeSelector="\{\"node-role.kubernetes.io/jarvice-system\": \"true\"\, \"node-role.kubernetes.io/jarvice-dockerpull\": \"true\"\}"
+--set-string jarvice_dockerpull.nodeSelector="\{\"node-role.jarvice.io/jarvice-system\": \"true\"\, \"node-role.jarvice.io/jarvice-dockerpull\": \"true\"\}"
 ```
 
 For more information on assigning kubernetes node labels and using node
@@ -461,13 +462,13 @@ application images into JARVICE, it may be advantageous that a node in the
 kubernetes cluster be labeled for both of those operations simultaneously.
 Use commands similar to the following to do so:
 ```bash
-$ kubectl label nodes <node_name> node-role.kubernetes.io/jarvice-dockerbuild=true
-$ kubectl label nodes <node_name> node-role.kubernetes.io/jarvice-dockerpull=true
+$ kubectl label nodes <node_name> node-role.jarvice.io/jarvice-dockerbuild=true
+$ kubectl label nodes <node_name> node-role.jarvice.io/jarvice-dockerpull=true
 ```
 
 Or, it may be desirable to simply combine those into a single label:
 ```bash
-$ kubectl label nodes <node_name> node-role.kubernetes.io/jarvice-dockerbuildpull=true
+$ kubectl label nodes <node_name> node-role.jarvice.io/jarvice-dockerbuildpull=true
 ```
 
 To take advantage of such a setup, set `jarvice_dockerbuild.nodeSelector` and
@@ -478,11 +479,12 @@ To take advantage of such a setup, set `jarvice_dockerbuild.nodeSelector` and
 The following demonstrates how one might label nodes for `jarvice-compute`
 pods:
 ```bash
+$ kubectl label nodes <node_name> node-role.jarvice.io/jarvice-compute=true
 $ kubectl label nodes <node_name> node-role.kubernetes.io/jarvice-compute=true
 ```
 
 After setting the `jarvice-compute` labels, it will be necessary to add a
-matching `node-role.kubernetes.io/jarvice-compute=true` string to the `properties`
+matching `node-role.jarvice.io/jarvice-compute=true` string to the `properties`
 field of the machine definitions found in the JARVICE console's
 "Administration" tab.  This string will be used as a kubernetes node selector
 when the JARVICE scheduler assignings jobs.
@@ -505,12 +507,13 @@ each individual JARVICE component.  These can be set in a values
 `override.yaml` file or on the `helm` command line.
 
 By default `jarvice.tolerations` tolerates the `NoSchedule` effect for the
-key `node-role.kubernetes.io/jarvice-system`.  A `kubectl` command line
+keys `node-role.jarvice.io/jarvice-system` and
+`node-role.kubernetes.io/jarvice-system`.  A `kubectl` command line
 similar to the following could be used to taint nodes already labeled
-with `node-role.kubernetes.io/jarvice-system`:
+with `node-role.jarvice.io/jarvice-system`:
 ```bash
-$ kubectl taint nodes -l node-role.kubernetes.io/jarvice-system=true \
-    node-role.kubernetes.io/jarvice-system=true:NoSchedule
+$ kubectl taint nodes -l node-role.jarvice.io/jarvice-system=true \
+    node-role.jarvice.io/jarvice-system=true:NoSchedule
 ```
 
 This is a quick and dirty way to list node taints after adding them:
@@ -525,10 +528,10 @@ command line could be used to override the default tolerations for the
 ```bash
 $ helm upgrade jarvice ./jarvice-helm --namespace jarvice-system --install \
     --set jarvice_api.tolerations[0].effect=NoSchedule \
-    --set jarvice_api.tolerations[0].key=node-role.kubernetes.io/jarvice-system \
+    --set jarvice_api.tolerations[0].key=node-role.jarvice.io/jarvice-system \
     --set jarvice_api.tolerations[0].operator=Exists \
     --set jarvice_api.tolerations[1].effect=NoSchedule \
-    --set jarvice_api.tolerations[1].key=node-role.kubernetes.io/jarvice-api \
+    --set jarvice_api.tolerations[1].key=node-role.jarvice.io/jarvice-api \
     --set jarvice_api.tolerations[1].operator=Exists
     ...
 ```
@@ -540,15 +543,16 @@ https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 #### `jarvice-compute` taints and pod tolerations
 
 The following would taint `jarvice-compute` nodes which are already labeled
-with `node-role.kubernetes.io/jarvice-compute`:
+with `node-role.jarvice.io/jarvice-compute`:
 ```bash
-$ kubectl taint nodes -l node-role.kubernetes.io/jarvice-compute=true \
-    node-role.kubernetes.io/jarvice-compute=true:NoSchedule
+$ kubectl taint nodes -l node-role.jarvice.io/jarvice-compute=true \
+    node-role.jarvice.io/jarvice-compute=true:NoSchedule
 ```
 
 By default, the JARVICE job scheduler creates job pods that tolerate the
-`NoSchedule` effect on nodes with the `node-role.kubernetes.io/jarvice-compute`
-taint.  This is currently not configurable.
+`NoSchedule` effect on nodes with the `node-role.jarvice.io/jarvice-compute`
+and `node-role.jarvice.io/jarvice-compute` taints.  This is currently not
+configurable.
 Tolerations for `jarvice-compute` will be made configurable in future
 releases of JARVICE.
 
