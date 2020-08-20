@@ -102,13 +102,25 @@ $HELM upgrade metallb stable/metallb \
     --set controller.tolerations[0]."effect"="NoSchedule" \
     --set controller.tolerations[0]."operator"="Exists" \
     \
-    --set speaker.tolerations[0]."key"="node-role\.kubernetes\.io/jarvice-system" \
+    --set controller.tolerations[1]."key"="node-role\.jarvice\.io/jarvice-system" \
+    --set controller.tolerations[1]."effect"="NoSchedule" \
+    --set controller.tolerations[1]."operator"="Exists" \
+    \
+    --set speaker.tolerations[0]."key"="node-role\.jarvice\.io/jarvice-system" \
     --set speaker.tolerations[0]."effect"="NoSchedule" \
     --set speaker.tolerations[0]."operator"="Exists" \
     \
-    --set speaker.tolerations[1]."key"="node-role\.kubernetes\.io/jarvice-compute" \
+    --set speaker.tolerations[1]."key"="node-role\.jarvice\.io/jarvice-compute" \
     --set speaker.tolerations[1]."effect"="NoSchedule" \
     --set speaker.tolerations[1]."operator"="Exists" \
+    \
+    --set speaker.tolerations[2]."key"="node-role\.kubernetes\.io/jarvice-system" \
+    --set speaker.tolerations[2]."effect"="NoSchedule" \
+    --set speaker.tolerations[2]."operator"="Exists" \
+    \
+    --set speaker.tolerations[3]."key"="node-role\.kubernetes\.io/jarvice-compute" \
+    --set speaker.tolerations[3]."effect"="NoSchedule" \
+    --set speaker.tolerations[3]."operator"="Exists" \
     \
     --set configInline.address-pools[0].name=default \
     --set configInline.address-pools[0].protocol=layer2 \

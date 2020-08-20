@@ -85,11 +85,15 @@ $HELM upgrade metrics-server stable/metrics-server \
     ${version_tag:+--set image.tag=$version_tag} \
     \
     --set nodeSelector."kubernetes\.io/arch"=amd64 \
-    --set-string nodeSelector."node-role\.kubernetes\.io/jarvice-system"="true" \
+    --set-string nodeSelector."node-role\.jarvice\.io/jarvice-system"="true" \
     \
-    --set tolerations[0]."key"="node-role\.kubernetes\.io/jarvice-system" \
+    --set tolerations[0]."key"="node-role\.jarvice\.io/jarvice-system" \
     --set tolerations[0]."effect"="NoSchedule" \
     --set tolerations[0]."operator"="Exists" \
+    \
+    --set tolerations[1]."key"="node-role\.kubernetes\.io/jarvice-system" \
+    --set tolerations[1]."effect"="NoSchedule" \
+    --set tolerations[1]."operator"="Exists" \
     \
     --set priorityClassName=system-node-critical  \
     \

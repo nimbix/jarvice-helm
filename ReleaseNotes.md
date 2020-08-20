@@ -42,7 +42,7 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 ### Deployments with Terraform
 
-- Compute node labels will have `true` as the value rather than blank, so ensure machine definitions are correct.  For example, to target work to compute nodes, use `node-role.kubernetes.io/jarvice-compute=true` in the *properties* field of the machine definition.
+- Compute node labels will have `true` as the value rather than blank, so ensure machine definitions are correct.  For example, to target work to compute nodes, use `node-role.jarvice.io/jarvice-compute=true` in the *properties* field of the machine definition.
 - Persistent volumes **do not** persist after the cluster is destroyed with the `terraform destroy` command.
 
 

@@ -87,7 +87,7 @@ k8s = {
   # If deploying "downstream" cluster, be sure to set JARVICE_SCHED_SERVER_KEY
   #JARVICE_SCHED_SERVER_KEY: # "jarvice-downstream:Pass1234"
 
-  # JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
+  #JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
   #JARVICE_JOBS_DOMAIN: # my-domain.com  # (host based ingress)
   #JARVICE_JOBS_LB_SERVICE: false
 
@@ -157,7 +157,7 @@ jarvice:
   # If deploying "downstream" cluster, be sure to set JARVICE_SCHED_SERVER_KEY
   #JARVICE_SCHED_SERVER_KEY: # "jarvice-downstream:Pass1234"
 
-  # JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
+  #JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
   #JARVICE_JOBS_DOMAIN: # my-domain.com  # (host based ingress)
   #JARVICE_JOBS_LB_SERVICE: false
 
