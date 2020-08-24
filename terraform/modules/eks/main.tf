@@ -86,6 +86,8 @@ resource "aws_security_group" "jarvice" {
 }
 
 locals {
+    subnets = var.cluster.location["zones"] != null ? slice(module.vpc.public_subnets, 0, length(var.cluster.location["zones"])) : null
+
     default_nodes = [
         {
             "name" = "default",
@@ -95,7 +97,7 @@ locals {
             "asg_max_size" = 2
             "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/default=true"
             "public_ip" = true
-            #"subnets" = var.cluster.location["zones"] != null ? slice(module.vpc.public_subnets, 0, length(var.cluster.location["zones"])) : null
+            "subnets" = local.subnets
             "key_name" = ""
             "pre_userdata" = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
@@ -113,7 +115,7 @@ EOF
             "asg_max_size" = local.system_nodes_num * 2
             "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-system=true --register-with-taints=node-role.jarvice.io/jarvice-system=true:NoSchedule"
             "public_ip" = true
-            #"subnets" = var.cluster.location["zones"] != null ? slice(module.vpc.public_subnets, 0, length(var.cluster.location["zones"])) : null
+            "subnets" = local.subnets
             "key_name" = ""
             "pre_userdata" = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
@@ -133,7 +135,7 @@ EOF
                 "asg_max_size" = pool.nodes_max
                 "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-compute=true --register-with-taints=node-role.jarvice.io/jarvice-compute=true:NoSchedule"
                 "public_ip" = true
-                #"subnets" = var.cluster.location["zones"] != null ? slice(module.vpc.public_subnets, 0, length(var.cluster.location["zones"])) : null
+                "subnets" = local.subnets
                 "key_name" = ""
                 "pre_userdata" = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
@@ -174,11 +176,13 @@ module "eks" {
     cluster_name = var.cluster.meta["cluster_name"]
     cluster_version = var.cluster.meta["kubernetes_version"]
 
+    #config_output_path = pathexpand(local.kube_config["config_path"])
+    write_kubeconfig = false
+
     vpc_id = module.vpc.vpc_id
     enable_irsa = true
 
     subnets = module.vpc.public_subnets
-    #subnets = module.vpc.private_subnets
 
     worker_groups = concat(local.default_nodes, local.system_nodes, local.compute_nodes)
     worker_additional_security_group_ids = [for sg in aws_security_group.jarvice : sg.id]
