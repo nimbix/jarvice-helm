@@ -387,7 +387,7 @@ eks = {
 
         location = {
             region = "us-west-2"
-            zones = null
+            zones = ["us-west-2a"]
         }
 
         # Visit the following link for AWS instance type specs:
@@ -469,7 +469,7 @@ EOF
 
         location = {
             region = "us-west-2"
-            zones = null
+            zones = ["us-west-2a"]
         }
 
         # Visit the following link for AWS instance type specs:
