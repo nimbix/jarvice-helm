@@ -57,10 +57,10 @@ a PoC cluster installation.
     - [Deploy a pod network plugin/add-on](#deploy-a-pod-network-plugin-add-on)
         - [Kube-Router](#kube-router)
             - [Verify Kube-Router deployment](#verify-kube-router-deployment)
-            - [Updating firewall settings for Kube-Router](#updating-firewall-settings-for-kube-router)
+            - [Update firewall settings for Kube-Router](#update-firewall-settings-for-kube-router)
         - [Weave Net](#weave-net)
             - [Verify Weave Net deployment](#verify-weave-net-deployment)
-            - [Updating firewall settings for Weave Net](#updating-firewall-settings-for-weave-net)
+            - [Update firewall settings for Weave Net](#update-firewall-settings-for-weave-net)
     - [Add master nodes](#add-master-nodes)
     - [Add worker nodes](#add-worker-nodes)
     - [Label and taint kubernetes worker nodes](#label-and-taint-kubernetes-worker-nodes)
@@ -630,7 +630,7 @@ initial kubernetes master node is in the `Ready` state:
 $ kubectl get nodes
 ```
 
-##### Updating firewall settings for Kube-Router
+##### Update firewall settings for Kube-Router
 
 On CentOS nodes which have `firewalld` enabled, it will be necessary to open
 up the appropriate port.
@@ -669,7 +669,7 @@ initial kubernetes master node is in the `Ready` state:
 $ kubectl get nodes
 ```
 
-##### Updating firewall settings for Weave Net
+##### Update firewall settings for Weave Net
 
 On CentOS nodes which have `firewalld` enabled, it will be necessary to open
 up the appropriate port.
