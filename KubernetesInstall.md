@@ -45,7 +45,7 @@ a PoC cluster installation.
     - [HAProxy (control plane endpoint)](#haproxy-control-plane-endpoint)
         - [Control plane endpoint on a kubernetes master node](#control-plane-endpoint-on-a-kubernetes-master-node)
     - [Docker and kubeadm](#docker-and-kubeadm)
-        - [Updating firewall settings](#updating-firewall-settings)
+        - [Update firewall settings](#update-firewall-settings)
             - [Ports on master nodes](#ports-on-master-nodes)
             - [Ports on worker nodes](#ports-on-worker-nodes)
 * [Cluster Stand Up](#cluster-stand-up)
@@ -479,7 +479,7 @@ installing the packages.  The `install-kubeadm` script will also disable swap
 on the system and apply `sysctl` updates.
 On CentOS, it will also disable SELinux.
 
-#### Updating firewall settings
+#### Update firewall settings
 
 On CentOS nodes which have `firewalld` enabled, it will be necessary to open
 up the appropriate ports.
