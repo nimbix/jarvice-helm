@@ -53,7 +53,7 @@ EOF
 ### Kubernetes settings ###
 ###########################
 k8s = {
-    "k8s_cluster_00" = {
+    k8s_cluster_00 = {
         enabled = false
 
         auth = {
@@ -123,7 +123,7 @@ EOF
             }
         }
     },
-    "k8s_cluster_01" = {
+    k8s_cluster_01 = {
         enabled = false
 
         auth = {
@@ -199,7 +199,7 @@ EOF
 ### Google Cloud GKE Settings ###
 #################################
 gke = {
-    "gke_cluster_00" = {
+    gke_cluster_00 = {
         enabled = false
 
         auth = {
@@ -225,22 +225,22 @@ gke = {
             nodes_type = null  # auto-set if null specified
             nodes_num = null   # auto-set if null specified
         }
-        compute_node_pools = [
-            {
-                nodes_type = "n1-standard-32"
+        compute_node_pools = {
+            jxecompute00 = {
+                nodes_type = "n1-standard-64"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
             },
-            #{
-            #    nodes_type = "n1-standard-32"
+            #jxecompute01 = {
+            #    nodes_type = "n1-standard-64"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
             #    nodes_max = 16
             #},
-        ]
+        }
 
         helm = {
             jarvice = {
@@ -281,7 +281,7 @@ EOF
             }
         }
     },
-    "gke_cluster_01" = {
+    gke_cluster_01 = {
         enabled = false
 
         auth = {
@@ -307,22 +307,22 @@ EOF
             nodes_type = null  # auto-set if null specified
             nodes_num = null   # auto-set if null specified
         }
-        compute_node_pools = [
-            {
-                nodes_type = "n1-standard-32"
+        compute_node_pools = {
+            jxecompute00 = {
+                nodes_type = "n1-standard-64"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
             },
-            #{
-            #    nodes_type = "n1-standard-32"
+            #jxecompute01 = {
+            #    nodes_type = "n1-standard-64"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
             #    nodes_max = 16
             #},
-        ]
+        }
 
         helm = {
             jarvice = {
@@ -370,7 +370,7 @@ EOF
 ### Amazon EKS Settings ###
 ###########################
 eks = {
-    "eks_cluster_00" = {
+    eks_cluster_00 = {
         enabled = false
 
         auth = {
@@ -396,22 +396,22 @@ eks = {
             nodes_type = null  # auto-set if null specified
             nodes_num = null   # auto-set if null specified
         }
-        compute_node_pools = [
-            {
+        compute_node_pools = {
+            jxecompute00 = {
                 nodes_type = "c5.18xlarge"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
             },
-            #{
+            #jxecompute01 = {
             #    nodes_type = "c5.18xlarge"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
             #    nodes_max = 16
             #},
-        ]
+        }
 
         helm = {
             jarvice = {
@@ -452,7 +452,7 @@ EOF
             }
         }
     },
-    "eks_cluster_01" = {
+    eks_cluster_01 = {
         enabled = false
 
         auth = {
@@ -478,22 +478,22 @@ EOF
             nodes_type = null  # auto-set if null specified
             nodes_num = null   # auto-set if null specified
         }
-        compute_node_pools = [
-            {
+        compute_node_pools = {
+            jxecompute00 = {
                 nodes_type = "c5.18xlarge"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
             },
-            #{
+            #jxecompute01 = {
             #    nodes_type = "c5.18xlarge"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
             #    nodes_max = 16
             #},
-        ]
+        }
 
         helm = {
             jarvice = {
@@ -541,7 +541,7 @@ EOF
 ### Azure AKS settings ###
 ##########################
 aks = {
-    "aks_cluster_00" = {
+    aks_cluster_00 = {
         enabled = false
 
         # Visit the following link for service principal creation information:
@@ -569,22 +569,22 @@ aks = {
             nodes_type = null  # auto-set if null specified
             nodes_num = null   # auto-set if null specified
         }
-        compute_node_pools = [
-            {
-                nodes_type = "Standard_D32_v3"
+        compute_node_pools = {
+            jxecompute00 = {
+                nodes_type = "Standard_D48_v3"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
             },
-            #{
-            #    nodes_type = "Standard_D32_v3"
+            #jxecompute01 = {
+            #    nodes_type = "Standard_D48_v3"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
             #    nodes_max = 16
             #},
-        ]
+        }
 
         helm = {
             jarvice = {
@@ -625,7 +625,7 @@ EOF
             }
         }
     },
-    "aks_cluster_01" = {
+    aks_cluster_01 = {
         enabled = false
 
         # Visit the following link for service principal creation information:
@@ -653,22 +653,22 @@ EOF
             nodes_type = null  # auto-set if null specified
             nodes_num = null   # auto-set if null specified
         }
-        compute_node_pools = [
-            {
-                nodes_type = "Standard_D32_v3"
+        compute_node_pools = {
+            jxecompute00 = {
+                nodes_type = "Standard_D48_v3"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
             },
-            #{
-            #    nodes_type = "Standard_D32_v3"
+            #jxecompute01 = {
+            #    nodes_type = "Standard_D48_v3"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
             #    nodes_max = 16
             #},
-        ]
+        }
 
         helm = {
             jarvice = {

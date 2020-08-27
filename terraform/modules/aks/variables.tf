@@ -28,7 +28,7 @@ variable "cluster" {
             nodes_type = string
             nodes_num = number
         })
-        compute_node_pools = list(object({
+        compute_node_pools = map(object({
             nodes_type = string
             nodes_disk_size_gb = number
             nodes_num = number

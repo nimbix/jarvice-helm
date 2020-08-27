@@ -164,21 +164,21 @@ EOF
 }
 
 resource "google_container_node_pool" "jarvice_compute" {
+    for_each = var.cluster["compute_node_pools"]
+
     #provider = google-beta
 
-    count = length(var.cluster["compute_node_pools"])
-
-    name = "jxecompute${count.index}"
+    name = each.key
     location = local.region
     node_locations = local.zones
 
     cluster = google_container_cluster.jarvice.name
     version = local.node_version
 
-    initial_node_count = var.cluster.compute_node_pools[count.index]["nodes_num"]
+    initial_node_count = each.value["nodes_num"]
     autoscaling {
-        min_node_count = var.cluster.compute_node_pools[count.index]["nodes_min"]
-        max_node_count = var.cluster.compute_node_pools[count.index]["nodes_max"]
+        min_node_count = each.value["nodes_min"]
+        max_node_count = each.value["nodes_max"]
     }
 
     management {
@@ -187,8 +187,8 @@ resource "google_container_node_pool" "jarvice_compute" {
     }
 
     node_config {
-        machine_type = var.cluster.compute_node_pools[count.index]["nodes_type"]
-        disk_size_gb = var.cluster.compute_node_pools[count.index]["nodes_disk_size_gb"]
+        machine_type = each.value["nodes_type"]
+        disk_size_gb = each.value["nodes_disk_size_gb"]
         image_type = "UBUNTU"
         #min_cpu_platform = "Intel Skylake"
         #disk_type = "pd-ssd"
@@ -219,7 +219,7 @@ EOF
             }
         ]
 
-        tags = [google_container_cluster.jarvice.name, "jxecompute${count.index}"]
+        tags = [google_container_cluster.jarvice.name, each.key]
     }
 }
 
