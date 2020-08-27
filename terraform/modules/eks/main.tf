@@ -108,7 +108,7 @@ EOF
     ]
     system_nodes = [
         {
-            "name" = "jarvice-system",
+            "name" = "jxesystem",
             "instance_type" = local.system_nodes_type
             "asg_desired_capacity" = local.system_nodes_num
             "asg_min_size" = local.system_nodes_num
@@ -125,9 +125,9 @@ EOF
         }
     ]
     compute_nodes = length(var.cluster["compute_node_pools"]) == 0 ? null : [
-        for index, pool in var.cluster["compute_node_pools"]:
+        for name, pool in var.cluster["compute_node_pools"]:
             {
-                "name" = "jarvice-compute-${index}"
+                "name" = name
                 "instance_type" = pool.nodes_type
                 "root_volume_size" = pool.nodes_disk_size_gb
                 "asg_desired_capacity" = pool.nodes_num

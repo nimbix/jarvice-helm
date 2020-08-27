@@ -61,7 +61,7 @@ resource "azurerm_kubernetes_cluster" "jarvice" {
     }
 
     default_node_pool {
-        name = "jxedefault"
+        name = "default"
         availability_zones = var.cluster.location["zones"]
         node_count = 2
         vm_size = "Standard_B2s"
@@ -123,20 +123,20 @@ resource "azurerm_kubernetes_cluster_node_pool" "jarvice_system" {
 }
 
 resource "azurerm_kubernetes_cluster_node_pool" "jarvice_compute" {
-    count = length(var.cluster["compute_node_pools"])
+    for_each = var.cluster["compute_node_pools"]
 
-    name = "jxecompute${count.index}"
+    name = each.key
     availability_zones = azurerm_kubernetes_cluster.jarvice.default_node_pool[0].availability_zones
     kubernetes_cluster_id = azurerm_kubernetes_cluster.jarvice.id
 
-    vm_size = var.cluster.compute_node_pools[count.index]["nodes_type"]
+    vm_size = each.value["nodes_type"]
     os_type = "Linux"
-    os_disk_size_gb = var.cluster.compute_node_pools[count.index]["nodes_disk_size_gb"]
+    os_disk_size_gb = each.value["nodes_disk_size_gb"]
 
     enable_auto_scaling = true
-    node_count = var.cluster.compute_node_pools[count.index]["nodes_num"]
-    min_count = var.cluster.compute_node_pools[count.index]["nodes_min"]
-    max_count = var.cluster.compute_node_pools[count.index]["nodes_max"]
+    node_count = each.value["nodes_num"]
+    min_count = each.value["nodes_min"]
+    max_count = each.value["nodes_max"]
 
     node_labels = {
         "node-role.jarvice.io/jarvice-compute" = "true"
