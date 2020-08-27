@@ -45,6 +45,7 @@ a PoC cluster installation.
     - [HAProxy (control plane endpoint)](#haproxy-control-plane-endpoint)
         - [Control plane endpoint on a kubernetes master node](#control-plane-endpoint-on-a-kubernetes-master-node)
     - [Docker and kubeadm](#docker-and-kubeadm)
+        - [SELinux](#selinux)
         - [Update firewall settings](#update-firewall-settings)
             - [Ports on master nodes](#ports-on-master-nodes)
             - [Ports on worker nodes](#ports-on-worker-nodes)
@@ -478,6 +479,16 @@ The above scripts will set up their corresponding apt/yum repositories before
 installing the packages.  The `install-kubeadm` script will also disable swap
 on the system and apply `sysctl` updates.
 On CentOS, it will also disable SELinux.
+
+#### SELinux
+
+On CentOS nodes, you may wish to re-enabled SELinux.  In the instance that
+you choose to do so, there is the potential that certain JARVICE applications
+may not work due to SELinux restrictions.  If so, it will be necessary to
+generate a local policy module on each of the `jarvice-compute` worker nodes
+to allow whichever operations are being denied by SELinux.  Refer to the
+[audit2allow](#https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/selinux_users_and_administrators_guide/sect-security-enhanced_linux-troubleshooting-fixing_problems#sect-Security-Enhanced_Linux-Fixing_Problems-Allowing_Access_audit2allow)
+documentation for more details on creating local policy modules.
 
 #### Update firewall settings
 
