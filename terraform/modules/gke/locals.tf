@@ -63,7 +63,8 @@ EOF
     cluster_values_yaml = <<EOF
 # GKE cluster override values
 jarvice:
-  nodeSelector: '${local.jarvice_helm_values["nodeSelector"] == null ? "{\"node-role.jarvice.io/jarvice-system\": \"true\"}" : local.jarvice_helm_values["nodeSelector"]}'
+  tolerations: '[{"key": "node-role.jarvice.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeSelector: '{"node-role.jarvice.io/jarvice-system": "true"}'
 
   JARVICE_PVC_VAULT_NAME: ${local.jarvice_helm_values["JARVICE_PVC_VAULT_NAME"] == null ? "persistent" : local.jarvice_helm_values["JARVICE_PVC_VAULT_NAME"]}
   JARVICE_PVC_VAULT_STORAGECLASS: ${local.jarvice_helm_values["JARVICE_PVC_VAULT_STORAGECLASS"] == null ? "jarvice-user" : local.jarvice_helm_values["JARVICE_PVC_VAULT_STORAGECLASS"]}
@@ -71,8 +72,15 @@ jarvice:
   JARVICE_PVC_VAULT_ACCESSMODES: ${local.jarvice_helm_values["JARVICE_PVC_VAULT_ACCESSMODES"] == null ? "ReadWriteOnce" : local.jarvice_helm_values["JARVICE_PVC_VAULT_ACCESSMODES"]}
   JARVICE_PVC_VAULT_SIZE: ${local.jarvice_helm_values["JARVICE_PVC_VAULT_SIZE"] == null ? 10 : local.jarvice_helm_values["JARVICE_PVC_VAULT_SIZE"]}
 
+  daemonsets:
+    lxcfs:
+      enabled: true
+      tolerations: '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}]'
+      nodeSelector: '{"node-role.jarvice.io/jarvice-compute": "true"}'
+
 jarvice_db:
   persistence:
+    enabled: true
     storageClassProvisioner: ${local.storage_class_provisioner}
 
 ${local.jarvice_ingress}
