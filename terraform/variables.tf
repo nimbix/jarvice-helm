@@ -63,6 +63,7 @@ variable "gke" {
             nodes_num = number
             nodes_min = number
             nodes_max = number
+            meta = map(string)
         }))
 
         helm = map(
@@ -95,6 +96,7 @@ variable "eks" {
             nodes_num = number
             nodes_min = number
             nodes_max = number
+            meta = map(string)
         }))
 
         helm = map(
@@ -127,6 +129,7 @@ variable "aks" {
             nodes_num = number
             nodes_min = number
             nodes_max = number
+            meta = map(string)
         }))
 
         helm = map(

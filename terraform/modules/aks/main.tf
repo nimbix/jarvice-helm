@@ -110,6 +110,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "jarvice_system" {
 
     node_labels = {
         "node-role.jarvice.io/jarvice-system" = "true"
+        "node-pool.jarvice.io/jarvice-system" = "jxesystem"
     }
     node_taints = ["node-role.jarvice.io/jarvice-system=true:NoSchedule"]
 
@@ -140,6 +141,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "jarvice_compute" {
 
     node_labels = {
         "node-role.jarvice.io/jarvice-compute" = "true"
+        "node-pool.jarvice.io/jarvice-compute" = each.key
     }
     node_taints = ["node-role.jarvice.io/jarvice-compute=true:NoSchedule"]
 
