@@ -487,7 +487,7 @@ you choose to do so, there is the potential that certain JARVICE applications
 may not work due to SELinux restrictions.  If so, it will be necessary to
 generate a local policy module on each of the `jarvice-compute` worker nodes
 to allow whichever operations are being denied by SELinux.  Refer to the
-[audit2allow](#https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/selinux_users_and_administrators_guide/sect-security-enhanced_linux-troubleshooting-fixing_problems#sect-Security-Enhanced_Linux-Fixing_Problems-Allowing_Access_audit2allow)
+[audit2allow](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/selinux_users_and_administrators_guide/sect-security-enhanced_linux-troubleshooting-fixing_problems#sect-Security-Enhanced_Linux-Fixing_Problems-Allowing_Access_audit2allow)
 documentation for more details on creating local policy modules.
 
 #### Update firewall settings
