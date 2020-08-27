@@ -34,6 +34,7 @@ variable "cluster" {
             nodes_num = number
             nodes_min = number
             nodes_max = number
+            meta = map(string)
         }))
 
         helm = map(

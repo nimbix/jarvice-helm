@@ -150,6 +150,7 @@ EOF
 
         labels = {
             "node-role.jarvice.io/jarvice-system" = "true"
+            "node-pool.jarvice.io/jarvice-system" = "jxesystem"
         }
         taint = [
             {
@@ -210,6 +211,7 @@ EOF
 
         labels = {
             "node-role.jarvice.io/jarvice-compute" = "true"
+            "node-pool.jarvice.io/jarvice-compute" = each.key
         }
         taint = [
             {

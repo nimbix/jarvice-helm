@@ -87,6 +87,14 @@ resource "aws_security_group" "jarvice" {
 
 locals {
     subnets = var.cluster.location["zones"] != null ? slice(module.vpc.public_subnets, 0, length(var.cluster.location["zones"])) : null
+    disable_hyperthreading = <<EOF
+# Disable hyper-threading.  Visit the following link for details:
+# https://aws.amazon.com/blogs/compute/disabling-intel-hyper-threading-technology-on-amazon-linux/
+for n in $(cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list | cut -s -d, -f2- | tr ',' '\n' | sort -un); do
+    echo "Disabling cpu$n..."
+    echo 0 > /sys/devices/system/cpu/cpu$n/online
+done
+EOF
 
     default_nodes = [
         {
@@ -113,7 +121,7 @@ EOF
             "asg_desired_capacity" = local.system_nodes_num
             "asg_min_size" = local.system_nodes_num
             "asg_max_size" = local.system_nodes_num * 2
-            "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-system=true --register-with-taints=node-role.jarvice.io/jarvice-system=true:NoSchedule"
+            "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-system=true,node-pool.jarvice.io/jarvice-system=jxesystem --register-with-taints=node-role.jarvice.io/jarvice-system=true:NoSchedule"
             "public_ip" = true
             "subnets" = local.subnets
             "key_name" = ""
@@ -133,7 +141,7 @@ EOF
                 "asg_desired_capacity" = pool.nodes_num
                 "asg_min_size" = pool.nodes_min
                 "asg_max_size" = pool.nodes_max
-                "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-compute=true --register-with-taints=node-role.jarvice.io/jarvice-compute=true:NoSchedule"
+                "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-compute=true,node-pool.jarvice.io/jarvice-compute=${name} --register-with-taints=node-role.jarvice.io/jarvice-compute=true:NoSchedule"
                 "public_ip" = true
                 "subnets" = local.subnets
                 "key_name" = ""
@@ -142,12 +150,7 @@ EOF
 # Add authorized ssh key
 echo "${local.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
 
-# Disable hyper-threading.  Visit the following link for details:
-# https://aws.amazon.com/blogs/compute/disabling-intel-hyper-threading-technology-on-amazon-linux/
-for n in $(cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list | cut -s -d, -f2- | tr ',' '\n' | sort -un); do
-    echo "Disabling cpu$n..."
-    echo 0 > /sys/devices/system/cpu/cpu$n/online
-done
+${lower(pool.meta.disable_hyperthreading) == "true" || lower(pool.meta.disable_hyperthreading) == "yes" ? local.disable_hyperthreading : ""}
 EOF
                 "additional_userdata" = <<EOF
 # additional_userdata (executed after kubelet bootstrap and cluster join)

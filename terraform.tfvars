@@ -232,6 +232,8 @@ gke = {
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
+                meta = {
+                }
             },
             #jxecompute01 = {
             #    nodes_type = "n1-standard-64"
@@ -239,6 +241,8 @@ gke = {
             #    nodes_num = 2
             #    nodes_min = 1
             #    nodes_max = 16
+            #    meta = {
+            #    }
             #},
         }
 
@@ -314,6 +318,8 @@ EOF
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
+                meta = {
+                }
             },
             #jxecompute01 = {
             #    nodes_type = "n1-standard-64"
@@ -321,6 +327,8 @@ EOF
             #    nodes_num = 2
             #    nodes_min = 1
             #    nodes_max = 16
+            #    meta = {
+            #    }
             #},
         }
 
@@ -403,6 +411,9 @@ eks = {
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
+                meta = {
+                    disable_hyperthreading = "true"
+                }
             },
             #jxecompute01 = {
             #    nodes_type = "c5.18xlarge"
@@ -410,6 +421,9 @@ eks = {
             #    nodes_num = 2
             #    nodes_min = 1
             #    nodes_max = 16
+            #    meta = {
+            #        disable_hyperthreading = "true"
+            #    }
             #},
         }
 
@@ -485,6 +499,9 @@ EOF
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
+                meta = {
+                    disable_hyperthreading = "true"
+                }
             },
             #jxecompute01 = {
             #    nodes_type = "c5.18xlarge"
@@ -492,6 +509,9 @@ EOF
             #    nodes_num = 2
             #    nodes_min = 1
             #    nodes_max = 16
+            #    meta = {
+            #        disable_hyperthreading = "true"
+            #    }
             #},
         }
 
@@ -576,6 +596,8 @@ aks = {
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
+                meta = {
+                }
             },
             #jxecompute01 = {
             #    nodes_type = "Standard_D48_v3"
@@ -583,6 +605,8 @@ aks = {
             #    nodes_num = 2
             #    nodes_min = 1
             #    nodes_max = 16
+            #    meta = {
+            #    }
             #},
         }
 
@@ -660,6 +684,8 @@ EOF
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
+                meta = {
+                }
             },
             #jxecompute01 = {
             #    nodes_type = "Standard_D48_v3"
@@ -667,6 +693,8 @@ EOF
             #    nodes_num = 2
             #    nodes_min = 1
             #    nodes_max = 16
+            #    meta = {
+            #    }
             #},
         }
 
