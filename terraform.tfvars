@@ -216,7 +216,7 @@ gke = {
 
         location = {
             region = "us-west1"
-            zones = ["us-west1-a"]
+            zones = ["us-west1-b"]
         }
 
         # Visit the following link for GCP machine type specs:
@@ -227,21 +227,23 @@ gke = {
         }
         compute_node_pools = {
             jxecompute00 = {
-                nodes_type = "n1-standard-64"
+                nodes_type = "c2-standard-60"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
                 meta = {
+                    disable_hyperthreading = "true"
                 }
             },
             #jxecompute01 = {
-            #    nodes_type = "n1-standard-64"
+            #    nodes_type = "c2-standard-60"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
             #    nodes_max = 16
             #    meta = {
+            #        disable_hyperthreading = "true"
             #    }
             #},
         }
@@ -302,7 +304,7 @@ EOF
 
         location = {
             region = "us-west1"
-            zones = ["us-west1-a"]
+            zones = ["us-west1-b"]
         }
 
         # Visit the following link for GCP machine type specs:
@@ -313,21 +315,23 @@ EOF
         }
         compute_node_pools = {
             jxecompute00 = {
-                nodes_type = "n1-standard-64"
+                nodes_type = "c2-standard-60"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
                 meta = {
+                    disable_hyperthreading = "true"
                 }
             },
             #jxecompute01 = {
-            #    nodes_type = "n1-standard-64"
+            #    nodes_type = "c2-standard-60"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
             #    nodes_max = 16
             #    meta = {
+            #        disable_hyperthreading = "true"
             #    }
             #},
         }
