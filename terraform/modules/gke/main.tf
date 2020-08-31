@@ -164,6 +164,31 @@ EOF
     }
 }
 
+#resource "google_compute_resource_policy" "jarvice_compute" {
+#    name = var.cluster.meta["cluster_name"]
+#    region = local.region
+#    group_placement_policy {
+#        availability_domain_count = 1
+#        collocation = "COLLOCATED"
+#    }
+#}
+
+resource "google_compute_project_metadata_item" "jarvice_compute" {
+    key = "startup-script"
+    value = "bash -c \"$(curl --silent -H Metadata-Flavor:Google http://metadata/computeMetadata/v1/instance/attributes/disable-hyperthreading 2>/dev/null)\""
+}
+
+locals {
+    disable_hyperthreading = <<EOF
+# Disable hyper-threading.  Visit the following link for details:
+# https://aws.amazon.com/blogs/compute/disabling-intel-hyper-threading-technology-on-amazon-linux/
+for n in $(cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list | cut -s -d, -f2- | tr ',' '\n' | sort -un); do
+    echo "Disabling cpu$n..."
+    echo 0 > /sys/devices/system/cpu/cpu$n/online
+done
+EOF
+}
+
 resource "google_container_node_pool" "jarvice_compute" {
     for_each = var.cluster["compute_node_pools"]
 
@@ -207,6 +232,7 @@ resource "google_container_node_pool" "jarvice_compute" {
             ssh-keys = <<EOF
 ${local.username}:${local.ssh_public_key}
 EOF
+            disable-hyperthreading = lower(each.value.meta["disable_hyperthreading"]) == "true" || lower(each.value.meta["disable_hyperthreading"]) == "yes" ? local.disable_hyperthreading : ""
         }
 
         labels = {
