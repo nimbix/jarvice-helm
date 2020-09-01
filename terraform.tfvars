@@ -583,7 +583,7 @@ aks = {
         }
 
         location = {
-            region = "Central US"
+            region = "West US 2"
             zones = ["1"]
         }
 
@@ -595,7 +595,7 @@ aks = {
         }
         compute_node_pools = {
             jxecompute00 = {
-                nodes_type = "Standard_D48_v3"
+                nodes_type = "Standard_D15_v2"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
@@ -604,7 +604,7 @@ aks = {
                 }
             },
             #jxecompute01 = {
-            #    nodes_type = "Standard_D48_v3"
+            #    nodes_type = "Standard_D15_v2"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
@@ -621,7 +621,7 @@ aks = {
 
                 # global values_yaml take precedence over cluster
                 # values_file (values_file ignored if not found)
-                values_file = "override-tf.aks.<region>.<cluster_name>.yaml"  # "override-tf.aks.centralus.tf-jarvice.yaml"
+                values_file = "override-tf.aks.<region>.<cluster_name>.yaml"  # "override-tf.aks.westus2.tf-jarvice.yaml"
 
                 values_yaml = <<EOF
 # values_yaml - takes precedence over values_file and global values_yaml
@@ -671,7 +671,7 @@ EOF
         }
 
         location = {
-            region = "Central US"
+            region = "West US 2"
             zones = ["1"]
         }
 
@@ -683,7 +683,7 @@ EOF
         }
         compute_node_pools = {
             jxecompute00 = {
-                nodes_type = "Standard_D48_v3"
+                nodes_type = "Standard_D15_v2"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
@@ -692,7 +692,7 @@ EOF
                 }
             },
             #jxecompute01 = {
-            #    nodes_type = "Standard_D48_v3"
+            #    nodes_type = "Standard_D15_v2"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
@@ -709,7 +709,7 @@ EOF
 
                 # global values_yaml take precedence over cluster
                 # values_file (values_file ignored if not found)
-                values_file = "override-tf.aks.<region>.<cluster_name>.yaml"  # "override-tf.aks.centralus.tf-jarvice-downstream.yaml"
+                values_file = "override-tf.aks.<region>.<cluster_name>.yaml"  # "override-tf.aks.westus2.tf-jarvice-downstream.yaml"
 
                 values_yaml = <<EOF
 # values_yaml - takes precedence over values_file and global values_yaml
