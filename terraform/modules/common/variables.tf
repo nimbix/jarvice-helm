@@ -45,13 +45,16 @@ variable "cluster" {
 
 variable "system_nodes_type_upstream" {
     type = string
+    default = null
 }
 
 variable "system_nodes_type_downstream" {
     type = string
+    default = null
 }
 
 variable "storage_class_provisioner" {
     type = string
+    default = ""
 }
 
