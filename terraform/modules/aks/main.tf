@@ -56,7 +56,7 @@ resource "azurerm_kubernetes_cluster" "jarvice" {
         admin_username = "jarvice"
 
         ssh_key {
-            key_data = local.ssh_public_key
+            key_data = module.common.ssh_public_key
         }
     }
 
@@ -101,12 +101,12 @@ resource "azurerm_kubernetes_cluster_node_pool" "jarvice_system" {
     availability_zones = azurerm_kubernetes_cluster.jarvice.default_node_pool[0].availability_zones
     kubernetes_cluster_id = azurerm_kubernetes_cluster.jarvice.id
 
-    vm_size = local.system_nodes_type
+    vm_size = module.common.system_nodes_type
     os_type = "Linux"
     enable_auto_scaling = true
-    node_count = local.system_nodes_num
-    min_count = local.system_nodes_num
-    max_count = local.system_nodes_num * 2
+    node_count = module.common.system_nodes_num
+    min_count = module.common.system_nodes_num
+    max_count = module.common.system_nodes_num * 2
 
     node_labels = {
         "node-role.jarvice.io/jarvice-system" = "true"

@@ -110,17 +110,17 @@ EOF
             "pre_userdata" = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
 # Add authorized ssh key
-echo "${local.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
+echo "${module.common.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
 EOF
         }
     ]
     system_nodes = [
         {
             "name" = "jxesystem",
-            "instance_type" = local.system_nodes_type
-            "asg_desired_capacity" = local.system_nodes_num
-            "asg_min_size" = local.system_nodes_num
-            "asg_max_size" = local.system_nodes_num * 2
+            "instance_type" = module.common.system_nodes_type
+            "asg_desired_capacity" = module.common.system_nodes_num
+            "asg_min_size" = module.common.system_nodes_num
+            "asg_max_size" = module.common.system_nodes_num * 2
             "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-system=true,node-pool.jarvice.io/jarvice-system=jxesystem --register-with-taints=node-role.jarvice.io/jarvice-system=true:NoSchedule"
             "public_ip" = true
             "subnets" = local.subnets
@@ -128,7 +128,7 @@ EOF
             "pre_userdata" = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
 # Add authorized ssh key
-echo "${local.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
+echo "${module.common.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
 EOF
         }
     ]
@@ -148,7 +148,7 @@ EOF
                 "pre_userdata" = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
 # Add authorized ssh key
-echo "${local.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
+echo "${module.common.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
 
 ${lower(pool.meta.disable_hyperthreading) == "true" || lower(pool.meta.disable_hyperthreading) == "yes" ? local.disable_hyperthreading : ""}
 EOF

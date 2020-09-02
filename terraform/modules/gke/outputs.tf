@@ -71,7 +71,7 @@ Execute the following to begin using kubectl/helm with the new cluster:
 
 export KUBECONFIG=${local.kube_config["config_path"]}
 
-${local.cluster_output_message}:
+${module.common.cluster_output_message}:
 
 https://${fileexists(null_resource.ingress_host_file.triggers.path) ? file(null_resource.ingress_host_file.triggers.path) : "<undefined>"}/
 

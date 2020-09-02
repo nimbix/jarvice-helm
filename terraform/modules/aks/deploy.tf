@@ -1,5 +1,16 @@
 # deploy.tf - AKS module kubernetes/helm components deployment for JARVICE
 
+module "common" {
+    source = "../common"
+
+    global = var.global
+    cluster = var.cluster
+
+    system_nodes_type_upstream = "Standard_D5_v2"
+    system_nodes_type_downstream = "Standard_D3_v2"
+    storage_class_provisioner = "kubernetes.io/azure-disk"
+}
+
 locals {
     charts = {
         "traefik" = {
@@ -46,9 +57,13 @@ module "helm" {
     charts = local.charts
 
     # JARVICE settings
-    jarvice = merge(var.cluster.helm.jarvice, {"values_file"="${local.jarvice_values_file}"})
+    jarvice = merge(var.cluster.helm.jarvice, {"values_file"="${module.common.jarvice_values_file}"})
     global = var.global.helm.jarvice
-    cluster_values_yaml = local.cluster_values_yaml
+    cluster_values_yaml = <<EOF
+${module.common.cluster_values_yaml}
 
+# AKS cluster override values
+${local.jarvice_ingress}
+EOF
 }
 
