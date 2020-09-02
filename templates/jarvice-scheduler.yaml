@@ -83,21 +83,21 @@ spec:
             scheme: HTTPS
             port: https
             path: /ready
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          timeoutSeconds: 2
-          successThreshold: 1
-          failureThreshold: 3
+          initialDelaySeconds: {{ .Values.jarvice_scheduler.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jarvice_scheduler.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jarvice_scheduler.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_scheduler.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_scheduler.readinessProbe.failureThreshold }}
         livenessProbe:
           httpGet:
             scheme: HTTPS
             port: https
             path: /live
-          initialDelaySeconds: 20
-          periodSeconds: 20
-          timeoutSeconds: 5
-          successThreshold: 1
-          failureThreshold: 3
+          initialDelaySeconds: {{ .Values.jarvice_scheduler.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jarvice_scheduler.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jarvice_scheduler.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_scheduler.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_scheduler.livenessProbe.failureThreshold }}
         env:
           - name: JARVICE_SYSTEM_K8S
 {{- if empty .Values.jarvice.JARVICE_SYSTEM_K8S }}

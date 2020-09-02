@@ -73,13 +73,13 @@ spec:
         readinessProbe:
           tcpSocket:
             port: jarvice-db
-          initialDelaySeconds: 5
-          timeoutSeconds: 2
+          initialDelaySeconds: {{ .Values.jarvice_db.readinessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.jarvice_db.readinessProbe.timeoutSeconds }}
         livenessProbe:
           tcpSocket:
             port: jarvice-db
-          initialDelaySeconds: 30
-          timeoutSeconds: 5
+          initialDelaySeconds: {{ .Values.jarvice_db.livenessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.jarvice_db.livenessProbe.timeoutSeconds }}
         env:
           - name: MYSQL_ROOT_PASSWORD
             valueFrom:
