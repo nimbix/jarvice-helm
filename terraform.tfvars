@@ -583,7 +583,7 @@ aks = {
         }
 
         location = {
-            region = "West US 2"
+            region = "westus2"
             zones = ["1"]
         }
 
@@ -671,7 +671,7 @@ EOF
         }
 
         location = {
-            region = "West US 2"
+            region = "westus2"
             zones = ["1"]
         }
 
