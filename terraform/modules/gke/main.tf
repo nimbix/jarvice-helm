@@ -73,7 +73,7 @@ resource "google_container_cluster" "jarvice" {
         metadata = {
             disable-legacy-endpoints = "true"
             ssh-keys = <<EOF
-${local.username}:${local.ssh_public_key}
+${local.username}:${module.common.ssh_public_key}
 EOF
         }
 
@@ -123,10 +123,10 @@ resource "google_container_node_pool" "jarvice_system" {
     cluster = google_container_cluster.jarvice.name
     version = local.node_version
 
-    initial_node_count = local.system_nodes_num
+    initial_node_count = module.common.system_nodes_num
     autoscaling {
-        min_node_count = local.system_nodes_num
-        max_node_count = local.system_nodes_num * 2
+        min_node_count = module.common.system_nodes_num
+        max_node_count = module.common.system_nodes_num * 2
     }
 
     management {
@@ -135,7 +135,7 @@ resource "google_container_node_pool" "jarvice_system" {
     }
 
     node_config {
-        machine_type = local.system_nodes_type
+        machine_type = module.common.system_nodes_type
         image_type = "UBUNTU"
 
         service_account = "default"
@@ -144,7 +144,7 @@ resource "google_container_node_pool" "jarvice_system" {
         metadata = {
             disable-legacy-endpoints = "true"
             ssh-keys = <<EOF
-${local.username}:${local.ssh_public_key}
+${local.username}:${module.common.ssh_public_key}
 EOF
         }
 
@@ -230,7 +230,7 @@ resource "google_container_node_pool" "jarvice_compute" {
         metadata = {
             disable-legacy-endpoints = "true"
             ssh-keys = <<EOF
-${local.username}:${local.ssh_public_key}
+${local.username}:${module.common.ssh_public_key}
 EOF
             disable-hyperthreading = lower(each.value.meta["disable_hyperthreading"]) == "true" || lower(each.value.meta["disable_hyperthreading"]) == "yes" ? local.disable_hyperthreading : ""
         }
