@@ -1,7 +1,7 @@
 # locals.tf - common module local variable definitions
 
 locals {
-    jarvice_values_file = replace(replace("${var.cluster.helm.jarvice["values_file"]}", "<region>", "${var.cluster.location["region"]}"), "<cluster_name>", "${var.cluster.meta["cluster_name"]}")
+    jarvice_values_file = replace(replace("${var.cluster.helm.jarvice["values_file"]}", "<region>", "${contains(keys(var.cluster), "location") ? var.cluster.location["region"] : ""}"), "<cluster_name>", "${var.cluster.meta["cluster_name"]}")
 
     jarvice_helm_override_yaml = fileexists(local.jarvice_values_file) ? "${file("${local.jarvice_values_file}")}" : ""
 
@@ -16,7 +16,7 @@ locals {
 }
 
 locals {
-    ssh_public_key = var.cluster.meta["ssh_public_key"] != null ? file(var.cluster.meta["ssh_public_key"]) : file(var.global.meta["ssh_public_key"])
+    ssh_public_key = contains(keys(var.cluster.meta), "ssh_public_key") == false ? null : var.cluster.meta["ssh_public_key"] != null ? file(var.cluster.meta["ssh_public_key"]) : file(var.global.meta["ssh_public_key"])
 }
 
 locals {
