@@ -2,9 +2,6 @@
 
 locals {
     dummy = {
-        meta = {
-            ssh_public_key = null
-        }
         location = {
             region = ""
             zones = null

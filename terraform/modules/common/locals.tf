@@ -16,7 +16,7 @@ locals {
 }
 
 locals {
-    ssh_public_key = var.cluster.meta["ssh_public_key"] != null ? file(var.cluster.meta["ssh_public_key"]) : file(var.global.meta["ssh_public_key"])
+    ssh_public_key = contains(keys(var.cluster.meta), "ssh_public_key") == false ? null : var.cluster.meta["ssh_public_key"] != null ? file(var.cluster.meta["ssh_public_key"]) : file(var.global.meta["ssh_public_key"])
 }
 
 locals {
