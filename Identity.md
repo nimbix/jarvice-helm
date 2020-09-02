@@ -91,3 +91,10 @@ Alternatively, deploying `jarvice-idmapper` from outside of this helm chart can 
 * JARVICE only supports NFS or *hostPath* shares, and does not support using *PersistentVolumeClaim* volumes.  This may expand in the future but is required since JARVICE actually modifies mount paths as described above.  In cases where NFS is not possible, the volume should be mounted on the host and *hostPath* should be used.
 * If *hostPath* is used, this path should be mounted on all compute nodes, not just the node(s) running `jarvice-idmapper`
 * `jarvice-idmapper` is only contacted if the team identity type is set to *System Default*; this prevents users from being able to impersonate the identity of other users just by knowing their user name.
+
+# Advanced: Overriding Identity UID/GID System-wide Downstream
+
+Identity can be overridden downstream (whether single cluster or multi-cluster), to hard-code UID and/or GID when running on specific compute.  This is generally only needed if a downstream cluster (in another zone)  has a squashed storage system and cannot allow users to read/write files as other UID/GID's sent from upstream.  Use with caution!
+
+The values `jarvice_k8s_scheduler.env.JARVICE_SCHED_JOB_UID` and `jarvice_k8s_scheduler.env.JARVICE_SCHED_JOB_GID` refer to a numeric UID and GID for all in-container identity run on that particular downstream cluster, respectively.  They may be used independently as well.  If not set, all other defaults and settings apply as explained above.
+
