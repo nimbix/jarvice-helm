@@ -1,4 +1,4 @@
-{{- if or .Values.jarvice.daemonsets.cache_pull.enabled .Values.jarvice.daemonsets.lxcfs.enabled .Values.jarvice.daemonsets.nvidia.enabled .Values.jarvice.daemonsets.rdma.enabled }}
+{{- if or .Values.jarvice.daemonsets.cache_pull.enabled .Values.jarvice.daemonsets.lxcfs.enabled .Values.jarvice.daemonsets.nvidia.enabled .Values.jarvice.daemonsets.rdma.enabled .Values.jarvice.daemonsets.disable_hyper_threading.enabled }}
 apiVersion: {{ template "apiVersion.priorityClass" . }}
 kind: PriorityClass
 metadata:
@@ -39,7 +39,7 @@ spec:
       labels:
         {{- include "jarvice.release_labels" . | indent 8 }}
         component: jarvice-cache-pull
-      annotations: 
+      annotations:
         deployment-date: {{ now | quote }}
     spec:
 {{- if (not (empty .Values.jarvice.daemonsets.cache_pull.tolerations)) }}
@@ -195,7 +195,7 @@ spec:
       labels:
         {{- include "jarvice.release_labels" . | indent 8 }}
         component: jarvice-lxcfs
-      annotations: 
+      annotations:
         deployment-date: {{ now | quote }}
     spec:
 {{- if (not (empty .Values.jarvice.daemonsets.lxcfs.tolerations)) }}
@@ -256,7 +256,7 @@ spec:
       labels:
         {{- include "jarvice.release_labels" . | indent 8 }}
         component: jarvice-nvidia-device-plugin
-      annotations: 
+      annotations:
         deployment-date: {{ now | quote }}
     spec:
 {{- if (not (empty .Values.jarvice.daemonsets.nvidia.tolerations)) }}
@@ -313,7 +313,7 @@ spec:
       labels:
         {{- include "jarvice.release_labels" . | indent 8 }}
         component: jarvice-xilinx-fpga-device-plugin
-      annotations: 
+      annotations:
         deployment-date: {{ now | quote }}
     spec:
 {{- if (not (empty .Values.jarvice.daemonsets.xilinx_fpga.tolerations)) }}
@@ -375,7 +375,7 @@ spec:
       labels:
         {{- include "jarvice.release_labels" . | indent 8 }}
         component: jarvice-rdma-device-plugin
-      annotations: 
+      annotations:
         deployment-date: {{ now | quote }}
     spec:
       hostNetwork: true
@@ -414,6 +414,68 @@ spec:
           allowPrivilegeEscalation: false
           capabilities:
             drop: ["ALL"]
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+      priorityClassName: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+      priorityClassName: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
+---
+{{- end }}
+{{- if .Values.jarvice.daemonsets.disable_hyper_threading.enabled }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: jarvice-disable-hyper-threading
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+  namespace: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+  namespace: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-disable-hyper-threading
+spec:
+  selector:
+    matchLabels:
+      component: jarvice-disable-hyper-threading
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-disable-hyper-threading
+      annotations:
+        deployment-date: {{ now | quote }}
+    spec:
+      hostPID: true
+{{- if (not (empty .Values.jarvice.daemonsets.disable_hyper_threading.tolerations)) }}
+      tolerations: {{ .Values.jarvice.daemonsets.disable_hyper_threading.tolerations }}
+{{- else if (not (empty .Values.jarvice.daemonsets.tolerations)) }}
+      tolerations: {{ .Values.jarvice.daemonsets.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice.daemonsets.disable_hyper_threading.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.daemonsets.disable_hyper_threading.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.daemonsets.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.daemonsets.nodeSelector }}
+{{- end }}
+      containers:
+      - name: jarvice-disable-hyper-threading
+        image: {{ .Values.jarvice.daemonsets.disable_hyper_threading.image }}
+        imagePullPolicy: IfNotPresent
+        command:
+          - /bin/sh
+          - -c
+          - nsenter -t 1 -m -u -i -n -p -- /bin/sh -c "$DISABLE_HYPER_THREADING"; sleep infinity
+        env:
+        - name: DISABLE_HYPER_THREADING
+          value: |
+            echo "Starting CPU hyper-threading disablement on $(hostname)..."
+            for n in $(cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list | cut -s -d, -f2- | tr ',' '\n' | sort -un); do
+                echo "Disabling cpu$n..."
+                echo 0 > /sys/devices/system/cpu/cpu$n/online
+            done
+            echo "Finished CPU hyper-threading disablement on $(hostname)..."
+        securityContext:
+          privileged: true
 {{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
       priorityClassName: {{ .Release.Namespace }}-daemonsets
 {{- else }}
