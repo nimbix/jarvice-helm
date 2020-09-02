@@ -113,6 +113,18 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202009021933
+
+* (3239) Fixed bug where portal would malfunction if cloning a job which referred to a previously deleted app.
+* (3273) Fixed bug with password encoding for RealVNC servers when accessed directly with VNC clients rather than HTTPS.
+* (3276) Fixed API status codes for failures.
+* (3286) Improved performance of "high frequency" operations and reduced `jarvice-dal` bottlenecks associated with them (e.g. job utilization metrics updates, screenshots, output tail).
+* (3332) Fixed bug where unprepared interactive containers (without `image-common` installed) would be inaccessible when using AWS ELB.
+* (3341) Added billing reports by zone to the web portal's *Administration->Billing* view, as well as the API's `/jarvice/billing` endpoint.
+* (3345) Documented best practices for deploying Kubernetes and JARVICE XE on systems with SELinux in `enforcing` mode; please see [SELinux](KubernetesInstall.md#selinux) in *Kubernetes Cluster Installation*, as well as [SELinux Configuration for JARVICE](SELinux.md) (for job-related configuration) for details.
+* (3379) Added experimental support for returning a job's randomly generated public SSH key upon submission using the `gen_sshkey` boolean parameter in the `/jarvice/submit` payload.  This can be added to `.ssh/authorized_keys` on the client to allow the remote session to SSH back to it for workflows where this pattern makes sense.
+* (3413) Allow system-level override of in-container UID/GID in downstream schedulers; see [Advanced: Overriding Identity UID/GID System-wide Downstream](Identity.md#advanced-overriding-identity-uidgid-system-wide-downstream) in *In-container Identity Settings and Best Practices* for details, but please use with caution and consider Known Issues for [Downstream Deployments](#downstream-deployments)!
+
 ## 3.0.0-1.202008191936
 
 * (3194) GA Support for GKE and EKS using Terraform; please see [JARVICE Deployment with Terraform](Terraform.md) for details.
