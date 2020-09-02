@@ -45,6 +45,10 @@ a PoC cluster installation.
     - [HAProxy (control plane endpoint)](#haproxy-control-plane-endpoint)
         - [Control plane endpoint on a kubernetes master node](#control-plane-endpoint-on-a-kubernetes-master-node)
     - [Docker and kubeadm](#docker-and-kubeadm)
+        - [SELinux](#selinux)
+        - [Update firewall settings](#update-firewall-settings)
+            - [Ports on master nodes](#ports-on-master-nodes)
+            - [Ports on worker nodes](#ports-on-worker-nodes)
 * [Cluster Stand Up](#cluster-stand-up)
     - [Initialize cluster](#initialize-cluster)
         - [Saving the join commands](#saving-the-join-commands)
@@ -53,7 +57,11 @@ a PoC cluster installation.
         - [Verify configuration](#verify-configuration)
     - [Deploy a pod network plugin/add-on](#deploy-a-pod-network-plugin-add-on)
         - [Kube-Router](#kube-router)
+            - [Verify Kube-Router deployment](#verify-kube-router-deployment)
+            - [Update firewall settings for Kube-Router](#update-firewall-settings-for-kube-router)
         - [Weave Net](#weave-net)
+            - [Verify Weave Net deployment](#verify-weave-net-deployment)
+            - [Update firewall settings for Weave Net](#update-firewall-settings-for-weave-net)
     - [Add master nodes](#add-master-nodes)
     - [Add worker nodes](#add-worker-nodes)
     - [Label and taint kubernetes worker nodes](#label-and-taint-kubernetes-worker-nodes)
@@ -368,6 +376,26 @@ in the example commands below:
 * k8s-worker-10
 * k8s-worker-11
 
+### Firewall settings on the cluster nodes
+
+It will be necessary to either disable any active firewall on the cluster
+nodes or open up the ports which are required by kubernetes.
+CentOS uses `firewalld` which is enabled by default.
+Ubuntu uses `ufw` which is disabled by default.
+
+The sections below outline the commands needed to open up ports with
+`firewalld`.
+
+#### Disabling firewall
+
+If it is preferable to simply disable the firewall,
+it can be disabled on each CentOS node with the following commands:
+```bash
+$ sudo systemctl stop firewalld
+$ sudo systemctl disable firewalld
+$ sudo systemctl mask --now firewalld
+```
+
 ------------------------------------------------------------------------------
 
 ## Node Software Installation
@@ -420,6 +448,17 @@ $ ./jarvice-helm/scripts/install-haproxy \
     --address "*:7443"
 ```
 
+#### Open firewall port
+
+If the control plane endpoint node is running CentOS with `firewalld` enabled,
+execute the following to open up the appropriate port:
+
+```bash
+$ PORT="6443/tcp"
+$ sudo firewall-cmd --permanent --add-port=$PORT
+$ sudo systemctl restart firewalld
+```
+
 ### Docker and kubeadm
 
 The `install-docker` and `install-kubeadm` scripts can be used to install
@@ -440,6 +479,57 @@ The above scripts will set up their corresponding apt/yum repositories before
 installing the packages.  The `install-kubeadm` script will also disable swap
 on the system and apply `sysctl` updates.
 On CentOS, it will also disable SELinux.
+
+#### SELinux
+
+On CentOS nodes, you may wish to re-enabled SELinux.  In the instance that
+you choose to do so, there is the potential that certain JARVICE applications
+may not work due to SELinux restrictions.  If so, it will be necessary to
+generate a local policy module on each of the `jarvice-compute` worker nodes
+to allow whichever operations are being denied by SELinux.  Refer to the
+[audit2allow](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/selinux_users_and_administrators_guide/sect-security-enhanced_linux-troubleshooting-fixing_problems#sect-Security-Enhanced_Linux-Fixing_Problems-Allowing_Access_audit2allow)
+documentation for more details on creating local policy modules.
+
+#### Update firewall settings
+
+On CentOS nodes which have `firewalld` enabled, it will be necessary to open
+up the appropriate ports.
+
+##### Ports on master nodes
+
+For the master nodes, execute the following:
+```bash
+$ NODES="k8s-master-00 k8s-master-01 k8s-master-02"
+$ USER=jarvice
+$ CMD=$(cat <<EOF
+PORTS="6443/tcp 2379-2380/tcp 10250/tcp 10251/tcp 10252/tcp 10255/tcp 8472/udp"
+for p in $PORTS; do
+    sudo firewall-cmd --permanent --add-port=$p;
+done
+sudo firewall-cmd --add-masquerade --permanent
+sudo systemctl restart firewalld
+EOF
+)
+$ for n in $NODES; do ssh $USER@$n "$CMD"; done
+```
+
+##### Ports on worker nodes
+
+For the worker nodes, execute the following:
+```bash
+$ NODES="k8s-worker-00 k8s-worker-01 k8s-worker-02 k8s-worker-03 k8s-worker-04 k8s-worker-10 k8s-worker-11"
+$ USER=jarvice
+$ CMD=$(cat <<EOF
+PORTS="10250/tcp 10255/tcp 8472/udp"
+for p in $PORTS; do
+    sudo firewall-cmd --permanent --add-port=$p;
+done
+sudo firewall-cmd --add-masquerade --permanent
+sudo systemctl restart firewalld
+EOF
+)
+$ for n in $NODES; do ssh $USER@$n "$CMD"; done
+```
 
 ------------------------------------------------------------------------------
 
@@ -543,12 +633,25 @@ Execute the following to deploy it into the kubernetes cluster:
 $ ./jarvice-helm/scripts/deploy2k8s-kube-router
 ```
 
-##### Verify deployment
+##### Verify Kube-Router deployment
 
 After deployment, from a `kubectl` client machine, verify that the
 initial kubernetes master node is in the `Ready` state:
 ```bash
 $ kubectl get nodes
+```
+
+##### Update firewall settings for Kube-Router
+
+On CentOS nodes which have `firewalld` enabled, it will be necessary to open
+up the appropriate port.
+Execute the following to do so:
+
+```bash
+$ NODES="k8s-master-00 k8s-master-01 k8s-master-02 k8s-worker-00 k8s-worker-01 k8s-worker-02 k8s-worker-03 k8s-worker-04 k8s-worker-10 k8s-worker-11"
+$ USER=jarvice
+$ CMD="sudo firewall-cmd --permanent --add-port=20244/tcp; sudo systemctl restart firewalld"
+$ for n in $NODES; do ssh $USER@$n "$CMD"; done
 ```
 
 #### Weave Net
@@ -569,12 +672,25 @@ the `--pod-network-cidr` flag during cluster initialization.  As mentioned in
 addresses represented by this CIDR should not conflict with any addresses
 used at your connecting site(s).
 
-##### Verify deployment
+##### Verify Weave Net deployment
 
 After deployment, from a `kubectl` client machine, verify that the
 initial kubernetes master node is in the `Ready` state:
 ```bash
 $ kubectl get nodes
+```
+
+##### Update firewall settings for Weave Net
+
+On CentOS nodes which have `firewalld` enabled, it will be necessary to open
+up the appropriate port.
+Execute the following to do so:
+
+```bash
+$ NODES="k8s-master-00 k8s-master-01 k8s-master-02 k8s-worker-00 k8s-worker-01 k8s-worker-02 k8s-worker-03 k8s-worker-04 k8s-worker-10 k8s-worker-11"
+$ USER=jarvice
+$ CMD="sudo firewall-cmd --permanent --add-port=6784/tcp; sudo systemctl restart firewalld"
+$ for n in $NODES; do ssh $USER@$n "$CMD"; done
 ```
 
 ### Add master nodes
@@ -660,18 +776,21 @@ specific node for JARVICE application builds, add `k8s-worker-04` to the
 node list:
 ```bash
 $ NODES="k8s-worker-00 k8s-worker-01 k8s-worker-02 k8s-worker-03"
+$ kubectl label nodes $NODES node-role.jarvice.io/jarvice-system=true
 $ kubectl label nodes $NODES node-role.kubernetes.io/jarvice-system=true
 ```
 
 If you will be designating a specific `jarvice-dockerbuild` node:
 ```bash
 $ NODES="k8s-worker-04"
+$ kubectl label nodes $NODES node-role.jarvice.io/jarvice-dockerbuild=true
 $ kubectl label nodes $NODES node-role.kubernetes.io/jarvice-dockerbuild=true
 ```
 
 Label the `jarvice-compute` nodes:
 ```bash
 $ NODES="k8s-worker-10 k8s-worker-11"
+$ kubectl label nodes $NODES node-role.jarvice.io/jarvice-compute=true
 $ kubectl label nodes $NODES node-role.kubernetes.io/jarvice-compute=true
 ```
 
@@ -687,20 +806,20 @@ $ kubectl get nodes
 
 Taint the `jarvice-system` nodes:
 ```bash
-$ kubectl taint nodes -l node-role.kubernetes.io/jarvice-system=true \
-    node-role.kubernetes.io/jarvice-system=true:NoSchedule
+$ kubectl taint nodes -l node-role.jarvice.io/jarvice-system=true \
+    node-role.jarvice.io/jarvice-system=true:NoSchedule
 ```
 
 Taint the `jarvice-dockerbuild` nodes:
 ```bash
-$ kubectl taint nodes -l node-role.kubernetes.io/jarvice-dockerbuild=true \
-    node-role.kubernetes.io/jarvice-dockerbuild=true:NoSchedule
+$ kubectl taint nodes -l node-role.jarvice.io/jarvice-dockerbuild=true \
+    node-role.jarvice.io/jarvice-dockerbuild=true:NoSchedule
 ```
 
 Taint the `jarvice-compute` nodes:
 ```bash
-$ kubectl taint nodes -l node-role.kubernetes.io/jarvice-compute=true \
-    node-role.kubernetes.io/jarvice-compute=true:NoSchedule
+$ kubectl taint nodes -l node-role.jarvice.io/jarvice-compute=true \
+    node-role.jarvice.io/jarvice-compute=true:NoSchedule
 ```
 
 ------------------------------------------------------------------------------

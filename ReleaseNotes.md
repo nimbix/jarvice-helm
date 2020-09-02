@@ -39,10 +39,11 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 ### Downstream Deployments
 
 - The `jarvice.JARVICE_SCHED_SERVER_KEY` is _required_ and must have a value.
+- Overriding in-container identity downstream using `jarvice_k8s_scheduler.env.JARVICE_SCHED_JOB_UID` and `jarvice_k8s_scheduler.env.JARVICE_SCHED_JOB_GID` only works if the identity is mapped upstream for that user (e.g. using `jarvice-idmapper`); as a best practice, the UID/GID override of `505/505` should be used to avoid all issues, if overriding at all.  Further, downstream override should only be used if the downstream cluster is on a different zone than the upstream, to avoid mixing permissions on storage that is accessible by multiple clusters.
 
 ### Deployments with Terraform
 
-- Compute node labels will have `true` as the value rather than blank, so ensure machine definitions are correct.  For example, to target work to compute nodes, use `node-role.kubernetes.io/jarvice-compute=true` in the *properties* field of the machine definition.
+- Compute node labels will have `true` as the value rather than blank, so ensure machine definitions are correct.  For example, to target work to compute nodes, use `node-role.jarvice.io/jarvice-compute=true` in the *properties* field of the machine definition.
 - Persistent volumes **do not** persist after the cluster is destroyed with the `terraform destroy` command.
 
 

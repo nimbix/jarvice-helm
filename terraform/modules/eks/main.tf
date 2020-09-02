@@ -86,6 +86,16 @@ resource "aws_security_group" "jarvice" {
 }
 
 locals {
+    subnets = var.cluster.location["zones"] != null ? slice(module.vpc.public_subnets, 0, length(var.cluster.location["zones"])) : null
+    disable_hyperthreading = <<EOF
+# Disable hyper-threading.  Visit the following link for details:
+# https://aws.amazon.com/blogs/compute/disabling-intel-hyper-threading-technology-on-amazon-linux/
+for n in $(cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list | cut -s -d, -f2- | tr ',' '\n' | sort -un); do
+    echo "Disabling cpu$n..."
+    echo 0 > /sys/devices/system/cpu/cpu$n/online
+done
+EOF
+
     default_nodes = [
         {
             "name" = "default",
@@ -95,57 +105,52 @@ locals {
             "asg_max_size" = 2
             "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/default=true"
             "public_ip" = true
-            #"subnets" = var.cluster.location["zones"] != null ? slice(module.vpc.public_subnets, 0, length(var.cluster.location["zones"])) : null
+            "subnets" = local.subnets
             "key_name" = ""
             "pre_userdata" = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
 # Add authorized ssh key
-echo "${local.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
+echo "${module.common.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
 EOF
         }
     ]
     system_nodes = [
         {
-            "name" = "jarvice-system",
-            "instance_type" = local.system_nodes_type
-            "asg_desired_capacity" = local.system_nodes_num
-            "asg_min_size" = local.system_nodes_num
-            "asg_max_size" = local.system_nodes_num * 2
-            "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-system=true --register-with-taints=node-role.jarvice.io/jarvice-system=true:NoSchedule"
+            "name" = "jxesystem",
+            "instance_type" = module.common.system_nodes_type
+            "asg_desired_capacity" = module.common.system_nodes_num
+            "asg_min_size" = module.common.system_nodes_num
+            "asg_max_size" = module.common.system_nodes_num * 2
+            "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-system=true,node-pool.jarvice.io/jarvice-system=jxesystem --register-with-taints=node-role.jarvice.io/jarvice-system=true:NoSchedule"
             "public_ip" = true
-            #"subnets" = var.cluster.location["zones"] != null ? slice(module.vpc.public_subnets, 0, length(var.cluster.location["zones"])) : null
+            "subnets" = local.subnets
             "key_name" = ""
             "pre_userdata" = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
 # Add authorized ssh key
-echo "${local.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
+echo "${module.common.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
 EOF
         }
     ]
     compute_nodes = length(var.cluster["compute_node_pools"]) == 0 ? null : [
-        for index, pool in var.cluster["compute_node_pools"]:
+        for name, pool in var.cluster["compute_node_pools"]:
             {
-                "name" = "jarvice-compute-${index}"
+                "name" = name
                 "instance_type" = pool.nodes_type
                 "root_volume_size" = pool.nodes_disk_size_gb
                 "asg_desired_capacity" = pool.nodes_num
                 "asg_min_size" = pool.nodes_min
                 "asg_max_size" = pool.nodes_max
-                "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-compute=true --register-with-taints=node-role.jarvice.io/jarvice-compute=true:NoSchedule"
+                "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-compute=true,node-pool.jarvice.io/jarvice-compute=${name} --register-with-taints=node-role.jarvice.io/jarvice-compute=true:NoSchedule"
                 "public_ip" = true
-                #"subnets" = var.cluster.location["zones"] != null ? slice(module.vpc.public_subnets, 0, length(var.cluster.location["zones"])) : null
+                "subnets" = local.subnets
                 "key_name" = ""
                 "pre_userdata" = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
 # Add authorized ssh key
-echo "${local.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
+echo "${module.common.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
 
-# Disable hyper-threading.  Visit the following link for details:
-# https://aws.amazon.com/blogs/compute/disabling-intel-hyper-threading-technology-on-amazon-linux/
-for n in $(cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list | cut -s -d, -f2- | tr ',' '\n' | sort -un); do
-    echo "Disabling cpu$n..."
-    echo 0 > /sys/devices/system/cpu/cpu$n/online
-done
+${lower(pool.meta.disable_hyperthreading) == "true" || lower(pool.meta.disable_hyperthreading) == "yes" ? local.disable_hyperthreading : ""}
 EOF
                 "additional_userdata" = <<EOF
 # additional_userdata (executed after kubelet bootstrap and cluster join)
@@ -174,11 +179,13 @@ module "eks" {
     cluster_name = var.cluster.meta["cluster_name"]
     cluster_version = var.cluster.meta["kubernetes_version"]
 
+    #config_output_path = pathexpand(local.kube_config["config_path"])
+    write_kubeconfig = false
+
     vpc_id = module.vpc.vpc_id
     enable_irsa = true
 
     subnets = module.vpc.public_subnets
-    #subnets = module.vpc.private_subnets
 
     worker_groups = concat(local.default_nodes, local.system_nodes, local.compute_nodes)
     worker_additional_security_group_ids = [for sg in aws_security_group.jarvice : sg.id]

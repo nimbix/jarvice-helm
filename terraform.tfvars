@@ -53,7 +53,7 @@ EOF
 ### Kubernetes settings ###
 ###########################
 k8s = {
-    "k8s_cluster_00" = {
+    k8s_cluster_00 = {
         enabled = false
 
         auth = {
@@ -87,7 +87,7 @@ k8s = {
   # If deploying "downstream" cluster, be sure to set JARVICE_SCHED_SERVER_KEY
   #JARVICE_SCHED_SERVER_KEY: # "jarvice-downstream:Pass1234"
 
-  # JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
+  #JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
   #JARVICE_JOBS_DOMAIN: # my-domain.com  # (host based ingress)
   #JARVICE_JOBS_LB_SERVICE: false
 
@@ -123,7 +123,7 @@ EOF
             }
         }
     },
-    "k8s_cluster_01" = {
+    k8s_cluster_01 = {
         enabled = false
 
         auth = {
@@ -157,7 +157,7 @@ jarvice:
   # If deploying "downstream" cluster, be sure to set JARVICE_SCHED_SERVER_KEY
   #JARVICE_SCHED_SERVER_KEY: # "jarvice-downstream:Pass1234"
 
-  # JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
+  #JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
   #JARVICE_JOBS_DOMAIN: # my-domain.com  # (host based ingress)
   #JARVICE_JOBS_LB_SERVICE: false
 
@@ -199,7 +199,7 @@ EOF
 ### Google Cloud GKE Settings ###
 #################################
 gke = {
-    "gke_cluster_00" = {
+    gke_cluster_00 = {
         enabled = false
 
         auth = {
@@ -216,7 +216,7 @@ gke = {
 
         location = {
             region = "us-west1"
-            zones = ["us-west1-a"]
+            zones = ["us-west1-b"]
         }
 
         # Visit the following link for GCP machine type specs:
@@ -225,22 +225,28 @@ gke = {
             nodes_type = null  # auto-set if null specified
             nodes_num = null   # auto-set if null specified
         }
-        compute_node_pools = [
-            {
-                nodes_type = "n1-standard-32"
+        compute_node_pools = {
+            jxecompute00 = {
+                nodes_type = "c2-standard-60"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
+                meta = {
+                    disable_hyperthreading = "true"
+                }
             },
-            #{
-            #    nodes_type = "n1-standard-32"
+            #jxecompute01 = {
+            #    nodes_type = "c2-standard-60"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
             #    nodes_max = 16
+            #    meta = {
+            #        disable_hyperthreading = "true"
+            #    }
             #},
-        ]
+        }
 
         helm = {
             jarvice = {
@@ -281,7 +287,7 @@ EOF
             }
         }
     },
-    "gke_cluster_01" = {
+    gke_cluster_01 = {
         enabled = false
 
         auth = {
@@ -298,7 +304,7 @@ EOF
 
         location = {
             region = "us-west1"
-            zones = ["us-west1-a"]
+            zones = ["us-west1-b"]
         }
 
         # Visit the following link for GCP machine type specs:
@@ -307,22 +313,28 @@ EOF
             nodes_type = null  # auto-set if null specified
             nodes_num = null   # auto-set if null specified
         }
-        compute_node_pools = [
-            {
-                nodes_type = "n1-standard-32"
+        compute_node_pools = {
+            jxecompute00 = {
+                nodes_type = "c2-standard-60"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
+                meta = {
+                    disable_hyperthreading = "true"
+                }
             },
-            #{
-            #    nodes_type = "n1-standard-32"
+            #jxecompute01 = {
+            #    nodes_type = "c2-standard-60"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
             #    nodes_max = 16
+            #    meta = {
+            #        disable_hyperthreading = "true"
+            #    }
             #},
-        ]
+        }
 
         helm = {
             jarvice = {
@@ -370,7 +382,7 @@ EOF
 ### Amazon EKS Settings ###
 ###########################
 eks = {
-    "eks_cluster_00" = {
+    eks_cluster_00 = {
         enabled = false
 
         auth = {
@@ -387,7 +399,7 @@ eks = {
 
         location = {
             region = "us-west-2"
-            zones = null
+            zones = ["us-west-2a"]
         }
 
         # Visit the following link for AWS instance type specs:
@@ -396,22 +408,28 @@ eks = {
             nodes_type = null  # auto-set if null specified
             nodes_num = null   # auto-set if null specified
         }
-        compute_node_pools = [
-            {
+        compute_node_pools = {
+            jxecompute00 = {
                 nodes_type = "c5.18xlarge"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
+                meta = {
+                    disable_hyperthreading = "true"
+                }
             },
-            #{
+            #jxecompute01 = {
             #    nodes_type = "c5.18xlarge"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
             #    nodes_max = 16
+            #    meta = {
+            #        disable_hyperthreading = "true"
+            #    }
             #},
-        ]
+        }
 
         helm = {
             jarvice = {
@@ -452,7 +470,7 @@ EOF
             }
         }
     },
-    "eks_cluster_01" = {
+    eks_cluster_01 = {
         enabled = false
 
         auth = {
@@ -469,7 +487,7 @@ EOF
 
         location = {
             region = "us-west-2"
-            zones = null
+            zones = ["us-west-2a"]
         }
 
         # Visit the following link for AWS instance type specs:
@@ -478,22 +496,28 @@ EOF
             nodes_type = null  # auto-set if null specified
             nodes_num = null   # auto-set if null specified
         }
-        compute_node_pools = [
-            {
+        compute_node_pools = {
+            jxecompute00 = {
                 nodes_type = "c5.18xlarge"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
+                meta = {
+                    disable_hyperthreading = "true"
+                }
             },
-            #{
+            #jxecompute01 = {
             #    nodes_type = "c5.18xlarge"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
             #    nodes_max = 16
+            #    meta = {
+            #        disable_hyperthreading = "true"
+            #    }
             #},
-        ]
+        }
 
         helm = {
             jarvice = {
@@ -541,7 +565,7 @@ EOF
 ### Azure AKS settings ###
 ##########################
 aks = {
-    "aks_cluster_00" = {
+    aks_cluster_00 = {
         enabled = false
 
         # Visit the following link for service principal creation information:
@@ -559,7 +583,7 @@ aks = {
         }
 
         location = {
-            region = "Central US"
+            region = "westus2"
             zones = ["1"]
         }
 
@@ -569,22 +593,26 @@ aks = {
             nodes_type = null  # auto-set if null specified
             nodes_num = null   # auto-set if null specified
         }
-        compute_node_pools = [
-            {
-                nodes_type = "Standard_D32_v3"
+        compute_node_pools = {
+            jxecompute00 = {
+                nodes_type = "Standard_D15_v2"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
+                meta = {
+                }
             },
-            #{
-            #    nodes_type = "Standard_D32_v3"
+            #jxecompute01 = {
+            #    nodes_type = "Standard_D15_v2"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
             #    nodes_max = 16
+            #    meta = {
+            #    }
             #},
-        ]
+        }
 
         helm = {
             jarvice = {
@@ -593,7 +621,7 @@ aks = {
 
                 # global values_yaml take precedence over cluster
                 # values_file (values_file ignored if not found)
-                values_file = "override-tf.aks.<region>.<cluster_name>.yaml"  # "override-tf.aks.centralus.tf-jarvice.yaml"
+                values_file = "override-tf.aks.<region>.<cluster_name>.yaml"  # "override-tf.aks.westus2.tf-jarvice.yaml"
 
                 values_yaml = <<EOF
 # values_yaml - takes precedence over values_file and global values_yaml
@@ -625,7 +653,7 @@ EOF
             }
         }
     },
-    "aks_cluster_01" = {
+    aks_cluster_01 = {
         enabled = false
 
         # Visit the following link for service principal creation information:
@@ -643,7 +671,7 @@ EOF
         }
 
         location = {
-            region = "Central US"
+            region = "westus2"
             zones = ["1"]
         }
 
@@ -653,22 +681,26 @@ EOF
             nodes_type = null  # auto-set if null specified
             nodes_num = null   # auto-set if null specified
         }
-        compute_node_pools = [
-            {
-                nodes_type = "Standard_D32_v3"
+        compute_node_pools = {
+            jxecompute00 = {
+                nodes_type = "Standard_D15_v2"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
+                meta = {
+                }
             },
-            #{
-            #    nodes_type = "Standard_D32_v3"
+            #jxecompute01 = {
+            #    nodes_type = "Standard_D15_v2"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
             #    nodes_max = 16
+            #    meta = {
+            #    }
             #},
-        ]
+        }
 
         helm = {
             jarvice = {
@@ -677,7 +709,7 @@ EOF
 
                 # global values_yaml take precedence over cluster
                 # values_file (values_file ignored if not found)
-                values_file = "override-tf.aks.<region>.<cluster_name>.yaml"  # "override-tf.aks.centralus.tf-jarvice-downstream.yaml"
+                values_file = "override-tf.aks.<region>.<cluster_name>.yaml"  # "override-tf.aks.westus2.tf-jarvice-downstream.yaml"
 
                 values_yaml = <<EOF
 # values_yaml - takes precedence over values_file and global values_yaml

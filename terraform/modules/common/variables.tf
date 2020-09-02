@@ -1,4 +1,4 @@
-# variables.tf - EKS module variable definitions
+# variables.tf - common module variable definitions
 
 variable "global" {
     description = "Global Cluster Settings"
@@ -41,5 +41,20 @@ variable "cluster" {
             map(string)
         )
     })
+}
+
+variable "system_nodes_type_upstream" {
+    type = string
+    default = null
+}
+
+variable "system_nodes_type_downstream" {
+    type = string
+    default = null
+}
+
+variable "storage_class_provisioner" {
+    type = string
+    default = ""
 }
 
