@@ -95,9 +95,9 @@ spec:
 ---
 {{- $cachePullNamespace := printf "%s-daemonsets" .Release.Namespace -}}
 {{- if (not (empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE)) }}
-{{- $cachePullNamespace = printf "%s" .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE -}}
+{{- $cachePullNamespace = .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE -}}
 {{- end }}
-{{- if (not (lookup "v1" "ConfigMap" .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE "jarvice-cache-pull").metadata) }}
+{{- if (not (lookup "v1" "ConfigMap" $cachePullNamespace "jarvice-cache-pull").metadata) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
