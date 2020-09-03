@@ -137,6 +137,12 @@ jarvice_db: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     limits:
       cpu: 250m
       memory: 2Gi
+  readinessProbe:
+    initialDelaySeconds: 5
+    timeoutSeconds: 2
+  livenessProbe:
+    initialDelaySeconds: 30
+    timeoutSeconds: 5
   tolerations: # '[{"key": "node-role.jarvice.io/jarvice-db", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-db", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-db": "true"}'
   networkPolicy:
@@ -206,6 +212,12 @@ jarvice_smtpd:
     limits:
       cpu: 100m
       memory: 128Mi
+  readinessProbe:
+    initialDelaySeconds: 5
+    timeoutSeconds: 2
+  livenessProbe:
+    initialDelaySeconds: 30
+    timeoutSeconds: 5
   tolerations: # '[{"key": "node-role.jarvice.io/jarvice-smtpd", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-smtpd", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-smtpd": "true"}'
   networkPolicy:
@@ -229,6 +241,18 @@ jarvice_idmapper: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     limits:
       cpu: 100m
       memory: 128Mi
+  readinessProbe:
+    initialDelaySeconds: 3
+    periodSeconds: 15
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 3
+  livenessProbe:
+    initialDelaySeconds: 3
+    periodSeconds: 15
+    timeoutSeconds: 1
+    successThreshold: 1
+    failureThreshold: 2
   tolerations: # '[{"key": "node-role.jarvice.io/jarvice-idmapper", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-idmapper", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-idmapper": "true"}'
   networkPolicy:
@@ -258,6 +282,12 @@ jarvice_memcached: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     limits:
       cpu: 250m
       memory: 512Mi
+  readinessProbe:
+    initialDelaySeconds: 5
+    timeoutSeconds: 1
+  livenessProbe:
+    initialDelaySeconds: 30
+    timeoutSeconds: 5
   tolerations: # '[{"key": "node-role.jarvice.io/jarvice-memcached", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-memcached", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-memcached": "true"}'
   networkPolicy:
@@ -277,6 +307,12 @@ jarvice_registry:
     limits:
       cpu: 250m
       memory: 512Mi
+  readinessProbe:
+    initialDelaySeconds: 5
+    timeoutSeconds: 1
+  livenessProbe:
+    initialDelaySeconds: 30
+    timeoutSeconds: 5
   tolerations: # '[{"key": "node-role.jarvice.io/jarvice-registry", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-registry", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-registry": "true"}'
   networkPolicy:
@@ -308,6 +344,18 @@ jarvice_dal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     limits:
       cpu: 1
       memory: 16Gi
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 30
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 60
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
   hostNetwork: false
   tolerations: # '[{"key": "node-role.jarvice.io/jarvice-dal", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-dal", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-dal": "true"}'
@@ -360,6 +408,18 @@ jarvice_scheduler: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     limits:
       cpu: 1
       memory: 2Gi
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 30
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 60
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
   tolerations: # '[{"key": "node-role.jarvice.io/jarvice-scheduler", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-scheduler", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-scheduler": "true"}'
   networkPolicy:
@@ -385,6 +445,18 @@ jarvice_k8s_scheduler:
     limits:
       cpu: 1
       memory: 2Gi
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 30
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 60
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
   tolerations: # '[{"key": "node-role.jarvice.io/jarvice-k8s-scheduler", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-k8s-scheduler", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-k8s-scheduler": "true"}'
   networkPolicy:
@@ -405,6 +477,18 @@ jarvice_pod_scheduler:
     limits:
       cpu: 1
       memory: 1Gi
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 30
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 60
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
   tolerations: # '[{"key": "node-role.jarvice.io/jarvice-pod-scheduler", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-pod-scheduler", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-pod-scheduler": "true"}'
   env:
@@ -426,6 +510,18 @@ jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     limits:
       cpu: 250m
       memory: 512Mi
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 30
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 60
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
   tolerations: # '[{"key": "node-role.jarvice.io/jarvice-api", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-api", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-api": "true"}'
   networkPolicy:
@@ -446,6 +542,18 @@ jarvice_appsync: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     limits:
       cpu: 250m
       memory: 1Gi
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 30
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 60
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
   tolerations: # '[{"key": "node-role.jarvice.io/jarvice-appsync", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-appsync", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-appsync": "true"}'
   # If JARVICE_SYSTEM_REGISTRY and/or JARVICE_SYSTEM_REPO_BASE are not set in
@@ -473,6 +581,18 @@ jarvice_mc_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     limits:
       cpu: 250m
       memory: 2Gi
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 30
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 60
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
   tolerations: # '[{"key": "node-role.jarvice.io/jarvice-mc-portal", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-mc-portal", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-mc-portal": "true"}'
   networkPolicy:

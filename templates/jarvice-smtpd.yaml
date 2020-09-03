@@ -68,13 +68,13 @@ spec:
         readinessProbe:
           tcpSocket:
             port: smtp
-          initialDelaySeconds: 5
-          timeoutSeconds: 2
+          initialDelaySeconds: {{ .Values.jarvice_smtpd.readinessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.jarvice_smtpd.readinessProbe.timeoutSeconds }}
         livenessProbe:
           tcpSocket:
             port: smtp
-          initialDelaySeconds: 30
-          timeoutSeconds: 5
+          initialDelaySeconds: {{ .Values.jarvice_smtpd.livenessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.jarvice_smtpd.livenessProbe.timeoutSeconds }}
         resources:
 {{ toYaml .Values.jarvice_smtpd.resources | indent 10 }}
 ---

@@ -77,13 +77,13 @@ spec:
         readinessProbe:
           tcpSocket:
             port: http
-          initialDelaySeconds: 5
-          timeoutSeconds: 1
+          initialDelaySeconds: {{ .Values.jarvice_registry.readinessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.jarvice_registry.readinessProbe.timeoutSeconds }}
         livenessProbe:
           tcpSocket:
             port: http
-          initialDelaySeconds: 30
-          timeoutSeconds: 5
+          initialDelaySeconds: {{ .Values.jarvice_registry.livenessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.jarvice_registry.livenessProbe.timeoutSeconds }}
         env:
           - name: REGISTRY_HTTP_ADDR
             value: "{{ .Values.jarvice_registry.env.REGISTRY_HTTP_ADDR }}"

@@ -44,20 +44,20 @@ spec:
           exec:
             command:
             - /bin/true
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          timeoutSeconds: 2
-          successThreshold: 1
-          failureThreshold: 3
+          initialDelaySeconds: {{ .Values.jarvice_pod_scheduler.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jarvice_pod_scheduler.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jarvice_pod_scheduler.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_pod_scheduler.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_pod_scheduler.readinessProbe.failureThreshold }}
         livenessProbe:
           exec:
             command:
             - /bin/true
-          initialDelaySeconds: 20
-          periodSeconds: 20
-          timeoutSeconds: 5
-          successThreshold: 1
-          failureThreshold: 3
+          initialDelaySeconds: {{ .Values.jarvice_pod_scheduler.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jarvice_pod_scheduler.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jarvice_pod_scheduler.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_pod_scheduler.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_pod_scheduler.livenessProbe.failureThreshold }}
         env:
           - name: JARVICE_SYSTEM_K8S
 {{- if empty .Values.jarvice.JARVICE_SYSTEM_K8S }}

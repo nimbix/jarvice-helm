@@ -69,20 +69,20 @@ spec:
           httpGet:
             port: http
             path: /map/
-          initialDelaySeconds: 3
-          periodSeconds: 15
-          timeoutSeconds: 1
-          successThreshold: 1
-          failureThreshold: 3
+          initialDelaySeconds: {{ .Values.jarvice_idmapper.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jarvice_idmapper.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jarvice_idmapper.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_idmapper.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_idmapper.readinessProbe.failureThreshold }}
         livenessProbe:
           httpGet:
             port: http
             path: /map/
-          initialDelaySeconds: 3
-          periodSeconds: 15
-          timeoutSeconds: 1
-          successThreshold: 1
-          failureThreshold: 2
+          initialDelaySeconds: {{ .Values.jarvice_idmapper.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jarvice_idmapper.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jarvice_idmapper.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_idmapper.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_idmapper.livenessProbe.failureThreshold }}
         env:
           - name: HOMEPATH
             value: "{{ .Values.jarvice_idmapper.env.HOMEPATH }}"
