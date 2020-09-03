@@ -93,7 +93,7 @@ spec:
       priorityClassName: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
 {{- end }}
 ---
-{{- if (not (lookup "v1" "ConfigMap" .Release.Namespace "jarvice-cache-pull").metadata) }}
+{{- if (not (lookup "v1" "ConfigMap" (printf "%s-daemonsets" .Release.Namespace) "jarvice-cache-pull").metadata) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
