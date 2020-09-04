@@ -113,6 +113,10 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202009041653
+
+* (3453) Improved parallel job startup synchronization.
+
 ## 3.0.0-1.202009021933
 
 * (3239) Fixed bug where portal would malfunction if cloning a job which referred to a previously deleted app.
