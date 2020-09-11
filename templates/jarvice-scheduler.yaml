@@ -37,6 +37,8 @@ spec:
         deployment-date: {{ now | quote }}
     spec:
       serviceAccountName: jarvice-system
+      securityContext:
+        runAsUser: 0
 {{- if (not (empty .Values.jarvice_scheduler.tolerations)) }}
       tolerations: {{ .Values.jarvice_scheduler.tolerations }}
 {{- else if (not (empty .Values.jarvice.tolerations)) }}
