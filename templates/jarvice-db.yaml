@@ -63,7 +63,7 @@ spec:
       containers:
       - name: jarvice-db
         image: {{ .Values.jarvice_db.image }}
-        imagePullPolicy: Always
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice_db.imagePullPolicy }}
         #command:
         #  - docker-entrypoint.sh
         #  - --ignore-db-dir=lost+found

@@ -34,6 +34,7 @@ jarvice:
   JARVICE_JOBS_DOMAIN: # my-domain.com  # (host based ingress)
   JARVICE_JOBS_LB_SERVICE: false
   JARVICE_JOBS_LB_ANNOTATIONS: # '{}'
+  JARVICE_JOBS_IMAGE_PULL_POLICY: Always
 
   # jarvice.tolerations applies to all of the jarvice_* components below.
   # This can be overridden by updating tolerations in each jarvice_* stanza.
@@ -100,33 +101,39 @@ jarvice:
       enabled: false
       tolerations: #'[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
-      image: nimbix/jarvice-cache-pull:latest
+      image: nimbix/jarvice-cache-pull:20181204
+      imagePullPolicy: IfNotPresent
     lxcfs:
       enabled: false
       tolerations: #'[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
       image: nimbix/lxcfs:3.0.3-3
+      imagePullPolicy: IfNotPresent
     disable_hyper_threading:
       enabled: false
       tolerations: #'[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeSelector: '{"node-role.jarvice.io/jarvice-compute": "true", "kubernetes.io/arch": "amd64"}'
-      image: busybox
+      image: busybox:latest
+      imagePullPolicy: IfNotPresent
     nvidia:
       enabled: false
       tolerations: #'[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
       image: nvidia/k8s-device-plugin:1.11
+      imagePullPolicy: IfNotPresent
     xilinx_fpga:
       enabled: false
       tolerations: #'[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       # Xilinx FPGA only support amd64 arch
       nodeSelector: '{"kubernetes.io/arch": "amd64"}'  # '{"node-role.jarvice.io/jarvice-compute": "true", "kubernetes.io/arch": "amd64"}'
       image: xilinxatg/xilinx_k8s_fpga_plugin:latest
+      imagePullPolicy: IfNotPresent
     rdma:
       enabled: false
       tolerations: #'[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}, {"key": "jarvice.com/rdma", "operator": "Exists",  "effect": "NoSchedule"}]'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
       image: jarvice/k8s-rdma-device:1.0.1
+      imagePullPolicy: IfNotPresent
 
 
 # Database server previously set up?  Set enabled to false.
@@ -148,6 +155,7 @@ jarvice_db: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   image: mysql:5.6.41
+  imagePullPolicy: IfNotPresent
   persistence:
     enabled: false
     # Set to "keep" to prevent removal or jarvice-db-pvc on helm delete
@@ -223,6 +231,7 @@ jarvice_smtpd:
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   image: nimbix/postfix:3.11_3.4.9-r0
+  imagePullPolicy: IfNotPresent
 
 # Web service to map a username to full Linux identity based on inspection
 # of a shared filesystem:  https://github.com/nimbix/idmapper
@@ -257,7 +266,8 @@ jarvice_idmapper: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   nodeSelector: # '{"node-role.jarvice.io/jarvice-idmapper": "true"}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
-  image: nimbix/idmapper
+  image: nimbix/idmapper:20200515-1
+  imagePullPolicy: IfNotPresent
   # Shared filesystem settings.  Defaults to hostPath if NFS server is not set
   filesystem:
     path: /home
@@ -293,6 +303,7 @@ jarvice_memcached: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   image: memcached:1.5
+  imagePullPolicy: IfNotPresent
   maxItemMemory: 64
   verbosity: v
   extendedOptions: modern
@@ -318,6 +329,7 @@ jarvice_registry:
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   image: registry:2
+  imagePullPolicy: IfNotPresent
   persistence:
     enabled: false
     # Set to "keep" to prevent removal or jarvice-registry-pvc on helm delete

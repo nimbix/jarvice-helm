@@ -70,7 +70,7 @@ spec:
       containers:
       - name: jarvice-registry
         image: {{ .Values.jarvice_registry.image }}
-        imagePullPolicy: Always
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice_registry.imagePullPolicy }}
         ports:
           - name: http
             containerPort: 5000
