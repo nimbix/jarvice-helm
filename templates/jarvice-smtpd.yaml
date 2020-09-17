@@ -61,7 +61,7 @@ spec:
       containers:
       - name: jarvice-smtpd
         image: {{ .Values.jarvice_smtpd.image }}
-        imagePullPolicy: Always
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice_smtpd.imagePullPolicy }}
         ports:
           - name: "smtp"
             containerPort: 25
