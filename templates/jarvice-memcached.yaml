@@ -63,7 +63,7 @@ spec:
       containers:
       - name: jarvice-memcached
         image: {{ .Values.jarvice_memcached.image }}
-        imagePullPolicy: Always
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice_memcached.imagePullPolicy }}
         command:
         - memcached
         - -m {{ .Values.jarvice_memcached.maxItemMemory  }}

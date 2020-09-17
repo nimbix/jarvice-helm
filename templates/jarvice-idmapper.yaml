@@ -61,7 +61,7 @@ spec:
       containers:
       - name: jarvice-idmapper
         image: {{ .Values.jarvice_idmapper.image }}
-        imagePullPolicy: Always
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice_idmapper.imagePullPolicy }}
         ports:
           - name: http
             containerPort: 8080
