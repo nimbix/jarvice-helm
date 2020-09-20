@@ -1,0 +1,29 @@
+apiVersion: v1
+entries:
+  jarvice:
+  - annotations:
+      tag: jarvice-master
+      version: 3.0.0-1.202009101732
+    apiVersion: v2
+    appVersion: 3.0.0
+    created: "2020-09-20T14:19:49.2637123-05:00"
+    description: JARVICE cloud platform
+    digest: 097e90f558513d69f310a5fa7f5f2a4bb46a5c76cdd7fab6437c0735056a2fed
+    home: http://www.nimbix.net/
+    icon: https://github.com/nimbix/jarvice-helm/raw/master/skin-default/favicon.png
+    keywords:
+    - JARVICE
+    - HPC
+    - cloud
+    kubeVersion: '>=1.14.0-0'
+    maintainers:
+    - email: support@nimbix.net
+      name: Nimbix, Inc.
+      url: http://www.nimbix.net/
+    name: jarvice
+    sources:
+    - https://github.com/nimbix/jarvice-helm
+    urls:
+    - https://nimbix.github.io/jarvice-helm/jarvice-3.0.0-1.202009101732.tgz
+    version: 3.0.0-1.202009101732
+generated: "2020-09-20T14:19:49.257406199-05:00"
