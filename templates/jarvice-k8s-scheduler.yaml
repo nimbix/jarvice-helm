@@ -214,6 +214,12 @@ spec:
             value: "{{ .Values.jarvice.JARVICE_JOBS_LB_SERVICE }}"
           - name: JARVICE_JOBS_LB_ANNOTATIONS
             value: '{{ .Values.jarvice.JARVICE_JOBS_LB_ANNOTATIONS }}'
+          - name: JARVICE_JOBS_INIT_IMAGE_PULL_POLICY
+{{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
+            value: "Always"
+{{- else }}
+            value: "IfNotPresent"
+{{- end }}
           - name: JARVICE_JOBS_IMAGE_PULL_POLICY
             value: "{{ .Values.jarvice.JARVICE_JOBS_IMAGE_PULL_POLICY }}"
           - name: JARVICE_K8S_SCHED_LOGLEVEL
