@@ -214,11 +214,6 @@ spec:
           readOnly: true
         resources:
 {{ toYaml .Values.jarvice_dal.resources | indent 10 }}
-        securityContext:
-          allowPrivilegeEscalation: true
-          capabilities:
-            add:
-            - SYS_ADMIN
 ---
 apiVersion: v1
 kind: Service
