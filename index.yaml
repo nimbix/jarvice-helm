@@ -3,12 +3,12 @@ entries:
   jarvice:
   - annotations:
       tag: jarvice-master
-      version: 3.0.0-1.202009101732
+      version: 3.0.0-1.202008191936
     apiVersion: v2
     appVersion: 3.0.0
-    created: "2020-09-20T14:19:49.2637123-05:00"
+    created: "2020-09-23T17:39:45.353660184Z"
     description: JARVICE cloud platform
-    digest: 097e90f558513d69f310a5fa7f5f2a4bb46a5c76cdd7fab6437c0735056a2fed
+    digest: 2aadf14d7e2abe0c321d45210fdb2aa2509378b1eac0efa64805814c9627c544
     home: http://www.nimbix.net/
     icon: https://github.com/nimbix/jarvice-helm/raw/master/skin-default/favicon.png
     keywords:
@@ -24,6 +24,6 @@ entries:
     sources:
     - https://github.com/nimbix/jarvice-helm
     urls:
-    - https://nimbix.github.io/jarvice-helm/jarvice-3.0.0-1.202009101732.tgz
-    version: 3.0.0-1.202009101732
-generated: "2020-09-20T14:19:49.257406199-05:00"
+    - https://nimbix.github.io/jarvice-helm/jarvice-3.0.0-1.202008191936.tgz
+    version: 3.0.0-1.202008191936
+generated: "2020-09-23T17:39:45.338045427Z"
