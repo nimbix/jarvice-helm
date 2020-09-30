@@ -39,6 +39,7 @@ jarvice:
   # jarvice.tolerations applies to all of the jarvice_* components below.
   # This can be overridden by updating tolerations in each jarvice_* stanza.
   tolerations: '[{"key": "node-role.jarvice.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}]}] }}'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-system": "true"}'
 
   # JARVICE_DBHOST and JARVICE_DBUSER only need to change if using a database
