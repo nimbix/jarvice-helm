@@ -113,6 +113,23 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202009301931
+
+* (2952) Added task builder hint to preselect a specific user vault for any given AppDef workflow, if available, using the `VAULT:<name>` format; please see *User-interface Hinting* in the [Application Definition Guide](https://jarvice.readthedocs.io/en/latest/appdef/#user-interface-hinting) for details.
+* (3083) Fixed bug in *PushToCompute* app target editor that would show a recently created app's icon when editing a different app.
+* (3148) Allow user account registration links to be optionally copied to clipboard rather than requiring email, for both system administrator invites as well as team administrator invites.
+* (3149) Allow users to reset their passwords in the *Account->Profile* view from a logged in session, in addition to the password reset email from the login screen method.
+* (3241) Fixed bug where occasionally queued jobs would run out of order once resources became available.
+* (3398) Support configurable liveness and readiness problems in Helm Chart via the `*.readinessProbe` and `*.livenessProbe` sections in the YAML.
+* (3402) Fixed bug where system administrator-initiated email invitations would leave the dialog box open after sending.
+* (3405), (3406), (3407) Optimized vault file listing architecture, and eliminated the need to run `jarvice-dal` pods with `privileged` security context.
+* (3415) Optimized job output download for completed jobs in portal.
+* (3452) Fixed bug where email was not being sent for *PushToCompute* builds from the Nimbix Cloud.
+* (3455) Fixed bug where `jarvice-pod-scheduler` would erroneously count completed or failed pods as consuming resource on nodes, artificially reducing said nodes' capacity to run jobs.
+* (3466) Optimized job status mechanisms to perform much faster with large numbers of jobs pending.
+* (3468) Changed `imagePullPolicy` to `IfNotPresent` for JARVICE system containers as well as `init` if using versioned tags by default.  Job-related application containers still default to `Always` policy, but can be overridden with the `jarvice.JARVICE_JOBS_IMAGE_PULL_POLICY` parameter in the Helm Chart.
+
+
 ## 3.0.0-1.202009041653
 
 * (3453) Improved parallel job startup synchronization.
