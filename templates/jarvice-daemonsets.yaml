@@ -69,7 +69,7 @@ spec:
       containers:
       - name: jarvice-lxcfs
         image: {{ .Values.jarvice.daemonsets.cache_pull.image }}
-        imagePullPolicy: Always
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.cache_pull.imagePullPolicy }}
         command:
           - /usr/local/bin/jarvice-cache-pull.sh
         env:
@@ -93,6 +93,11 @@ spec:
       priorityClassName: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
 {{- end }}
 ---
+{{- $cachePullNamespace := printf "%s-daemonsets" .Release.Namespace -}}
+{{- if (not (empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE)) }}
+{{- $cachePullNamespace = .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE -}}
+{{- end }}
+{{- if (not (lookup "v1" "ConfigMap" $cachePullNamespace "jarvice-cache-pull").metadata) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -103,7 +108,11 @@ metadata:
   namespace: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
 {{- end }}
   annotations:
+{{- if .Release.IsInstall }}
     "helm.sh/hook": post-install
+{{- else }}
+    "helm.sh/hook": post-upgrade
+{{- end }}
 data:
   image.config: |
     [
@@ -173,6 +182,7 @@ data:
   interval: "300"
 ---
 {{- end }}
+{{- end }}
 {{- if .Values.jarvice.daemonsets.lxcfs.enabled }}
 apiVersion: apps/v1
 kind: DaemonSet
@@ -216,7 +226,7 @@ spec:
       containers:
       - name: jarvice-lxcfs
         image: {{ .Values.jarvice.daemonsets.lxcfs.image }}
-        imagePullPolicy: Always
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.lxcfs.imagePullPolicy }}
         env:
           - name: HOST_LXCFS_DIR
             value: "/var/lib/lxcfs"
@@ -276,7 +286,7 @@ spec:
       containers:
       - name: jarvice-nvidia-device-plugin
         image: {{ .Values.jarvice.daemonsets.nvidia.image }}
-        imagePullPolicy: Always
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.nvidia.imagePullPolicy }}
         volumeMounts:
           - name: device-plugins
             mountPath: /var/lib/kubelet/device-plugins
@@ -336,7 +346,7 @@ spec:
       containers:
       - name: jarvice-xilinx-fpga-device-plugin
         image: {{ .Values.jarvice.daemonsets.xilinx_fpga.image }}
-        imagePullPolicy: Always
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.xilinx_fpga.imagePullPolicy }}
         volumeMounts:
           - name: device-plugins
             mountPath: /var/lib/kubelet/device-plugins
@@ -402,7 +412,7 @@ spec:
       containers:
       - name: jarvice-rdma-device-plugin
         image: {{ .Values.jarvice.daemonsets.rdma.image }}
-        imagePullPolicy: Always
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.rdma.imagePullPolicy }}
         volumeMounts:
           - name: device-plugins
             mountPath: /var/lib/kubelet/device-plugins
@@ -460,7 +470,7 @@ spec:
       containers:
       - name: jarvice-disable-hyper-threading
         image: {{ .Values.jarvice.daemonsets.disable_hyper_threading.image }}
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.disable_hyper_threading.imagePullPolicy }}
         command:
           - /bin/sh
           - -c

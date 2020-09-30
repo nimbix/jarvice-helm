@@ -40,27 +40,31 @@ spec:
       containers:
       - name: jarvice-appsync
         image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-appsync:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+{{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
         imagePullPolicy: Always
+{{- else }}
+        imagePullPolicy: IfNotPresent
+{{- end }}
         readinessProbe:
           exec:
             command:
             - /bin/sh
             - -c
             - /usr/bin/curl -s -k  https://jarvice-dal:8443/ready | grep -q OK
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          timeoutSeconds: 2
-          successThreshold: 1
-          failureThreshold: 3
+          initialDelaySeconds: {{ .Values.jarvice_appsync.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jarvice_appsync.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jarvice_appsync.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_appsync.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_appsync.readinessProbe.failureThreshold }}
         livenessProbe:
           exec:
             command:
             - /bin/true
-          initialDelaySeconds: 30
+          initialDelaySeconds: {{ .Values.jarvice_appsync.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.jarvice_appsync.livenessProbe.periodSeconds }}
-          timeoutSeconds: 5
-          successThreshold: 1
-          failureThreshold: 3
+          timeoutSeconds: {{ .Values.jarvice_appsync.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_appsync.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_appsync.livenessProbe.failureThreshold }}
         env:
           - name: JARVICE_SYSTEM_K8S
 {{- if empty .Values.jarvice.JARVICE_SYSTEM_K8S }}

@@ -61,20 +61,20 @@ spec:
       containers:
       - name: jarvice-smtpd
         image: {{ .Values.jarvice_smtpd.image }}
-        imagePullPolicy: Always
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice_smtpd.imagePullPolicy }}
         ports:
           - name: "smtp"
             containerPort: 25
         readinessProbe:
           tcpSocket:
             port: smtp
-          initialDelaySeconds: 5
-          timeoutSeconds: 2
+          initialDelaySeconds: {{ .Values.jarvice_smtpd.readinessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.jarvice_smtpd.readinessProbe.timeoutSeconds }}
         livenessProbe:
           tcpSocket:
             port: smtp
-          initialDelaySeconds: 30
-          timeoutSeconds: 5
+          initialDelaySeconds: {{ .Values.jarvice_smtpd.livenessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.jarvice_smtpd.livenessProbe.timeoutSeconds }}
         resources:
 {{ toYaml .Values.jarvice_smtpd.resources | indent 10 }}
 ---

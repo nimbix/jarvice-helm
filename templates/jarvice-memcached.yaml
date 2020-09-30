@@ -63,7 +63,7 @@ spec:
       containers:
       - name: jarvice-memcached
         image: {{ .Values.jarvice_memcached.image }}
-        imagePullPolicy: Always
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice_memcached.imagePullPolicy }}
         command:
         - memcached
         - -m {{ .Values.jarvice_memcached.maxItemMemory  }}
@@ -80,13 +80,13 @@ spec:
         readinessProbe:
           tcpSocket:
             port: jarvice-memcach
-          initialDelaySeconds: 5
-          timeoutSeconds: 1
+          initialDelaySeconds: {{ .Values.jarvice_memcached.readinessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.jarvice_memcached.readinessProbe.timeoutSeconds }}
         livenessProbe:
           tcpSocket:
             port: jarvice-memcach
-          initialDelaySeconds: 30
-          timeoutSeconds: 5
+          initialDelaySeconds: {{ .Values.jarvice_memcached.livenessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.jarvice_memcached.livenessProbe.timeoutSeconds }}
         resources:
 {{ toYaml .Values.jarvice_memcached.resources | indent 10 }}
 ---

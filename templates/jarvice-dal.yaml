@@ -78,7 +78,11 @@ spec:
       containers:
       - name: jarvice-dal
         image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-dal:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+{{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
         imagePullPolicy: Always
+{{- else }}
+        imagePullPolicy: IfNotPresent
+{{- end }}
         ports:
           - name: https
             containerPort: 8443
@@ -89,21 +93,21 @@ spec:
             scheme: HTTPS
             port: https
             path: /ready
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          timeoutSeconds: 2
-          successThreshold: 1
-          failureThreshold: 3
+          initialDelaySeconds: {{ .Values.jarvice_dal.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jarvice_dal.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jarvice_dal.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_dal.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_dal.readinessProbe.failureThreshold }}
         livenessProbe:
           httpGet:
             scheme: HTTPS
             port: https
             path: /live
-          initialDelaySeconds: 10
-          periodSeconds: 20
-          timeoutSeconds: 5
-          successThreshold: 1
-          failureThreshold: 2
+          initialDelaySeconds: {{ .Values.jarvice_dal.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jarvice_dal.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jarvice_dal.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_dal.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_dal.livenessProbe.failureThreshold }}
         env:
           - name: JARVICE_SYSTEM_K8S
 {{- if empty .Values.jarvice.JARVICE_SYSTEM_K8S }}
@@ -210,11 +214,6 @@ spec:
           readOnly: true
         resources:
 {{ toYaml .Values.jarvice_dal.resources | indent 10 }}
-        securityContext:
-          allowPrivilegeEscalation: true
-          capabilities:
-            add:
-            - SYS_ADMIN
 ---
 apiVersion: v1
 kind: Service
