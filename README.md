@@ -52,7 +52,7 @@ $ git clone https://github.com/nimbix/jarvice-helm.git
     - [Customize JARVICE files via a ConfigMap](#customize-jarvice-files-via-a-configmap)
     - [View status of the installed kubernetes objects](#view-status-of-the-installed-kubernetes-objects)
     - [Retreive IP addresses for accessing JARVICE](#retreive-ip-addresses-for-accessing-jarvice)
-    - [Deploy EFK Stack](#deploy-efk-stack)
+    - [Deploy "EFK" Stack](#deploy-efk-stack)
 * [Additional Resources](#additional-resources)
 
 ------------------------------------------------------------------------------
