@@ -1,0 +1,299 @@
+#!/bin/bash
+
+kibana_ingress_host=
+kibana_ingress_path="/"
+
+es_ingress_host=
+es_ingress_path="/"
+
+es_version_tag=7.9.1
+es_storage=10Gi
+es_storage_class=
+
+fluentd_version_tag=v2.4.0
+fluent_bit_version_tag=1.5
+
+namespace=jarvice-logging
+
+function usage {
+    cat <<EOF
+Usage:
+    $0 [options]
+
+Options:
+    --kibana-ingress-host <host>    Kibana ingress host
+    --kibana-ingress-path <path>    Kibana ingress path
+                                    (Default: $kibana_ingress_path)
+    --es-ingress-host <host>        Elasticsearch ingress host
+    --es-ingress-path <path>        Elasticsearch ingress path
+                                    (Default: $kibana_ingress_path)
+    --es-version-tag <tag>          Elasticsearch version (optional)
+                                    (Default: $es_version_tag)
+    --es-storage <size>             Elasticsearch storage size
+                                    (Default: $es_storage)
+    --es-storage-class <class>      Elasticsearch storage class
+    --fluentd-version-tag <tag>     Fluent version (optional)
+                                    (Default: $fluentd_version_tag)
+    --fluent-bit-version-tag <tag>  Fluent-bit version (optional)
+                                    (Default: $fluent_bit_version_tag)
+    --namespace <kube_namespace>    Kubernetes namespace to deploy to
+                                    (Default: $namespace)
+
+Example:
+    $0 --kibana-ingress-host kibana.domain.com --es-ingress-host elasticsearch.domain.com --es-storage-class rbd
+EOF
+}
+
+HELM=$(type -p helm)
+if [ -z "$HELM" ]; then
+    cat <<EOF
+Could not find 'helm' in PATH.  It may not be installed.
+Run 'install-helm' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+KUBECTL=$(type -p kubectl)
+if [ -z "$KUBECTL" ]; then
+    cat <<EOF
+Could not find 'kubectl' in PATH.  It may not be installed.
+Run 'install-kubectl' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        --help)
+            usage
+            exit 0
+            ;;
+        --kibana-ingress-host)
+            kibana_ingress_host=$2
+            shift; shift
+            ;;
+        --kibana-ingress-path)
+            kibana_ingress_path=$2
+            shift; shift
+            ;;
+        --es-ingress-host)
+            es_ingress_host=$2
+            shift; shift
+            ;;
+        --es-ingress-path)
+            es_ingress_path=$2
+            shift; shift
+            ;;
+        --es-version-tag)
+            es_version_tag=$2
+            shift; shift
+            ;;
+        --es-storage)
+            es_storage=$2
+            shift; shift
+            ;;
+        --es-storage-class)
+            es_storage_class=$2
+            shift; shift
+            ;;
+        --fluentd-version-tag)
+            fluentd_version_tag=$2
+            shift; shift
+            ;;
+        --fluent-bit-version-tag)
+            fluent_bit_version_tag=$2
+            shift; shift
+            ;;
+        --namespace)
+            namespace=$2
+            shift; shift
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+[ -z "$kibana_ingress_host" -o -z "$es_ingress_host" -o -z "$es_storage_class" ] && usage && exit 1
+
+set -e
+
+echo
+echo "* Creating namespace: $namespace"
+$KUBECTL create namespace $namespace 2>/dev/null || /bin/true
+
+repo=https://helm.elastic.co
+echo
+echo "* Deploying Elasticsearch $es_version_tag..."
+$HELM upgrade elasticsearch elasticsearch --repo $repo \
+    --namespace $namespace --install --reset-values \
+    \
+    --set replicas=3 \
+    \
+    ${es_version_tag:+--set imageTag=$es_version_tag} \
+    \
+    --set rbac.create=true \
+    \
+    ${es_storage_class:+--set volumeClaimTemplate.storageClassName=$es_storage_class} \
+    --set volumeClaimTemplate.resources.requests.storage=$es_storage \
+    \
+    --set-string nodeSelector."node-role\.jarvice\.io/jarvice-system"="true" \
+    \
+    --set tolerations[0]."key"="node-role\.kubernetes\.io/jarvice-system" \
+    --set tolerations[0]."effect"="NoSchedule" \
+    --set tolerations[0]."operator"="Exists" \
+    \
+    --set tolerations[1]."key"="node-role\.jarvice\.io/jarvice-system" \
+    --set tolerations[1]."effect"="NoSchedule" \
+    --set tolerations[1]."operator"="Exists" \
+    \
+    --set ingress.enabled=true \
+    --set ingress.path="$es_ingress_path" \
+    --set ingress.hosts[0]="$es_ingress_host"
+
+echo
+echo "* Elasticsearch deployment successful..."
+
+echo
+echo "For advanced setup details, visit https://github.com/elastic/helm-charts and/or execute:"
+echo "$ helm inspect all elasticsearch --repo $repo"
+
+echo
+echo "* Deploying Kibana..."
+
+$HELM upgrade kibana kibana --repo $repo \
+    --namespace $namespace --install --reset-values \
+    \
+    --set replicas=1 \
+    \
+    ${es_version_tag:+--set imageTag=$es_version_tag} \
+    \
+    --set ingress.enabled=true \
+    --set ingress.path="$kibana_ingress_path" \
+    --set ingress.hosts[0]="$kibana_ingress_host" \
+    \
+    --set-string nodeSelector."node-role\.jarvice\.io/jarvice-system"="true" \
+    \
+    --set tolerations[0]."key"="node-role\.kubernetes\.io/jarvice-system" \
+    --set tolerations[0]."effect"="NoSchedule" \
+    --set tolerations[0]."operator"="Exists" \
+    \
+    --set tolerations[1]."key"="node-role\.jarvice\.io/jarvice-system" \
+    --set tolerations[1]."effect"="NoSchedule" \
+    --set tolerations[1]."operator"="Exists"
+
+echo
+echo "* Kibana deployment successful..."
+
+echo
+echo "For advanced setup details, visit https://github.com/elastic/helm-charts and/or execute:"
+echo "$ helm inspect all kibana --repo $repo"
+
+repo=https://kubernetes-charts.storage.googleapis.com/
+echo
+echo "* Deploying fluentd..."
+$HELM upgrade fluentd fluentd --repo $repo \
+    --namespace $namespace --install --reset-values \
+    \
+    ${fluentd_version_tag:+--set image.tag=$fluentd_version_tag} \
+    \
+    --set output.host=elasticsearch-master \
+    \
+    --set service.ports[0].name="monitor-agent" \
+    --set service.ports[0].protocol="TCP" \
+    --set service.ports[0].containerPort=24220 \
+    \
+    --set service.ports[1].name="forward-input" \
+    --set service.ports[1].protocol="TCP" \
+    --set service.ports[1].containerPort=24224 \
+    \
+    --set service.ports[2].name="http-input" \
+    --set service.ports[2].protocol="TCP" \
+    --set service.ports[2].containerPort=9880 \
+    \
+    --set rbac.create=true \
+    \
+    --set tolerations[0]."key"="node-role\.kubernetes\.io/jarvice-system" \
+    --set tolerations[0]."effect"="NoSchedule" \
+    --set tolerations[0]."operator"="Exists" \
+    \
+    --set tolerations[1]."key"="node-role\.jarvice\.io/jarvice-system" \
+    --set tolerations[1]."effect"="NoSchedule" \
+    --set tolerations[1]."operator"="Exists" \
+    \
+    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key="node-role\.jarvice\.io/jarvice-system" \
+    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator="Exists" \
+    \
+    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].key="kubernetes\.io/arch" \
+    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].operator="In" \
+    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].values[0]="amd64" \
+    \
+    --set autoscaling.enabled=true \
+    --set autoscaling.minReplicas=2 \
+    --set autoscaling.maxReplicas=5
+
+echo
+echo "* Fluentd deployment successful..."
+
+echo
+echo "For advanced setup details, visit https://github.com/helm/charts/tree/master/stable/fluentd and/or execute:"
+echo "$ helm inspect all fluentd --repo $repo"
+
+echo
+echo "* Deploying fluent-bit..."
+$HELM upgrade fluent-bit fluent-bit --repo $repo \
+    --namespace $namespace --install --reset-values \
+    \
+    ${fluent_bit_version_tag:+--set image.fluent_bit.tag=$fluent_bit_version_tag} \
+    --set image.pullPolicy=IfNotPresent \
+    \
+    --set backend.type=forward \
+    \
+    --set backend.forward.host=fluentd \
+    --set backend.forward.port=24224 \
+    --set backend.forward.tls=off \
+    --set backend.forward.tls_verify=off \
+    \
+    --set backend.es.host=elasticsearch-master \
+    --set backend.es.port=9200 \
+    \
+    --set tolerations[0]."key"="node-role\.kubernetes\.io/jarvice-system" \
+    --set tolerations[0]."effect"="NoSchedule" \
+    --set tolerations[0]."operator"="Exists" \
+    \
+    --set tolerations[1]."key"="node-role\.jarvice\.io/jarvice-system" \
+    --set tolerations[1]."effect"="NoSchedule" \
+    --set tolerations[1]."operator"="Exists" \
+    \
+    --set tolerations[2]."key"="node-role\.kubernetes\.io/jarvice-compute" \
+    --set tolerations[2]."effect"="NoSchedule" \
+    --set tolerations[2]."operator"="Exists" \
+    \
+    --set tolerations[3]."key"="node-role\.jarvice\.io/jarvice-compute" \
+    --set tolerations[3]."effect"="NoSchedule" \
+    --set tolerations[3]."operator"="Exists" \
+    \
+    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key="node-role\.jarvice\.io/jarvice-system" \
+    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator="Exists" \
+    \
+    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].key="kubernetes\.io/arch" \
+    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].operator="In" \
+    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].values[0]="amd64" \
+    \
+    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[1].matchExpressions[0].key="node-role\.jarvice\.io/jarvice-compute" \
+    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[1].matchExpressions[0].operator="Exists" \
+    \
+    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[1].matchExpressions[1].key="kubernetes\.io/arch" \
+    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[1].matchExpressions[1].operator="In" \
+    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[1].matchExpressions[1].values[0]="amd64" \
+    \
+    --set rbac.create=true
+
+echo
+echo "* Fluent-bit deployment successful..."
+
+echo
+echo "For advanced setup details, visit https://github.com/helm/charts/tree/master/stable/fluent-bit and/or execute:"
+echo "$ helm inspect all fluent-bit --repo $repo"
+

@@ -52,6 +52,7 @@ $ git clone https://github.com/nimbix/jarvice-helm.git
     - [Customize JARVICE files via a ConfigMap](#customize-jarvice-files-via-a-configmap)
     - [View status of the installed kubernetes objects](#view-status-of-the-installed-kubernetes-objects)
     - [Retreive IP addresses for accessing JARVICE](#retreive-ip-addresses-for-accessing-jarvice)
+    - [Deploy EFK Stack](#deploy-efk-stack)
 * [Additional Resources](#additional-resources)
 
 ------------------------------------------------------------------------------
@@ -1120,6 +1121,23 @@ $ API_IP=$(kubectl --namespace jarvice-system get services \
 ```
 
 Then use https://`$PORTAL_IP`/ to initialize and/or log into JARVICE.
+
+### Deploy "EFK" Stack
+
+The `deploy2k8s-efk` shell script included in the `scripts`
+directory of this helm chart can used to deploy an Elasticsearch,
+Fluentd/Fluent-bit, Kibana (EFK) stack that can be used to examine logs of
+containers run on kubernetes nodes.
+Simply execute `./scripts/deploy2k8s-efk --help` to see it's usage.
+
+The script is opinionated and is provided as an initial starting point.
+It is not intended to be used a production setup as more detailed
+configuration regardning site specific options and security is beyond the
+scope of this document.
+
+Please reference the
+[Elastic Stack and Production Documentation](https://www.elastic.co/guide/index.html)
+for more details on further configuring an Elasticsearch based stack.
 
 ------------------------------------------------------------------------------
 
