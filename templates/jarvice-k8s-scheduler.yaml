@@ -220,6 +220,8 @@ spec:
             value: '{{ .Values.jarvice.JARVICE_JOBS_MULTI_TENANT_INGRESS_POD_LABELS }}'
           - name: JARVICE_JOBS_MULTI_TENANT_INGRESS_NS_LABELS
             value: '{{ .Values.jarvice.JARVICE_JOBS_MULTI_TENANT_INGRESS_NS_LABELS }}'
+          - name: JARVICE_JOBS_MULTI_TENANT_LB_SERVICE_CIDRS
+            value: '{{ .Values.jarvice.JARVICE_JOBS_MULTI_TENANT_LB_SERVICE_CIDRS }}'
           - name: JARVICE_JOBS_INIT_IMAGE_PULL_POLICY
 {{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
             value: "Always"
