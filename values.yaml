@@ -37,6 +37,7 @@ jarvice:
   JARVICE_JOBS_MULTI_TENANT: false
   JARVICE_JOBS_MULTI_TENANT_INGRESS_POD_LABELS: '{"app": "traefik"}'
   JARVICE_JOBS_MULTI_TENANT_INGRESS_NS_LABELS: '{}' # '{"name": "kube-system"}'
+  JARVICE_JOBS_MULTI_TENANT_LB_SERVICE_CIDRS: '["10.20.0.0/24"]'
   JARVICE_JOBS_IMAGE_PULL_POLICY: Always
 
   # jarvice.tolerations applies to all of the jarvice_* components below.
