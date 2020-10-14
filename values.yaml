@@ -34,6 +34,12 @@ jarvice:
   JARVICE_JOBS_DOMAIN: # my-domain.com  # (host based ingress)
   JARVICE_JOBS_LB_SERVICE: false
   JARVICE_JOBS_LB_ANNOTATIONS: # '{}'
+  JARVICE_JOBS_MULTI_TENANT: false
+  # At least one of JARVICE_JOBS_MULTI_TENANT_* must be set to a non-empty
+  # set/list to enable access to interactive jobs via per job NetworkPolicy
+  JARVICE_JOBS_MULTI_TENANT_INGRESS_POD_LABELS: '{}' # '{"app": "traefik"}'
+  JARVICE_JOBS_MULTI_TENANT_INGRESS_NS_LABELS: '{}' # '{"name": "kube-system"}'
+  JARVICE_JOBS_MULTI_TENANT_LB_SERVICE_CIDRS: '[]' # '["10.20.0.0/24"]'
   JARVICE_JOBS_IMAGE_PULL_POLICY: Always
 
   # jarvice.tolerations applies to all of the jarvice_* components below.
