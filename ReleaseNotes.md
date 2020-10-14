@@ -113,6 +113,14 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202010141909
+
+* (2955) Improved file picker performance when using PVC vaults by keeping lister pods running for up to 90 seconds of inactivity.
+* (3158) Fixed bug in portal that prevented system administrator users from immediately launching apps created in their *PushToCompute* view.
+* (3393) Experimental support for tenant network isolation by payer using and managing *NetworkPolicy* objects automatically.  Documentation to follow in future releases.
+* (3470) Added helper example script and information for deploying "EFK" stack in order to archive JARVICE component logs.  See [Deploy "EFK" Stack](README.md#deploy-efk-stack) for details.
+* (3516) Added automatic garbage collection for orphaned jobs not known upstream (e.g. partially configured jobs due to API/connectivity failures, etc.).
+
 ## 3.0.0-1.202009301931
 
 * (2952) Added task builder hint to preselect a specific user vault for any given AppDef workflow, if available, using the `VAULT:<name>` format; please see *User-interface Hinting* in the [Application Definition Guide](https://jarvice.readthedocs.io/en/latest/appdef/#user-interface-hinting) for details.
