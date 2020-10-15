@@ -142,10 +142,10 @@ jarvice_db: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   replicaCount: 1
   resources:
     requests:
-      cpu: 1000m
+      cpu: 1
       memory: 2Gi
     limits:
-      cpu: 4000m
+      cpu: 4
       memory: 2Gi
   readinessProbe:
     initialDelaySeconds: 5
@@ -357,10 +357,10 @@ jarvice_dal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   antiAffinity: "soft"
   resources:
     requests:
-      cpu: 2000m
+      cpu: 2
       memory: 8Gi
     limits:
-      cpu: 8000m
+      cpu: 8
       memory: 8Gi
   readinessProbe:
     initialDelaySeconds: 5
@@ -424,7 +424,7 @@ jarvice_scheduler: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   antiAffinity: "soft"
   resources:
     limits:
-      cpu: 1000m
+      cpu: 1
       memory: 2Gi
   readinessProbe:
     initialDelaySeconds: 5
@@ -461,7 +461,7 @@ jarvice_k8s_scheduler:
   ingressHost: # jarvice-k8s-scheduler.my-domain.com
   resources:
     limits:
-      cpu: 1000m
+      cpu: 1
       memory: 2Gi
   readinessProbe:
     initialDelaySeconds: 5
@@ -526,7 +526,7 @@ jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   ingressPath: "/"  # Valid values are "/" (default) or "/api"
   resources:
     limits:
-      cpu: 1000m
+      cpu: 1
       memory: 256Mi
   readinessProbe:
     initialDelaySeconds: 5
@@ -597,7 +597,7 @@ jarvice_mc_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   ingressPath: "/"  # Valid values are "/" (default) or "/portal"
   resources:
     limits:
-      cpu: 1000m
+      cpu: 1
       memory: 2Gi
   readinessProbe:
     initialDelaySeconds: 5
