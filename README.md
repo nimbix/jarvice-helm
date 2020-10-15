@@ -1126,6 +1126,7 @@ Then use https://`$PORTAL_IP`/ to initialize and/or log into JARVICE.
 ## Additional Resources
 
 - [Release Notes](ReleaseNotes.md)
+- [Resource Planning and Scaling Guide](Scaling.md)
 - [JARVICE System Configuration Notes](Configuration.md)
 - [User Storage Patterns and Configuration](Storage.md)
 - [Ingress Patterns and Configuration](Ingress.md)
