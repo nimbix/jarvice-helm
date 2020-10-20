@@ -1144,6 +1144,7 @@ for more details on further configuring an Elasticsearch based stack.
 ## Additional Resources
 
 - [Release Notes](ReleaseNotes.md)
+- [Resource Planning and Scaling Guide](Scaling.md)
 - [JARVICE System Configuration Notes](Configuration.md)
 - [User Storage Patterns and Configuration](Storage.md)
 - [Ingress Patterns and Configuration](Ingress.md)

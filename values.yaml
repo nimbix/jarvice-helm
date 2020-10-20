@@ -34,6 +34,12 @@ jarvice:
   JARVICE_JOBS_DOMAIN: # my-domain.com  # (host based ingress)
   JARVICE_JOBS_LB_SERVICE: false
   JARVICE_JOBS_LB_ANNOTATIONS: # '{}'
+  JARVICE_JOBS_MULTI_TENANT: false
+  # At least one of JARVICE_JOBS_MULTI_TENANT_* must be set to a non-empty
+  # set/list to enable access to interactive jobs via per job NetworkPolicy
+  JARVICE_JOBS_MULTI_TENANT_INGRESS_POD_LABELS: '{}' # '{"app": "traefik"}'
+  JARVICE_JOBS_MULTI_TENANT_INGRESS_NS_LABELS: '{}' # '{"name": "kube-system"}'
+  JARVICE_JOBS_MULTI_TENANT_LB_SERVICE_CIDRS: '[]' # '["10.20.0.0/24"]'
   JARVICE_JOBS_IMAGE_PULL_POLICY: Always
 
   # jarvice.tolerations applies to all of the jarvice_* components below.
@@ -142,8 +148,11 @@ jarvice_db: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
   replicaCount: 1
   resources:
+    requests:
+      cpu: 1
+      memory: 2Gi
     limits:
-      cpu: 250m
+      cpu: 4
       memory: 2Gi
   readinessProbe:
     initialDelaySeconds: 5
@@ -370,9 +379,12 @@ jarvice_dal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   # Set to "hard" to require pods to run on diff nodes.
   antiAffinity: "soft"
   resources:
+    requests:
+      cpu: 2
+      memory: 8Gi
     limits:
-      cpu: 1
-      memory: 16Gi
+      cpu: 8
+      memory: 8Gi
   readinessProbe:
     initialDelaySeconds: 5
     periodSeconds: 30
@@ -426,7 +438,7 @@ jarvice_dal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 
 jarvice_scheduler: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
-  replicaCount: 1
+  replicaCount: 2
   # PodDisruptionBudget default requires 25% minimum of pods must be running
   pdb:
     minAvailable: "25%"
@@ -459,7 +471,7 @@ jarvice_scheduler: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 
 jarvice_k8s_scheduler:
   enabled: true
-  replicaCount: 1
+  replicaCount: 2
   # PodDisruptionBudget default requires 25% minimum of pods must be running
   pdb:
     minAvailable: "25%"
@@ -505,7 +517,7 @@ jarvice_pod_scheduler:
   resources:
     limits:
       cpu: 1
-      memory: 1Gi
+      memory: 2Gi
   readinessProbe:
     initialDelaySeconds: 5
     periodSeconds: 30
@@ -553,8 +565,8 @@ jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   ingressPath: "/"  # Valid values are "/" (default) or "/api"
   resources:
     limits:
-      cpu: 250m
-      memory: 512Mi
+      cpu: 1
+      memory: 256Mi
   readinessProbe:
     initialDelaySeconds: 5
     periodSeconds: 30
@@ -640,7 +652,7 @@ jarvice_mc_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   ingressPath: "/"  # Valid values are "/" (default) or "/portal"
   resources:
     limits:
-      cpu: 250m
+      cpu: 1
       memory: 2Gi
   readinessProbe:
     initialDelaySeconds: 5
