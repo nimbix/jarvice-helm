@@ -113,6 +113,11 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202010212149
+
+* (1498) Added configurable node resource weight multipliers settable via `${JARVICE_POD_SCHED_MULTIPLIERS}`, as a JSON dictionary; note that any resource not named there defaults to a weight of `1`.  See the value setting in [values.yaml](values.yaml) for an example to account for minor variance in node/instance capacities.
+* (3596) Fixed browser clipboard compatibility in web portal when using HTTP protocol rather than HTTPS, and attempting to copy user signup invitations to clipboard.
+
 ## 3.0.0-1.202010141909
 
 * (2955) Improved file picker performance when using PVC vaults by keeping lister pods running for up to 90 seconds of inactivity.
