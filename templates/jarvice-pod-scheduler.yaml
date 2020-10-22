@@ -91,6 +91,8 @@ spec:
             value: "{{ .Values.jarvice.JARVICE_POD_SCHED_LOGLEVEL }}"
           - name: JARVICE_POD_SCHED_MULTIPLIERS
             value: '{{ .Values.jarvice.JARVICE_POD_SCHED_MULTIPLIERS }}'
+          - name: JARVICE_JOBS_MULTI_TENANT
+            value: "{{ .Values.jarvice.JARVICE_JOBS_MULTI_TENANT }}"
         resources:
 {{ toYaml .Values.jarvice_pod_scheduler.resources | indent 10 }}
 {{- end }}
