@@ -80,6 +80,11 @@ jarvice:
   # computation, and see SELinux.md for details
   JARVICE_SELINUX_ENFORCING: # "true"
 
+  # uncomment value to relax node weight calculations in order to account
+  # for minor inconsequential variance (e.g. when using explicit node selectors
+  # any way, such as specific instance types)
+  JARVICE_POD_SCHED_MULTIPLIERS: # '{"cpu": 0, "memory": 0, "ephemeral-storage": 0, "pods": 0}'
+
   # Global setting for enabling a secure NetworkPolicy for all JARVICE services
   # The global setting can be overridden within individual services below
   networkPolicy:

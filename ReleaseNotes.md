@@ -113,6 +113,382 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202010141909
+
+* (2955) Improved file picker performance when using PVC vaults by keeping lister pods running for up to 90 seconds of inactivity.
+* (3158) Fixed bug in portal that prevented system administrator users from immediately launching apps created in their *PushToCompute* view.
+* (3393) Experimental support for tenant network isolation by payer using and managing *NetworkPolicy* objects automatically.  Documentation to follow in future releases.
+* (3470) Added helper example script and information for deploying "EFK" stack in order to archive JARVICE component logs.  See [Deploy "EFK" Stack](README.md#deploy-efk-stack) for details.
+* (3516) Added automatic garbage collection for orphaned jobs not known upstream (e.g. partially configured jobs due to API/connectivity failures, etc.).
+
+## 3.0.0-1.202009301931
+
+* (2952) Added task builder hint to preselect a specific user vault for any given AppDef workflow, if available, using the `VAULT:<name>` format; please see *User-interface Hinting* in the [Application Definition Guide](https://jarvice.readthedocs.io/en/latest/appdef/#user-interface-hinting) for details.
+* (3083) Fixed bug in *PushToCompute* app target editor that would show a recently created app's icon when editing a different app.
+* (3148) Allow user account registration links to be optionally copied to clipboard rather than requiring email, for both system administrator invites as well as team administrator invites.
+* (3149) Allow users to reset their passwords in the *Account->Profile* view from a logged in session, in addition to the password reset email from the login screen method.
+* (3241) Fixed bug where occasionally queued jobs would run out of order once resources became available.
+* (3398) Support configurable liveness and readiness problems in Helm Chart via the `*.readinessProbe` and `*.livenessProbe` sections in the YAML.
+* (3402) Fixed bug where system administrator-initiated email invitations would leave the dialog box open after sending.
+* (3405), (3406), (3407) Optimized vault file listing architecture, and eliminated the need to run `jarvice-dal` pods with `privileged` security context.
+* (3415) Optimized job output download for completed jobs in portal.
+* (3452) Fixed bug where email was not being sent for *PushToCompute* builds from the Nimbix Cloud.
+* (3455) Fixed bug where `jarvice-pod-scheduler` would erroneously count completed or failed pods as consuming resource on nodes, artificially reducing said nodes' capacity to run jobs.
+* (3466) Optimized job status mechanisms to perform much faster with large numbers of jobs pending.
+* (3468) Changed `imagePullPolicy` to `IfNotPresent` for JARVICE system containers as well as `init` if using versioned tags by default.  Job-related application containers still default to `Always` policy, but can be overridden with the `jarvice.JARVICE_JOBS_IMAGE_PULL_POLICY` parameter in the Helm Chart.
+
+
+## 3.0.0-1.202009041653
+
+* (3453) Improved parallel job startup synchronization.
+
+## 3.0.0-1.202009021933
+
+* (3239) Fixed bug where portal would malfunction if cloning a job which referred to a previously deleted app.
+* (3273) Fixed bug with password encoding for RealVNC servers when accessed directly with VNC clients rather than HTTPS.
+* (3276) Fixed API status codes for failures.
+* (3286) Improved performance of "high frequency" operations and reduced `jarvice-dal` bottlenecks associated with them (e.g. job utilization metrics updates, screenshots, output tail).
+* (3332) Fixed bug where unprepared interactive containers (without `image-common` installed) would be inaccessible when using AWS ELB.
+* (3341) Added billing reports by zone to the web portal's *Administration->Billing* view, as well as the API's `/jarvice/billing` endpoint.
+* (3345) Documented best practices for deploying Kubernetes and JARVICE XE on systems with SELinux in `enforcing` mode; please see [SELinux](KubernetesInstall.md#selinux) in *Kubernetes Cluster Installation*, as well as [SELinux Configuration for JARVICE](SELinux.md) (for job-related configuration) for details.
+* (3379) Added experimental support for returning a job's randomly generated public SSH key upon submission using the `gen_sshkey` boolean parameter in the `/jarvice/submit` payload.  This can be added to `.ssh/authorized_keys` on the client to allow the remote session to SSH back to it for workflows where this pattern makes sense.
+* (3413) Allow system-level override of in-container UID/GID in downstream schedulers; see [Advanced: Overriding Identity UID/GID System-wide Downstream](Identity.md#advanced-overriding-identity-uidgid-system-wide-downstream) in *In-container Identity Settings and Best Practices* for details, but please use with caution and consider Known Issues for [Downstream Deployments](#downstream-deployments)!
+
+## 3.0.0-1.202008191936
+
+* (3194) GA Support for GKE and EKS using Terraform; please see [JARVICE Deployment with Terraform](Terraform.md) for details.
+* (3269) Added PodDisruptionBudget to JARVICE job, build, and pull pods to avoid eviction when draining nodes.
+* (3272) Added `%CONNECTURL%` substitution in app container help text/html for better compatibility with Ingress.
+* (3278) Removed deprecated internal image code from DAL.
+* (3293) Fixed bug in portal that would render dialog boxes without values after cancelling a confirmation.
+* (3297) Experimental support for Kerberos logins to the potral; see [documentation](Kerberos.md) for details.
+* (3329) Support for *LoadBalancer* service annotations in downstream scheduler; see [Additional LoadBalancer service annotation for jobs](README.md#additional-loadbalancer-service-annotation-for-jobs) for details.
+* (3333) Updated job and UNFS3 pod tolerations to support the new `node-role.jarvice.io` domain.
+* (3343) Security update for self-service team admin-initiated user invites in portal.
+
+## 3.0.0-1.202008051905
+
+* (3182) Experimental (undocumented) support for EKS using Terraform.
+* (3243) Fixed regression with LoadBalancer-only (no ingress) clusters that prevented jobs from being submitted due to a scheduler error.
+
+## 3.0.0-1.202007221912
+
+* (3133) Updated Kubernetes support statement; see [Kubernetes Support](#kubernetes-support) for details.
+* (3230) Improved handling of jobs with unknown status in scheduler, which was leading to auto-cancellation of queued jobs.
+
+## 3.0.0-1.202007092149
+
+* (3216) Fixed missing `%VNAME%` substitution in AppDef `CONST` parameters.
+
+## 3.0.0-1.202007081950
+
+* (3080) Added `/jarvice/teamusers` API endpoint for a team admin to query a list of users on the team (other than his/herself); please see [The JARVICE API](https://jarvice.readthedocs.io/en/latest/api/) for details.
+* (3140) Added the ability to disable the use of `systemd` in application containers, to better support SELinux "enforcing" mode environments; please see [SELinux Configuration for JARVICE](SELinux.md) for details.
+* (3141) Added the ability to override scheme and/or port for job ingress URLs on the front-end; please see [Custom Ingress URLs for Jobs](Ingress.md#custom-ingress-urls-for-jobs) in *Ingress Patterns and Configuration* for details.
+* (3192) Added support and documentation for "air gapped" network deployments; please see [Air gapped Network Deployment](AirGapped.md) for details.
+
+## 3.0.0-1.202006242047
+
+* (2870) Updated documentation for multi-zoned deployments.  Please see [JARVICE Multi-cluter Overview](MultiCluster.md) for details.
+* (3074) Added concurrency and request timeout limits to the API endpoints.  See [JARVICE API](#jarvice-api) in *Known Issues, Anomalies, and Caveats* above for configuration information.
+* (3084) Eliminated redundant AJAX call from web portal when applications were edited in the *PushToCompute* view.
+* (3121) Fixed regression in web portal when apps were reloaded in the *PushToCompute* view.
+* (3124) Fixed regression in web portal that prevented team admins from inheriting the *SAML/LDAP Admin* role.
+* (3129) Fixed regression in web portal that caused login events to be audit logged on page refreshes.
+* (3142) Fixed web portal to sort user names in alphabetical order in drop downs involving limits and app restrictions.
+* (3144) Fixed bug where system administrators could only query events for active jobs they submitted.
+* (3147) Fixed bug where shared vaults could prevent users from accessing apps and machines in the default zone.
+
+## 3.0.0-1.202006111530 (BETA)
+
+* (2775) Added ability to selectively disable SSL certificate verification for downstream clusters via *Administration->Clusters*
+* (2864) Modernized `jarvice-k8s-scheduler` component
+* (2872) Added multi-zone support for the portal
+* (2997) Updated recommended labels/taints to use a value of `"true"` in the Helm chart
+* (3008) Fixed misleading error message on failed image pulls when using *PushToCompute* pull functionality
+* (3010) Added `%MACHINETYPE%` substitution for `CONST` values in AppDefs, to extract the machine type used for job submissions.  See *Parameter Type Reference* in the [JARVICE Application Definition Guide](https://jarvice.readthedocs.io/en/latest/appdef/) reference for details.
+* (3020) Fix routing of vault file listing to clusters in downstream zone; see General PersistentVolume vault [Known Issues](#general-1) for important information.
+* (3021) Corrected all known issues and specification mismatches with modernized `jarvice-api` component
+* (3056) Improved parsing of Docker container addresses and fixed bugs related to private registries with ports when using *PushToCompute* pull functionality
+* (3064) Fixed portal regression that prevented automatic app catalog refreshes when changes were detected
+* (3086) Removed `jobsub` JSON key from `/jarvice/teamjobs` API endpoint
+
+## 3.0.0-1.202005272025
+
+* (2866) Modernized `jarvice-scheduler` component.
+* (2867) Modernized `jarvice-api` component.  **WARNING: direct use of the JARVICE API in this release may not match the specification entirely.**
+* (2868) Modernized `jarvice-dockerbuild` component.
+* (2869) Modernized `jarvice-dockerpull` component.
+* (2879) Added Zone editor in the *Administration* section of the portal.  **NOTE:** full multi-zone functionality will be available in a future release.
+* (2932) Improved performance of user logouts from the portal.
+* (2953) Added `/jarvice/billing` endpoint in the JARVICE API for system administrator users.  See [The JARVICE API](https://jarvice.readthedocs.io/en/latest/api/) reference for details.
+* (2991) Allow configuration of control plane nodes for Azure deployments via Terraform; see [JARVICE deployment with Terraform](Terraform.md) for details.
+* (2994) Allow configuration of multiple compute node groups for Azure deployments via Terraform; see [JARVICE deployment with Terraform](Terraform.md) for details.
+* (3009) Improved performance of liveness checks in system services, including reduction of unnecessary pod restarts.
+
+## 3.0.0-1.202005151836
+
+* (2998) Fixed regression in the per-user audit log under *Administration->Users* view.
+
+## 3.0.0-1.202005131926
+
+* (2871) Allow in-place editing of vault objects in the *Administration->Users* view.
+* (2878) Modernized `jarvice-pod-scheduler` component.
+* (2880) Official support for Microsoft Azure as either standalone or downstream platform, using Terraform deployment mechanism; see [JARVICE deployment with Terraform](Terraform.md) for details
+* (2928) Fixed rendering bug in task builder where *Submit* button was obscured at lower resolutions.
+* (2964) Fixed `/jarvice/jobs` API endpoint to not return downstream scheduler-specific job submission data.
+
+## 3.0.0-1.202004292028
+
+* (2719) Real-time scheduler events and job output available in the *Active Jobs* status filter of the *Administration->Jobs* view.
+* (2832) Portal warns if files with special characters in them, such as spaces, are selected for workflows with file parameter(s), as this can cause applications to behave incorrectly or fail.
+* (2833) Security fix to prevent web server directory listing in browser for interactive jobs using noVNC.
+* (2858) (2859) (2876) Zoned vault model support for future functionality.
+* (2860) (2861) API validation of vault and machine selection for zone compatibility.
+* (2862) Removed legacy vault type support from the *Vaults* dialog in *Administration->Users*, and added zone affinity selection for new vaults.
+* (2863) Modernized `jarvice-appsync` component, including standardized logging.
+* (2917) Fixed regression preventing copy of job session passwords for interactive jobs to clipboard.
+
+## 3.0.0-1.202004151913
+
+* (2534) Fixed bug where a user logging into the portal that had previously navigated to a page that is no longer authorized, would get a blank page.
+* (2602) Gray out SAML/LDAP admin role in the role editor under *Administration->Users* for any non-payer user, since this is inherited from the team payer account if set.
+* (2659) Ensure *JARVICE File Manager* is enabled by default when creating rules in the *Account->Team Apps* view.
+* (2718) Added underlying job submission data to job inspection popup in the *Administration->Jobs* view.
+* (2760) Standardized logging for upstream and downstream schedulers now released, no longer future functionality (re: 2763)
+* (2764) Fixed bug where job connection parameters including password would be shown in the dashboard for non-interactive jobs on systems using Ingress.
+* (2765) Added IP address assignment audit logging for containers in the *Administration->Logs* view.
+* (2774) Added configurable timeouts for downstream scheduler endpoints via the `jarvice_scheduler.JARVICE_SCHED_CLUSTERS_TIMEOUT` value in `values.yaml`.
+
+## 3.0.0-1.202004062122
+
+* (2843) Fixed frequent `OOMKilled` pull pod failures (e.g. `jarvice-system-pulls` namespace), which were preventing container pulls from the *PushToCompute* tab to complete.
+* Patched minor regression in system and team audit log views related to sorting and category selection.
+
+## 3.0.0-1.202004012010
+
+* (2474) Improved LDAP error reporting when using the *TEST* button in the *Account->LDAP* view; see the troubleshooting section in [Active Directory Authentication Best Practices](ActiveDirectory.md#troubleshooting-ldap-login-failures) for details.
+* (2611) Added downstream cluster configuration interface in web portal in *Administration->Clusters* view.
+* (2612) Internal scheduler service and deployment updates for future capabilities
+* (2613) Added downstream cluster deployment mechanisms in Helm chart; see [JARVICE Downstream Installation](README.md#jarvice-downstream-installation) for details.
+* (2614) Added downstream cluster deployment automation for EKS and GKE; see "downstream" settings in the respective YAML files for these deployments.
+* (2715) Added Active Jobs mode in *Administration->Jobs* view and the ability to terminate all jobs on page via the *TERMINATE ALL* button.
+* (2725) Updated multicluster documentation in [JARVICE Multi-cluter Overview](MultiCluster.md)
+* (2728) Fixed bug in web portal where cloning a job with an upload parameter would hang the session.
+* (2761) (2762) Standardized logging for upstream scheduler (future feature to be released).
+* (2763) Standardized logging for downstream scheduler (future feature to be released).
+
+## 3.0.0-1.202003200237
+
+* (2728) Fixed bug where cloning a job in the dashboard with UPLOAD parameters in the AppDef would hang the browser session.
+
+## 3.0.0-1.202003181900
+
+* (2525) Fixed bug where logout on password reset using path-based ingress resulted in a 404 error
+* (2609), (2610), (2657) Internal scheduler service and deployment updates for future capabilities
+* (2660) Support for new `UPLOAD` parameter for AppDefs to allow small files to be uploaded as part of job submission; please see the *`parameters` Object Reference* in the [JARVICE Application Definition Guide](https://jarvice.readthedocs.io/en/latest/appdef/#reference) for details.
+
+## 3.0.0-1.202003041950
+
+* (2594), (2605), (2606), (2607) Internal scheduler service and data model updates for future capabilities
+
+## 3.0.0-1.202002202201
+
+* (2589) Fix spurious logouts in the web portal when impersonating users as system or team administrators
+
+## 3.0.0-1.202002192205
+
+* (2460) Fixed bug where resource limits combining both total CPUs and specific machine types were not being enforced correctly
+* (2475) Fixed web portal to not attempt to enforce password policy for LDAP logins, since this should be handled by the LDAP server itself
+* (2480) Fixed bug with erroneous data in the per-user audit log in *Administration->Users*
+* (2524) Fixed bug where portal was not allowing team administrators to edit LDAP and SAML settings unless they were actually the team payer
+* (2533) Significant performance improvements to explicit Docker pulls in JARVICE XE, especially if images are also built by JARVICE
+* (2583) Restored email sending functionality in web portal with default (built-in) SMTP server settings; JARVICE now runs an SMTP pod as a deployment within the Helm chart
+* (2598) Fixed regression in web portal that prevented itemized billing reports from working
+
+## 3.0.0-1.202002102104
+
+* (2588) System-wide healthcheck performance optimization
+
+## 3.0.0-1.202002051613
+
+* (2210), (2211), (2212), (2481), (2482) Internal scheduler service updates for future capabilities
+* (2371) Internal portal web service architecture updates
+* (2377) Support for suppressing random passwords from job URLs (e.g. for remote desktop and for File Manager); configurable by team admins in the *Account->Team* view
+* (2381) Vault info dialog shows more detail when inspecting vaults for users from the *Administrator->Users* view
+* (2382) System creates an ephemeral vault by default for all new user accounts (whether invited explicitly or generated implicitly by LDAP or SAML login); if a default PVC vault is specified using `jarvice.JARVICE_PVC_VAULT_*` variables in [values.yaml](values.yaml), it will be created for all new user accounts in addition to the ephemeral one, and will be made default
+* (2383) NetworkPolicy fixes for JARVICE services
+* (2412) JARVICE File Manager updated to support path-based ingress
+* (2423) JARVICE File Manager updated to support suppressed random session password in connection URLs
+* (2429) Fixed "No such user" error if payer is not selected when saving limits in the *Administration->Limits* view
+* (2456) Fixed bug in portal where apps with multiple file selectors for the task builder with different wildcards were not properly filtering listed files
+* (2464) Added ability to remove team app restrictions as user overrides in the *Account->Team Apps* view; removing restrictions also enables the *PushToCompute* mechanism and allows users to build and run their own apps even in teams with restrictive default app rules
+* (2528) Fixed bug in API triggered by commands with `BOOL`-type parameters presented as variables in AppDefs
+
+
+## 3.0.0-1.201912212002
+
+* (2208), (2209) Internal scheduler service updates for future capabilities
+* (2215) Support for Kubernetes 1.16
+* (2264) Support for subpath (including substitutions) in PVC vaults; see [User Storage Patterns and Configuration](Storage.md) for details and best practices
+* (2273) Fixed bug where container pull email notifications were not being sent
+* (2324) Full support for path-based ingress; see [Ingress Patterns and Configuration](Ingress.md) for details and best practices
+* (2325) Path-based ingress support for Jupyter notebooks by setting `--NotebookApp.base_url=%BASEURL%`; see [nimbix/appdef-template in GitHub](https://github.com/nimbix/appdef-template) for example, or use [nimbix/notebook-common in GitHub](https://github.com/nimbix/notebook-common) for a standard pattern to create Jupyter-based application environments with
+* (2326) RDMA device plugin for Kubernetes updates for 1.14 and newer
+* (2338) Fixed bug where page refresh was generating additional user login audit log entries
+
+## 3.0.0-1.201912042137
+
+* (1938) Updated open source AppDef templates and tutorials available in [GitHub](https://github.com/nimbix/appdef-template)
+* (2192) Initial [JARVICE Troubleshooting Guide](Troubleshooting.md)
+* (2195) Added `ping` and `telnet` utilities to aid in pod-to-pod network troubleshooting in all system containers
+* (2206) Internal scheduler service updates for future capabilities
+* (2220) Experimental path-based ingress support (see `ingressPath` and `JARVICE_JOBS_DOMAIN` settings in [values.yaml](values.yaml)); note that this may not be compatible with all workflows
+* (2258) Fixed bug where the portal was expanding wildcards in the `machines` key in the AppDef JSON when editing a target in the *PushToCompute* view
+* (2271) Added real-time search box to file picker in the task builder for applications with file arguments
+* (2274) Expanded width of user account variables editor in the *Administrator->Users* view, to better support long account variable names without wrapping
+* (2276) Fixed minimum browser window "inner-height" to be 722 pixels, which is equivalent to 1920x1080 maximized browser window at 125% zoom; note that using higher zoom levels, lower resolution screens, or smaller browser windows may truncate some advanced interfaces (e.g. app editing in the *PushToCompute* view)
+* (2277) Added veritcal scrollbar where needed on both side drawers rather than truncating options
+* (2288) Added user login and logout events in team and system audit logs
+
+## 3.0.0-1.20191115.2245
+
+* (1936) Open source AppDef templates and tutorials available in [GitHub](https://github.com/nimbix/appdef-template)
+* (2193) Support for deploying database volume on root-squashed NFS storage (see `jarvice_db.securityContext` in [values.yaml](values.yaml))
+* (2196) Documented [User Storage Patterns and Configuration](Storage.md)
+* (2197) Internal scheduler service updates for future capabilities
+* (2202) Fixed bug with leading and/or trailing whitespace in account variables
+* (2207) Updated documentation for Helm 3 and added comprehensive table of contents
+* (2219) Ability to remove and download screenshots and EULAs from large app card
+* (2221) Added new AppDef substitutions for command parameters - See examples in [GitHub](https://github.com/nimbix/appdef-template) for information on consuming these
+* (2256) Platform support for Xilinx XRT 2.3 in Nimbix Cloud
+
+## 3.0.0-1.20191101.2014
+
+* (2159) Updated Helm chart for API deprecation and Kubernetes 1.14+
+* (2205) Support for home directories searched by `jarvice-idmapper` using `sAMAccountName` rather than just UPN; this allows ID mapping in containers if the Linux username mappings are for legacy logons - both are supported (EXPERIMENTAL)
+
+## 3.0.0-1.20191029.1917
+
+* (2190) Support for shared PVC's across multiple users as vaults; can be enabled with both a storage class name and volume name at PVC vault creation time, and allows multiple users to share the same storage (EXPERIMENTAL)
+
+## 3.0.0-1.20191026.1506
+
+* (1932) Allow side loading of AppDefs in *PushToCompute* view's create or edit feature; note that when pulling a container that embeds `/etc/NAE/AppDef.json`, this will automatically replace any sideloaded AppDef
+* (1934) Allow side loading of AppDefs for app owners when clicking on an app; button appears in the bottom right hand corner of the large app card; note that when pulling a container that embeds `/etc/NAE/screenshot.png`, this will automatically replace any sideloaded screenshot
+* (2037) Minor audit log cosmetic improvements for system and team admins
+* (2077) PushToCompute app change refresh fixes
+* (2113) Support for user account email addresses with long TLD's (up to 63 characters)
+* (2116) Fixed bug with automatic creation of PersistentVolumeClaims in PVC vaults for users with underscores in their username
+* (2117) Runtime security fix for Xilinx FPGA machine types in older versions of JARVICE
+
+## 3.0.0-1.20191011.1301
+
+* (1664) Self-service app management, allowing team admins to restrict what catalog apps _non-administrative_ team users have access to; available in the *Account->Team Apps* view;
+* (2072) Improved appsync mechanism to not trigger deletion of local apps immediately if there are intermittent failures on authorizing remote Docker repositories due to timeouts or other HTTP errors
+
+
+## 3.0.0-1.20191003.1943
+
+* (2071) Fixed bug where `/jarvice/teamjobs` API call was not returning all team jobs when authenticating as a non-payer team admin user
+* (2074) Fixed pod scheduler to prevent triggering scale-up with Kubernetes autoscalers when jobs are queued due to account limits rather than insufficient capacity
+* (2112) Fixed regression in web portal that resulted in duplicate app targets created when editing existing ones in the *PushToCompute* view
+
+## 3.0.0-1.20190925.1914
+
+* (1986) Allow non-admin users on teams to optionally see usage and job summary for entire respective team; this must be enabled by a team payer or admin in the *Account->Summary* view; non-admin members then have visibility into an abbreviated version of *Account->Summary* for viewing current resource usage and team jobs only
+* (1990) Additional audit logging for user actions via API (`/jarvice/submit`, `/jarvice/shutdown`, and `/jarvice/terminate`)
+* (2029) Improved performance of server-side appsync functionality by parallelizing `/jarvice/apps` API endpoint
+
+## 3.0.0-1.20190918.2053
+
+* (2034) Fixed regression introduced by original fix in release `3.0.0-1.20190913.2114` where job termination and completion emails were not being sent properly
+
+## 3.0.0-1.20190917.1813
+
+* (2068) Fixed regression in job termination option when locking user accounts; jobs were not being terminated
+
+## 3.0.0-1.20190913.2114
+
+* (1910) Detect `CreateContainerError` condition on job startup and fail job appropriately; this prevents resources being held when container creation fails upon job startup
+* (2034) Proper handling of job termination and cleanup when its pod(s) are deleted outside of JARVICE (e.g. using `kubectl delete pod`)
+
+## 3.0.0-1.20190911.1715
+
+* (1976) Fixed bug in portal where cloning jobs would result in erroneous values for different workflows
+* (1989) Audit logging for end user actions, and the ability for team admins to query and filter the logs via the *Account->Team Logs* view
+* (2032) Minor adjustment to container pull policy for `jarvice-dockerpull` and `jarvice-dockerbuild` containers, triggered via `/jarvice/pull` and `/jarvice/build` API endpoints, respectively
+
+## 3.0.0-1.20190830.1317
+
+* (1911) Kubernetes events associated with pods captured in job error output; from the *Administration->Jobs* view, clicking on a job and then clicking *DOWNLOAD STDERR* produces JSON data for each Kubernetes pod in a job; the new `events` key contains a list of events associated with each pod
+* (1945) Job label, if applicable, added to job status emails
+
+## 3.0.0-1.20190731.1533
+
+* (1792) Report on average queue times per machine in the *Administration->Stats* view
+* (1836) Fix for *Administration->Users->Vaults*  user interface hanging when there is an invalid vault defined for a user - see [Known Issues, Anomalies, and Caveats](#known-issues-anomalies-and-caveats) for details on what vaults are not valid on Kubernetes systems
+* (1841) Validation of experimental web portal fix for apps with `NONE` vault type specification in AppDef; confirmed fixed
+
+## 3.0.0-1.20190717.1614
+
+* (1785) Support for running experimental version of web portal, which will become standard after more testing (Kubernetes only)
+* Experimental web portal fix for apps with `NONE` vault type specification in AppDef
+
+## 3.0.0-1.20190711.1435
+
+* (1830) Prevent application of a global CPU limit below the smallest machine size possible, in terms of cores; for example, if the limit is 1, and the smallest machine defined has 2 for its `mc_cores` value, JARVICE will enforce the limit as 2 concurrent CPUs.  This applies to all levels of limits.
+
+## 3.0.0-1.20190703.1553
+
+* (1741) Presentation of job utilization metrics in portal; real-time CPU and memory usage are available for running jobs as a summary, and as a click-through per-node representation using the details button.  On Kubernetes, this requires the deployment of [metrics-server](https://github.com/kubernetes-incubator/metrics-server) 0.3.x or newer.
+
+## 3.0.0-1.20190619.1923
+
+* (1712) Job utilization metrics via API endpoint [/jarvice/metrics](https://jarvice.readthedocs.io/en/latest/api/#jarvicemetrics)
+* (1738) Fixed bug where jobs queuing for a long time would show negative runtimes in the portal
+* (1739) Fixed bug where cloning a job with a machine type that is no longer available would cause the web portal to hang
+
+
+## 3.0.0-1.20190517.1346
+
+* (1509) Pod scheduler now respects most node taints; optimized for JARVICE-style taints such as:
+
+        node-role.kubernetes.io/jarvice-system:NoSchedule
+
+* (1662) Global max CPU concurrency available for all resource limits, supported with or without whitelisted machine types and scale
+* (1665) Support for impersonation of team user accounts by team admins (requires explicit opt-in from the *Account->Team* view)
+* (1680) Fixed potential orphaned resources on job submission failure
+* (1681) New [jarvice.com/rdma](https://github.com/nimbix/jarvice-k8s-rdma) plugin with optional automatic deployment from Helm chart; this mechanism replaces the previously recommended `tencent.com/rdma` one, and is more appropriate (and reliable) for high density/scale HPC using RDMA; certified using InfiniBand but may also support RoCE
+
+
+## 3.0.0-1.20190503.1831
+
+* (1636) Applied NetworkPolicy to JARVICE services to prevent jobs from unauthorized access to internal system components
+* (1658) Ability to override DAL user account hooks via `jarvice-settings` ConfigMap
+* (1659) Delayed garbage collection for shared block storage services; timeout, in seconds, controllable by `${JARVICE_UNFS_EXPIRE_SECS}` in the `jarvice-scheduler` deployment; default is 90 seconds
+* (1660) Added ability for vault owners to decide which team members can access their vaults, if any
+* (1663) Added extended resource request view underneath node slider in task builder
+
+## 3.0.0-1.20190424.1834
+
+* (1674) gcr.io conversion for system services
+
+## 3.0.0-1.20190423.1852
+
+* (1679) Docker registry v2 fixes
+
+## 3.0.0-1.20190418.2203
+
+* (1448) Support for application-defined minimum window resolution
+* (1576) Support for transparent block storage sharing (ReadWriteOnce Persistent Volumes on Kubernetes)
+* (1614) Support for team members sharing vaults with other team members (entire team)
+
+## 3.0.0-1.20190409.1413
+
+* (1619) Fixed bug that prevented `/jarvice/pull` endpoint from working correctly in some configurations
+* (1644) Fixed bug where `USER` settings in Dockerfiles could prevent jobs from starting correctly; note that JARVICE ignores `USER` at runtime and instead performs its own identity management
+
 ## 3.0.0-1.20190405.1502
 
 * (1584) Job queuing at resource limits (phase 3)
