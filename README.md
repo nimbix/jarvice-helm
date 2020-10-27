@@ -1150,6 +1150,7 @@ for more details on further configuring an Elasticsearch based stack.
 - [Ingress Patterns and Configuration](Ingress.md)
 - [Active Directory Authentication Best Practices](ActiveDirectory.md)
 - [In-container Identity Settings and Best Practices](Identity.md)
+- [JARVICE Multi-tenant Overview](MultiTenant.md)
 - [JARVICE Troubleshooting Guide](Troubleshooting.md)
 - [JARVICE Helm chart deployment scripts](https://github.com/nimbix/jarvice-helm/tree/master/scripts)
 - [Kubernetes Cluster Installation](KubernetesInstall.md)
