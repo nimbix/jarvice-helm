@@ -1,4 +1,4 @@
-# JARVICE Multi-cluter Overview
+# JARVICE Multi-cluster Overview
 
 ## Modes
 
