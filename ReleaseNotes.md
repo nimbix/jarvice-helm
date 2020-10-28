@@ -113,6 +113,17 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202010282029
+
+* (2845) Added optional checkbox in portal task builder to automatically populate the job label with the value of the first selected input file, if any.
+* (3389) (3390) Job scheduler evolution for future functionality.
+* (3394) Full support for multi-tenant isolation of job pods as well as networks.  See [JARVICE Multi-tenant Overview](MultiTenant.md) for details.
+* (3399) JARVICE XE system pod resource and replica adjustments, as well as scaling guide.  See [Resource Planning and Scaling Guide](Scaling.md) for details.
+* (3479) Paginated view for *Administration->Users*, including advanced filtering options.
+* (3555) Added *REFRESH* button to file picker in task builder to reload the current directory view.
+* (3558) Fixed bug with *Account->Team Apps* view that would leave the portal unresponsive if managing users with previously deleted applications.
+* (3559) Added timeout on certain runtime status calls into running jobs to work around possible Docker engine bugs on running containers.
+
 ## 3.0.0-1.202010212159
 
 * (1498) Added configurable node resource weight multipliers settable via `${JARVICE_POD_SCHED_MULTIPLIERS}`, as a JSON dictionary; note that any resource not named there defaults to a weight of `1`.  See the value setting in [values.yaml](values.yaml) for an example to account for minor variance in node/instance capacities.
