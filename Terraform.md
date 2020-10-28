@@ -104,7 +104,7 @@ https://cloud.google.com/sdk/install
 
 If you don't already have a GCP user with the appropriate permissions to create
 GKE clusters, it will be necessary to add a user and
-set the appropriate permissions for the indented GCP project here:
+set the appropriate permissions for the intended GCP project here:
 https://console.cloud.google.com/iam-admin/iam
 
 It may also be desirable to set the default `gcloud` `account`, `project`,
@@ -122,7 +122,8 @@ https://cloud.google.com/sdk/gcloud/reference/config/set
 #### AWS for EKS: `aws`
 
 If deploying JARVICE to EKS on AWS, it will be necessary to install
-the `aws` executable.  Please visit the following link for more details:
+the `aws` and `aws-iam-authenticator` executables.
+Please visit the following link for more details:
 https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html
 
 ##### AWS Credentials
@@ -165,7 +166,7 @@ create AKS clusters, it will be necessary to add a user and
 set the appropriate permissions here:
 https://portal.azure.com/
 
-Before using `terraform` to create cluster, it will be necessary to sign into
+Before using `terraform` to create a cluster, it will be necessary to sign into
 Azure from the command line:
 
 ```bash
