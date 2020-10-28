@@ -1144,11 +1144,13 @@ for more details on further configuring an Elasticsearch based stack.
 ## Additional Resources
 
 - [Release Notes](ReleaseNotes.md)
+- [Resource Planning and Scaling Guide](Scaling.md)
 - [JARVICE System Configuration Notes](Configuration.md)
 - [User Storage Patterns and Configuration](Storage.md)
 - [Ingress Patterns and Configuration](Ingress.md)
 - [Active Directory Authentication Best Practices](ActiveDirectory.md)
 - [In-container Identity Settings and Best Practices](Identity.md)
+- [JARVICE Multi-tenant Overview](MultiTenant.md)
 - [JARVICE Troubleshooting Guide](Troubleshooting.md)
 - [JARVICE Helm chart deployment scripts](https://github.com/nimbix/jarvice-helm/tree/master/scripts)
 - [Kubernetes Cluster Installation](KubernetesInstall.md)
