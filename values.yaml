@@ -495,7 +495,7 @@ jarvice_k8s_scheduler:
     JARVICE_UNFS_REQUEST_CPU: 1
     JARVICE_UNFS_EXPIRE_SECS: 90
     JARVICE_UNFS_NODE_SELECTOR: # '{"node-role.jarvice.io/jarvice-storage": "true"}' # '{"node-role.kubernetes.io/jarvice-storage": "true"}'
-    JARVICE_UNFS3_IMAGE: # nimbix/unfs3 - change if mirroring locally
+    JARVICE_UNFS3_IMAGE: # gcr.io/jarvice/unfs3:20190318-1 - change if mirroring locally
     JARVICE_PVCLS_IMAGE: # alpine:3.8 - change if mirroring locally
     JARVICE_SCHED_JOB_UID:  # set to numeric value to override UID for jobs
     JARVICE_SCHED_JOB_GID:  # set to numeric value to override GID for jobs
