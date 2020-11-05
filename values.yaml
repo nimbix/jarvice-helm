@@ -645,6 +645,6 @@ jarvice_mc_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     JARVICE_PORTAL_DBHOST: # jarvice-db
     JARVICE_PORTAL_DBUSER: # root
     JARVICE_PORTAL_DBPASSWD: # Pass1234
-    # If enabled, the MC portal will not warn about the use of API key related substitutions
-    JARVICE_DISABLE_API_SUBST_WARNING: # False
+    # If a non-empty string is passed, the MC portal will not warn about the use of API key related substitutions
+    JARVICE_DISABLE_API_SUBST_WARNING: # ""
 
