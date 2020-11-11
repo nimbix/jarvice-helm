@@ -393,6 +393,7 @@ eks = {
         meta = {
             cluster_name = "tf-jarvice"
             kubernetes_version = "1.16"
+            #arch = "arm64"  # Uncomment to deploy an arm64 cluster
 
             ssh_public_key = null  # global setting used if null specified
         }
@@ -410,7 +411,7 @@ eks = {
         }
         compute_node_pools = {
             jxecompute00 = {
-                nodes_type = "c5.18xlarge"
+                nodes_type = "c5.18xlarge"  # "c6g.16xlarge"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
@@ -420,7 +421,7 @@ eks = {
                 }
             },
             #jxecompute01 = {
-            #    nodes_type = "c5.18xlarge"
+            #    nodes_type = "c5.18xlarge"  # "c6g.16xlarge"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
@@ -481,6 +482,7 @@ EOF
         meta = {
             cluster_name = "tf-jarvice-downstream"
             kubernetes_version = "1.16"
+            #arch = "arm64"  # Uncomment to deploy an arm64 cluster
 
             ssh_public_key = null  # global setting used if null specified
         }
@@ -498,7 +500,7 @@ EOF
         }
         compute_node_pools = {
             jxecompute00 = {
-                nodes_type = "c5.18xlarge"
+                nodes_type = "c5.18xlarge"  # "c6g.16xlarge"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
@@ -508,7 +510,7 @@ EOF
                 }
             },
             #jxecompute01 = {
-            #    nodes_type = "c5.18xlarge"
+            #    nodes_type = "c5.18xlarge"  # "c6g.16xlarge"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1

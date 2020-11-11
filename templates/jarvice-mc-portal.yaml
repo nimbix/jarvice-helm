@@ -154,6 +154,10 @@ spec:
           - name: JARVICE_PORTAL_GSS_LOG
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_LOG }}"
 {{- end }}
+{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_DISABLE_API_SUBST_WARNING)) }}
+          - name: JARVICE_DISABLE_API_SUBST_WARNING
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_DISABLE_API_SUBST_WARNING }}"
+{{- end }}
 {{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_WEB_HOST)) }}
           - name: JARVICE_PORTAL_WEB_HOST
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_WEB_HOST }}"

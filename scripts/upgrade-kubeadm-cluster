@@ -568,7 +568,7 @@ else
         $KUBEADM version
         echo
         if [ "$NODE_TYPE" == "master" -a -n "$FIRST" ]; then
-            ignore="--ignore-preflight-errors=CoreDNSUnsupportedPlugins --ignore-preflight-errors=CoreDNSMigration"
+            ignore="--ignore-preflight-errors=CoreDNSUnsupportedPlugins --ignore-preflight-errors=CoreDNSMigration --ignore-preflight-errors=ControlPlaneNodesReady"
 
             echo
             echo "Getting kubeadm upgrade plan..."

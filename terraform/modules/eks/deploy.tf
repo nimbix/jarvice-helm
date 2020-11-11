@@ -6,14 +6,14 @@ module "common" {
     global = var.global
     cluster = var.cluster
 
-    system_nodes_type_upstream = "m5.4xlarge"
-    system_nodes_type_downstream = "m5.xlarge"
+    system_nodes_type_upstream = lookup(var.cluster.meta, "arch", "") == "arm64" ? "m6g.4xlarge" : "m5.4xlarge"
+    system_nodes_type_downstream = lookup(var.cluster.meta, "arch", "") == "arm64" ? "m6g.xlarge" : "m5.xlarge"
     storage_class_provisioner = "kubernetes.io/aws-ebs"
 }
 
 locals {
     charts = {
-        "cluster-autoscaler" = {
+        "cluster-autoscaler${lookup(var.cluster.meta, "arch", "")}" = {
             "values" = <<EOF
 autoDiscovery:
   clusterName: ${var.cluster.meta["cluster_name"]}
@@ -23,6 +23,11 @@ awsRegion: "${var.cluster.location["region"]}"
 
 cloudProvider: aws
 
+#image:
+#  repository: k8s.gcr.io/cluster-autoscaler
+#  tag: v1.17.1
+#  pullPolicy: IfNotPresent
+
 tolerations:
   - key: node-role.jarvice.io/jarvice-system
     effect: NoSchedule
@@ -31,7 +36,6 @@ tolerations:
     effect: NoSchedule
     operator: Exists
 nodeSelector:
-  kubernetes.io/arch: "amd64"
   node-role.jarvice.io/jarvice-system: "true"
 
 rbac:
@@ -51,7 +55,6 @@ cpuRequest: 1
 cpuLimit: 1
 
 nodeSelector:
-  kubernetes.io/arch: "amd64"
   node-role.jarvice.io/jarvice-system: "true"
 tolerations:
   - key: node-role.jarvice.io/jarvice-system
