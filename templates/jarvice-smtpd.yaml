@@ -1,3 +1,4 @@
+{{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if .Values.jarvice_smtpd.enabled }}
 {{- if gt (.Values.jarvice_smtpd.replicaCount | int) 1 }}
 apiVersion: policy/v1beta1
@@ -140,5 +141,6 @@ spec:
     - protocol: TCP
       port: 25
 ---
+{{- end }}
 {{- end }}
 {{- end }}
