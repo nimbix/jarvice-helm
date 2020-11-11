@@ -113,6 +113,15 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202011112040
+
+* (2831) Selective systemwide relaxation of warnings related to jobs submitting other jobs; set `jarvice_mc_portal.env.JARVICE_DISABLE_API_SUBST_WARNING` to any non-empty value in order to disable these warnings on job submission for any app that uses the `%APIKEY` substitution in its parameters.
+* (3603) (3605) (3606) Future architecture support for project management for users and jobs.
+* (3654) **EXPERIMENTAL** AArch64 (arm64) support for compute and downstream clusters; general JARVICE control plane support will be available in a subsequent release.
+* (3655) Fixed button wrapping in *Administration->Users* view in the portal.
+* (3666) Fixed typo in default cluster environment setting in `jarvice-dal`.
+* (3679) Fixed race condition in `jarvice-scheduler` when deleting orphaned jobs downstream which was leading to jobs occasionally being deleted while still starting.
+
 ## 3.0.0-1.202010282029
 
 * (2845) Added optional checkbox in portal task builder to automatically populate the job label with the value of the first selected input file, if any.
