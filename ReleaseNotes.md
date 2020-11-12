@@ -113,6 +113,10 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202011121727
+
+* (3703) Fixed portal regression that prevented successfully cloning jobs from history.
+
 ## 3.0.0-1.202011112040
 
 * (2831) Selective systemwide relaxation of warnings related to jobs submitting other jobs; set `jarvice_mc_portal.env.JARVICE_DISABLE_API_SUBST_WARNING` to any non-empty value in order to disable these warnings on job submission for any app that uses the `%APIKEY` substitution in its parameters.
