@@ -110,7 +110,7 @@ done
 
 set -e
 
-helm_stable_repo_url=https://kubernetes-charts.storage.googleapis.com/
+helm_stable_repo_url=https://charts.helm.sh/stable
 helm_stable_repo=$($HELM repo list 2>/dev/null | grep ^stable || /bin/true)
 if [ -z "$helm_stable_repo" ]; then
     echo
