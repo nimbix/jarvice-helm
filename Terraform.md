@@ -265,6 +265,10 @@ Here is an example compute node pool configuration using `c6g.16xlarge`:
                 nodes_disk_size_gb = 100
 ...
 ```
+**Note:**  It is not currently possible to mix node pool architectures in
+a single cluster deployment.  If a multi-architecture cluster is desired,
+it will be necessary to deploy an additional downstream cluster to add
+another architecture.
 
 Lastly, if using the `jarvice_db` component provided by the JARVICE helm chart,
 it must use a `mariadb` docker image.  If you are not using a YAML
