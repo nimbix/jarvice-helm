@@ -1157,4 +1157,7 @@ for more details on further configuring an Elasticsearch based stack.
 - [JARVICE deployment with Terraform](Terraform.md)
 - [JARVICE Developer Documentation (jarvice.readthedocs.io)](https://jarvice.readthedocs.io)
 
+### Patents and Intellectual Property
+
+For the most up to date information on Nimbix inventions and intellectual property, please visit the [Nimbix Patents](https://www.nimbix.net/patents) page.
 
