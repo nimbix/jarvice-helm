@@ -467,6 +467,9 @@ eks = {
   #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
+
+#jarvice_db:                # Uncomment to deploy an arm64 cluster
+#  image: mariadb:10.5      # Uncomment to deploy an arm64 cluster
 EOF
             }
         }

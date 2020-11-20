@@ -13,7 +13,7 @@ module "common" {
 
 locals {
     charts = {
-        "cluster-autoscaler${lookup(var.cluster.meta, "arch", "")}" = {
+        "cluster-autoscaler" = {
             "values" = <<EOF
 autoDiscovery:
   clusterName: ${var.cluster.meta["cluster_name"]}
@@ -23,10 +23,10 @@ awsRegion: "${var.cluster.location["region"]}"
 
 cloudProvider: aws
 
-#image:
-#  repository: k8s.gcr.io/cluster-autoscaler
-#  tag: v1.17.1
-#  pullPolicy: IfNotPresent
+image:
+  repository: gcr.io/jarvice/cluster-autoscaler
+  tag: v1.17.4
+  pullPolicy: IfNotPresent
 
 tolerations:
   - key: node-role.jarvice.io/jarvice-system
