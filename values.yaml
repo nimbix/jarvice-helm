@@ -168,7 +168,7 @@ jarvice_db: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   nodeSelector: # '{"node-role.jarvice.io/jarvice-db": "true"}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
-  image: mysql:5.6.41
+  image: mariadb:10.5
   imagePullPolicy: IfNotPresent
   persistence:
     enabled: false
