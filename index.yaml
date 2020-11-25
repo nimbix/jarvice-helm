@@ -3,10 +3,35 @@ entries:
   jarvice:
   - annotations:
       tag: jarvice-master
+      version: 3.0.0-1.202011252103
+    apiVersion: v2
+    appVersion: 3.0.0
+    created: "2020-11-25T21:42:24.074769633Z"
+    description: JARVICE cloud platform
+    digest: d57684d676d541a8d07f2378ac59310792034fded37867c9ead8d94f19141d60
+    home: http://www.nimbix.net/
+    icon: https://github.com/nimbix/jarvice-helm/raw/master/skin-default/favicon.png
+    keywords:
+    - JARVICE
+    - HPC
+    - cloud
+    kubeVersion: '>=1.14.0-0'
+    maintainers:
+    - email: support@nimbix.net
+      name: Nimbix, Inc.
+      url: http://www.nimbix.net/
+    name: jarvice
+    sources:
+    - https://github.com/nimbix/jarvice-helm
+    urls:
+    - https://nimbix.github.io/jarvice-helm/jarvice-3.0.0-1.202011252103.tgz
+    version: 3.0.0-1.202011252103
+  - annotations:
+      tag: jarvice-master
       version: 3.0.0-1.202011121727
     apiVersion: v2
     appVersion: 3.0.0
-    created: "2020-11-12T19:14:26.20225924Z"
+    created: "2020-11-25T21:42:24.059982274Z"
     description: JARVICE cloud platform
     digest: 2fe32f6f0665ccc54bdc6f6d4f60ba953df9b1b35e0ae51f0d7a456a9e2dab32
     home: http://www.nimbix.net/
@@ -31,7 +56,7 @@ entries:
       version: 3.0.0-1.202011112040
     apiVersion: v2
     appVersion: 3.0.0
-    created: "2020-11-12T19:14:26.190916786Z"
+    created: "2020-11-25T21:42:24.047618551Z"
     description: JARVICE cloud platform
     digest: 70e1df0eb694ed2933ebbdf010de4f385f71125db42c2477c8e90222f26984be
     home: http://www.nimbix.net/
@@ -56,7 +81,7 @@ entries:
       version: 3.0.0-1.202010282029
     apiVersion: v2
     appVersion: 3.0.0
-    created: "2020-11-12T19:14:26.178742132Z"
+    created: "2020-11-25T21:42:24.031206169Z"
     description: JARVICE cloud platform
     digest: a32da89d52d7f6a541ce10596a028eb81401d31dc32cc7ffc6e04c8e6677a0b5
     home: http://www.nimbix.net/
@@ -81,7 +106,7 @@ entries:
       version: 3.0.0-1.202010141909
     apiVersion: v2
     appVersion: 3.0.0
-    created: "2020-11-12T19:14:26.163977176Z"
+    created: "2020-11-25T21:42:24.0153475Z"
     description: JARVICE cloud platform
     digest: be86b115ca9988f530e84815caef8a681bf8fdc771ef278958e570ed54f30d73
     home: http://www.nimbix.net/
@@ -106,7 +131,7 @@ entries:
       version: 3.0.0-1.202009301931
     apiVersion: v2
     appVersion: 3.0.0
-    created: "2020-11-12T19:14:26.153136591Z"
+    created: "2020-11-25T21:42:23.998557418Z"
     description: JARVICE cloud platform
     digest: 2b78e7eb9e0876f95eaeca1bd04aeff2b21a007ca86652dbfc4cc631fe2a5357
     home: http://www.nimbix.net/
@@ -131,7 +156,7 @@ entries:
       version: 3.0.0-1.202009041653
     apiVersion: v2
     appVersion: 3.0.0
-    created: "2020-11-12T19:14:26.140421112Z"
+    created: "2020-11-25T21:42:23.985989508Z"
     description: JARVICE cloud platform
     digest: efc3c3c832b814a4926e41d61c92fd27d998d7f6fb3fd51055d0cf311fa1687f
     home: http://www.nimbix.net/
@@ -156,7 +181,7 @@ entries:
       version: 3.0.0-1.202009021933
     apiVersion: v2
     appVersion: 3.0.0
-    created: "2020-11-12T19:14:26.12626951Z"
+    created: "2020-11-25T21:42:23.971347394Z"
     description: JARVICE cloud platform
     digest: aa3ed6c280fdefde7e050b6293d21a7bece899a7e4c19c18e93486ce04f3246c
     home: http://www.nimbix.net/
@@ -181,7 +206,7 @@ entries:
       version: 3.0.0-1.202008191936
     apiVersion: v2
     appVersion: 3.0.0
-    created: "2020-11-12T19:14:26.112870855Z"
+    created: "2020-11-25T21:42:23.956761251Z"
     description: JARVICE cloud platform
     digest: 2aadf14d7e2abe0c321d45210fdb2aa2509378b1eac0efa64805814c9627c544
     home: http://www.nimbix.net/
@@ -201,4 +226,4 @@ entries:
     urls:
     - https://nimbix.github.io/jarvice-helm/jarvice-3.0.0-1.202008191936.tgz
     version: 3.0.0-1.202008191936
-generated: "2020-11-12T19:14:26.096417493Z"
+generated: "2020-11-25T21:42:23.940972386Z"
