@@ -468,7 +468,7 @@ helm_stable_repo=$($HELM repo list 2>/dev/null | grep ^stable)
 if [ -z "$helm_stable_repo" ]; then
     echo
     echo "* Adding helm chart repository for stable..."
-    $HELM repo add stable https://kubernetes-charts.storage.googleapis.com/
+    $HELM repo add stable https://charts.helm.sh/stable
 fi
 
 echo

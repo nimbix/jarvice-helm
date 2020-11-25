@@ -190,7 +190,7 @@ echo
 echo "For advanced setup details, visit https://github.com/elastic/helm-charts and/or execute:"
 echo "$ helm inspect all kibana --repo $repo"
 
-repo=https://kubernetes-charts.storage.googleapis.com/
+repo=https://charts.helm.sh/stable
 echo
 echo "* Deploying fluentd..."
 $HELM upgrade fluentd fluentd --repo $repo \

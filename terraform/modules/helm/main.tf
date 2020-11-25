@@ -10,7 +10,7 @@ resource "helm_release" "cluster_autoscaler" {
     count = contains(keys(var.charts), "cluster-autoscaler") ? 1 : 0
 
     name = "cluster-autoscaler"
-    repository = "https://kubernetes-charts.storage.googleapis.com"
+    repository = "https://charts.helm.sh/stable"
     chart = "cluster-autoscaler"
     namespace = "kube-system"
     reuse_values = false
@@ -40,9 +40,8 @@ resource "helm_release" "traefik" {
     count = contains(keys(var.charts), "traefik") ? 1 : 0
 
     name = "traefik"
-    repository = "https://kubernetes-charts.storage.googleapis.com"
+    repository = "https://charts.helm.sh/stable"
     chart = "traefik"
-    #version = "1.85.0"
     namespace = "kube-system"
     reuse_values = false
     reset_values = true
