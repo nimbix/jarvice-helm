@@ -113,6 +113,18 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202011252103
+
+* (2532) EXPERIMENTAL Technology preview for 3D offload using EGL on NVIDIA Kepler (or newer) class GPUs and driver version 450 or newer; use the `egl` pseudo-device in the machine definition to enable, but note that this currently implies `privileged`; **use with extreme caution and for testing purposes only**
+* (3191) Support for MariaDB as well as MySQL in deployments by setting `jarvice_db.image` to `mariadb:10.5` in either the Helm or Terraform overrides; note that this is certified for new deployments only, and should not (yet) be changed for existing deployments or risk data corruption.  Also note that this is required for `arm64` deployments as official MySQL images are not available for that architecture.
+* (3604) Added initial support for project management features in the *Account->Projects* view.
+* (3654) Official support for AArch64 (`arm64`) architecture for both control plane and compute/apps.  For additional information on AWS deployment, see [Arm64 (AArch64) cluster deployment](Terraform.md#arm64-on-aws) in *JARVICE Deployment with Terraform*.
+* (3668) Moved JARVICE DaemonSet container images to `gcr.io/jarvice` bucket to avoid issues with *DockerHub* limits and throttling.
+* (3672) Require explicit selection of projects for users with more than one project defined in the portal task builder.
+* (3673) Added project attribute reporting in team and system administration usage reports.
+* (3675) Increased utilization of multi-node jobs when using fractional nodes as defined in machine definitions; `jarvice-pod-scheduler` now packs these pods, if possible, rather than spreading them across multiple worker nodes by default.
+* (3706) Fixed bug where multiple properties in a machine definition were not being reflected as node selectors in jobs running on those machine types.
+
 ## 3.0.0-1.202011121727
 
 * (3703) Fixed portal regression that prevented successfully cloning jobs from history.
