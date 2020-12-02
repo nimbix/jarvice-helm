@@ -112,9 +112,9 @@ spec:
 {{- end }}
           - name: JARVICE_DAL_URL
 {{- if empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
-            value: "https://jarvice-dal.{{ .Release.Namespace }}:8443"
+            value: "http://jarvice-dal.{{ .Release.Namespace }}:8080"
 {{- else }}
-            value: "https://jarvice-dal.{{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}:8443"
+            value: "http://jarvice-dal.{{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}:8080"
 {{- end }}
           - name: JARVICE_API_URL
 {{- if empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}

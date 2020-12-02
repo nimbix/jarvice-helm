@@ -84,14 +84,12 @@ spec:
         imagePullPolicy: IfNotPresent
 {{- end }}
         ports:
-          - name: https
-            containerPort: 8443
           - name: http
-            containerPort: 8000
+            containerPort: 8080
         readinessProbe:
           httpGet:
-            scheme: HTTPS
-            port: https
+            scheme: HTTP
+            port: http
             path: /ready
           initialDelaySeconds: {{ .Values.jarvice_dal.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.jarvice_dal.readinessProbe.periodSeconds }}
@@ -100,8 +98,8 @@ spec:
           failureThreshold: {{ .Values.jarvice_dal.readinessProbe.failureThreshold }}
         livenessProbe:
           httpGet:
-            scheme: HTTPS
-            port: https
+            scheme: HTTP
+            port: http
             path: /live
           initialDelaySeconds: {{ .Values.jarvice_dal.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.jarvice_dal.livenessProbe.periodSeconds }}
@@ -133,16 +131,8 @@ spec:
 {{- else }}
             value: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
 {{- end }}
-          - name: JARVICE_DAL_HTTPS
-            value: "enable"
-          - name: JARVICE_DAL_HTTPS_PORT
-            value: "8443"
-          - name: JARVICE_DAL_HTTP
-            value: "enable"
-          - name: JARVICE_DAL_HTTP_PORT
-            value: "8000"
-          - name: JARVICE_BLOCK_CONF
-            value: ";"
+          - name: JARVICE_DAL_URL
+            value: http://localhost:8080
           - name: JARVICE_SCHED_URL
             value: "https://jarvice-scheduler:9443"
           - name: JARVICE_DEFAULT_CLUSTER_URL
@@ -155,21 +145,21 @@ spec:
 {{- else }}
             value: "{{ .Values.jarvice.JARVICE_DEFAULT_CLUSTER_URL }}"
 {{- end }}
-          - name: JARVICE_NODE_ENV
+          - name: NODE_ENV
             value: "{{ .Values.jarvice_dal.env.JARVICE_NODE_ENV }}"
-          - name: JARVICE_SITE_DBHOST
+          - name: NODE_DBHOST
 {{- if empty .Values.jarvice_dal.env.JARVICE_SITE_DBHOST }}
             value: "{{ .Values.jarvice.JARVICE_DBHOST }}"
 {{- else }}
             value: "{{ .Values.jarvice_dal.env.JARVICE_SITE_DBHOST }}"
 {{- end }}
-          - name: JARVICE_SITE_DBUSER
+          - name: NODE_DBUSER
 {{- if empty .Values.jarvice_dal.env.JARVICE_SITE_DBUSER }}
             value: "{{ .Values.jarvice.JARVICE_DBUSER }}"
 {{- else }}
             value: "{{ .Values.jarvice_dal.env.JARVICE_SITE_DBUSER }}"
 {{- end }}
-          - name: JARVICE_SITE_DBPASSWD
+          - name: NODE_DBPASSWD
             valueFrom:
               secretKeyRef:
                 name: jarvice-db
@@ -226,12 +216,8 @@ spec:
   type: ClusterIP
   ports:
   - protocol: TCP
-    port: 8443
-    targetPort: 8443
-    name: https
-  - protocol: TCP
-    port: 8000
-    targetPort: 8000
+    port: 8080
+    targetPort: 8080
     name: http
   selector:
     deployment: jarvice-dal
@@ -255,9 +241,7 @@ spec:
     - podSelector: {}
     ports:
     - protocol: TCP
-      port: 8443
-    - protocol: TCP
-      port: 8000
+      port: 8080
   - from:
     - namespaceSelector:
         matchLabels:
@@ -269,7 +253,7 @@ spec:
     - podSelector: {}
     ports:
     - protocol: TCP
-      port: 8443
+      port: 8080
   - from:
     - namespaceSelector:
         matchLabels:
@@ -281,7 +265,7 @@ spec:
     - podSelector: {}
     ports:
     - protocol: TCP
-      port: 8443
+      port: 8080
 {{/*
 WARNING: Enabling ingressHost for this service is dangerous.
 DO NOT enable it here without understanding the security implications!
@@ -292,9 +276,7 @@ DO NOT enable it here without understanding the security implications!
     - podSelector: {}
     ports:
     - protocol: TCP
-      port: 8443
-    - protocol: TCP
-      port: 8000
+      port: 8080
 {{- end }}
 ---
 {{- end }}

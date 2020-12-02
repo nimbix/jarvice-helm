@@ -121,7 +121,7 @@ spec:
 {{- if (not (empty .Values.jarvice_scheduler.env.JARVICE_DAL_URL)) }}
             value: "{{ .Values.jarvice_scheduler.env.JARVICE_DAL_URL }}"
 {{- else }}
-            value: "https://jarvice-dal:8443"
+            value: "http://jarvice-dal:8080"
 {{- end }}
           - name: JARVICE_SCHED_URL
 {{- if (not (empty .Values.jarvice_scheduler.env.JARVICE_SCHED_URL)) }}
