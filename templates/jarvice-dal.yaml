@@ -299,7 +299,7 @@ spec:
       paths:
       - backend:
           serviceName: jarvice-dal
-          servicePort: https
+          servicePort: http
 ---
 {{- end }}
 {{- end }}
