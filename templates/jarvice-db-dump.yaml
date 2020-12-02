@@ -124,9 +124,9 @@ spec:
               mountPath: /opt/bin
               readOnly: true
 {{- if .Values.jarvice_db_dump.securityContext.enabled }}
-            securityContext:
-              fsGroup: {{ .Values.jarvice_db_dump.securityContext.fsGroup }}
-              runAsUser: {{ .Values.jarvice_db_dump.securityContext.runAsUser }}
+          securityContext:
+            fsGroup: {{ .Values.jarvice_db_dump.securityContext.fsGroup }}
+            runAsUser: {{ .Values.jarvice_db_dump.securityContext.runAsUser }}
 {{- end }}
 ---
 apiVersion: v1
