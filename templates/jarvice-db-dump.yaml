@@ -140,7 +140,7 @@ data:
     dump_dir=/jarvice-db-dump
     file=$dump_dir/$JARVICE_SYSTEM_NAMESPACE-$(date +%Y%m%d%H%M%S).sql.gz
     echo "* Dumping JARVICE database from $JARVICE_SYSTEM_NAMESPACE namespace to $file..."
-    mysqldump --verbose \
+    mariadb-dump --verbose \
         --user="$JARVICE_SITE_DBUSER" \
         --password="$JARVICE_SITE_DBPASSWD" \
         --host="$JARVICE_SITE_DBHOST" nimbix | gzip >$file
