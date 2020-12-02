@@ -113,7 +113,7 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
-## 3.0.0-1.202011252103
+## 3.0.0-1.202012012257
 
 * (2532) EXPERIMENTAL Technology preview for 3D offload using EGL on NVIDIA Kepler (or newer) class GPUs and driver version 450 or newer; use the `egl` pseudo-device in the machine definition to enable, but note that this currently implies `privileged`; **use with extreme caution and for testing purposes only**
 * (3191) Support for MariaDB as well as MySQL in deployments by setting `jarvice_db.image` to `mariadb:10.5` in either the Helm or Terraform overrides; note that this is certified for new deployments only, and should not (yet) be changed for existing deployments or risk data corruption.  Also note that this is required for `arm64` deployments as official MySQL images are not available for that architecture.
