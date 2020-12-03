@@ -147,17 +147,38 @@ spec:
 {{- end }}
           - name: NODE_ENV
             value: "{{ .Values.jarvice_dal.env.JARVICE_NODE_ENV }}"
+          - name: JARVICE_SITE_DBHOST
+{{- if empty .Values.jarvice_dal.env.JARVICE_SITE_DBHOST }}
+            value: "{{ .Values.jarvice.JARVICE_DBHOST }}"
+{{- else }}
+            value: "{{ .Values.jarvice_dal.env.JARVICE_SITE_DBHOST }}"
+{{- end }}
           - name: NODE_DBHOST
 {{- if empty .Values.jarvice_dal.env.JARVICE_SITE_DBHOST }}
             value: "{{ .Values.jarvice.JARVICE_DBHOST }}"
 {{- else }}
             value: "{{ .Values.jarvice_dal.env.JARVICE_SITE_DBHOST }}"
 {{- end }}
+          - name: JARVICE_SITE_DBUSER
+{{- if empty .Values.jarvice_dal.env.JARVICE_SITE_DBUSER }}
+            value: "{{ .Values.jarvice.JARVICE_DBUSER }}"
+{{- else }}
+            value: "{{ .Values.jarvice_dal.env.JARVICE_SITE_DBUSER }}"
+{{- end }}
           - name: NODE_DBUSER
 {{- if empty .Values.jarvice_dal.env.JARVICE_SITE_DBUSER }}
             value: "{{ .Values.jarvice.JARVICE_DBUSER }}"
 {{- else }}
             value: "{{ .Values.jarvice_dal.env.JARVICE_SITE_DBUSER }}"
+{{- end }}
+          - name: JARVICE_SITE_DBPASSWD
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-db
+{{- if empty .Values.jarvice_dal.env.JARVICE_SITE_DBPASSWD }}
+                key: JARVICE_DBPASSWD
+{{- else }}
+                key: JARVICE_SITE_DBPASSWD
 {{- end }}
           - name: NODE_DBPASSWD
             valueFrom:
