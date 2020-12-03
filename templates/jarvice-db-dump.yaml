@@ -149,7 +149,7 @@ data:
     set +e
     rmfiles=$(ls -1 -d -t -r $dump_dir/$JARVICE_SYSTEM_NAMESPACE-*.sql.gz \
                 2>/dev/null | \
-                head --lines=-{{ .Values.jarvice_db_dump.deleteOldBackups.keep }})
+                head -n -{{ .Values.jarvice_db_dump.deleteOldBackups.keep }})
     if [ -n "$rmfiles" ]; then
         set -e
         echo; echo "* Cleaning up old backups..."
