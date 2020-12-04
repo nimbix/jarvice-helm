@@ -21,6 +21,21 @@ resource "helm_release" "cluster_autoscaler" {
     values = [var.charts["cluster-autoscaler"]["values"]]
 }
 
+resource "helm_release" "metrics_server" {
+    count = contains(keys(var.charts), "metrics-server") ? 1 : 0
+
+    name = "metrics-server"
+    repository = "https://charts.helm.sh/stable"
+    chart = "metrics-server"
+    namespace = "kube-system"
+    reuse_values = false
+    reset_values = true
+    render_subchart_notes = false
+    timeout = 600
+
+    values = [var.charts["metrics-server"]["values"]]
+}
+
 resource "helm_release" "external_dns" {
     count = contains(keys(var.charts), "external-dns") ? 1 : 0
 

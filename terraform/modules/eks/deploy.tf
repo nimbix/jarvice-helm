@@ -44,6 +44,35 @@ rbac:
     eks.amazonaws.com/role-arn: "${module.iam_assumable_role_admin.this_iam_role_arn}"
 EOF
         },
+        "metrics-server" = {
+            "values" = <<EOF
+image:
+  repository: gcr.io/k8s-staging-metrics-server/metrics-server
+  tag: v0.4.1
+  pullPolicy: IfNotPresent
+
+nodeSelector:
+  node-role.jarvice.io/jarvice-system: "true"
+tolerations:
+  - key: node-role.jarvice.io/jarvice-system
+    effect: NoSchedule
+    operator: Exists
+  - key: node-role.kubernetes.io/jarvice-system
+    effect: NoSchedule
+    operator: Exists
+
+priorityClassName: system-node-critical
+
+args:
+  - --kubelet-preferred-address-types=InternalIP
+  - --kubelet-insecure-tls
+
+service:
+  labels:
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: "Metrics-server"
+EOF
+        },
         "traefik" =  {
             "values" = <<EOF
 # TODO: use eip allocations with NLB
