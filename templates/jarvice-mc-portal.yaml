@@ -130,7 +130,7 @@ spec:
 {{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_DAL_URL)) }}
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_DAL_URL }}"
 {{- else }}
-            value: "https://jarvice-dal:8443"
+            value: "http://jarvice-dal:8080"
 {{- end }}
           - name: JARVICE_API_URL
 {{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_API_URL)) }}

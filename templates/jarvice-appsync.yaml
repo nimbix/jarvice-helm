@@ -50,7 +50,7 @@ spec:
             command:
             - /bin/sh
             - -c
-            - /usr/bin/curl -s -k  https://jarvice-dal:8443/ready | grep -q OK
+            - /usr/bin/curl -s -k  http://jarvice-dal:8080/ready | grep -q OK
           initialDelaySeconds: {{ .Values.jarvice_appsync.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.jarvice_appsync.readinessProbe.periodSeconds }}
           timeoutSeconds: {{ .Values.jarvice_appsync.readinessProbe.timeoutSeconds }}
@@ -79,7 +79,7 @@ spec:
             value: "{{ .Values.jarvice.JARVICE_EXPERIMENTAL }}"
 {{- end }}
           - name: JARVICE_DAL_URL
-            value: "https://jarvice-dal:8443"
+            value: "http://jarvice-dal:8080"
           - name: JARVICE_LOCAL_API_URL
             value: "http://jarvice-api:8080"
           - name: JARVICE_APP_USER
