@@ -444,7 +444,6 @@ spec:
         {{- include "jarvice.release_labels" . | indent 8 }}
         component: jarvice-dri-optional-device-plugin
     spec:
-      hostNetwork: true
 {{- if (not (empty .Values.jarvice.daemonsets.dri_optional.tolerations)) }}
       tolerations: {{ .Values.jarvice.daemonsets.dri_optional.tolerations }}
 {{- else if (not (empty .Values.jarvice.daemonsets.tolerations)) }}
