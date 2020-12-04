@@ -113,19 +113,19 @@ jarvice:
       enabled: false
       tolerations: #'[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
-      image: nimbix/jarvice-cache-pull:20181204
+      image: gcr.io/jarvice/jarvice-cache-pull:20201116
       imagePullPolicy: IfNotPresent
     lxcfs:
       enabled: false
       tolerations: #'[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
-      image: nimbix/lxcfs:3.0.3-3
+      image: gcr.io/jarvice/lxcfs:3.0.3-4
       imagePullPolicy: IfNotPresent
     disable_hyper_threading:
       enabled: false
       tolerations: #'[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeSelector: '{"node-role.jarvice.io/jarvice-compute": "true", "kubernetes.io/arch": "amd64"}'
-      image: busybox:latest
+      image: gcr.io/google-containers/busybox:latest
       imagePullPolicy: IfNotPresent
     nvidia:
       enabled: false
@@ -144,7 +144,7 @@ jarvice:
       enabled: false
       tolerations: #'[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}, {"key": "jarvice.com/rdma", "operator": "Exists",  "effect": "NoSchedule"}]'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
-      image: jarvice/k8s-rdma-device:1.0.1
+      image: gcr.io/jarvice/k8s-rdma-device:1.0.1
       imagePullPolicy: IfNotPresent
 
 
@@ -169,7 +169,7 @@ jarvice_db: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   nodeSelector: # '{"node-role.jarvice.io/jarvice-db": "true"}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
-  image: mysql:5.6.41
+  image: mariadb:10.5
   imagePullPolicy: IfNotPresent
   persistence:
     enabled: false
@@ -217,12 +217,12 @@ jarvice_db_dump: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     accessMode: ReadWriteOnce
     size: 50Gi
   securityContext:
-    enabled: false  # Enable when PersistentVolume is root squashed
+    enabled: false  # Enable and set to user and group to use for dump
     fsGroup: 999
     runAsUser: 999
 
 # jarvice_smtpd may be disabled when not set for jarvice.JARVICE_MAIL_SERVER
-jarvice_smtpd:
+jarvice_smtpd: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
   replicaCount: 2
   # PodDisruptionBudget default requires 25% minimum of pods must be running
@@ -245,7 +245,7 @@ jarvice_smtpd:
   nodeSelector: # '{"node-role.jarvice.io/jarvice-smtpd": "true"}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
-  image: nimbix/postfix:3.11_3.4.9-r0
+  image: gcr.io/jarvice/postfix:3.11_3.4.12-r0
   imagePullPolicy: IfNotPresent
 
 # Web service to map a username to full Linux identity based on inspection
@@ -281,7 +281,7 @@ jarvice_idmapper: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   nodeSelector: # '{"node-role.jarvice.io/jarvice-idmapper": "true"}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
-  image: nimbix/idmapper:20200515-1
+  image: gcr.io/jarvice/idmapper:20201116
   imagePullPolicy: IfNotPresent
   # Shared filesystem settings.  Defaults to hostPath if NFS server is not set
   filesystem:
@@ -512,7 +512,7 @@ jarvice_k8s_scheduler:
     JARVICE_UNFS_REQUEST_CPU: 1
     JARVICE_UNFS_EXPIRE_SECS: 90
     JARVICE_UNFS_NODE_SELECTOR: # '{"node-role.jarvice.io/jarvice-storage": "true"}' # '{"node-role.kubernetes.io/jarvice-storage": "true"}'
-    JARVICE_UNFS3_IMAGE: # nimbix/unfs3 - change if mirroring locally
+    JARVICE_UNFS3_IMAGE: # gcr.io/jarvice/unfs3:20190318-1 - change if mirroring locally
     JARVICE_PVCLS_IMAGE: # alpine:3.8 - change if mirroring locally
     JARVICE_SCHED_JOB_UID:  # set to numeric value to override UID for jobs
     JARVICE_SCHED_JOB_GID:  # set to numeric value to override GID for jobs
@@ -694,4 +694,6 @@ jarvice_mc_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     JARVICE_PORTAL_DBHOST: # jarvice-db
     JARVICE_PORTAL_DBUSER: # root
     JARVICE_PORTAL_DBPASSWD: # Pass1234
+    # If a non-empty string is passed, the MC portal will not warn about the use of API key related substitutions
+    JARVICE_DISABLE_API_SUBST_WARNING: # ""
 

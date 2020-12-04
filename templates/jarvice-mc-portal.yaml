@@ -149,7 +149,7 @@ spec:
 {{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_DAL_URL)) }}
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_DAL_URL }}"
 {{- else }}
-            value: "https://jarvice-dal:8443"
+            value: "http://jarvice-dal:8080"
 {{- end }}
           - name: JARVICE_API_URL
 {{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_API_URL)) }}
@@ -172,6 +172,10 @@ spec:
 {{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_LOG)) }}
           - name: JARVICE_PORTAL_GSS_LOG
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_LOG }}"
+{{- end }}
+{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_DISABLE_API_SUBST_WARNING)) }}
+          - name: JARVICE_DISABLE_API_SUBST_WARNING
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_DISABLE_API_SUBST_WARNING }}"
 {{- end }}
 {{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_WEB_HOST)) }}
           - name: JARVICE_PORTAL_WEB_HOST

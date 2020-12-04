@@ -35,8 +35,7 @@ module "vpc" {
     name = "${var.cluster.meta["cluster_name"]}-vpc"
     cidr = "10.0.0.0/16"
     azs = var.cluster.location["zones"] != null ? distinct(concat(var.cluster.location["zones"], data.aws_availability_zones.available.names)) : data.aws_availability_zones.available.names
-    public_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-    #private_subnets = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
+    public_subnets = var.cluster.location["zones"] == null ? ["10.0.0.0/17", "10.0.128.0/17"] : length(var.cluster.location["zones"]) > 2 ? ["10.0.0.0/18", "10.0.64.0/18", "10.0.128.0/18", "10.0.192.0/18"] : ["10.0.0.0/17", "10.0.128.0/17"]
     enable_dns_hostnames = true
 
     #enable_nat_gateway = true
@@ -99,7 +98,7 @@ EOF
     default_nodes = [
         {
             "name" = "default",
-            "instance_type" = "t2.nano"
+            "instance_type" = lookup(var.cluster.meta, "arch", "") == "arm64" ? "t4g.micro" : "t2.nano"
             "asg_desired_capacity" = 2
             "asg_min_size" = 2
             "asg_max_size" = 2
@@ -189,6 +188,7 @@ module "eks" {
 
     worker_groups = concat(local.default_nodes, local.system_nodes, local.compute_nodes)
     worker_additional_security_group_ids = [for sg in aws_security_group.jarvice : sg.id]
+    worker_ami_name_filter = lookup(var.cluster.meta, "arch", "") == "arm64" ? "amazon-eks-arm64-node-${var.cluster.meta["kubernetes_version"]}-*" : "amazon-eks-gpu-node-${var.cluster.meta["kubernetes_version"]}-v*"
 
     tags = {
         cluster_name = var.cluster.meta["cluster_name"]

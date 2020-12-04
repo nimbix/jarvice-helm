@@ -1045,6 +1045,19 @@ The `jarvice-db-restore` shell script included in the `scripts`
 directory of this helm chart can be used to backup the JARVICE database.
 Simply execute `./scripts/jarvice-db-restore --help` to see it's usage.
 
+#### Database upgrades
+
+If using the `jarvice-db` deployment provided by this helm chart and the
+value of `jarvice_db.image` is updated upon subsequent JARVICE upgrades, it
+will be necessary to run the `./scripts/jarvice-db-upgrade` script afterwords
+to update the stored data for use with the newer database image.
+
+**Note:** The default value of `jarvice_db.image` has been changed from
+`mysql` to the latest `mariadb` release in all JARVICE releases after
+`3.0.0-1.202011252103`.
+If upgrading to a release newer than `3.0.0-1.202011252103`, be sure to
+execute `./scripts/jarvice-db-upgrade`.
+
 ### Customize JARVICE files via a ConfigMap
 
 Some JARVICE files can be updated via a ConfigMap.  The files found
@@ -1150,6 +1163,7 @@ for more details on further configuring an Elasticsearch based stack.
 - [Ingress Patterns and Configuration](Ingress.md)
 - [Active Directory Authentication Best Practices](ActiveDirectory.md)
 - [In-container Identity Settings and Best Practices](Identity.md)
+- [JARVICE Multi-tenant Overview](MultiTenant.md)
 - [JARVICE Troubleshooting Guide](Troubleshooting.md)
 - [JARVICE Helm chart deployment scripts](https://github.com/nimbix/jarvice-helm/tree/master/scripts)
 - [Kubernetes Cluster Installation](KubernetesInstall.md)

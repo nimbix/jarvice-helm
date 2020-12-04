@@ -117,7 +117,7 @@ spec:
 {{- end }}
 {{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
           - name: JARVICE_DAL_URL
-            value: "https://jarvice-dal:8443"
+            value: "http://jarvice-dal:8080"
           - name: JARVICE_SCHED_URL
             value: "https://jarvice-scheduler:9443"
 {{- end }}

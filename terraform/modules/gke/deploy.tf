@@ -22,7 +22,6 @@ cpuRequest: 1
 cpuLimit: 1
 
 nodeSelector:
-  kubernetes.io/arch: "amd64"
   node-role.jarvice.io/jarvice-system: "true"
 tolerations:
   - key: node-role.jarvice.io/jarvice-system

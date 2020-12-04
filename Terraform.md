@@ -31,6 +31,8 @@ https://github.com/nimbix/jarvice-helm
 * [Terraform Configuration](#terraform-configuration)
     - [Terraform variable definitions](#terraform-variable-definitions)
     - [JARVICE helm chart values](#jarvice-helm-chart-values)
+    - [Arm64 (AArch64) cluster deployment](#arm64-aarch64-cluster-deployment)
+        - [Arm64 on AWS](#arm64-on-aws)
 * [Deploying JARVICE](#deploying-jarvice)
     - [Initialize `terraform`](#initialize-terraform)
     - [Configure `terraform` variables and `helm` values](#configure-terraform-variables-and-helm-values)
@@ -104,7 +106,7 @@ https://cloud.google.com/sdk/install
 
 If you don't already have a GCP user with the appropriate permissions to create
 GKE clusters, it will be necessary to add a user and
-set the appropriate permissions for the indented GCP project here:
+set the appropriate permissions for the intended GCP project here:
 https://console.cloud.google.com/iam-admin/iam
 
 It may also be desirable to set the default `gcloud` `account`, `project`,
@@ -122,7 +124,8 @@ https://cloud.google.com/sdk/gcloud/reference/config/set
 #### AWS for EKS: `aws`
 
 If deploying JARVICE to EKS on AWS, it will be necessary to install
-the `aws` executable.  Please visit the following link for more details:
+the `aws` and `aws-iam-authenticator` executables.
+Please visit the following link for more details:
 https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html
 
 ##### AWS Credentials
@@ -165,7 +168,7 @@ create AKS clusters, it will be necessary to add a user and
 set the appropriate permissions here:
 https://portal.azure.com/
 
-Before using `terraform` to create cluster, it will be necessary to sign into
+Before using `terraform` to create a cluster, it will be necessary to sign into
 Azure from the command line:
 
 ```bash
@@ -229,6 +232,43 @@ chart values are passed to the helm deployment in the following order
 See [README.md](README.md) in the top level of this repository for more
 in depth details on JARVICE Helm chart settings:
 https://github.com/nimbix/jarvice-helm
+
+### Arm64 (AArch64) cluster deployment
+
+In addition to AMD64 (x86_64), Terraform deployments are supported for
+Arm64 clusters.  As of this writing, only EKS on AWS has support
+for the Arm64 architecture.
+
+#### Arm64 on AWS
+
+In order to deploy an Arm64 cluster, it will be necessary to set/uncomment
+the appropriate EKS cluster configuration options.
+
+Firstly, in the `.tfvars` configuration(s), the `arch` setting in the
+`meta` section must be set to `arm64`:
+```bash
+        meta = {
+            cluster_name = "tf-jarvice"
+            kubernetes_version = "1.16"
+            arch = "arm64"  # Uncomment to deploy an arm64 cluster
+...
+```
+
+In addition, Arm64 node types will need to be used.  Use the
+[AWS Instance Type Explorer](https://aws.amazon.com/ec2/instance-explorer/?ec2-instances-cards.sort-by=item.additionalFields.category-order&ec2-instances-cards.sort-order=asc&awsf.ec2-instances-filter-processors=processors%23aws) to
+find instance types which use the Arm-based AWS Graviton2 processors.
+Here is an example compute node pool configuration using `c6g.16xlarge`:
+```bash
+        compute_node_pools = {
+            jxecompute00 = {
+                nodes_type = "c6g.16xlarge"
+                nodes_disk_size_gb = 100
+...
+```
+**Note:**  It is not currently possible to mix node pool architectures in
+a single cluster deployment.  If a multi-architecture cluster is desired,
+it will be necessary to deploy an additional downstream cluster to add
+another architecture.
 
 ------------------------------------------------------------------------------
 
