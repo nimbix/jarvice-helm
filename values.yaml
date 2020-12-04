@@ -146,6 +146,12 @@ jarvice:
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
       image: gcr.io/jarvice/k8s-rdma-device:1.0.1
       imagePullPolicy: IfNotPresent
+    dri_optional:
+      enabled: true
+      tolerations: #'[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}, {"key": "jarvice.com/rdma", "operator": "Exists",  "effect": "NoSchedule"}]'
+      nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
+      image: gcr.io/jarvice/k8s-dri-optional-device:1.0.1
+      imagePullPolicy: IfNotPresent
 
 
 # Database server previously set up?  Set enabled to false.
