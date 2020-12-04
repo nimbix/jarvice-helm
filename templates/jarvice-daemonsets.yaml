@@ -1,4 +1,4 @@
-{{- if or .Values.jarvice.daemonsets.cache_pull.enabled .Values.jarvice.daemonsets.lxcfs.enabled .Values.jarvice.daemonsets.nvidia.enabled .Values.jarvice.daemonsets.rdma.enabled .Values.jarvice.daemonsets.disable_hyper_threading.enabled }}
+{{- if or .Values.jarvice.daemonsets.cache_pull.enabled .Values.jarvice.daemonsets.lxcfs.enabled .Values.jarvice.daemonsets.nvidia.enabled .Values.jarvice.daemonsets.rdma.enabled .Values.jarvice.daemonsets.disable_hyper_threading.enabled .Values.jarvice.daemonsets.dri_optional.enabled }}
 apiVersion: {{ template "apiVersion.priorityClass" . }}
 kind: PriorityClass
 metadata:
@@ -412,6 +412,62 @@ spec:
             mountPath: /dev/knem
         securityContext:
           allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+      priorityClassName: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+      priorityClassName: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
+---
+{{- end }}
+{{- if .Values.jarvice.daemonsets.dri_optional.enabled }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: jarvice-dri-optional-device-plugin
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+  namespace: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+  namespace: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-dri-optional-device-plugin
+spec:
+  selector:
+    matchLabels:
+      component: jarvice-dri-optional-device-plugin
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-dri-optional-device-plugin
+    spec:
+      hostNetwork: true
+{{- if (not (empty .Values.jarvice.daemonsets.dri_optional.tolerations)) }}
+      tolerations: {{ .Values.jarvice.daemonsets.dri_optional.tolerations }}
+{{- else if (not (empty .Values.jarvice.daemonsets.tolerations)) }}
+      tolerations: {{ .Values.jarvice.daemonsets.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice.daemonsets.dri_optional.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.daemonsets.dri_optional.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.daemonsets.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.daemonsets.nodeSelector }}
+{{- end }}
+      volumes:
+        - name: device-plugins
+          hostPath:
+            path: /var/lib/kubelet/device-plugins
+      containers:
+      - name: jarvice-dri-optional-device-plugin
+        image: {{ .Values.jarvice.daemonsets.dri_optional.image }}
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.dri_optional.imagePullPolicy }}
+        volumeMounts:
+          - name: device-plugins
+            mountPath: /var/lib/kubelet/device-plugins
+        securityContext:
+          privileged: true
           capabilities:
             drop: ["ALL"]
 {{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
