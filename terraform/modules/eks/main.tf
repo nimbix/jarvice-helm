@@ -188,7 +188,7 @@ module "eks" {
 
     worker_groups = concat(local.default_nodes, local.system_nodes, local.compute_nodes)
     worker_additional_security_group_ids = [for sg in aws_security_group.jarvice : sg.id]
-    worker_ami_name_filter = lookup(var.cluster.meta, "arch", "") == "arm64" ? "amazon-eks-arm64-node-${var.cluster.meta["kubernetes_version"]}-*" : ""
+    worker_ami_name_filter = lookup(var.cluster.meta, "arch", "") == "arm64" ? "amazon-eks-arm64-node-${var.cluster.meta["kubernetes_version"]}-*" : "amazon-eks-gpu-node-${var.cluster.meta["kubernetes_version"]}-v*"
 
     tags = {
         cluster_name = var.cluster.meta["cluster_name"]
