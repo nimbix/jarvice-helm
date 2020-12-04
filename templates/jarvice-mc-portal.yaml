@@ -16,15 +16,15 @@ spec:
 apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: jarvice-dal
+  name: jarvice-mc-portal
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-dal
+    component: jarvice-mc-portal
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: jarvice-dal
+    name: jarvice-mc-portal
   minReplicas: {{ .Values.jarvice_mc_portal.replicaCount }}
   maxReplicas: {{ .Values.jarvice_mc_portal.replicaCountMax }}
   metrics:
