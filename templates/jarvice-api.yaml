@@ -12,6 +12,25 @@ spec:
   minAvailable: {{ .Values.jarvice_api.pdb.minAvailable }}
 ---
 {{- end }}
+{{- if gt (.Values.jarvice_api.replicaCountMax | int) (.Values.jarvice_api.replicaCount | int) }}
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: jarvice-api
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-api
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: jarvice-api
+  minReplicas: {{ .Values.jarvice_api.replicaCount }}
+  maxReplicas: {{ .Values.jarvice_api.replicaCountMax }}
+  metrics:
+    {{- toYaml .Values.jarvice_api.autoscaling.metrics | nindent 4 }}
+---
+{{- end}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
