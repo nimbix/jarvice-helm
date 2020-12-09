@@ -75,6 +75,7 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 - Before an application with a file selection in the task builder can work, at least one job with the PVC vault attached must be run; typically this will be the *JARVICE File Manager*, which is used to transfer files to and from the storage.
 - The name of the PersistentVolumeClaim that JARVICE generates for a PVC vault is derived from the PVC vault name in JARVICE itself - however, it is case insensitive.  This means that `testVault` and `testvault` will result in the same storage claim, for example.
 - When using an unzoned PVC vault, or a zoned PVC vault in a zone with multiple clusters, file selection in the task builder may fail even if a job with this vault attached has already been run.
+- When using a dynamically provisioned *PersistentVolume* underneath a PVC-type vault, it cannot be linked to another user via the *VAULTS* function of the *Administrator->Users* view.  Doing so will result in failures when launching jobs that consume the linked vault.  To share a dataset, it should be done at the team level only when using these types of PVC vaults.
 
 #### ReadWriteOnce PersistentVolumes
 
