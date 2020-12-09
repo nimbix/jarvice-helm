@@ -270,18 +270,6 @@ a single cluster deployment.  If a multi-architecture cluster is desired,
 it will be necessary to deploy an additional downstream cluster to add
 another architecture.
 
-Lastly, if using the `jarvice_db` component provided by the JARVICE helm chart,
-it must use a `mariadb` docker image.  If you are not using a YAML
-based `values_file`, use the following in the `values_yaml` of
-the `.tfvars` configuration(s):
-```bash
-...
-
-jarvice_db:
-  image: mariadb:10.5
-EOF
-```
-
 ------------------------------------------------------------------------------
 
 ## Deploying JARVICE

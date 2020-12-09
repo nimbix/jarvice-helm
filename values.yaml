@@ -145,6 +145,12 @@ jarvice:
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
       image: gcr.io/jarvice/k8s-rdma-device:1.0.1
       imagePullPolicy: IfNotPresent
+    dri_optional:
+      enabled: true
+      tolerations: #'[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}, {"key": "jarvice.com/rdma", "operator": "Exists",  "effect": "NoSchedule"}]'
+      nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
+      image: gcr.io/jarvice/k8s-dri-optional-device:1.0.1
+      imagePullPolicy: IfNotPresent
 
 
 # Database server previously set up?  Set enabled to false.
@@ -168,7 +174,7 @@ jarvice_db: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   nodeSelector: # '{"node-role.jarvice.io/jarvice-db": "true"}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
-  image: mysql:5.6.41
+  image: mariadb:10.5
   imagePullPolicy: IfNotPresent
   persistence:
     enabled: false
@@ -216,7 +222,7 @@ jarvice_db_dump: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     accessMode: ReadWriteOnce
     size: 50Gi
   securityContext:
-    enabled: false  # Enable when PersistentVolume is root squashed
+    enabled: false  # Enable and set to user and group to use for dump
     fsGroup: 999
     runAsUser: 999
 

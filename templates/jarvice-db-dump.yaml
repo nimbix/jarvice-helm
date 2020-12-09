@@ -124,9 +124,9 @@ spec:
               mountPath: /opt/bin
               readOnly: true
 {{- if .Values.jarvice_db_dump.securityContext.enabled }}
-            securityContext:
-              fsGroup: {{ .Values.jarvice_db_dump.securityContext.fsGroup }}
-              runAsUser: {{ .Values.jarvice_db_dump.securityContext.runAsUser }}
+          securityContext:
+            fsGroup: {{ .Values.jarvice_db_dump.securityContext.fsGroup }}
+            runAsUser: {{ .Values.jarvice_db_dump.securityContext.runAsUser }}
 {{- end }}
 ---
 apiVersion: v1
@@ -140,7 +140,7 @@ data:
     dump_dir=/jarvice-db-dump
     file=$dump_dir/$JARVICE_SYSTEM_NAMESPACE-$(date +%Y%m%d%H%M%S).sql.gz
     echo "* Dumping JARVICE database from $JARVICE_SYSTEM_NAMESPACE namespace to $file..."
-    mysqldump --verbose \
+    mariadb-dump --verbose \
         --user="$JARVICE_SITE_DBUSER" \
         --password="$JARVICE_SITE_DBPASSWD" \
         --host="$JARVICE_SITE_DBHOST" nimbix | gzip >$file
@@ -149,7 +149,7 @@ data:
     set +e
     rmfiles=$(ls -1 -d -t -r $dump_dir/$JARVICE_SYSTEM_NAMESPACE-*.sql.gz \
                 2>/dev/null | \
-                head --lines=-{{ .Values.jarvice_db_dump.deleteOldBackups.keep }})
+                head -n -{{ .Values.jarvice_db_dump.deleteOldBackups.keep }})
     if [ -n "$rmfiles" ]; then
         set -e
         echo; echo "* Cleaning up old backups..."
