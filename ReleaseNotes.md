@@ -113,6 +113,17 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202012092030 - *(TECHNOLOGY PREVIEW RELEASE)*
+
+* (3187) Default to using mariadb rather than mysql for `jarvice-db` service.
+* (3282) (3288) (3295) (3764) Architecture updates in `jarvice-dal` for performance, security, and scalability.
+* (3678) Avoid bundling development components in `jarvice-mc-portal` service.
+* (3712) New `jarvice-dri-optional-device-plugin` DaemonSet, deployed by default, to facilitate hardware accelerated 3D offload without requiring privileged security context for containers leveraging this feature.
+* (3713) Rearchitected 3D offload feature to leverage `jarvice-dri-optional-device-plugin` DaemonSet and avoid using privileged security context for applications requesting the `egl` pseudo-device; this feature is now GA; for additional details please see [Accelerated 3D Remote Display Capabilities](3D.md).
+* (3714) Use GPU-capable AMI on x86 EKS deployments by default.
+* (3754) Fixed spurious JS console error when closing task builder in portal.
+* (3757) Implemented horizontal pod autoscaler support in `jarvice-api`, `jarvice-dal`, and `jarvice-mc-portal` services for high CPU and memory pressure situations.
+
 ## 3.0.0-1.202012012257
 
 * (2532) EXPERIMENTAL Technology preview for 3D offload using EGL on NVIDIA Kepler (or newer) class GPUs and driver version 450 or newer; use the `egl` pseudo-device in the machine definition to enable, but note that this currently implies `privileged`; **use with extreme caution and for testing purposes only**
