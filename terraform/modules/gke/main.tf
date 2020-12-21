@@ -229,6 +229,7 @@ EOF
         labels = {
             "node-role.jarvice.io/jarvice-compute" = "true"
             "node-pool.jarvice.io/jarvice-compute" = each.key
+            "node-pool.jarvice.io/disable-hyperthreading" = lookup(each.value.meta, "disable_hyperthreading", "false")
         }
         taint = [
             {

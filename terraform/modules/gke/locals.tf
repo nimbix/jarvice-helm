@@ -16,7 +16,7 @@ locals {
 locals {
     disable_hyper_threading_pools = [
         for name, pool in var.cluster["compute_node_pools"]:
-            name if pool.meta.disable_hyperthreading == "true"
+            name if lower(lookup(pool.meta, "disable_hyperthreading", "false")) == "true"
     ]
     cluster_values_yaml = <<EOF
 jarvice:
