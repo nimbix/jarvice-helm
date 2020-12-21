@@ -33,7 +33,7 @@ jarvice:
             echo "Disabling kernel check for hung tasks..."
             echo 0 > /proc/sys/kernel/hung_task_timeout_secs || /bin/true
     nvidia_install:
-      enabled: false
+      enabled: true
       nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "cloud.google.com/gke-accelerator", "operator": "Exists"}]}] }}'
 EOF
     jarvice_ingress_upstream = <<EOF

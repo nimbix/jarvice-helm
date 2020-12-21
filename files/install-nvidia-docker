@@ -101,7 +101,7 @@ cat /etc/docker/daemon.json | jq '."default-runtime" = "nvidia"' | \
     tee /etc/docker/daemon.json
 
 echo "Reloading/restarting docker."
-systemctl reload-or-restart docker
+systemctl restart docker
 
 CUDA_RUN_ARCH=
 [ "$ARCH" != "x86_64" ] && CUDA_RUN_ARCH="-$ARCH"

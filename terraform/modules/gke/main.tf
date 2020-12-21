@@ -205,7 +205,8 @@ resource "google_container_node_pool" "jarvice_compute" {
         machine_type = each.value["nodes_type"]
         disk_size_gb = each.value["nodes_disk_size_gb"]
 
-        image_type = "UBUNTU_CONTAINERD"
+        #image_type = "UBUNTU_CONTAINERD"
+        image_type = "UBUNTU"
 
         #min_cpu_platform = "Intel Skylake"
         #disk_type = "pd-ssd"
