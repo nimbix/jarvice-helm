@@ -2,7 +2,7 @@
 
 terraform {
   required_providers {
-    helm = "~> 1.2"
+    helm = "~> 1.3"
   }
 }
 
@@ -81,11 +81,12 @@ resource "helm_release" "jarvice" {
     wait = false
 
     values = [
-        fileexists(var.global["values_file"]) ? "# ${var.global["values_file"]}\n\n${file(var.global["values_file"])}" : "",
-        fileexists(var.jarvice["values_file"]) ? "# ${var.jarvice["values_file"]}\n\n${file("${var.jarvice["values_file"]}")}" : "",
-        "${var.global["values_yaml"]}",
-        "${var.jarvice["values_yaml"]}",
-        "${var.cluster_values_yaml}"
+        fileexists(var.global["values_file"]) ? "# Values from file: ${var.global["values_file"]}\n\n${file(var.global["values_file"])}" : "",
+        fileexists(var.jarvice["values_file"]) ? "# Values from file: ${var.jarvice["values_file"]}\n\n${file(var.jarvice["values_file"])}" : "",
+        var.global["values_yaml"],
+        var.jarvice["values_yaml"],
+        var.common_values_yaml,
+        var.cluster_values_yaml
     ]
 
     depends_on = [helm_release.traefik]

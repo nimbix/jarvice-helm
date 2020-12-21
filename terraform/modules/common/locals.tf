@@ -1,9 +1,9 @@
 # locals.tf - common module local variable definitions
 
 locals {
-    jarvice_values_file = replace(replace("${var.cluster.helm.jarvice["values_file"]}", "<region>", "${contains(keys(var.cluster), "location") ? var.cluster.location["region"] : ""}"), "<cluster_name>", "${var.cluster.meta["cluster_name"]}")
+    jarvice_values_file = replace(replace(var.cluster.helm.jarvice["values_file"], "<region>", contains(keys(var.cluster), "location") ? var.cluster.location["region"] : ""), "<cluster_name>", var.cluster.meta["cluster_name"])
 
-    jarvice_helm_override_yaml = fileexists(local.jarvice_values_file) ? "${file("${local.jarvice_values_file}")}" : ""
+    jarvice_helm_override_yaml = fileexists(local.jarvice_values_file) ? file(local.jarvice_values_file) : ""
 
     jarvice_helm_values = merge(lookup(yamldecode("XXXdummy: value\n\n${fileexists(var.global.helm.jarvice["values_file"]) ? file(var.global.helm.jarvice["values_file"]) : ""}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${local.jarvice_helm_override_yaml}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${var.global.helm.jarvice["values_yaml"]}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${var.cluster.helm.jarvice["values_yaml"]}"), "jarvice", {}))
 
@@ -16,6 +16,10 @@ locals {
 }
 
 locals {
+    arch = lookup(var.cluster.meta, "arch", "x86_64")
+}
+
+locals {
     ssh_public_key = contains(keys(var.cluster.meta), "ssh_public_key") == false ? null : var.cluster.meta["ssh_public_key"] != null ? file(var.cluster.meta["ssh_public_key"]) : file(var.global.meta["ssh_public_key"])
 }
 
@@ -24,7 +28,7 @@ locals {
 # common cluster override values
 jarvice:
   tolerations: '[{"key": "node-role.jarvice.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}]'
-  nodeSelector: '{"node-role.jarvice.io/jarvice-system": "true"}'
+  nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-system", "operator": "Exists"}]}] }}'
 
   JARVICE_PVC_VAULT_NAME: ${local.jarvice_helm_values["JARVICE_PVC_VAULT_NAME"] == null ? "persistent" : local.jarvice_helm_values["JARVICE_PVC_VAULT_NAME"]}
   JARVICE_PVC_VAULT_STORAGECLASS: ${local.jarvice_helm_values["JARVICE_PVC_VAULT_STORAGECLASS"] == null ? "jarvice-user" : local.jarvice_helm_values["JARVICE_PVC_VAULT_STORAGECLASS"]}
@@ -33,10 +37,9 @@ jarvice:
   JARVICE_PVC_VAULT_SIZE: ${local.jarvice_helm_values["JARVICE_PVC_VAULT_SIZE"] == null ? 10 : local.jarvice_helm_values["JARVICE_PVC_VAULT_SIZE"]}
 
   daemonsets:
+    nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}] }}'
     lxcfs:
       enabled: true
-      tolerations: '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}]'
-      nodeSelector: '{"node-role.jarvice.io/jarvice-compute": "true"}'
 
 jarvice_db:
   persistence:

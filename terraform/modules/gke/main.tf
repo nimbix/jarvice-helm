@@ -2,12 +2,12 @@
 
 terraform {
     required_providers {
-        google = "~> 3.32.0"
-        #google-beta = "~> 3.32.0"
+        google = "~> 3.50.0"
+        #google-beta = "~> 3.50.0"
 
-        null = "~> 2.1"
-        local = "~> 1.4"
-        random = "~> 2.3"
+        null = "~> 3.0.0"
+        local = "~> 2.0.0"
+        random = "~> 3.0.0"
     }
 }
 
@@ -65,7 +65,8 @@ resource "google_container_cluster" "jarvice" {
 
     node_config {
         machine_type = "n1-standard-1"
-        image_type = "UBUNTU"
+
+        image_type = "UBUNTU_CONTAINERD"
 
         service_account = "default"
         oauth_scopes = local.oauth_scopes
@@ -83,6 +84,9 @@ EOF
 
         tags = [var.cluster.meta["cluster_name"], "jxedefault"]
     }
+
+    network = "default"
+    subnetwork = "default"
 
     ip_allocation_policy {
         cluster_ipv4_cidr_block = ""
@@ -136,7 +140,8 @@ resource "google_container_node_pool" "jarvice_system" {
 
     node_config {
         machine_type = module.common.system_nodes_type
-        image_type = "UBUNTU"
+
+        image_type = "UBUNTU_CONTAINERD"
 
         service_account = "default"
         oauth_scopes = local.oauth_scopes
@@ -173,22 +178,6 @@ EOF
 #    }
 #}
 
-resource "google_compute_project_metadata_item" "jarvice_compute" {
-    key = "startup-script"
-    value = "bash -c \"$(curl --silent -H Metadata-Flavor:Google http://metadata/computeMetadata/v1/instance/attributes/disable-hyperthreading 2>/dev/null)\""
-}
-
-locals {
-    disable_hyperthreading = <<EOF
-# Disable hyper-threading.  Visit the following link for details:
-# https://aws.amazon.com/blogs/compute/disabling-intel-hyper-threading-technology-on-amazon-linux/
-for n in $(cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list | cut -s -d, -f2- | tr ',' '\n' | sort -un); do
-    echo "Disabling cpu$n..."
-    echo 0 > /sys/devices/system/cpu/cpu$n/online
-done
-EOF
-}
-
 resource "google_container_node_pool" "jarvice_compute" {
     for_each = var.cluster["compute_node_pools"]
 
@@ -215,14 +204,16 @@ resource "google_container_node_pool" "jarvice_compute" {
     node_config {
         machine_type = each.value["nodes_type"]
         disk_size_gb = each.value["nodes_disk_size_gb"]
-        image_type = "UBUNTU"
+
+        image_type = "UBUNTU_CONTAINERD"
+
         #min_cpu_platform = "Intel Skylake"
         #disk_type = "pd-ssd"
 
-        #guest_accelerator {
-        #    type = "nvidia-tesla-p100"
-        #    count = 1
-        #}
+        guest_accelerator {
+            type = lookup(each.value.meta, "accelerator_type", "")
+            count = lookup(each.value.meta, "accelerator_count", 0)
+        }
 
         service_account = "default"
         oauth_scopes = local.oauth_scopes
@@ -232,7 +223,6 @@ resource "google_container_node_pool" "jarvice_compute" {
             ssh-keys = <<EOF
 ${local.username}:${module.common.ssh_public_key}
 EOF
-            disable-hyperthreading = lower(each.value.meta["disable_hyperthreading"]) == "true" || lower(each.value.meta["disable_hyperthreading"]) == "yes" ? local.disable_hyperthreading : ""
         }
 
         labels = {
@@ -248,6 +238,10 @@ EOF
         ]
 
         tags = [google_container_cluster.jarvice.name, each.key]
+    }
+
+    lifecycle {
+        ignore_changes = [node_config[0].taint]
     }
 }
 

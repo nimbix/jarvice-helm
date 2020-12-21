@@ -15,7 +15,10 @@ locals {
 
 locals {
     jarvice_ingress_upstream = <<EOF
-# AKS cluster override yaml
+# AKS cluster upstream ingress related settings
+jarvice:
+  JARVICE_JOBS_DOMAIN: "${azurerm_public_ip.jarvice.fqdn}/job$"
+
 jarvice_api:
   ingressHost: ${azurerm_public_ip.jarvice.fqdn}
   ingressPath: "/api"
@@ -26,7 +29,10 @@ jarvice_mc_portal:
 EOF
 
     jarvice_ingress_downstream = <<EOF
-# AKS cluster override yaml
+# AKS cluster downstream ingress related settings
+jarvice:
+  JARVICE_JOBS_DOMAIN: "${azurerm_public_ip.jarvice.fqdn}/job$"
+
 jarvice_k8s_scheduler:
   ingressHost: ${azurerm_public_ip.jarvice.fqdn}
 EOF

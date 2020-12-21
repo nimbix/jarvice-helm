@@ -2,12 +2,12 @@
 
 terraform {
     required_providers {
-        aws = "~> 2.68.0"
+        aws = "~> 3.21.0"
 
-        null = "~> 2.1"
-        local = "~> 1.4"
-        template = "~> 2.1"
-        random = "~> 2.3"
+        null = "~> 3.0.0"
+        local = "~> 2.0.0"
+        template = "~> 2.2.0"
+        random = "~> 3.0.0"
     }
 }
 
@@ -30,7 +30,7 @@ data "aws_availability_zones" "available" {
 
 module "vpc" {
     source = "terraform-aws-modules/vpc/aws"
-    version = "~> 2.47.0"
+    version = "~> 2.64.0"
 
     name = "${var.cluster.meta["cluster_name"]}-vpc"
     cidr = "10.0.0.0/16"
@@ -173,7 +173,7 @@ EOF
 
 module "eks" {
     source = "terraform-aws-modules/eks/aws"
-    version = "~> 12.2.0"
+    version = "~> 13.2.0"
 
     cluster_name = var.cluster.meta["cluster_name"]
     cluster_version = var.cluster.meta["kubernetes_version"]
@@ -250,7 +250,7 @@ locals {
 
 module "iam_assumable_role_admin" {
     source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-    version = "~> 2.13.0"
+    version = "~> 3.6.0"
 
     create_role = true
     role_name = "${var.cluster.meta["cluster_name"]}-cluster-autoscaler"

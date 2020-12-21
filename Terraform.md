@@ -86,7 +86,7 @@ If installing on a different platform, visit the following link for the
 latest Terraform releases:
 https://www.terraform.io/downloads.html
 
-**Note:**  Terraform 0.13.0 or newer is required.
+**Note:**  Terraform 0.14.0 or newer is required.
 
 ### Cloud provider command line interface (CLI)
 
@@ -282,6 +282,10 @@ On the first run, it will be necessary to download and initialize the required
 ```bash
 $ terraform init ./terraform
 ```
+
+**Note:**  Whenever a `git pull` on this repository is done to get the latest
+updates, it may also be necessary to execute
+`terraform init -upgrade=true ./terraform` before applying any cluster updates.
 
 ### Configure `terraform` variables and `helm` values
 

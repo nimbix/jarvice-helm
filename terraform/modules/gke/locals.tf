@@ -14,19 +14,49 @@ locals {
 }
 
 locals {
+    disable_hyper_threading_pools = [
+        for name, pool in var.cluster["compute_node_pools"]:
+            name if pool.meta.disable_hyperthreading == "true"
+    ]
+    cluster_values_yaml = <<EOF
+jarvice:
+  JARVICE_JOBS_DOMAIN: "lookupip/job$"
+  daemonsets:
+    tolerations: '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}, {"key": "nvidia.com/gpu", "effect": "NoSchedule", "operator": "Exists"}]'
+    disable_hyper_threading:
+      enabled: true
+      nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-pool.jarvice.io/jarvice-compute", "operator": "In", "values": [${join(",", formatlist("\"%s\"", local.disable_hyper_threading_pools))}]}]} ] }}'
+    node_init:
+      enabled: true
+      env:
+        COMMAND: |
+            echo "Disabling kernel check for hung tasks..."
+            echo 0 > /proc/sys/kernel/hung_task_timeout_secs || /bin/true
+    nvidia_install:
+      enabled: false
+      nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "cloud.google.com/gke-accelerator", "operator": "Exists"}]}] }}'
+EOF
     jarvice_ingress_upstream = <<EOF
-# GKE cluster override yaml
+${local.cluster_values_yaml}
+
+# GKE cluster upstream ingress related settings
 jarvice_api:
   ingressPath: "/api"
   ingressHost: "-"
+  ingressService: "traefik"
+  ingressServiceNamespace: "kube-system"
 
 jarvice_mc_portal:
   ingressPath: "/"
   ingressHost: "-"
+  ingressService: "traefik"
+  ingressServiceNamespace: "kube-system"
 EOF
 
     jarvice_ingress_downstream = <<EOF
-# GKE cluster override yaml
+${local.cluster_values_yaml}
+
+# GKE cluster upstream ingress related settings
 jarvice_k8s_scheduler:
   ingressHost: "-"
 EOF

@@ -4,19 +4,20 @@ terraform {
     required_version = "~> 0.14.0"
     #backend "local" {}
 
+    # Make sure all providers are downloaded with the initial init
     required_providers {
-        google = "~> 3.32.0"
-        google-beta = "~> 3.32.0"
-        aws = "~> 2.68.0"
-        azurerm = "~> 2.20"
+        google = "~> 3.50.0"
+        google-beta = "~> 3.50.0"
+        aws = "~> 3.21.0"
+        azurerm = "~> 2.40"
 
-        helm = "~> 1.2"
-        kubernetes = "~> 1.12"
+        helm = "~> 1.3"
+        kubernetes = "~> 1.13"
 
-        null = "~> 2.1"
-        local = "~> 1.4"
-        template = "~> 2.1"
-        random = "~> 2.3"
+        null = "~> 3.0.0"
+        local = "~> 2.0.0"
+        template = "~> 2.2.0"
+        random = "~> 3.0.0"
     }
 }
 
@@ -85,7 +86,7 @@ terraform {
 #}
 
 # Dynamically create clusters definition file until for_each is enabled and
-# working for modules and providers in terraform v0.13.X
+# working for providers (after terraform v1.0)
 resource "local_file" "clusters" {
     filename = "${path.module}/clusters.tf"
     file_permission = "0664"
@@ -94,7 +95,9 @@ resource "local_file" "clusters" {
     content = <<EOF
 # clusters.tf - cluster definitions (dynamically created using cluster configs)
 
-##############################################################################
+################
+# K8s clusters #
+################
 %{ for key in keys(local.k8s) }
 # K8s cluster configuration: ${key}
 provider "kubernetes" {
@@ -112,7 +115,10 @@ provider "helm" {
         config_path = module.${key}.kube_config["config_path"]
     }
 }
+%{ endfor }
 
+%{ for key in keys(local.k8s) }
+# K8s cluster configuration: ${key}
 module "${key}" {
     source = "./modules/k8s"
 
@@ -123,13 +129,16 @@ module "${key}" {
         kubernetes = kubernetes.${key}
         helm = helm.${key}
     }
+    depends_on = [local_file.clusters]
 }
 
 output "${key}" {
     value = format("\n\nK8s Cluster Configuration: %s\n%s\n", "${key}", module.${key}.cluster_info)
 }
 %{ endfor }
-##############################################################################
+################
+# GKE clusters #
+################
 %{ for key in keys(local.gke) }
 # GKE cluster configuration: ${key}
 provider "google" {
@@ -175,7 +184,10 @@ provider "helm" {
         password = module.${key}.kube_config["password"]
     }
 }
+%{ endfor }
 
+%{ for key in keys(local.gke) }
+# GKE cluster configuration: ${key}
 module "${key}" {
     source = "./modules/gke"
 
@@ -188,13 +200,16 @@ module "${key}" {
         kubernetes = kubernetes.${key}
         helm = helm.${key}
     }
+    depends_on = [local_file.clusters]
 }
 
 output "${key}" {
     value = format("\n\nGKE Cluster Configuration: %s\n%s\n", "${key}", module.${key}.cluster_info)
 }
 %{ endfor }
-##############################################################################
+################
+# EKS clusters #
+################
 %{ for key in keys(local.eks) }
 # EKS cluster configuration: ${key}
 provider "aws" {
@@ -228,7 +243,10 @@ provider "helm" {
         token = module.${key}.kube_config["token"]
     }
 }
+%{ endfor }
 
+%{ for key in keys(local.eks) }
+# EKS cluster configuration: ${key}
 module "${key}" {
     source = "./modules/eks"
 
@@ -240,13 +258,16 @@ module "${key}" {
         kubernetes = kubernetes.${key}
         helm = helm.${key}
     }
+    depends_on = [local_file.clusters]
 }
 
 output "${key}" {
     value = format("\n\nEKS Cluster Configuration: %s\n%s\n", "${key}", module.${key}.cluster_info)
 }
 %{ endfor }
-##############################################################################
+################
+# AKS clusters #
+################
 %{ for key in keys(local.aks) }
 # AKS cluster configuration: ${key}
 provider "azurerm" {
@@ -267,7 +288,10 @@ provider "helm" {
         #token = module.${key}.kube_config["token"]
     }
 }
+%{ endfor }
 
+%{ for key in keys(local.aks) }
+# AKS cluster configuration: ${key}
 module "${key}" {
     source = "./modules/aks"
 
@@ -278,6 +302,7 @@ module "${key}" {
         azurerm = azurerm.${key}
         helm = helm.${key}
     }
+    depends_on = [local_file.clusters]
 }
 
 output "${key}" {

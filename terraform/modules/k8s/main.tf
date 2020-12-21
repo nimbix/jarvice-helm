@@ -2,8 +2,8 @@
 
 terraform {
     required_providers {
-        null = "~> 2.1"
-        local = "~> 1.4"
+        null = "~> 3.0.0"
+        local = "~> 2.0.0"
     }
 }
 
