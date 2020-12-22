@@ -609,8 +609,8 @@ aks = {
         }
 
         location = {
-            region = "westus2"
-            zones = ["1"]
+            region = "southcentralus"  # "westus2"
+            zones = []  # ["1"]
         }
 
         # Visit the following link for Azure node size specs:
@@ -621,7 +621,7 @@ aks = {
         }
         compute_node_pools = {
             jxecompute00 = {
-                nodes_type = "Standard_D15_v2"
+                nodes_type = "Standard_D15_v2"  # "Standard_NC12s_v3"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
@@ -630,7 +630,7 @@ aks = {
                 }
             },
             #jxecompute01 = {
-            #    nodes_type = "Standard_D15_v2"
+            #    nodes_type = "Standard_D15_v2"  # "Standard_NC12s_v3"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
@@ -697,8 +697,8 @@ EOF
         }
 
         location = {
-            region = "westus2"
-            zones = ["1"]
+            region = "southcentralus"  # "westus2"
+            zones = []  # ["1"]
         }
 
         # Visit the following link for Azure node size specs:
@@ -709,7 +709,7 @@ EOF
         }
         compute_node_pools = {
             jxecompute00 = {
-                nodes_type = "Standard_D15_v2"
+                nodes_type = "Standard_D15_v2"  # "Standard_NC12s_v3"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
@@ -718,7 +718,7 @@ EOF
                 }
             },
             #jxecompute01 = {
-            #    nodes_type = "Standard_D15_v2"
+            #    nodes_type = "Standard_D15_v2"  # "Standard_NC12s_v3"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
