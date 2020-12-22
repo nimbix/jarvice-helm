@@ -32,6 +32,7 @@ jarvice:
         COMMAND: |
             echo "Disabling kernel check for hung tasks..."
             echo 0 > /proc/sys/kernel/hung_task_timeout_secs || /bin/true
+            echo "Disabling kernel check for hung tasks...done."
     nvidia_install:
       enabled: true
       nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "cloud.google.com/gke-accelerator", "operator": "Exists"}]}] }}'
@@ -59,6 +60,8 @@ ${local.cluster_values_yaml}
 # GKE cluster upstream ingress related settings
 jarvice_k8s_scheduler:
   ingressHost: "-"
+  ingressService: "traefik"
+  ingressServiceNamespace: "kube-system"
 EOF
 
     jarvice_ingress = module.common.jarvice_cluster_type == "downstream" ? local.jarvice_ingress_downstream : local.jarvice_ingress_upstream

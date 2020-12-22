@@ -145,6 +145,7 @@ jarvice:
         COMMAND: |
             echo "Disabling kernel check for hung tasks..."
             echo 0 > /proc/sys/kernel/hung_task_timeout_secs || /bin/true
+            echo "Disabling kernel check for hung tasks...done."
     nvidia:
       enabled: false
       tolerations: # '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
