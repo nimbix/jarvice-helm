@@ -14,11 +14,18 @@ locals {
 }
 
 locals {
-    jarvice_ingress_upstream = <<EOF
-# AKS cluster upstream ingress related settings
+    cluster_values_yaml = <<EOF
 jarvice:
   JARVICE_JOBS_DOMAIN: "${azurerm_public_ip.jarvice.fqdn}/job$"
+  daemonsets:
+    nvidia:
+      enabled: true
+      nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "accelerator", "operator": "In", "values": ["nvidia"]}]}] }}'
+EOF
+    jarvice_ingress_upstream = <<EOF
+${local.cluster_values_yaml}
 
+# AKS cluster upstream ingress related settings
 jarvice_api:
   ingressHost: ${azurerm_public_ip.jarvice.fqdn}
   ingressPath: "/api"
@@ -29,10 +36,9 @@ jarvice_mc_portal:
 EOF
 
     jarvice_ingress_downstream = <<EOF
-# AKS cluster downstream ingress related settings
-jarvice:
-  JARVICE_JOBS_DOMAIN: "${azurerm_public_ip.jarvice.fqdn}/job$"
+${local.cluster_values_yaml}
 
+# AKS cluster downstream ingress related settings
 jarvice_k8s_scheduler:
   ingressHost: ${azurerm_public_ip.jarvice.fqdn}
 EOF
