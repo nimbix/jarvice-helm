@@ -140,7 +140,7 @@ EOF
                 "asg_desired_capacity" = pool.nodes_num
                 "asg_min_size" = pool.nodes_min
                 "asg_max_size" = pool.nodes_max
-                "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-compute=true,node-pool.jarvice.io/jarvice-compute=${name} --register-with-taints=node-role.jarvice.io/jarvice-compute=true:NoSchedule"
+                "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-compute=true,node-pool.jarvice.io/jarvice-compute=${name},node-pool.jarvice.io/disable-hyperthreading=${lookup(pool.meta, "disable_hyperthreading", "false")} --register-with-taints=node-role.jarvice.io/jarvice-compute=true:NoSchedule"
                 "public_ip" = true
                 "subnets" = local.subnets
                 "key_name" = ""
@@ -149,7 +149,7 @@ EOF
 # Add authorized ssh key
 echo "${module.common.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
 
-${lower(pool.meta.disable_hyperthreading) == "true" || lower(pool.meta.disable_hyperthreading) == "yes" ? local.disable_hyperthreading : ""}
+${lower(lookup(pool.meta, "disable_hyperthreading", "false")) == "true" ? local.disable_hyperthreading : ""}
 EOF
                 "additional_userdata" = <<EOF
 # additional_userdata (executed after kubelet bootstrap and cluster join)
