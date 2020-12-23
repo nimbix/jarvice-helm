@@ -227,23 +227,35 @@ gke = {
         }
         compute_node_pools = {
             jxecompute00 = {
-                nodes_type = "c2-standard-60"
+                # n1 node_type is required for accelerator attachment
+                nodes_type = "c2-standard-60"  # "n1-standard-64"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
                 meta = {
                     disable_hyperthreading = "true"
+
+                    # Visit the following link for GCP accelerator type specs:
+                    # https://cloud.google.com/compute/docs/gpus
+                    #accelerator_type = "nvidia-tesla-v100"
+                    #accelerator_count = 8
                 }
             },
             #jxecompute01 = {
-            #    nodes_type = "c2-standard-60"
+            #    # n1 node_type is required for accelerator attachment
+            #    nodes_type = "c2-standard-60"  # "n1-standard-64"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
             #    nodes_max = 16
             #    meta = {
             #        disable_hyperthreading = "true"
+            #
+            #        # Visit the following link for GCP accelerator type specs:
+            #        # https://cloud.google.com/compute/docs/gpus
+            #        #accelerator_type = "nvidia-tesla-v100"
+            #        #accelerator_count = 8
             #    }
             #},
         }
@@ -315,23 +327,35 @@ EOF
         }
         compute_node_pools = {
             jxecompute00 = {
-                nodes_type = "c2-standard-60"
+                # n1 node_type is required for accelerator attachment
+                nodes_type = "c2-standard-60"  # "n1-standard-64"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
                 nodes_max = 16
                 meta = {
                     disable_hyperthreading = "true"
+
+                    # Visit the following link for GCP accelerator type specs:
+                    # https://cloud.google.com/compute/docs/gpus
+                    #accelerator_type = "nvidia-tesla-v100"
+                    #accelerator_count = 8
                 }
             },
             #jxecompute01 = {
-            #    nodes_type = "c2-standard-60"
+            #    # n1 node_type is required for accelerator attachment
+            #    nodes_type = "c2-standard-60"  # "n1-standard-64"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
             #    nodes_max = 16
             #    meta = {
             #        disable_hyperthreading = "true"
+            #
+            #        # Visit the following link for GCP accelerator type specs:
+            #        # https://cloud.google.com/compute/docs/gpus
+            #        #accelerator_type = "nvidia-tesla-v100"
+            #        #accelerator_count = 8
             #    }
             #},
         }
@@ -585,8 +609,8 @@ aks = {
         }
 
         location = {
-            region = "westus2"
-            zones = ["1"]
+            region = "southcentralus"  # "westus2"
+            zones = []  # ["1"]
         }
 
         # Visit the following link for Azure node size specs:
@@ -597,7 +621,7 @@ aks = {
         }
         compute_node_pools = {
             jxecompute00 = {
-                nodes_type = "Standard_D15_v2"
+                nodes_type = "Standard_D15_v2"  # "Standard_NC12s_v3"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
@@ -606,7 +630,7 @@ aks = {
                 }
             },
             #jxecompute01 = {
-            #    nodes_type = "Standard_D15_v2"
+            #    nodes_type = "Standard_D15_v2"  # "Standard_NC12s_v3"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1
@@ -673,8 +697,8 @@ EOF
         }
 
         location = {
-            region = "westus2"
-            zones = ["1"]
+            region = "southcentralus"  # "westus2"
+            zones = []  # ["1"]
         }
 
         # Visit the following link for Azure node size specs:
@@ -685,7 +709,7 @@ EOF
         }
         compute_node_pools = {
             jxecompute00 = {
-                nodes_type = "Standard_D15_v2"
+                nodes_type = "Standard_D15_v2"  # "Standard_NC12s_v3"
                 nodes_disk_size_gb = 100
                 nodes_num = 2
                 nodes_min = 1
@@ -694,7 +718,7 @@ EOF
                 }
             },
             #jxecompute01 = {
-            #    nodes_type = "Standard_D15_v2"
+            #    nodes_type = "Standard_D15_v2"  # "Standard_NC12s_v3"
             #    nodes_disk_size_gb = 100
             #    nodes_num = 2
             #    nodes_min = 1

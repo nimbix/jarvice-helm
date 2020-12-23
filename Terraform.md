@@ -86,7 +86,7 @@ If installing on a different platform, visit the following link for the
 latest Terraform releases:
 https://www.terraform.io/downloads.html
 
-**Note:**  Terraform 0.13.0 or newer is required.
+**Note:**  Terraform 0.14.0 or newer is required.
 
 ### Cloud provider command line interface (CLI)
 
@@ -283,6 +283,10 @@ On the first run, it will be necessary to download and initialize the required
 $ terraform init ./terraform
 ```
 
+**Note:**  Whenever a `git pull` on this repository is done to get the latest
+updates, it may also be necessary to execute
+`terraform init -upgrade=true ./terraform` before applying any cluster updates.
+
 ### Configure `terraform` variables and `helm` values
 
 If you have not already done so, configure the `terraform` variable
@@ -338,11 +342,28 @@ and initialize the new deployment(s).
 
 ### Destroying the deployment(s) and cluster(s)
 
-To remove the cluster(s) and delete all provisioned resources, execute the
+To remove **all** of the cluster(s) that you are managing with `terraform`
+and delete all of their provisioned resources, execute the
 following from the top level directory of `jarvice-helm` to deploy JARVICE:
 
 ```bash
 $ terraform destroy ./terraform
+```
+
+In order to destroy only one of the `terraform` managed clusters, it will be
+necessary to specify the targeted cluster module directly.  Execute a command
+similar to the following to do so:
+
+```bash
+$ cluster_config=aks_cluster_00
+$ terraform destroy -target=module.$cluster_config ./terraform
+```
+
+After destroying an individual cluster, be sure to disable it in your
+`.tfvars` configuration(s) and re-create the cluster definitions file:
+
+```bash
+$ terraform apply -target=local_file.clusters -auto-approve -compact-warnings ./terraform
 ```
 
 **Warning:**  When destroying clusters which were provisioned using managed

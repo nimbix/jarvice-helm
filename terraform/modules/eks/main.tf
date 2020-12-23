@@ -2,12 +2,12 @@
 
 terraform {
     required_providers {
-        aws = "~> 2.68.0"
+        aws = "~> 3.21.0"
 
-        null = "~> 2.1"
-        local = "~> 1.4"
-        template = "~> 2.1"
-        random = "~> 2.3"
+        null = "~> 3.0.0"
+        local = "~> 2.0.0"
+        template = "~> 2.2.0"
+        random = "~> 3.0.0"
     }
 }
 
@@ -30,7 +30,7 @@ data "aws_availability_zones" "available" {
 
 module "vpc" {
     source = "terraform-aws-modules/vpc/aws"
-    version = "~> 2.47.0"
+    version = "~> 2.64.0"
 
     name = "${var.cluster.meta["cluster_name"]}-vpc"
     cidr = "10.0.0.0/16"
@@ -140,7 +140,7 @@ EOF
                 "asg_desired_capacity" = pool.nodes_num
                 "asg_min_size" = pool.nodes_min
                 "asg_max_size" = pool.nodes_max
-                "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-compute=true,node-pool.jarvice.io/jarvice-compute=${name} --register-with-taints=node-role.jarvice.io/jarvice-compute=true:NoSchedule"
+                "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-compute=true,node-pool.jarvice.io/jarvice-compute=${name},node-pool.jarvice.io/disable-hyperthreading=${lookup(pool.meta, "disable_hyperthreading", "false")} --register-with-taints=node-role.jarvice.io/jarvice-compute=true:NoSchedule"
                 "public_ip" = true
                 "subnets" = local.subnets
                 "key_name" = ""
@@ -149,7 +149,7 @@ EOF
 # Add authorized ssh key
 echo "${module.common.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
 
-${lower(pool.meta.disable_hyperthreading) == "true" || lower(pool.meta.disable_hyperthreading) == "yes" ? local.disable_hyperthreading : ""}
+${lower(lookup(pool.meta, "disable_hyperthreading", "false")) == "true" ? local.disable_hyperthreading : ""}
 EOF
                 "additional_userdata" = <<EOF
 # additional_userdata (executed after kubelet bootstrap and cluster join)
@@ -173,7 +173,7 @@ EOF
 
 module "eks" {
     source = "terraform-aws-modules/eks/aws"
-    version = "~> 12.2.0"
+    version = "~> 13.2.0"
 
     cluster_name = var.cluster.meta["cluster_name"]
     cluster_version = var.cluster.meta["kubernetes_version"]
@@ -250,7 +250,7 @@ locals {
 
 module "iam_assumable_role_admin" {
     source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-    version = "~> 2.13.0"
+    version = "~> 3.6.0"
 
     create_role = true
     role_name = "${var.cluster.meta["cluster_name"]}-cluster-autoscaler"

@@ -15,6 +15,10 @@ variable "jarvice" {
     type = map(string)
 }
 
+variable "common_values_yaml" {
+    type = string
+}
+
 variable "cluster_values_yaml" {
     type = string
 }
