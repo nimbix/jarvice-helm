@@ -162,6 +162,6 @@ EOF
 ${local.jarvice_ingress}
 EOF
 
-    depends_on = [module.eks]
+    depends_on = [module.eks, module.vpc]
 }
 
