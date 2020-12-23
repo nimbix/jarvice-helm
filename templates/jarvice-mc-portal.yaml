@@ -187,7 +187,13 @@ spec:
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_WEB_HOST }}"
 {{- else if (not (empty .Values.jarvice_mc_portal.ingressHost)) }}
           - name: JARVICE_PORTAL_WEB_HOST
+{{- if or (eq "lookupip" .Values.jarvice_mc_portal.ingressHost) (eq "-" .Values.jarvice_mc_portal.ingressHost) }}
+            value: 'https://{{- (first (lookup "v1" "Service" .Values.jarvice_mc_portal.ingressServiceNamespace .Values.jarvice_mc_portal.ingressService).status.loadBalancer.ingress).ip }}{{ .Values.jarvice_mc_portal.ingressPath }}'
+{{- else if eq "lookup" .Values.jarvice_mc_portal.ingressHost }}
+            value: 'https://{{- (first (lookup "v1" "Service" .Values.jarvice_mc_portal.ingressServiceNamespace .Values.jarvice_mc_portal.ingressService).status.loadBalancer.ingress).hostname }}{{ .Values.jarvice_mc_portal.ingressPath }}'
+{{- else }}
             value: "https://{{ .Values.jarvice_mc_portal.ingressHost }}{{ .Values.jarvice_mc_portal.ingressPath }}"
+{{- end }}
 {{- end }}
           - name: JARVICE_PORTAL_MEMCACHED_LOCATIONS
 {{- if and .Values.jarvice_memcached.enabled (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MEMCACHED_LOCATIONS) }}
