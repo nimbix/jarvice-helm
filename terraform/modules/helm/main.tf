@@ -2,7 +2,7 @@
 
 terraform {
   required_providers {
-    helm = "~> 1.2"
+    helm = "~> 1.3"
   }
 }
 
@@ -19,6 +19,21 @@ resource "helm_release" "cluster_autoscaler" {
     timeout = 600
 
     values = [var.charts["cluster-autoscaler"]["values"]]
+}
+
+resource "helm_release" "metrics_server" {
+    count = contains(keys(var.charts), "metrics-server") ? 1 : 0
+
+    name = "metrics-server"
+    repository = "https://charts.helm.sh/stable"
+    chart = "metrics-server"
+    namespace = "kube-system"
+    reuse_values = false
+    reset_values = true
+    render_subchart_notes = false
+    timeout = 600
+
+    values = [var.charts["metrics-server"]["values"]]
 }
 
 resource "helm_release" "external_dns" {
@@ -66,11 +81,12 @@ resource "helm_release" "jarvice" {
     wait = false
 
     values = [
-        fileexists(var.global["values_file"]) ? "# ${var.global["values_file"]}\n\n${file(var.global["values_file"])}" : "",
-        fileexists(var.jarvice["values_file"]) ? "# ${var.jarvice["values_file"]}\n\n${file("${var.jarvice["values_file"]}")}" : "",
-        "${var.global["values_yaml"]}",
-        "${var.jarvice["values_yaml"]}",
-        "${var.cluster_values_yaml}"
+        fileexists(var.global["values_file"]) ? "# Values from file: ${var.global["values_file"]}\n\n${file(var.global["values_file"])}" : "",
+        fileexists(var.jarvice["values_file"]) ? "# Values from file: ${var.jarvice["values_file"]}\n\n${file(var.jarvice["values_file"])}" : "",
+        var.global["values_yaml"],
+        var.jarvice["values_yaml"],
+        var.common_values_yaml,
+        var.cluster_values_yaml
     ]
 
     depends_on = [helm_release.traefik]

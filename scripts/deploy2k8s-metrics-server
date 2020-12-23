@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version_tag=
+version_tag=v0.4.1
 namespace=kube-system
 
 function usage {
@@ -14,7 +14,7 @@ Options:
     --version-tag <tag>             Metrics server version (optional)
 
 Example:
-    $0 --namespace $namespace --version-tag v0.3.6
+    $0 --namespace $namespace --version-tag $version_tag
 EOF
 }
 
@@ -59,17 +59,17 @@ done
 
 set -e
 
-helm_stable_repo_url=https://charts.helm.sh/stable
-helm_stable_repo=$($HELM repo list 2>/dev/null | grep ^stable || /bin/true)
-if [ -z "$helm_stable_repo" ]; then
-    echo
-    echo "* Adding helm chart repository for stable..."
-    $HELM repo add stable $helm_stable_repo_url
-fi
+#helm_stable_repo_url=https://charts.helm.sh/stable
+#helm_stable_repo=$($HELM repo list 2>/dev/null | grep ^stable || /bin/true)
+#if [ -z "$helm_stable_repo" ]; then
+#    echo
+#    echo "* Adding helm chart repository for stable..."
+#    $HELM repo add stable $helm_stable_repo_url
+#fi
 
-echo
-echo "* Updating helm chart repositories..."
-$HELM repo update
+#echo
+#echo "* Updating helm chart repositories..."
+#$HELM repo update
 
 if [ "$namespace" != "kube-system" ]; then
     echo
@@ -79,12 +79,13 @@ fi
 
 echo
 echo "* Deploying..."
-$HELM upgrade metrics-server stable/metrics-server \
+repo=https://charts.helm.sh/stable
+$HELM upgrade metrics-server metrics-server --repo $repo \
     --namespace $namespace --install --reset-values \
     \
-    ${version_tag:+--set image.tag=$version_tag} \
+    --set image.repository=gcr.io/k8s-staging-metrics-server/metrics-server \
+    --set image.tag=$version_tag \
     \
-    --set nodeSelector."kubernetes\.io/arch"=amd64 \
     --set-string nodeSelector."node-role\.jarvice\.io/jarvice-system"="true" \
     \
     --set tolerations[0]."key"="node-role\.jarvice\.io/jarvice-system" \

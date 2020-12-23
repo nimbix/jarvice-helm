@@ -57,6 +57,13 @@ spec:
 {{- else if (not (empty .Values.jarvice.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice.nodeSelector }}
 {{- end }}
+{{- if (not (empty .Values.jarvice_registry.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice_registry.nodeAffinity }}
+{{- else if (not (empty .Values.jarvice.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.nodeAffinity }}
+{{- end }}
 {{- if .Values.jarvice_registry.persistence.enabled }}
       volumes:
         - name: registry-data-vol

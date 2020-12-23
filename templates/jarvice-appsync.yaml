@@ -35,6 +35,13 @@ spec:
 {{- else if (not (empty .Values.jarvice.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice.nodeSelector }}
 {{- end }}
+{{- if (not (empty .Values.jarvice_appsync.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice_appsync.nodeAffinity }}
+{{- else if (not (empty .Values.jarvice.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.nodeAffinity }}
+{{- end }}
       imagePullSecrets:
       - name: jarvice-docker
       containers:

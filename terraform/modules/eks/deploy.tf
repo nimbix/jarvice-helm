@@ -35,13 +35,60 @@ tolerations:
   - key: node-role.kubernetes.io/jarvice-system
     effect: NoSchedule
     operator: Exists
-nodeSelector:
-  node-role.jarvice.io/jarvice-system: "true"
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: node-role.jarvice.io/jarvice-system
+          operator: Exists
+      - matchExpressions:
+        - key: node-role.kubernetes.io/jarvice-system
+          operator: Exists
 
 rbac:
   create: true
   serviceAccountAnnotations:
     eks.amazonaws.com/role-arn: "${module.iam_assumable_role_admin.this_iam_role_arn}"
+EOF
+        },
+        "metrics-server" = {
+            "values" = <<EOF
+image:
+  repository: gcr.io/k8s-staging-metrics-server/metrics-server
+  tag: v0.4.1
+  pullPolicy: IfNotPresent
+
+tolerations:
+  - key: node-role.jarvice.io/jarvice-system
+    effect: NoSchedule
+    operator: Exists
+  - key: node-role.kubernetes.io/jarvice-system
+    effect: NoSchedule
+    operator: Exists
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: node-role.jarvice.io/jarvice-system
+          operator: Exists
+      - matchExpressions:
+        - key: node-role.kubernetes.io/jarvice-system
+          operator: Exists
+
+priorityClassName: system-node-critical
+
+args:
+  - --kubelet-preferred-address-types=InternalIP
+  - --kubelet-insecure-tls
+
+service:
+  labels:
+    kubernetes.io/cluster-service: "true"
+    kubernetes.io/name: "Metrics-server"
 EOF
         },
         "traefik" =  {
@@ -54,8 +101,17 @@ memoryLimit: 1Gi
 cpuRequest: 1
 cpuLimit: 1
 
-nodeSelector:
-  node-role.jarvice.io/jarvice-system: "true"
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: node-role.jarvice.io/jarvice-system
+          operator: Exists
+      - matchExpressions:
+        - key: node-role.kubernetes.io/jarvice-system
+          operator: Exists
+
 tolerations:
   - key: node-role.jarvice.io/jarvice-system
     effect: NoSchedule
@@ -96,13 +152,16 @@ module "helm" {
     charts = local.charts
 
     # JARVICE settings
-    jarvice = merge(var.cluster.helm.jarvice, {"values_file"="${module.common.jarvice_values_file}"})
+    jarvice = merge(var.cluster.helm.jarvice, {"values_file"=module.common.jarvice_values_file})
     global = var.global.helm.jarvice
-    cluster_values_yaml = <<EOF
+    common_values_yaml = <<EOF
 ${module.common.cluster_values_yaml}
-
+EOF
+    cluster_values_yaml = <<EOF
 # EKS cluster override values
 ${local.jarvice_ingress}
 EOF
+
+    depends_on = [module.eks, module.vpc]
 }
 

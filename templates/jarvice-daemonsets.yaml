@@ -1,4 +1,4 @@
-{{- if or .Values.jarvice.daemonsets.cache_pull.enabled .Values.jarvice.daemonsets.lxcfs.enabled .Values.jarvice.daemonsets.nvidia.enabled .Values.jarvice.daemonsets.rdma.enabled .Values.jarvice.daemonsets.disable_hyper_threading.enabled .Values.jarvice.daemonsets.dri_optional.enabled }}
+{{- if or .Values.jarvice.daemonsets.cache_pull.enabled .Values.jarvice.daemonsets.lxcfs.enabled .Values.jarvice.daemonsets.nvidia.enabled .Values.jarvice.daemonsets.rdma.enabled .Values.jarvice.daemonsets.node_init.enabled .Values.jarvice.daemonsets.disable_hyper_threading.enabled .Values.jarvice.daemonsets.dri_optional.enabled .Values.jarvice.daemonsets.nvidia_install.enabled }}
 apiVersion: {{ template "apiVersion.priorityClass" . }}
 kind: PriorityClass
 metadata:
@@ -44,6 +44,13 @@ spec:
       tolerations: {{ .Values.jarvice.daemonsets.cache_pull.tolerations }}
 {{- else if (not (empty .Values.jarvice.daemonsets.tolerations)) }}
       tolerations: {{ .Values.jarvice.daemonsets.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice.daemonsets.cache_pull.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.daemonsets.cache_pull.nodeAffinity  }}
+{{- else if (not (empty .Values.jarvice.daemonsets.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.daemonsets.nodeAffinity }}
 {{- end }}
 {{- if (not (empty .Values.jarvice.daemonsets.cache_pull.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice.daemonsets.cache_pull.nodeSelector }}
@@ -209,6 +216,13 @@ spec:
 {{- else if (not (empty .Values.jarvice.daemonsets.tolerations)) }}
       tolerations: {{ .Values.jarvice.daemonsets.tolerations }}
 {{- end }}
+{{- if (not (empty .Values.jarvice.daemonsets.lxcfs.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.daemonsets.lxcfs.nodeAffinity  }}
+{{- else if (not (empty .Values.jarvice.daemonsets.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.daemonsets.nodeAffinity }}
+{{- end }}
 {{- if (not (empty .Values.jarvice.daemonsets.lxcfs.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice.daemonsets.lxcfs.nodeSelector }}
 {{- else if (not (empty .Values.jarvice.daemonsets.nodeSelector)) }}
@@ -225,9 +239,17 @@ spec:
         imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.lxcfs.imagePullPolicy }}
         env:
           - name: HOST_LXCFS_DIR
+{{- if empty .Values.jarvice.daemonsets.lxcfs.env.HOST_LXCFS_DIR }}
             value: "/var/lib/lxcfs"
+{{- else }}
+            value: "{{ .Values.jarvice.daemonsets.lxcfs.env.HOST_LXCFS_DIR }}"
+{{- end }}
           - name: HOST_LXCFS_INSTALL_DIR
+{{- if empty .Values.jarvice.daemonsets.lxcfs.env.HOST_LXCFS_INSTALL_DIR }}
             value: "/usr/local/lxcfs-daemonset"
+{{- else }}
+            value: "{{ .Values.jarvice.daemonsets.lxcfs.env.HOST_LXCFS_INSTALL_DIR }}"
+{{- end }}
         volumeMounts:
           - name: rootfs
             mountPath: /host
@@ -267,6 +289,13 @@ spec:
       tolerations: {{ .Values.jarvice.daemonsets.nvidia.tolerations }}
 {{- else if (not (empty .Values.jarvice.daemonsets.tolerations)) }}
       tolerations: {{ .Values.jarvice.daemonsets.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice.daemonsets.nvidia.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.daemonsets.nvidia.nodeAffinity  }}
+{{- else if (not (empty .Values.jarvice.daemonsets.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.daemonsets.nodeAffinity }}
 {{- end }}
 {{- if (not (empty .Values.jarvice.daemonsets.nvidia.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice.daemonsets.nvidia.nodeSelector }}
@@ -322,6 +351,13 @@ spec:
       tolerations: {{ .Values.jarvice.daemonsets.xilinx_fpga.tolerations }}
 {{- else if (not (empty .Values.jarvice.daemonsets.tolerations)) }}
       tolerations: {{ .Values.jarvice.daemonsets.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice.daemonsets.xilinx_fpga.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.daemonsets.xilinx_fpga.nodeAffinity  }}
+{{- else if (not (empty .Values.jarvice.daemonsets.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.daemonsets.nodeAffinity }}
 {{- end }}
 {{- if (not (empty .Values.jarvice.daemonsets.xilinx_fpga.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice.daemonsets.xilinx_fpga.nodeSelector }}
@@ -383,6 +419,13 @@ spec:
       tolerations: {{ .Values.jarvice.daemonsets.rdma.tolerations }}
 {{- else if (not (empty .Values.jarvice.daemonsets.tolerations)) }}
       tolerations: {{ .Values.jarvice.daemonsets.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice.daemonsets.rdma.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.daemonsets.rdma.nodeAffinity  }}
+{{- else if (not (empty .Values.jarvice.daemonsets.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.daemonsets.nodeAffinity }}
 {{- end }}
 {{- if (not (empty .Values.jarvice.daemonsets.rdma.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice.daemonsets.rdma.nodeSelector }}
@@ -449,6 +492,13 @@ spec:
 {{- else if (not (empty .Values.jarvice.daemonsets.tolerations)) }}
       tolerations: {{ .Values.jarvice.daemonsets.tolerations }}
 {{- end }}
+{{- if (not (empty .Values.jarvice.daemonsets.dri_optional.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.daemonsets.dri_optional.nodeAffinity  }}
+{{- else if (not (empty .Values.jarvice.daemonsets.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.daemonsets.nodeAffinity }}
+{{- end }}
 {{- if (not (empty .Values.jarvice.daemonsets.dri_optional.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice.daemonsets.dri_optional.nodeSelector }}
 {{- else if (not (empty .Values.jarvice.daemonsets.nodeSelector)) }}
@@ -505,6 +555,13 @@ spec:
 {{- else if (not (empty .Values.jarvice.daemonsets.tolerations)) }}
       tolerations: {{ .Values.jarvice.daemonsets.tolerations }}
 {{- end }}
+{{- if (not (empty .Values.jarvice.daemonsets.disable_hyper_threading.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.daemonsets.disable_hyper_threading.nodeAffinity  }}
+{{- else if (not (empty .Values.jarvice.daemonsets.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.daemonsets.nodeAffinity }}
+{{- end }}
 {{- if (not (empty .Values.jarvice.daemonsets.disable_hyper_threading.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice.daemonsets.disable_hyper_threading.nodeSelector }}
 {{- else if (not (empty .Values.jarvice.daemonsets.nodeSelector)) }}
@@ -527,6 +584,132 @@ spec:
                 echo 0 > /sys/devices/system/cpu/cpu$n/online
             done
             echo "Finished CPU hyper-threading disablement on $(hostname)..."
+            lscpu --extended || /bin/true
+        securityContext:
+          privileged: true
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+      priorityClassName: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+      priorityClassName: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
+---
+{{- end }}
+{{- if .Values.jarvice.daemonsets.node_init.enabled }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: jarvice-node-init
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+  namespace: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+  namespace: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-node-init
+spec:
+  selector:
+    matchLabels:
+      component: jarvice-node-init
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-node-init
+    spec:
+      hostPID: true
+{{- if (not (empty .Values.jarvice.daemonsets.node_init.tolerations)) }}
+      tolerations: {{ .Values.jarvice.daemonsets.node_init.tolerations }}
+{{- else if (not (empty .Values.jarvice.daemonsets.tolerations)) }}
+      tolerations: {{ .Values.jarvice.daemonsets.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice.daemonsets.node_init.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.daemonsets.node_init.nodeAffinity  }}
+{{- else if (not (empty .Values.jarvice.daemonsets.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.daemonsets.nodeAffinity }}
+{{- end }}
+{{- if (not (empty .Values.jarvice.daemonsets.node_init.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.daemonsets.node_init.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.daemonsets.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.daemonsets.nodeSelector }}
+{{- end }}
+      containers:
+      - name: jarvice-node-init
+        image: {{ .Values.jarvice.daemonsets.node_init.image }}
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.node_init.imagePullPolicy }}
+        command:
+          - /bin/sh
+          - -c
+          - nsenter -t 1 -m -u -i -n -p -- /bin/sh -c "$COMMAND"; sleep infinity
+        env:
+        - name: COMMAND
+          value: {{ toYaml .Values.jarvice.daemonsets.node_init.env.COMMAND | indent 10 }}
+        securityContext:
+          privileged: true
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+      priorityClassName: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+      priorityClassName: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
+---
+{{- end }}
+{{- if .Values.jarvice.daemonsets.nvidia_install.enabled }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: jarvice-nvidia-install
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+  namespace: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+  namespace: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-nvidia-install
+spec:
+  selector:
+    matchLabels:
+      component: jarvice-nvidia-install
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-nvidia-install
+    spec:
+      hostPID: true
+{{- if (not (empty .Values.jarvice.daemonsets.nvidia_install.tolerations)) }}
+      tolerations: {{ .Values.jarvice.daemonsets.nvidia_install.tolerations }}
+{{- else if (not (empty .Values.jarvice.daemonsets.tolerations)) }}
+      tolerations: {{ .Values.jarvice.daemonsets.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice.daemonsets.nvidia_install.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.daemonsets.nvidia_install.nodeAffinity  }}
+{{- else if (not (empty .Values.jarvice.daemonsets.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.daemonsets.nodeAffinity }}
+{{- end }}
+{{- if (not (empty .Values.jarvice.daemonsets.nvidia_install.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.daemonsets.nvidia_install.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.daemonsets.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.daemonsets.nodeSelector }}
+{{- end }}
+      containers:
+      - name: jarvice-nvidia-install
+        image: {{ .Values.jarvice.daemonsets.nvidia_install.image }}
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.nvidia_install.imagePullPolicy }}
+        command:
+          - /bin/sh
+          - -c
+          - nsenter -t 1 -m -u -i -n -p -- /bin/sh -c "$COMMAND"; sleep infinity
+        env:
+        - name: NVIDIA_DRIVER_VERSION
+          value: "{{ .Values.jarvice.daemonsets.nvidia_install.env.NVIDIA_DRIVER_VERSION }}"
+        - name: COMMAND
+          value: |-
+{{ .Files.Get "files/install-nvidia-docker" | indent 12 }}
         securityContext:
           privileged: true
 {{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}

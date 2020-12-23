@@ -25,6 +25,7 @@ extra*/
 scripts*/
 jarvice-settings*/
 .terraform/
+.terraform*
 terraform/.terraform/
 terraform.*
 crash.log
