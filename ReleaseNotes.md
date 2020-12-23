@@ -114,6 +114,18 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202012232023 - *(TECHNOLOGY PREVIEW RELEASE)*
+
+* (3290) Finalized architecture updates in `jarvice-dal` for performance, security, and scalability.
+* (3557) Documented known issue relating to linked PVC vaults; see [General](#general-1) in *PersistentVolume Vaults* under *Known Issues, Anomalies, and Caveats* for details.
+* (3763) Fixed inconsistent state issues with optional use of file name as job label in portal task builder.
+* (3767) Support for GPU-enabled node groups in AKS and GKE; note that GPU use on GKE is considered experimental at this time.
+* (3773) Fixed bug in portal allowing blank date range selection in *Administration->Stats* view.
+* (3790) Minor internal optimizations in `jarvice-pod-scheduler`.
+* (3792) Use path-based ingress by default in EKS, GKE, and AKS deployments via Terraform.
+* (3830) Fixed bug in *Vaults* dialog box under *Administration->Users* view related to opening successive user vaults.
+* (3831) Fixed bug with clearing user search box in *Administration->Users* view.
+
 ## 3.0.0-1.202012092030 - *(TECHNOLOGY PREVIEW RELEASE)*
 
 * (3187) Default to using mariadb rather than mysql for `jarvice-db` service.
