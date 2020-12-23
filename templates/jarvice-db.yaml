@@ -60,6 +60,13 @@ spec:
 {{- else if (not (empty .Values.jarvice.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice.nodeSelector }}
 {{- end }}
+{{- if (not (empty .Values.jarvice_db.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice_db.nodeAffinity }}
+{{- else if (not (empty .Values.jarvice.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.nodeAffinity }}
+{{- end }}
       containers:
       - name: jarvice-db
         image: {{ .Values.jarvice_db.image }}

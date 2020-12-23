@@ -15,7 +15,10 @@ locals {
 
 locals {
     jarvice_ingress_upstream = <<EOF
-# EKS cluster override yaml
+# EKS cluster upstream ingress related settings
+jarvice:
+  JARVICE_JOBS_DOMAIN: "lookup/job$"
+
 jarvice_api:
   ingressPath: "/api"
   #ingressHost: {aws_eip.nat[0].public_dns}
@@ -32,7 +35,10 @@ jarvice_mc_portal:
 EOF
 
     jarvice_ingress_downstream = <<EOF
-# EKS cluster override yaml
+# EKS cluster upstream ingress related settings
+jarvice:
+  JARVICE_JOBS_DOMAIN: "lookup/job$"
+
 jarvice_k8s_scheduler:
   #ingressHost: {aws_eip.nat[0].public_dns}
   ingressHost: "lookup"

@@ -71,6 +71,11 @@ spec:
       nodeSelector: {{ .Values.jarvice.nodeSelector }}
 {{- end }}
       affinity:
+{{- if (not (empty .Values.jarvice_dal.nodeAffinity)) }}
+        nodeAffinity: {{ .Values.jarvice_dal.nodeAffinity }}
+{{- else if (not (empty .Values.jarvice.nodeAffinity)) }}
+        nodeAffinity: {{ .Values.jarvice.nodeAffinity }}
+{{- end }}
         podAntiAffinity:
         {{- if eq .Values.jarvice_dal.antiAffinity "hard" }}
           requiredDuringSchedulingIgnoredDuringExecution:

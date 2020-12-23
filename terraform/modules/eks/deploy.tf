@@ -35,8 +35,17 @@ tolerations:
   - key: node-role.kubernetes.io/jarvice-system
     effect: NoSchedule
     operator: Exists
-nodeSelector:
-  node-role.jarvice.io/jarvice-system: "true"
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: node-role.jarvice.io/jarvice-system
+          operator: Exists
+      - matchExpressions:
+        - key: node-role.kubernetes.io/jarvice-system
+          operator: Exists
 
 rbac:
   create: true
@@ -51,8 +60,6 @@ image:
   tag: v0.4.1
   pullPolicy: IfNotPresent
 
-nodeSelector:
-  node-role.jarvice.io/jarvice-system: "true"
 tolerations:
   - key: node-role.jarvice.io/jarvice-system
     effect: NoSchedule
@@ -60,6 +67,17 @@ tolerations:
   - key: node-role.kubernetes.io/jarvice-system
     effect: NoSchedule
     operator: Exists
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: node-role.jarvice.io/jarvice-system
+          operator: Exists
+      - matchExpressions:
+        - key: node-role.kubernetes.io/jarvice-system
+          operator: Exists
 
 priorityClassName: system-node-critical
 
@@ -83,8 +101,17 @@ memoryLimit: 1Gi
 cpuRequest: 1
 cpuLimit: 1
 
-nodeSelector:
-  node-role.jarvice.io/jarvice-system: "true"
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: node-role.jarvice.io/jarvice-system
+          operator: Exists
+      - matchExpressions:
+        - key: node-role.kubernetes.io/jarvice-system
+          operator: Exists
+
 tolerations:
   - key: node-role.jarvice.io/jarvice-system
     effect: NoSchedule
@@ -125,13 +152,16 @@ module "helm" {
     charts = local.charts
 
     # JARVICE settings
-    jarvice = merge(var.cluster.helm.jarvice, {"values_file"="${module.common.jarvice_values_file}"})
+    jarvice = merge(var.cluster.helm.jarvice, {"values_file"=module.common.jarvice_values_file})
     global = var.global.helm.jarvice
-    cluster_values_yaml = <<EOF
+    common_values_yaml = <<EOF
 ${module.common.cluster_values_yaml}
-
+EOF
+    cluster_values_yaml = <<EOF
 # EKS cluster override values
 ${local.jarvice_ingress}
 EOF
+
+    depends_on = [module.eks, module.vpc]
 }
 
