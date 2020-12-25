@@ -100,6 +100,10 @@ spec:
             value: '{{ .Values.jarvice.JARVICE_POD_SCHED_MULTIPLIERS }}'
           - name: JARVICE_JOBS_MULTI_TENANT
             value: "{{ .Values.jarvice.JARVICE_JOBS_MULTI_TENANT }}"
+{{- if (not (empty .Values.jarvice.JARVICE_LICENSE_MANAGER_URL)) }}
+          - name: JARVICE_LICENSE_MANAGER_URL
+            value: "{{ .Values.jarvice.JARVICE_LICENSE_MANAGER_URL }}"
+{{- end }}
         resources:
 {{ toYaml .Values.jarvice_pod_scheduler.resources | indent 10 }}
 {{- end }}
