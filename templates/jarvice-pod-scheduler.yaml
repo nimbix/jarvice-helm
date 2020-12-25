@@ -104,6 +104,10 @@ spec:
           - name: JARVICE_LICENSE_MANAGER_URL
             value: "{{ .Values.jarvice.JARVICE_LICENSE_MANAGER_URL }}"
 {{- end }}
+{{- if (not (empty .Values.jarvice.JARVICE_LICENSE_MANAGER_KEY)) }}
+          - name: JARVICE_LICENSE_MANAGER_KEY
+            value: "{{ .Values.jarvice.JARVICE_LICENSE_MANAGER_KEY }}"
+{{- end }}
         resources:
 {{ toYaml .Values.jarvice_pod_scheduler.resources | indent 10 }}
 {{- end }}
