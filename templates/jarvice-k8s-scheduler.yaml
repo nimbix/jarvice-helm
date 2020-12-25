@@ -258,6 +258,10 @@ spec:
 {{- else }}
             value: "{{ .Values.jarvice.JARVICE_SELINUX_ENFORCING }}"
 {{- end }}
+{{- if (not (empty .Values.jarvice.JARVICE_LICENSE_MANAGER_URL)) }}
+          - name: JARVICE_LICENSE_MANAGER_URL
+            value: "{{ .Values.jarvice.JARVICE_LICENSE_MANAGER_URL }}"
+{{- end }}
         resources:
 {{- if .Values.jarvice_k8s_scheduler.resources }}
 {{ toYaml .Values.jarvice_k8s_scheduler.resources | indent 10 }}
