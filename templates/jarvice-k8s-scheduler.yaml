@@ -262,6 +262,10 @@ spec:
           - name: JARVICE_LICENSE_MANAGER_URL
             value: "{{ .Values.jarvice.JARVICE_LICENSE_MANAGER_URL }}"
 {{- end }}
+{{- if (not (empty .Values.jarvice.JARVICE_LICENSE_MANAGER_SSL_VERIFY)) }}
+          - name: JARVICE_LICENSE_MANAGER_SSL_VERIFY
+            value: "{{ .Values.jarvice.JARVICE_LICENSE_MANAGER_SSL_VERIFY }}"
+{{- end }}
 {{- if (not (empty .Values.jarvice.JARVICE_LICENSE_MANAGER_KEY)) }}
           - name: JARVICE_LICENSE_MANAGER_KEY
             value: "{{ .Values.jarvice.JARVICE_LICENSE_MANAGER_KEY }}"
