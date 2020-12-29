@@ -25,7 +25,7 @@ module "helm" {
     source = "../helm"
 
     # JARVICE settings
-    jarvice = merge(var.cluster.helm.jarvice, {"values_file"="${module.common.jarvice_values_file}"})
+    jarvice = merge(var.cluster.helm.jarvice, {"values_file"=module.common.jarvice_values_file})
     global = var.global.helm.jarvice
     common_values_yaml = <<EOF
 # K8s cluster common values
