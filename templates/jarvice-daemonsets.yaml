@@ -568,13 +568,16 @@ spec:
       nodeSelector: {{ .Values.jarvice.daemonsets.nodeSelector }}
 {{- end }}
       containers:
+      - name: pause
+        image: "gcr.io/google-containers/pause:3.2"
+      initContainers:
       - name: jarvice-disable-hyper-threading
         image: {{ .Values.jarvice.daemonsets.disable_hyper_threading.image }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.disable_hyper_threading.imagePullPolicy }}
         command:
           - /bin/sh
           - -c
-          - nsenter -t 1 -m -u -i -n -p -- /bin/sh -c "$DISABLE_HYPER_THREADING"; sleep infinity
+          - nsenter -t 1 -m -u -i -n -p -- /bin/sh -c "$DISABLE_HYPER_THREADING"
         env:
         - name: DISABLE_HYPER_THREADING
           value: |
@@ -636,13 +639,16 @@ spec:
       nodeSelector: {{ .Values.jarvice.daemonsets.nodeSelector }}
 {{- end }}
       containers:
+      - name: pause
+        image: "gcr.io/google-containers/pause:3.2"
+      initContainers:
       - name: jarvice-node-init
         image: {{ .Values.jarvice.daemonsets.node_init.image }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.node_init.imagePullPolicy }}
         command:
           - /bin/sh
           - -c
-          - nsenter -t 1 -m -u -i -n -p -- /bin/sh -c "$COMMAND"; sleep infinity
+          - nsenter -t 1 -m -u -i -n -p -- /bin/sh -c "$COMMAND"
         env:
         - name: COMMAND
           value: {{ toYaml .Values.jarvice.daemonsets.node_init.env.COMMAND | indent 10 }}
@@ -697,13 +703,16 @@ spec:
       nodeSelector: {{ .Values.jarvice.daemonsets.nodeSelector }}
 {{- end }}
       containers:
+      - name: pause
+        image: "gcr.io/google-containers/pause:3.2"
+      initContainers:
       - name: jarvice-nvidia-install
         image: {{ .Values.jarvice.daemonsets.nvidia_install.image }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.nvidia_install.imagePullPolicy }}
         command:
           - /bin/sh
           - -c
-          - nsenter -t 1 -m -u -i -n -p -- /bin/sh -c "$COMMAND"; sleep infinity
+          - nsenter -t 1 -m -u -i -n -p -- /bin/sh -c "$COMMAND"
         env:
         - name: NVIDIA_DRIVER_VERSION
           value: "{{ .Values.jarvice.daemonsets.nvidia_install.env.NVIDIA_DRIVER_VERSION }}"
