@@ -70,6 +70,7 @@ resource "helm_release" "jarvice" {
     name = "jarvice"
     repository = local.jarvice_chart_is_dir ? null : local.jarvice_chart_repository
     chart = local.jarvice_chart_is_dir ? pathexpand(local.jarvice_chart_version) : "jarvice"
+    devel = true
     version = local.jarvice_chart_is_dir ? null : local.jarvice_chart_version
 
     namespace = var.jarvice["namespace"]
