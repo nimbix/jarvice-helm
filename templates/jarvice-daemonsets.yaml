@@ -570,6 +570,7 @@ spec:
       containers:
       - name: pause
         image: "gcr.io/google-containers/pause:3.2"
+        imagePullPolicy: "IfNotPresent"
       initContainers:
       - name: jarvice-disable-hyper-threading
         image: {{ .Values.jarvice.daemonsets.disable_hyper_threading.image }}
@@ -641,6 +642,7 @@ spec:
       containers:
       - name: pause
         image: "gcr.io/google-containers/pause:3.2"
+        imagePullPolicy: "IfNotPresent"
       initContainers:
       - name: jarvice-node-init
         image: {{ .Values.jarvice.daemonsets.node_init.image }}
@@ -705,6 +707,7 @@ spec:
       containers:
       - name: pause
         image: "gcr.io/google-containers/pause:3.2"
+        imagePullPolicy: "IfNotPresent"
       initContainers:
       - name: jarvice-nvidia-install
         image: {{ .Values.jarvice.daemonsets.nvidia_install.image }}
@@ -772,6 +775,7 @@ spec:
       containers:
       - name: pause
         image: "gcr.io/google-containers/pause:3.2"
+        imagePullPolicy: "IfNotPresent"
       initContainers:
       - name: jarvice-flex-volume-plugin-nfs-nolock-install
         image: {{ .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.image }}
