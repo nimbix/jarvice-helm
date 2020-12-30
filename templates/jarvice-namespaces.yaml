@@ -55,7 +55,7 @@ metadata:
 ---
 {{- end }}
 {{- end }}
-{{- if or .Values.jarvice.daemonsets.cache_pull.enabled .Values.jarvice.daemonsets.lxcfs.enabled .Values.jarvice.daemonsets.node_init.enabled .Values.jarvice.daemonsets.nvidia.enabled .Values.jarvice.daemonsets.xilinx_fpga.enabled .Values.jarvice.daemonsets.rdma.enabled .Values.jarvice.daemonsets.disable_hyper_threading.enabled .Values.jarvice.daemonsets.dri_optional.enabled .Values.jarvice.daemonsets.nvidia_install.enabled }}
+{{- if or .Values.jarvice.daemonsets.cache_pull.enabled .Values.jarvice.daemonsets.lxcfs.enabled .Values.jarvice.daemonsets.node_init.enabled .Values.jarvice.daemonsets.nvidia.enabled .Values.jarvice.daemonsets.xilinx_fpga.enabled .Values.jarvice.daemonsets.rdma.enabled .Values.jarvice.daemonsets.disable_hyper_threading.enabled .Values.jarvice.daemonsets.dri_optional.enabled .Values.jarvice.daemonsets.nvidia_install.enabled .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.enabled }}
 apiVersion: v1
 kind: Namespace
 metadata:

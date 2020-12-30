@@ -1,4 +1,4 @@
-{{- if or .Values.jarvice.daemonsets.cache_pull.enabled .Values.jarvice.daemonsets.lxcfs.enabled .Values.jarvice.daemonsets.nvidia.enabled .Values.jarvice.daemonsets.rdma.enabled .Values.jarvice.daemonsets.node_init.enabled .Values.jarvice.daemonsets.disable_hyper_threading.enabled .Values.jarvice.daemonsets.dri_optional.enabled .Values.jarvice.daemonsets.nvidia_install.enabled }}
+{{- if or .Values.jarvice.daemonsets.cache_pull.enabled .Values.jarvice.daemonsets.lxcfs.enabled .Values.jarvice.daemonsets.nvidia.enabled .Values.jarvice.daemonsets.rdma.enabled .Values.jarvice.daemonsets.node_init.enabled .Values.jarvice.daemonsets.disable_hyper_threading.enabled .Values.jarvice.daemonsets.dri_optional.enabled .Values.jarvice.daemonsets.nvidia_install.enabled .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.enabled }}
 apiVersion: {{ template "apiVersion.priorityClass" . }}
 kind: PriorityClass
 metadata:
@@ -719,6 +719,73 @@ spec:
         - name: COMMAND
           value: |-
 {{ .Files.Get "files/install-nvidia-docker" | indent 12 }}
+        securityContext:
+          privileged: true
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+      priorityClassName: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+      priorityClassName: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
+---
+{{- end }}
+{{- if .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.enabled }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: jarvice-flex-volume-plugin-nfs-nolock-install
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+  namespace: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+  namespace: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-flex-volume-plugin-nfs-nolock-install
+spec:
+  selector:
+    matchLabels:
+      component: jarvice-flex-volume-plugin-nfs-nolock-install
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-flex-volume-plugin-nfs-nolock-install
+    spec:
+      hostPID: true
+{{- if (not (empty .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.tolerations)) }}
+      tolerations: {{ .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.tolerations }}
+{{- else if (not (empty .Values.jarvice.daemonsets.tolerations)) }}
+      tolerations: {{ .Values.jarvice.daemonsets.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.nodeAffinity  }}
+{{- else if (not (empty .Values.jarvice.daemonsets.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.daemonsets.nodeAffinity }}
+{{- end }}
+{{- if (not (empty .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.daemonsets.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.daemonsets.nodeSelector }}
+{{- end }}
+      containers:
+      - name: pause
+        image: "gcr.io/google-containers/pause:3.2"
+      initContainers:
+      - name: jarvice-flex-volume-plugin-nfs-nolock-install
+        image: {{ .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.image }}
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.imagePullPolicy }}
+        command:
+          - /bin/sh
+          - -c
+          - nsenter -t 1 -m -u -i -n -p -- /bin/sh -c "$COMMAND"
+        env:
+        - name: KUBELET_PLUGIN_PATH
+          value: "{{ .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.env.KUBELET_PLUGIN_PATH }}"
+        - name: COMMAND
+          value: |-
+{{ .Files.Get "files/install-flex-nfs-nolock" | indent 12 }}
         securityContext:
           privileged: true
 {{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
