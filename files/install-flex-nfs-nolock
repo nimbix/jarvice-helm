@@ -14,7 +14,14 @@ if ! type jq >/dev/null 2>&1; then
     echo "* Installing '$install_pkgs'...done."
 fi
 
-KUBELET_PLUGIN_BIN=$KUBELET_PLUGIN_PATH/nfs-nolock
+VENDOR=jarvice.io
+DRIVER=nfs-nolock
+KUBELET_PLUGIN_DRIVER_DIR=$KUBELET_PLUGIN_DIR/$VENDOR~$DRIVER
+if [ ! -d "$KUBELET_PLUGIN_DRIVER_DIR" ]; then
+    mkdir -p $KUBELET_PLUGIN_DRIVER_DIR
+fi
+
+KUBELET_PLUGIN_BIN=$KUBELET_PLUGIN_DRIVER_DIR/$DRIVER
 echo "* Installing plugin $KUBELET_PLUGIN_BIN..."
 cat <<'EOF' >$KUBELET_PLUGIN_BIN
 #!/bin/bash

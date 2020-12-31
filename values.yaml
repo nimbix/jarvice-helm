@@ -192,7 +192,7 @@ jarvice:
       image: busybox:latest
       imagePullPolicy: IfNotPresent
       env:
-        KUBELET_PLUGIN_PATH: /usr/libexec/kubernetes/kubelet-plugins/volume/exec
+        KUBELET_PLUGIN_DIR: /usr/libexec/kubernetes/kubelet-plugins/volume/exec
 
 
 # Database server previously set up?  Set enabled to false.
