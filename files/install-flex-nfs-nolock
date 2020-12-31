@@ -15,7 +15,7 @@ if ! type jq >/dev/null 2>&1; then
 fi
 
 VENDOR=jarvice.io
-DRIVER=nfs-nolock
+DRIVER=nfsnolock
 KUBELET_PLUGIN_DRIVER_DIR=$KUBELET_PLUGIN_DIR/$VENDOR~$DRIVER
 if [ ! -d "$KUBELET_PLUGIN_DRIVER_DIR" ]; then
     mkdir -p $KUBELET_PLUGIN_DRIVER_DIR
