@@ -785,7 +785,7 @@ spec:
           - -c
           - nsenter -t 1 -m -u -i -n -p -- /bin/sh -c "$COMMAND"
         env:
-        - name: KUBELET_PLUGIN_PATH
+        - name: KUBELET_PLUGIN_DIR
           value: "{{ .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.env.KUBELET_PLUGIN_PATH }}"
         - name: COMMAND
           value: |-
