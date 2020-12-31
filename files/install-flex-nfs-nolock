@@ -1,9 +1,8 @@
-#!/bin/bash
+#!/bin/sh
 
 set -e
 
-JQ=$(type -p jq || /bin/true)
-if [ -z "$JQ" ]; then
+if ! type jq >/dev/null 2>&1; then
     install_pkgs="jq"
     echo "* Installing '$install_pkgs'..."
     if [ -e /etc/redhat-release ]; then
