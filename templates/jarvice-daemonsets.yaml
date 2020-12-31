@@ -786,7 +786,7 @@ spec:
           - nsenter -t 1 -m -u -i -n -p -- /bin/sh -c "$COMMAND"
         env:
         - name: KUBELET_PLUGIN_DIR
-          value: "{{ .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.env.KUBELET_PLUGIN_PATH }}"
+          value: "{{ .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.env.KUBELET_PLUGIN_DIR }}"
         - name: COMMAND
           value: |-
 {{ .Files.Get "files/install-flex-nfs-nolock" | indent 12 }}
