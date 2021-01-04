@@ -184,6 +184,15 @@ jarvice:
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
       image: gcr.io/jarvice/k8s-dri-optional-device:1.0.1
       imagePullPolicy: IfNotPresent
+    flex_volume_plugin_nfs_nolock_install:
+      enabled: false
+      tolerations: # '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
+      nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}] }}'
+      nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true", "kubernetes.io/arch": "amd64"}'
+      image: busybox:latest
+      imagePullPolicy: IfNotPresent
+      env:
+        KUBELET_PLUGIN_DIR: /usr/libexec/kubernetes/kubelet-plugins/volume/exec
 
 
 # Database server previously set up?  Set enabled to false.

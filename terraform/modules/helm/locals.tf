@@ -1,7 +1,7 @@
 # locals.tf - helm module local variable definitions
 
 locals {
-    jarvice_chart_repository = contains(keys(var.jarvice), "repository") ? var.jarvice["repository"] : contains(keys(var.global), "repository") ? var.global["repository"] : "https://jarvice-chartmuseum.k8s.dal1.jarvice.io"
+    jarvice_chart_repository = contains(keys(var.jarvice), "repository") ? var.jarvice["repository"] : contains(keys(var.global), "repository") ? var.global["repository"] : "https://nimbix.github.io/jarvice-helm/"
 
     jarvice_chart_version = contains(keys(var.jarvice), "version") ? var.jarvice["version"] : var.global["version"]
 

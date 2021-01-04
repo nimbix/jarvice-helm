@@ -26,8 +26,7 @@ scripts*/
 jarvice-settings*/
 .terraform/
 .terraform*
-terraform/.terraform/
-terraform.*
+terraform.*state*
 crash.log
 tmp*/
 *.bak/
