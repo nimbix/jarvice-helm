@@ -16,8 +16,16 @@ global = {
 
     helm = {
         jarvice = {
-            version = "./"
+            repository = "https://nimbix.github.io/jarvice-helm/"
+            # null version installs latest release from the helm repository.
+            # Subsequent helm upgrades require that a specific release version
+            # be set.  e.g. "3.0.0-1.XXXXXXXXXXXX"
+            # Visit the following link for the latest release versions:
+            # https://github.com/nimbix/jarvice-helm/blob/master/ReleaseNotes.md#changelog
+            version = null  # "./"  # "~/github/nimbix/jarvice-helm"
 
+            # Available helm values for a released version can be found via:
+            # version=3.0.0-1.XXXXXXXXXXXX; curl https://raw.githubusercontent.com/nimbix/jarvice-helm/$version/values.yaml
             values_file = "values.yaml"  # ignored if file does not exist
             values_yaml = <<EOF
 # global values_yaml - Uncomment or add any values that should be
@@ -66,7 +74,7 @@ k8s = {
 
         helm = {
             jarvice = {
-                # version = "./"  # Uncomment to override global version
+                # version = "3.0.0-1.XXXXXXXXXXXX"  # Override global version
                 namespace = "jarvice-system"
 
                 # global values_yaml take precedence over cluster
@@ -78,7 +86,7 @@ k8s = {
 
 #jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
-  #JARVICE_IMAGES_VERSION:
+  #JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
 
   # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
   # settings in jarvice_* component stanzas are ignored.
@@ -90,6 +98,10 @@ k8s = {
   #JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
   #JARVICE_JOBS_DOMAIN: # my-domain.com  # (host based ingress)
   #JARVICE_JOBS_LB_SERVICE: false
+
+  #tolerations: '[{"key": "node-role.jarvice.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}]'
+  #nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-system", "operator": "Exists"}]}] }}'
+  #nodeSelector: # '{"node-role.jarvice.io/jarvice-system": "true"}'
 
   #JARVICE_PVC_VAULT_NAME: persistent
   #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
@@ -136,7 +148,7 @@ EOF
 
         helm = {
             jarvice = {
-                # version = "./"  # Uncomment to override global version
+                # version = "3.0.0-1.XXXXXXXXXXXX"  # Override global version
                 namespace = "jarvice-downstream"
 
                 # global values_yaml take precedence over cluster
@@ -148,7 +160,7 @@ EOF
 
 jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
-  #JARVICE_IMAGES_VERSION:
+  #JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
 
   # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
   # settings in jarvice_* component stanzas are ignored.
@@ -160,6 +172,10 @@ jarvice:
   #JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
   #JARVICE_JOBS_DOMAIN: # my-domain.com  # (host based ingress)
   #JARVICE_JOBS_LB_SERVICE: false
+
+  #tolerations: '[{"key": "node-role.jarvice.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}]'
+  #nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-system", "operator": "Exists"}]}] }}'
+  #nodeSelector: # '{"node-role.jarvice.io/jarvice-system": "true"}'
 
   #JARVICE_PVC_VAULT_NAME: persistent
   #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
@@ -262,7 +278,7 @@ gke = {
 
         helm = {
             jarvice = {
-                # version = "./"  # Uncomment to override global version
+                # version = "3.0.0-1.XXXXXXXXXXXX"  # Override global version
                 namespace = "jarvice-system"
 
                 # global values_yaml take precedence over cluster
@@ -274,7 +290,7 @@ gke = {
 
 #jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
-  #JARVICE_IMAGES_VERSION:
+  #JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
 
   # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
   # settings in jarvice_* component stanzas are ignored.
@@ -362,7 +378,7 @@ EOF
 
         helm = {
             jarvice = {
-                # version = "./"  # Uncomment to override global version
+                # version = "3.0.0-1.XXXXXXXXXXXX"  # Override global version
                 namespace = "jarvice-system"
 
                 # global values_yaml take precedence over cluster
@@ -374,7 +390,7 @@ EOF
 
 jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
-  #JARVICE_IMAGES_VERSION:
+  #JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
 
   # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
   # settings in jarvice_* component stanzas are ignored.
@@ -458,7 +474,7 @@ eks = {
 
         helm = {
             jarvice = {
-                # version = "./"  # Uncomment to override global version
+                # version = "3.0.0-1.XXXXXXXXXXXX"  # Override global version
                 namespace = "jarvice-system"
 
                 # global values_yaml take precedence over cluster
@@ -470,7 +486,7 @@ eks = {
 
 #jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
-  #JARVICE_IMAGES_VERSION:
+  #JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
 
   # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
   # settings in jarvice_* component stanzas are ignored.
@@ -547,7 +563,7 @@ EOF
 
         helm = {
             jarvice = {
-                # version = "./"  # Uncomment to override global version
+                # version = "3.0.0-1.XXXXXXXXXXXX"  # Override global version
                 namespace = "jarvice-system"
 
                 # global values_yaml take precedence over cluster
@@ -559,7 +575,7 @@ EOF
 
 jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
-  #JARVICE_IMAGES_VERSION:
+  #JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
 
   # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
   # settings in jarvice_* component stanzas are ignored.
@@ -642,7 +658,7 @@ aks = {
 
         helm = {
             jarvice = {
-                # version = "./"  # Uncomment to override global version
+                # version = "3.0.0-1.XXXXXXXXXXXX"  # Override global version
                 namespace = "jarvice-system"
 
                 # global values_yaml take precedence over cluster
@@ -654,7 +670,7 @@ aks = {
 
 #jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
-  #JARVICE_IMAGES_VERSION:
+  #JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
 
   # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
   # settings in jarvice_* component stanzas are ignored.
@@ -730,7 +746,7 @@ EOF
 
         helm = {
             jarvice = {
-                # version = "./"  # Uncomment to override global version
+                # version = "3.0.0-1.XXXXXXXXXXXX"  # Override global version
                 namespace = "jarvice-system"
 
                 # global values_yaml take precedence over cluster
@@ -742,7 +758,7 @@ EOF
 
 jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
-  #JARVICE_IMAGES_VERSION:
+  #JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
 
   # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
   # settings in jarvice_* component stanzas are ignored.
