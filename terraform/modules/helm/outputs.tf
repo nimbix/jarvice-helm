@@ -9,3 +9,10 @@ output "metadata" {
     }
 }
 
+output "jarvice_chart" {
+    value = {
+        "repository" = local.jarvice_chart_is_dir ? null : local.jarvice_chart_repository,
+        "version" = local.jarvice_chart_version
+    }
+}
+
