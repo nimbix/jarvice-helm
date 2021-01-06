@@ -114,6 +114,10 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202101062006
+
+* (3841) Fixed bug where refreshing users prevent row selection in *Administration->Users*
+
 ## 3.0.0-1.202012232023 - *(TECHNOLOGY PREVIEW RELEASE)*
 
 * (3290) Finalized architecture updates in `jarvice-dal` for performance, security, and scalability.
