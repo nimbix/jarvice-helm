@@ -22,7 +22,7 @@ global = {
             # be set.  e.g. "3.0.0-1.XXXXXXXXXXXX"
             # Visit the following link for the latest release versions:
             # https://github.com/nimbix/jarvice-helm/blob/master/ReleaseNotes.md#changelog
-            version = null  # "./"  # "~/github/nimbix/jarvice-helm"
+            version = null  # "../"  # "~/github/nimbix/jarvice-helm"
 
             # Available helm values for a released version can be found via:
             # version=3.0.0-1.XXXXXXXXXXXX; curl https://raw.githubusercontent.com/nimbix/jarvice-helm/$version/values.yaml
