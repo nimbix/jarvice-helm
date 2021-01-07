@@ -49,7 +49,7 @@ resource "null_resource" "ingress_host_file" {
 
     provisioner "local-exec" {
         when = destroy
-        command = fileexists(self.triggers.path) ? "rm -f ${self.triggers.path}" : null
+        command = fileexists(self.triggers.path) ? "rm -f ${self.triggers.path}" : "/bin/true"
     }
 }
 
