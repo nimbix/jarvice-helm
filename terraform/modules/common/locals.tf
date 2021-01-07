@@ -5,7 +5,15 @@ locals {
 
     jarvice_helm_override_yaml = fileexists(local.jarvice_values_file) ? file(local.jarvice_values_file) : ""
 
-    jarvice_helm_values = merge(lookup(yamldecode("XXXdummy: value\n\n${fileexists(var.global.helm.jarvice["values_file"]) ? file(var.global.helm.jarvice["values_file"]) : ""}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${local.jarvice_helm_override_yaml}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${var.global.helm.jarvice["values_yaml"]}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${var.cluster.helm.jarvice["values_yaml"]}"), "jarvice", {}))
+    jarvice_helm_values_min_defaults = <<EOF
+jarvice:
+  JARVICE_CLUSTER_TYPE: "upstream"
+  JARVICE_PVC_VAULT_NAME: persistent
+  JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
+  JARVICE_PVC_VAULT_ACCESSMODES:  # e.g. "ReadWriteMany,ReadOnlyMany"
+  JARVICE_PVC_VAULT_SIZE:         # gigabytes
+EOF
+    jarvice_helm_values = merge(lookup(yamldecode(local.jarvice_helm_values_min_defaults), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${fileexists(var.global.helm.jarvice["values_file"]) ? file(var.global.helm.jarvice["values_file"]) : ""}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${local.jarvice_helm_override_yaml}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${var.global.helm.jarvice["values_yaml"]}"), "jarvice", {}), lookup(yamldecode("XXXdummy: value\n\n${var.cluster.helm.jarvice["values_yaml"]}"), "jarvice", {}))
 
     jarvice_cluster_type = local.jarvice_helm_values["JARVICE_CLUSTER_TYPE"] == "downstream" ? "downstream" : "upstream"
 }
