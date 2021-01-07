@@ -4,3 +4,4 @@
 .terraform*
 terraform.*state*
 clusters.tf
+override.*
