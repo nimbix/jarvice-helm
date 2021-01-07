@@ -3,3 +3,4 @@
 .terraform/
 .terraform*
 terraform.*state*
+clusters.tf
