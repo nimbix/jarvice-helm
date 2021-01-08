@@ -8,6 +8,8 @@ args="$*"
 release=jarvice
 namespace=jarvice-system
 values=$jarvice_chart_dir/override.yaml
+repo=https://nimbix.github.io/jarvice-helm/
+version=
 
 function usage {
     cat <<EOF
@@ -21,9 +23,23 @@ Options:
                                         (Default: $namespace)
     -f, --values <values_file>          Site specific values YAML file
                                         (Default: $values)
+    -r, --repo <helm_repo>              JARVICE helm repository
+                                        (Default: $repo)
+    -v, --version <jarvice_version>     JARVICE chart version from helm repo
+                                        (Default: install via local chart dir)
 
-Example:
+Example deployment using remote JARVICE helm chart repository (preferred):
+    $0 -f $values -v 3.0.0-1.XXXXXXXXXXXX
+
+Example deployment using local JARVICE helm chart directory:
     $0 -f $values
+
+Visit the JARVICE release notes for the latest release versions:
+https://github.com/nimbix/jarvice-helm/blob/master/ReleaseNotes.md#changelog
+
+Available helm values for a released version can be found via:
+curl https://raw.githubusercontent.com/nimbix/jarvice-helm/<jarvice_version>/values.yaml
+
 EOF
 }
 
@@ -78,6 +94,14 @@ while [ $# -gt 0 ]; do
             values=$2
             shift; shift
             ;;
+        -r|--repo|--repository)
+            repo=$2
+            shift; shift
+            ;;
+        -v|--version)
+            version=$2
+            shift; shift
+            ;;
         --)
             shift;
             break;
@@ -89,7 +113,7 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-if [ ! -f "$jarvice_chart_dir/values.yaml" ]; then
+if [ -z "$version" -a ! -f "$jarvice_chart_dir/values.yaml" ]; then
     cat <<EOF
 Could not find values.yaml in the JARVICE helm chart directory: $jarvice_chart_dir
 
@@ -101,7 +125,8 @@ EOF
 fi
 
 if [ ! -f "$values" ]; then
-    cat <<EOF
+    if [ -z "$version" ]; then
+        cat <<EOF
 
 Could not find values YAML file: $values
 
@@ -113,22 +138,24 @@ Example:
     <open $values and make site specific edits>
     $0 $args
 EOF
+    else
+        cat <<EOF
+
+Could not find values YAML file: $values
+
+Please download a copy of values.yaml file for site specific
+configuration and use with this script.
+
+Example:
+    curl https://raw.githubusercontent.com/nimbix/jarvice-helm/$version/values.yaml >$values
+    <open $values and make site specific edits>
+    $0 $args
+EOF
+    fi
     exit 1
 fi
 
 set -e
-
-#helm_stable_repo_url=https://charts.helm.sh/stable
-#helm_stable_repo=$($HELM repo list 2>/dev/null | grep ^stable || /bin/true)
-#if [ -z "$helm_stable_repo" ]; then
-#    echo
-#    echo "* Adding helm chart repository for stable..."
-#    $HELM repo add stable $helm_stable_repo_url
-#fi
-
-#echo
-#echo "* Updating helm chart repositories..."
-#$HELM repo update
 
 echo
 echo "* Creating namespace: $namespace"
@@ -137,9 +164,16 @@ $KUBECTL create namespace $namespace 2>/dev/null || /bin/true
 echo
 echo "* Deploying JARVICE to '$namespace' namespace..."
 echo
-$HELM upgrade $release $jarvice_chart_dir \
+if [ -n "$version" ]; then
+    release_args="$release jarvice --repo $repo --version $version"
+    values_args=
+else
+    release_args="$release $jarvice_chart_dir"
+    values_args="-f $jarvice_chart_dir/values.yaml"
+fi
+$HELM upgrade $release_args \
     --namespace $namespace --install --debug \
-    --reset-values -f $jarvice_chart_dir/values.yaml -f $values $*
+    --reset-values $values_args -f $values $*
 
 echo
 echo "* Successfully deployed JARVICE to '$namespace' namespace..."
