@@ -104,11 +104,11 @@ domount() {
 	#local ATIME=$(echo $2 | jq -r '.atime')
 	#local READONLY=$(echo $2 | jq -r '.readonly')
 
-	local NFS_SERVER=$(echo $2 | grep '"server"' | sed -E 's/.*"server":"([^"]*)".*/\1/')
-	local SHARE=$(echo $2 | grep '"share"' | sed -E 's/.*"share":"([^"]*)".*/\1/')
-	local PROTOCOL=$(echo $2 | grep '"protocol"' | sed -E 's/.*"protocol":"([^"]*)".*/\1/')
-	local ATIME=$(echo $2 | grep '"atime"' | sed -E 's/.*"atime":"([^"]*)".*/\1/')
-	local READONLY=$(echo $2 | grep '"readonly"' | sed -E 's/.*"readonly":"([^"]*)".*/\1/')
+	local NFS_SERVER=$(echo $2 | grep '"server":' | sed -E 's/.*"server":"([^"]*)".*/\1/')
+	local SHARE=$(echo $2 | grep '"share":' | sed -E 's/.*"share":"([^"]*)".*/\1/')
+	local PROTOCOL=$(echo $2 | grep '"protocol":' | sed -E 's/.*"protocol":"([^"]*)".*/\1/')
+	local ATIME=$(echo $2 | grep '"atime":' | sed -E 's/.*"atime":"([^"]*)".*/\1/')
+	local READONLY=$(echo $2 | grep '"readonly":' | sed -E 's/.*"readonly":"([^"]*)".*/\1/')
 
 	if [ -n "${PROTOCOL}" ]; then
 		PROTOCOL="tcp"
