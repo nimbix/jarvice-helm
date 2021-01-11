@@ -156,7 +156,8 @@ domount() {
 		NFSOPTS="${NFSOPTS},ro"
 	fi
 
-	mount -t nfs -o${NFSOPTS} ${NFS_SERVER}:/${SHARE} ${MNTPATH} &> /dev/null
+	#mount -t nfs -o${NFSOPTS} ${NFS_SERVER}:/${SHARE} ${MNTPATH} &> /dev/null
+	mount -t nfs -o${NFSOPTS} ${NFS_SERVER}:${SHARE} ${MNTPATH} &> /dev/null
 	if [ $? -ne 0 ]; then
 		err "{ \"status\": \"Failure\", \"message\": \"Failed to mount ${NFS_SERVER}:${SHARE} at ${MNTPATH}\"}"
 		exit 1
