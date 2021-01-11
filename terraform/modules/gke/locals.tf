@@ -36,6 +36,10 @@ jarvice:
     nvidia_install:
       enabled: true
       nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "cloud.google.com/gke-accelerator", "operator": "Exists"}]}] }}'
+    flex_volume_plugin_nfs_nolock_install:
+      enabled: true
+      env:
+        KUBELET_PLUGIN_DIR: /home/kubernetes/flexvolume
 EOF
     jarvice_ingress_upstream = <<EOF
 ${local.cluster_values_yaml}

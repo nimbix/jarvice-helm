@@ -21,6 +21,10 @@ jarvice:
     nvidia:
       enabled: true
       nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "accelerator", "operator": "In", "values": ["nvidia"]}]}] }}'
+    flex_volume_plugin_nfs_nolock_install:
+      enabled: true
+      env:
+        KUBELET_PLUGIN_DIR: /etc/kubernetes/volumeplugins
 EOF
     jarvice_ingress_upstream = <<EOF
 ${local.cluster_values_yaml}
