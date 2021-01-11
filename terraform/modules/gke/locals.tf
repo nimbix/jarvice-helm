@@ -41,6 +41,10 @@ jarvice:
       env:
         DRI_INIT_DELAY: 180
         DRI_DEFAULT_CAPACITY: 1
+    flex_volume_plugin_nfs_nolock_install:
+      enabled: true
+      env:
+        KUBELET_PLUGIN_DIR: /home/kubernetes/flexvolume
 EOF
     jarvice_ingress_upstream = <<EOF
 ${local.cluster_values_yaml}
