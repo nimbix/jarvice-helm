@@ -508,8 +508,18 @@ spec:
         - name: device-plugins
           hostPath:
             path: /var/lib/kubelet/device-plugins
+      initContainers:
+      - name: init-delay
+        env:
+        - name: DRI_INIT_DELAY
+          value: "{{ default 300 .Values.jarvice.daemonsets.dri_optional.env.DRI_INIT_DELAY }}"
+        image: busybox:latest
+        command: ['sh', '-c', 'sleep ${DRI_INIT_DELAY}']
       containers:
       - name: jarvice-dri-optional-device-plugin
+        env:
+          - name: DRI_DEFAULT_CAPACITY
+            value: "{{ default 1 .Values.jarvice.daemonsets.dri_optional.env.DRI_DEFAULT_CAPACITY }}"
         image: {{ .Values.jarvice.daemonsets.dri_optional.image }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.dri_optional.imagePullPolicy }}
         volumeMounts:

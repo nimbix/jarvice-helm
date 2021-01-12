@@ -36,6 +36,11 @@ jarvice:
     nvidia_install:
       enabled: true
       nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "cloud.google.com/gke-accelerator", "operator": "Exists"}]}] }}'
+    dri_optional:
+      enabled: true
+      env:
+        DRI_INIT_DELAY: 180
+        DRI_DEFAULT_CAPACITY: 1
     flex_volume_plugin_nfs_nolock_install:
       enabled: true
       env:
