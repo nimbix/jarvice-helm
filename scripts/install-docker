@@ -1,6 +1,6 @@
 #!/bin/bash
 
-MAJOR_VER=19.03
+MAJOR_VER=20.10
 
 function usage {
     cat <<EOF
@@ -70,17 +70,19 @@ if [ "$ID" = "ubuntu" ]; then
     $SUDO apt-mark hold $install_pkgs containerd.io
 else
     $SUDO yum install -y device-mapper-persistent-data lvm2 # yum-utils
-    cat <<EOF | $SUDO tee /etc/yum.repos.d/docker-ce.repo
+    cat <<EOF | $SUDO tee /etc/yum.repos.d/docker-ce-stable.repo
 [docker-ce-stable]
 name=Docker CE Stable - \$basearch
-#baseurl=https://download.docker.com/linux/centos/$VERSION_ID/\$basearch/stable
-baseurl=https://download.docker.com/linux/centos/7/\$basearch/stable
+baseurl=https://download.docker.com/linux/centos/$VERSION_ID/\$basearch/stable
 enabled=1
 gpgcheck=1
 gpgkey=https://download.docker.com/linux/centos/gpg
 # Prevent accidental package updates
-exclude=containerd.io docker-ce*
+exclude=containerd.io* docker-ce*
 EOF
+    if [ $VERSION_ID -gt 7 ]; then
+        dnf remove -y buildah podman || /bin/true
+    fi
     ver=$(yum list -y --quiet --showduplicates --disableexcludes=docker-ce-stable docker-ce 2>/dev/null | grep ^docker-ce | awk '{print $2}' | sort -r | grep -P "^[\d+:]*$MAJOR_VER\." | head -1 | awk -F: '{print $2}')
     ver_install_pkgs=$(printf "%s-$ver " $install_pkgs)
     $SUDO yum install -y --disableexcludes=docker-ce-stable $ver_install_pkgs containerd.io
