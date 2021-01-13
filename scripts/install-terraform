@@ -54,7 +54,11 @@ TF_INSTALL_DIR=$INSTALL_DIR/bin
 TF_URL=https://releases.hashicorp.com/terraform/
 TF_VER=$(echo $TF_VER_REQ | awk -F. '{print $1"."$2}')
 TF_VER=$(curl --silent $TF_URL | grep terraform_$TF_VER | head -n 1 | sed -e 's/.*terraform_\(.*\)<.*/\1/')
-TF_ZIP+="terraform_${TF_VER}_linux_amd64.zip"
+TF_ARCH=$(arch)
+if [ "$TF_ARCH" = "x86_64" ]; then
+    TF_ARCH=amd64
+fi
+TF_ZIP+="terraform_${TF_VER}_linux_${TF_ARCH}.zip"
 TF_URL+="$TF_VER/$TF_ZIP"
 
 echo; echo "* Installing terraform version $TF_VER..."
