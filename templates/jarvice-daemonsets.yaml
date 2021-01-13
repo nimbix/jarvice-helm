@@ -518,8 +518,8 @@ spec:
       containers:
       - name: jarvice-dri-optional-device-plugin
         env:
-          - name: DRI_DEFAULT_CAPACITY
-            value: "{{ default 1 .Values.jarvice.daemonsets.dri_optional.env.DRI_DEFAULT_CAPACITY }}"
+        - name: DRI_DEFAULT_CAPACITY
+          value: "{{ default 1 .Values.jarvice.daemonsets.dri_optional.env.DRI_DEFAULT_CAPACITY }}"
         image: {{ .Values.jarvice.daemonsets.dri_optional.image }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.dri_optional.imagePullPolicy }}
         volumeMounts:
