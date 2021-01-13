@@ -58,6 +58,9 @@ TF_ARCH=$(arch)
 if [ "$TF_ARCH" = "x86_64" ]; then
     TF_ARCH=amd64
 fi
+if [ "$TF_ARCH" = "aarch64" ]; then
+    TF_ARCH=arm64
+fi
 TF_ZIP+="terraform_${TF_VER}_linux_${TF_ARCH}.zip"
 TF_URL+="$TF_VER/$TF_ZIP"
 
