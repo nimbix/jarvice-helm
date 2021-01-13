@@ -126,6 +126,11 @@ else
     [ -z "$OPTIONS" ] && OPTIONS="-f $config" || OPTIONS+=" -f $config"
     grep -q ^OPTIONS= $optsfile && $SUDO sed -ie "s|^OPTIONS=.*|OPTIONS=\"$OPTIONS\"|" $optsfile || echo "OPTIONS=\"$OPTIONS\"" | $SUDO tee -a $optsfile >/dev/null
 
+    # CentOS 8 haproxy package no longer uses EnvironmentFile
+    svcfile=/usr/lib/systemd/system/haproxy.service
+    grep ^EnvironmentFile= $svcfile || grep $config $svcfile || $SUDO sed -ie "s|\$CONFIG|\$CONFIG -f $config|g" $svcfile
+    $SUDO systemctl daemon-reload
+
     echo; echo "* Starting HAProxy..."
     $SUDO systemctl start haproxy
 fi
