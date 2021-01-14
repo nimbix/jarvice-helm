@@ -43,7 +43,7 @@ global = {
   #JARVICE_REMOTE_API_URL: https://api.jarvice.com
   #JARVICE_REMOTE_USER:
   #JARVICE_REMOTE_APIKEY:
-  #JARVICE_APPSYNC_USERONLY: false
+  #JARVICE_APPSYNC_USERONLY: "false"
 
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
@@ -97,7 +97,7 @@ k8s = {
 
   #JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
   #JARVICE_JOBS_DOMAIN: # my-domain.com  # (host based ingress)
-  #JARVICE_JOBS_LB_SERVICE: false
+  #JARVICE_JOBS_LB_SERVICE: "false"
 
   #tolerations: '[{"key": "node-role.jarvice.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}]'
   #nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-system", "operator": "Exists"}]}] }}'
@@ -171,7 +171,7 @@ jarvice:
 
   #JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
   #JARVICE_JOBS_DOMAIN: # my-domain.com  # (host based ingress)
-  #JARVICE_JOBS_LB_SERVICE: false
+  #JARVICE_JOBS_LB_SERVICE: "false"
 
   #tolerations: '[{"key": "node-role.jarvice.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}]'
   #nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-system", "operator": "Exists"}]}] }}'
