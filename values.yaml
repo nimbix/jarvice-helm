@@ -8,7 +8,7 @@ jarvice:
   JARVICE_REMOTE_API_URL: https://api.jarvice.com
   JARVICE_REMOTE_USER:
   JARVICE_REMOTE_APIKEY:
-  JARVICE_APPSYNC_USERONLY: false
+  JARVICE_APPSYNC_USERONLY: "false"
 
   JARVICE_LOCAL_REGISTRY: # jarvice-registry:5000
   JARVICE_LOCAL_REPO_BASE: jarvice
@@ -32,9 +32,9 @@ jarvice:
 
   # JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
   JARVICE_JOBS_DOMAIN: # my-domain.com  # (host based ingress)
-  JARVICE_JOBS_LB_SERVICE: false
+  JARVICE_JOBS_LB_SERVICE: "false"
   JARVICE_JOBS_LB_ANNOTATIONS: # '{}'
-  JARVICE_JOBS_MULTI_TENANT: false
+  JARVICE_JOBS_MULTI_TENANT: "false"
   # At least one of JARVICE_JOBS_MULTI_TENANT_* must be set to a non-empty
   # set/list to enable access to interactive jobs via per job NetworkPolicy
   JARVICE_JOBS_MULTI_TENANT_INGRESS_POD_LABELS: '{}' # '{"app": "traefik"}'
