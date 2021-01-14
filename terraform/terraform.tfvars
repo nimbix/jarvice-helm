@@ -206,6 +206,22 @@ jarvice:
   #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 
+#jarvice_db: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  #persistence:
+  #  enabled: false
+  #  # Set to "keep" to prevent removal or jarvice-db-pvc on helm delete
+  #  resourcePolicy: ""  # "keep"
+  #  # Use empty existingClaimName for dynamic provisioning via storageClass
+  #  existingClaimName: # "jarvice-db-pvc"
+  #  # storageClass: "-"
+  #  storageClass: "jarvice-db"
+  #  accessMode: ReadWriteOnce
+  #  size: 8Gi
+  #securityContext:
+  #  enabled: false  # Enable when PersistentVolume is root squashed
+  #  fsGroup: 999
+  #  runAsUser: 999
+
 #jarvice_k8s_scheduler:
   # loadBalancerIP and ingressHost are only applicable when
   # jarvice.JARVICE_CLUSTER_TYPE is set to "downstream"
