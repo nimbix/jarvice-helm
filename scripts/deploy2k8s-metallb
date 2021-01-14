@@ -67,17 +67,17 @@ done
 
 set -e
 
-helm_stable_repo_url=https://charts.helm.sh/stable
-helm_stable_repo=$($HELM repo list 2>/dev/null | grep ^stable || /bin/true)
-if [ -z "$helm_stable_repo" ]; then
-    echo
-    echo "* Adding helm chart repository for stable..."
-    $HELM repo add stable $helm_stable_repo_url
-fi
+#helm_stable_repo_url=https://charts.helm.sh/stable
+#helm_stable_repo=$($HELM repo list 2>/dev/null | grep ^stable || /bin/true)
+#if [ -z "$helm_stable_repo" ]; then
+#    echo
+#    echo "* Adding helm chart repository for stable..."
+#    $HELM repo add stable $helm_stable_repo_url
+#fi
 
-echo
-echo "* Updating helm chart repositories..."
-$HELM repo update
+#echo
+#echo "* Updating helm chart repositories..."
+#$HELM repo update
 
 set_addr=
 i=0
@@ -92,7 +92,8 @@ $KUBECTL create namespace $namespace 2>/dev/null || /bin/true
 
 echo
 echo "* Deploying..."
-$HELM upgrade metallb stable/metallb \
+repo=https://charts.helm.sh/stable
+$HELM upgrade metallb metallb --repo $repo \
     --namespace $namespace --install --reset-values \
     \
     ${version_tag:+--set controller.image.tag=$version_tag} \
@@ -131,5 +132,5 @@ echo "* Deployment successful..."
 
 echo
 echo "For advanced setup details, visit https://metallb.universe.tf/ and/or execute:"
-echo "$ helm inspect all stable/metallb"
+echo "$ helm inspect all metallb --repo $repo"
 
