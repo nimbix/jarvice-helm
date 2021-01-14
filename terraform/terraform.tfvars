@@ -116,6 +116,10 @@ k8s = {
   #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 
+  #daemonsets:
+  #  lxcfs:
+  #    enabled: false
+
 #jarvice_db: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   #persistence:
   #  enabled: false
@@ -205,6 +209,10 @@ jarvice:
   #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
+
+  #daemonsets:
+  #  lxcfs:
+  #    enabled: false
 
 #jarvice_db: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   #persistence:
