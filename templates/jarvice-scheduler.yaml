@@ -200,7 +200,10 @@ spec:
           - name: JARVICE_MAIL_CONF
             value: {{ toYaml .Values.jarvice.JARVICE_MAIL_CONF | indent 12 }}
 {{- end }}
-{{- if (not (empty .Values.jarvice.JARVICE_LICENSE_MANAGER_URL)) }}
+{{- if and .Values.jarvice_license_manager.enabled (empty .Values.jarvice.JARVICE_LICENSE_MANAGER_URL) }}
+          - name: JARVICE_LICENSE_MANAGER_URL
+            value: "http://jarvice-license-manager:8080"
+{{- else if (not (empty .Values.jarvice.JARVICE_LICENSE_MANAGER_URL)) }}
           - name: JARVICE_LICENSE_MANAGER_URL
             value: "{{ .Values.jarvice.JARVICE_LICENSE_MANAGER_URL }}"
 {{- end }}
@@ -210,7 +213,10 @@ spec:
 {{- end }}
 {{- if (not (empty .Values.jarvice.JARVICE_LICENSE_MANAGER_KEY)) }}
           - name: JARVICE_LICENSE_MANAGER_KEY
-            value: "{{ .Values.jarvice.JARVICE_LICENSE_MANAGER_KEY }}"
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-license-manager
+                key: JARVICE_LICENSE_MANAGER_KEY
 {{- end }}
         volumeMounts:
         - name: jarvice-settings
