@@ -110,7 +110,7 @@ spec:
 {{- end }}
           - name: JARVICE_LICENSE_MANAGER_LOGLEVEL
             value: "{{ .Values.jarvice.JARVICE_LICENSE_MANAGER_LOGLEVEL }}"
-{{- if (not (empty .Values.jarvice_license_manager.env.JARVICE_LICENSE_MANAGER_KEY)) }}
+{{- if (not (empty .Values.jarvice.JARVICE_LICENSE_MANAGER_KEY)) }}
           - name: JARVICE_LICENSE_MANAGER_KEY
             valueFrom:
               secretKeyRef:

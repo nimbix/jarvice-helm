@@ -45,6 +45,12 @@ global = {
   #JARVICE_REMOTE_APIKEY:
   #JARVICE_APPSYNC_USERONLY: "false"
 
+  # JARVICE_LICENSE_MANAGER_URL is auto-set in "upstream" deployments if
+  # jarvice_license_manager.enabled is true (may still be modified as needed)
+  #JARVICE_LICENSE_MANAGER_URL: # "https://jarvice-license-manager.my-domain.com"
+  #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
+  #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
+
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
   #JARVICE_MAIL_PASSWORD: # "Pass1234"
@@ -108,6 +114,12 @@ k8s = {
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
 
+  # JARVICE_LICENSE_MANAGER_URL is auto-set in "upstream" deployments if
+  # jarvice_license_manager.enabled is true (may still be modified as needed)
+  #JARVICE_LICENSE_MANAGER_URL: # "https://jarvice-license-manager.my-domain.com"
+  #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
+  #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
+
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
   #JARVICE_MAIL_PASSWORD: # "Pass1234"
@@ -139,13 +151,13 @@ k8s = {
 # jarvice-license-manager runs on amd64 nodes only. In a multi-arch cluster, it
 # may be necessary to set tolerations, nodeAffinity, and/or nodeSelector.
 # Also, update/create jarvice-license-manager ConfigMap w/ servers.json data
+# Uses "user:password" pair set in jarvice.JARVICE_LICENSE_MANAGER_KEY
 #jarvice_license_manager: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   #enabled: false
   #loadBalancerIP:
   #ingressHost: # jarvice-license-manager.my-domain.com
   #ingressPath: "/"  # Valid values are "/" (default) or "/license-manager"
   #env:
-  #  JARVICE_LICENSE_MANAGER_KEY: # "jarvice-license-manager:Pass1234"
   #  JARVICE_HOSTALIASES: # '[ {"ip": "10.20.0.1", "hostnames": ["hostname-1a"]}, {"ip": "10.20.0.2", "hostnames": ["hostname-2a", "hostname-2b"]} ]'
   #  JARVICE_LMSTAT_INTERVAL: 60
   #  JARVICE_S3_BUCKET:
@@ -218,6 +230,12 @@ jarvice:
   #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
+
+  # JARVICE_LICENSE_MANAGER_URL is auto-set in "upstream" deployments if
+  # jarvice_license_manager.enabled is true (may still be modified as needed)
+  #JARVICE_LICENSE_MANAGER_URL: # "https://jarvice-license-manager.my-domain.com"
+  #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
+  #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
 
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
@@ -361,6 +379,12 @@ gke = {
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
 
+  # JARVICE_LICENSE_MANAGER_URL is auto-set in "upstream" deployments if
+  # jarvice_license_manager.enabled is true (may still be modified as needed)
+  #JARVICE_LICENSE_MANAGER_URL: # "https://jarvice-license-manager.my-domain.com"
+  #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
+  #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
+
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
   #JARVICE_MAIL_PASSWORD: # "Pass1234"
@@ -369,10 +393,10 @@ gke = {
   #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 
+# Uses "user:password" pair set in jarvice.JARVICE_LICENSE_MANAGER_KEY
 #jarvice_license_manager: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   #enabled: false
   #env:
-  #  JARVICE_LICENSE_MANAGER_KEY: # "jarvice-license-manager:Pass1234"
   #  JARVICE_HOSTALIASES: # '[ {"ip": "10.20.0.1", "hostnames": ["hostname-1a"]}, {"ip": "10.20.0.2", "hostnames": ["hostname-2a", "hostname-2b"]} ]'
   #  JARVICE_LMSTAT_INTERVAL: 60
   #  JARVICE_S3_BUCKET:
@@ -472,6 +496,12 @@ jarvice:
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
 
+  # JARVICE_LICENSE_MANAGER_URL is auto-set in "upstream" deployments if
+  # jarvice_license_manager.enabled is true (may still be modified as needed)
+  #JARVICE_LICENSE_MANAGER_URL: # "https://jarvice-license-manager.my-domain.com"
+  #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
+  #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
+
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
   #JARVICE_MAIL_PASSWORD: # "Pass1234"
@@ -568,6 +598,12 @@ eks = {
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
 
+  # JARVICE_LICENSE_MANAGER_URL is auto-set in "upstream" deployments if
+  # jarvice_license_manager.enabled is true (may still be modified as needed)
+  #JARVICE_LICENSE_MANAGER_URL: # "https://jarvice-license-manager.my-domain.com"
+  #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
+  #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
+
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
   #JARVICE_MAIL_PASSWORD: # "Pass1234"
@@ -576,10 +612,10 @@ eks = {
   #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 
+# Uses "user:password" pair set in jarvice.JARVICE_LICENSE_MANAGER_KEY
 #jarvice_license_manager: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   #enabled: false
   #env:
-  #  JARVICE_LICENSE_MANAGER_KEY: # "jarvice-license-manager:Pass1234"
   #  JARVICE_HOSTALIASES: # '[ {"ip": "10.20.0.1", "hostnames": ["hostname-1a"]}, {"ip": "10.20.0.2", "hostnames": ["hostname-2a", "hostname-2b"]} ]'
   #  JARVICE_LMSTAT_INTERVAL: 60
   #  JARVICE_S3_BUCKET:
@@ -667,6 +703,12 @@ jarvice:
   #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
+
+  # JARVICE_LICENSE_MANAGER_URL is auto-set in "upstream" deployments if
+  # jarvice_license_manager.enabled is true (may still be modified as needed)
+  #JARVICE_LICENSE_MANAGER_URL: # "https://jarvice-license-manager.my-domain.com"
+  #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
+  #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
 
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
@@ -763,6 +805,12 @@ aks = {
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
 
+  # JARVICE_LICENSE_MANAGER_URL is auto-set in "upstream" deployments if
+  # jarvice_license_manager.enabled is true (may still be modified as needed)
+  #JARVICE_LICENSE_MANAGER_URL: # "https://jarvice-license-manager.my-domain.com"
+  #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
+  #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
+
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
   #JARVICE_MAIL_PASSWORD: # "Pass1234"
@@ -771,10 +819,10 @@ aks = {
   #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 
+# Uses "user:password" pair set in jarvice.JARVICE_LICENSE_MANAGER_KEY
 #jarvice_license_manager: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   #enabled: false
   #env:
-  #  JARVICE_LICENSE_MANAGER_KEY: # "jarvice-license-manager:Pass1234"
   #  JARVICE_HOSTALIASES: # '[ {"ip": "10.20.0.1", "hostnames": ["hostname-1a"]}, {"ip": "10.20.0.2", "hostnames": ["hostname-2a", "hostname-2b"]} ]'
   #  JARVICE_LMSTAT_INTERVAL: 60
   #  JARVICE_S3_BUCKET:
@@ -861,6 +909,12 @@ jarvice:
   #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
+
+  # JARVICE_LICENSE_MANAGER_URL is auto-set in "upstream" deployments if
+  # jarvice_license_manager.enabled is true (may still be modified as needed)
+  #JARVICE_LICENSE_MANAGER_URL: # "https://jarvice-license-manager.my-domain.com"
+  #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
+  #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
 
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
