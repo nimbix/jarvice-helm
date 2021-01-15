@@ -67,6 +67,7 @@ jarvice:
   JARVICE_SCHED_LOGLEVEL: 30
   JARVICE_K8S_SCHED_LOGLEVEL: 30
   JARVICE_API_LOGLEVEL: 30
+  JARVICE_LICENSE_MANAGER_LOGLEVEL: 10
 
   JARVICE_MAIL_SERVER: jarvice-smtpd:25
   JARVICE_MAIL_USERNAME: # "mail-username"
@@ -599,6 +600,44 @@ jarvice_pod_scheduler:
   nodeSelector: # '{"node-role.jarvice.io/jarvice-pod-scheduler": "true"}'
   env:
     JARVICE_POD_SCHED_NAME:  # auto-set, should not need to be updated
+
+# jarvice-license-manager runs on amd64 nodes only. In a multi-arch cluster, it
+# may be necessary to set tolerations, nodeAffinity, and/or nodeSelector.
+# Also, create/update jarvice-license-manager ConfigMap w/ servers.json data
+jarvice_license_manager: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  enabled: false
+  loadBalancerIP:
+  ingressHost: # jarvice-license-manager.my-domain.com
+  ingressPath: "/"  # Valid values are "/" (default) or "/license-manager"
+  resources:
+    limits:
+      cpu: 1
+      memory: 2Gi
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 30
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 60
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+  tolerations: # '[{"key": "node-role.jarvice.io/jarvice-license-manager", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-license-manager", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64"]}]}] }}'  # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-license-manager", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64"]}]}] }}'
+  nodeSelector: # '{"kubernetes.io/arch": "amd64"}'  # '{"node-role.jarvice.io/jarvice-license-manager": "true", "kubernetes.io/arch": "amd64"}'
+  networkPolicy:
+    enabled: # Inherits from jarvice.networkPolicy.enabled if unset
+  env:
+    JARVICE_LICENSE_MANAGER_KEY: # "jarvice-license-manager:Pass1234"
+    JARVICE_HOSTALIASES: # '[ {"ip": "10.20.0.1", "hostnames": ["hostname-1a"]}, {"ip": "10.20.0.2", "hostnames": ["hostname-2a", "hostname-2b"]} ]'
+    JARVICE_LMSTAT_INTERVAL: 60
+    JARVICE_S3_BUCKET:
+    JARVICE_S3_ACCESSKEY:
+    JARVICE_S3_SECRETKEY:
+    JARVICE_S3_ENDPOINTURL: # https://s3.my-domain.com
 
 jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true

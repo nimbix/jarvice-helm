@@ -1,0 +1,248 @@
+{{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
+{{- if .Values.jarvice_license_manager.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jarvice-license-manager
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-license-manager
+    deployment: jarvice-license-manager
+    jarvice-system: core
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment: jarvice-license-manager
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-license-manager
+        deployment: jarvice-license-manager
+        jarvice-system: core
+      annotations:
+        deployment-date: {{ now | quote }}
+    spec:
+      serviceAccountName: jarvice-system
+{{- if (not (empty .Values.jarvice_license_manager.tolerations)) }}
+      tolerations: {{ .Values.jarvice_license_manager.tolerations }}
+{{- else if (not (empty .Values.jarvice.tolerations)) }}
+      tolerations: {{ .Values.jarvice.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice_license_manager.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice_license_manager.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.nodeSelector }}
+{{- end }}
+{{- if (not (empty .Values.jarvice_license_manager.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice_license_manager.nodeAffinity }}
+{{- else if (not (empty .Values.jarvice.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.nodeAffinity }}
+{{- end }}
+      imagePullSecrets:
+      - name: jarvice-docker
+      volumes:
+        - name: jarvice-etc
+          configMap:
+            name: jarvice-license-manager
+            optional: true
+{{- if (not (empty .Values.jarvice_license_manager.env.JARVICE_HOSTALIASES)) }}
+      hostAliases: {{ .Values.jarvice_license_manager.env.JARVICE_HOSTALIASES }}
+{{- end }}
+      containers:
+      - name: jarvice-license-manager
+        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-license-manager:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+{{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
+        imagePullPolicy: Always
+{{- else }}
+        imagePullPolicy: IfNotPresent
+{{- end }}
+        ports:
+          - name: http
+            containerPort: 8080
+        readinessProbe:
+          httpGet:
+            scheme: HTTP
+            port: http
+            path: /ready
+          initialDelaySeconds: {{ .Values.jarvice_license_manager.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jarvice_license_manager.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jarvice_license_manager.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_license_manager.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_license_manager.readinessProbe.failureThreshold }}
+        livenessProbe:
+          httpGet:
+            scheme: HTTP
+            port: http
+            path: /live
+          initialDelaySeconds: {{ .Values.jarvice_license_manager.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jarvice_license_manager.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jarvice_license_manager.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_license_manager.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_license_manager.livenessProbe.failureThreshold }}
+        env:
+          - name: JARVICE_SYSTEM_K8S
+{{- if empty .Values.jarvice.JARVICE_SYSTEM_K8S }}
+            value: "true"
+{{- else }}
+            value: "{{ .Values.jarvice.JARVICE_SYSTEM_K8S }}"
+{{- end }}
+          - name: JARVICE_EXPERIMENTAL
+{{- if empty .Values.jarvice.JARVICE_EXPERIMENTAL }}
+            value: "false"
+{{- else }}
+            value: "{{ .Values.jarvice.JARVICE_EXPERIMENTAL }}"
+{{- end }}
+          - name: JARVICE_DAL_URL
+{{- if (not (empty .Values.jarvice_license_manager.env.JARVICE_DAL_URL)) }}
+            value: "{{ .Values.jarvice_license_manager.env.JARVICE_DAL_URL }}"
+{{- else }}
+            value: "http://jarvice-dal:8080"
+{{- end }}
+          - name: JARVICE_SYSTEM_NAMESPACE
+{{- if empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+            value: {{ .Release.Namespace }}
+{{- else }}
+            value: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+{{- end }}
+          - name: JARVICE_LICENSE_MANAGER_LOGLEVEL
+            value: "{{ .Values.jarvice.JARVICE_LICENSE_MANAGER_LOGLEVEL }}"
+{{- if (not (empty .Values.jarvice_license_manager.env.JARVICE_LICENSE_MANAGER_KEY)) }}
+          - name: JARVICE_LICENSE_MANAGER_KEY
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-license-manager
+                key: JARVICE_LICENSE_MANAGER_KEY
+{{- end }}
+{{- if (not (empty .Values.jarvice_license_manager.env.JARVICE_LMSTAT_INTERVAL)) }}
+          - name: JARVICE_LMSTAT_INTERVAL
+            value: "{{ .Values.jarvice_license_manager.env.JARVICE_LMSTAT_INTERVAL }}"
+{{- end }}
+{{- if (not (empty .Values.jarvice_license_manager.env.JARVICE_S3_BUCKET)) }}
+          - name: JARVICE_S3_BUCKET
+            value: "{{ .Values.jarvice_license_manager.env.JARVICE_S3_BUCKET }}"
+{{- end }}
+{{- if (not (empty .Values.jarvice_license_manager.env.JARVICE_S3_ACCESSKEY)) }}
+          - name: JARVICE_S3_ACCESSKEY
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-license-manager
+                key: JARVICE_S3_ACCESSKEY
+{{- end }}
+{{- if (not (empty .Values.jarvice_license_manager.env.JARVICE_S3_SECRETKEY)) }}
+          - name: JARVICE_S3_SECRETKEY
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-license-manager
+                key: JARVICE_S3_SECRETKEY
+{{- end }}
+{{- if (not (empty .Values.jarvice_license_manager.env.JARVICE_S3_ENDPOINTURL)) }}
+          - name: JARVICE_S3_ENDPOINTURL
+            value: "{{ .Values.jarvice_license_manager.env.JARVICE_S3_ENDPOINTURL }}"
+{{- end }}
+        volumeMounts:
+        - name: jarvice-etc
+          mountPath: /jarvice/etc
+          readOnly: true
+        resources:
+{{- if .Values.jarvice_license_manager.resources }}
+{{ toYaml .Values.jarvice_license_manager.resources | indent 10 }}
+{{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-license-manager
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-license-manager
+spec:
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+    name: http
+  selector:
+    deployment: jarvice-license-manager
+---
+{{- if or .Values.jarvice_license_manager.networkPolicy.enabled (and (eq "<nil>" (toString .Values.jarvice_license_manager.networkPolicy.enabled)) .Values.jarvice.networkPolicy.enabled) }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: jarvice-license-manager
+spec:
+  podSelector:
+    matchLabels:
+      deployment: jarvice-license-manager
+  policyTypes:
+  - Ingress
+  ingress:
+{{- if (empty .Values.jarvice_license_manager.ingressHost) }}
+  - {}
+{{- else }}
+  - from:
+    - namespaceSelector: {}
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 8080
+{{- end }}
+---
+{{- end }}
+{{- if (empty .Values.jarvice_license_manager.ingressHost) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-license-manager-lb
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-license-manager
+spec:
+  type: LoadBalancer
+  loadBalancerIP: {{ .Values.jarvice_license_manager.loadBalancerIP }}
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+    name: http
+  selector:
+    deployment: jarvice-license-manager
+---
+{{- else }}
+apiVersion: {{ template "apiVersion.ingress" . }}
+kind: Ingress
+metadata:
+  name: jarvice-license-manager
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-license-manager
+spec:
+  rules:
+  - http:
+      paths:
+{{- if (eq "/license-manager" .Values.jarvice_license_manager.ingressPath) }}
+      - backend:
+          serviceName: jarvice-license-manager
+          servicePort: http
+        path: /license-manager
+{{- else }}
+      - backend:
+          serviceName: jarvice-license-manager
+          servicePort: http
+        path: /
+{{- end }}
+{{- if ne "-" .Values.jarvice_license_manager.ingressHost }}
+{{- if eq "lookup" .Values.jarvice_license_manager.ingressHost }}
+    host: '{{- (first (lookup "v1" "Service" .Values.jarvice_license_manager.ingressServiceNamespace .Values.jarvice_license_manager.ingressService).status.loadBalancer.ingress).hostname }}'
+{{- else }}
+    host: {{ .Values.jarvice_license_manager.ingressHost }}
+{{- end }}
+{{- end }}
+---
+{{- end }}
+{{- end }}
+{{- end }}

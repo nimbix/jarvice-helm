@@ -136,6 +136,23 @@ k8s = {
   #  fsGroup: 999
   #  runAsUser: 999
 
+# jarvice-license-manager runs on amd64 nodes only. In a multi-arch cluster, it
+# may be necessary to set tolerations, nodeAffinity, and/or nodeSelector.
+# Also, update/create jarvice-license-manager ConfigMap w/ servers.json data
+#jarvice_license_manager: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  #enabled: false
+  #loadBalancerIP:
+  #ingressHost: # jarvice-license-manager.my-domain.com
+  #ingressPath: "/"  # Valid values are "/" (default) or "/license-manager"
+  #env:
+  #  JARVICE_LICENSE_MANAGER_KEY: # "jarvice-license-manager:Pass1234"
+  #  JARVICE_HOSTALIASES: # '[ {"ip": "10.20.0.1", "hostnames": ["hostname-1a"]}, {"ip": "10.20.0.2", "hostnames": ["hostname-2a", "hostname-2b"]} ]'
+  #  JARVICE_LMSTAT_INTERVAL: 60
+  #  JARVICE_S3_BUCKET:
+  #  JARVICE_S3_ACCESSKEY:
+  #  JARVICE_S3_SECRETKEY:
+  #  JARVICE_S3_ENDPOINTURL: # https://s3.my-domain.com
+
 #jarvice_k8s_scheduler:
   # loadBalancerIP and ingressHost are only applicable when
   # jarvice.JARVICE_CLUSTER_TYPE is set to "downstream"
@@ -351,6 +368,17 @@ gke = {
   #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
+
+#jarvice_license_manager: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  #enabled: false
+  #env:
+  #  JARVICE_LICENSE_MANAGER_KEY: # "jarvice-license-manager:Pass1234"
+  #  JARVICE_HOSTALIASES: # '[ {"ip": "10.20.0.1", "hostnames": ["hostname-1a"]}, {"ip": "10.20.0.2", "hostnames": ["hostname-2a", "hostname-2b"]} ]'
+  #  JARVICE_LMSTAT_INTERVAL: 60
+  #  JARVICE_S3_BUCKET:
+  #  JARVICE_S3_ACCESSKEY:
+  #  JARVICE_S3_SECRETKEY:
+  #  JARVICE_S3_ENDPOINTURL: # https://s3.my-domain.com
 EOF
             }
         }
@@ -547,6 +575,17 @@ eks = {
   #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
+
+#jarvice_license_manager: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  #enabled: false
+  #env:
+  #  JARVICE_LICENSE_MANAGER_KEY: # "jarvice-license-manager:Pass1234"
+  #  JARVICE_HOSTALIASES: # '[ {"ip": "10.20.0.1", "hostnames": ["hostname-1a"]}, {"ip": "10.20.0.2", "hostnames": ["hostname-2a", "hostname-2b"]} ]'
+  #  JARVICE_LMSTAT_INTERVAL: 60
+  #  JARVICE_S3_BUCKET:
+  #  JARVICE_S3_ACCESSKEY:
+  #  JARVICE_S3_SECRETKEY:
+  #  JARVICE_S3_ENDPOINTURL: # https://s3.my-domain.com
 EOF
             }
         }
@@ -731,6 +770,17 @@ aks = {
   #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
+
+#jarvice_license_manager: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  #enabled: false
+  #env:
+  #  JARVICE_LICENSE_MANAGER_KEY: # "jarvice-license-manager:Pass1234"
+  #  JARVICE_HOSTALIASES: # '[ {"ip": "10.20.0.1", "hostnames": ["hostname-1a"]}, {"ip": "10.20.0.2", "hostnames": ["hostname-2a", "hostname-2b"]} ]'
+  #  JARVICE_LMSTAT_INTERVAL: 60
+  #  JARVICE_S3_BUCKET:
+  #  JARVICE_S3_ACCESSKEY:
+  #  JARVICE_S3_SECRETKEY:
+  #  JARVICE_S3_ENDPOINTURL: # https://s3.my-domain.com
 EOF
             }
         }
