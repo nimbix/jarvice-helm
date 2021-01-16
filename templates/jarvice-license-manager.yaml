@@ -11,6 +11,8 @@ metadata:
     jarvice-system: core
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       deployment: jarvice-license-manager
