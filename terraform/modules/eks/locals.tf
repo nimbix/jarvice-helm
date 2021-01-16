@@ -20,11 +20,11 @@ jarvice:
   JARVICE_JOBS_DOMAIN: "lookup/job$"
 
 jarvice_license_manager:
-  ingressPath: "/license-manager"
-  #ingressHost: {aws_eip.nat[0].public_dns}
-  ingressHost: "lookup"
-  ingressService: "traefik"
-  ingressServiceNamespace: "kube-system"
+  #ingressPath: "/license-manager"
+  ##ingressHost: {aws_eip.nat[0].public_dns}
+  #ingressHost: "lookup"
+  #ingressService: "traefik"
+  #ingressServiceNamespace: "kube-system"
   nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64"]}]}] }}'
 
 jarvice_api:

@@ -615,7 +615,6 @@ jarvice_license_manager: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: false
   loadBalancerIP:
   ingressHost: # jarvice-license-manager.my-domain.com
-  ingressPath: "/"  # Valid values are "/" (default) or "/license-manager"
   resources:
     limits:
       cpu: 1

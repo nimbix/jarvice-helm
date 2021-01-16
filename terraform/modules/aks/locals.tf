@@ -31,8 +31,8 @@ ${local.cluster_values_yaml}
 
 # AKS cluster upstream ingress related settings
 jarvice_license_manager:
-  ingressHost: ${azurerm_public_ip.jarvice.fqdn}
-  ingressPath: "/license-manager"
+  #ingressHost: ${azurerm_public_ip.jarvice.fqdn}
+  #ingressPath: "/license-manager"
   nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64"]}]}] }}'
 
 jarvice_api:

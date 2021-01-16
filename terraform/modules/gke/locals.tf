@@ -51,10 +51,10 @@ ${local.cluster_values_yaml}
 
 # GKE cluster upstream ingress related settings
 jarvice_license_manager:
-  ingressPath: "/license-manager"
-  ingressHost: "-"
-  ingressService: "traefik"
-  ingressServiceNamespace: "kube-system"
+  #ingressPath: "/license-manager"
+  #ingressHost: "-"
+  #ingressService: "traefik"
+  #ingressServiceNamespace: "kube-system"
   nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64"]}]}] }}'
 
 jarvice_api:

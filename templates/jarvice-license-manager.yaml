@@ -50,7 +50,7 @@ spec:
         - name: jarvice-etc
           configMap:
             name: jarvice-license-manager
-            optional: true
+            optional: false
 {{- if (not (empty .Values.jarvice_license_manager.env.JARVICE_HOSTALIASES)) }}
       hostAliases: {{ .Values.jarvice_license_manager.env.JARVICE_HOSTALIASES }}
 {{- end }}
@@ -226,11 +226,18 @@ spec:
   rules:
   - http:
       paths:
+{{- if (not (empty .Values.jarvice_license_manager.ingressPath)) }}
 {{- if (eq "/license-manager" .Values.jarvice_license_manager.ingressPath) }}
       - backend:
           serviceName: jarvice-license-manager
           servicePort: http
         path: /license-manager
+{{- else }}
+      - backend:
+          serviceName: jarvice-license-manager
+          servicePort: http
+        path: /
+{{- end }}
 {{- else }}
       - backend:
           serviceName: jarvice-license-manager

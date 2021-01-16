@@ -156,7 +156,6 @@ k8s = {
   #enabled: false
   #loadBalancerIP:
   #ingressHost: # jarvice-license-manager.my-domain.com
-  #ingressPath: "/"  # Valid values are "/" (default) or "/license-manager"
   #env:
   #  JARVICE_HOSTALIASES: # '[ {"ip": "10.20.0.1", "hostnames": ["hostname-1a"]}, {"ip": "10.20.0.2", "hostnames": ["hostname-2a", "hostname-2b"]} ]'
   #  JARVICE_LMSTAT_INTERVAL: 60
