@@ -11,8 +11,8 @@ terraform {
         aws = "~> 3.21.0"
         azurerm = "~> 2.41.0"
 
-        helm = "~> 1.3"
-        kubernetes = "~> 1.13"
+        helm = "~> 1.3.2"
+        kubernetes = "~> 1.13.3"
 
         null = "~> 3.0.0"
         local = "~> 2.0.0"
