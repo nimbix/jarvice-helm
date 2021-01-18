@@ -9,7 +9,7 @@ terraform {
         google = "~> 3.50.0"
         google-beta = "~> 3.50.0"
         aws = "~> 3.21.0"
-        azurerm = "~> 2.40"
+        azurerm = "~> 2.41.0"
 
         helm = "~> 1.3"
         kubernetes = "~> 1.13"
