@@ -99,6 +99,8 @@ To enable the service, set the Helm parameter `jarvice_license_manager.enabled` 
 * `jarvice_license_manager.JARVICE_S3_SECRETKEY` - set to S3 secret access key
 * `jarvice_license_manager.JARVICE_S3_ENDPOINTURL` - set to S3 endpoint URL, if not serving from AWS
 
+**NOTE:** `jarvice-license-manager` uses the FlexNet `lmutil` utility to query license servers.  This utility is not included in the `jarvice-license-manager` container itself and must be served using an alternate mechanism, such as S3 object storage, HTTP(s) service, or present on a file system within a derived container.  Please see [Best Practices, Anomalies, and Caveats](#best-practices-anomalies-and-caveats) for additional information on where to find application-specific `lmutil` binaries.
+
 ### On Downstream clusters only
 * `jarvice.JARVICE_LICENSE_MANAGER_URL` - should be set only in downstream clusters with the full URL to reach the license manager on the control plane.  Do not set on upstream deployments as the standard service URL will be used automatically within the control plane itself.
 * `jarvice.JARVICE_LICENSE_MANAGER_SSL_VERIFY` - set to `"true"` to verify SSL certificates, assuming secure Ingress.
