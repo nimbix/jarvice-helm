@@ -2,6 +2,8 @@
 
 A comprehensive mechanism for queuing jobs based on license token availability.
 
+## Contents
+
 * [Overview](#overview)
     * [Use Cases](#use-cases)
     * [Notable Features](#notable-features)
@@ -11,8 +13,13 @@ A comprehensive mechanism for queuing jobs based on license token availability.
     * [License Server Configuration](#license-server-configuration)
     * [Multi-cluster Configuration](#multi-cluster-configuration)
 * [API](#api)
+* [Usage](#usage)
+    * [Web Portal](#web-portal)
+    * [JARVICE API](#jarvice-api)
 * [Troubleshooting](#troubleshooting)
 * [Best Practices, Anomalies, and Caveats](#best-practices-anomalies-and-caveats)
+
+---
 
 ## Overview
 
@@ -67,6 +74,10 @@ While the `jarvice-license-manager` component itself is stateless and can be res
 * JARVICE cannot anticipate what actual license tokens will be checked out by a given solver with a given set of parameters.  This is why the reservation requests are user-initiated, and it's expected that end users understand what tokens their jobs will require.  If users do not specify any license reservation tokens at submission time, JARVICE does not attempt to apply queuing rules to those jobs.
 * The `jarvice-license-manager` component has an [API](#api) that can be used to inspect internal configuration as well as license token availability as reported by configured FlexNet servers.  Note that the API requires *Ingress* to be enabled so it can be accessed from outside the control plane.
 
+[Back to Contents](#contents)
+
+---
+
 ## Configuration
 
 `jarvice-license-manager` is an optional component that must be explicitly enabled in the Helm chart, and configured by Kubernetes *ConfigMap*.  Additional configuration details follow...
@@ -94,7 +105,8 @@ To enable the service, set the Helm parameter `jarvice_license_manager.enabled` 
 
 ### On both Upstream and Downstream clusters
 
-* `jarvice.JARVICE_LICENSE_MANAGER_KEY` - set to basic HTTP authentication token; can be set to `""` to disable authentication.  Note that the use of authentication is strongly recommended when Ingress is configured.
+* `jarvice.JARVICE_LICENSE_MANAGER_KEY` - set to basic HTTP authentication token; can be set to `""` to disable authentication, but must match on all upstream and downstream clusters in a deployment.  Note that the use of authentication is strongly recommended when Ingress is configured.
+* `jarvice.JARVICE_POD_SCHED_LICENSE_PRE` - set to `"true"` to attempt license reservations before queuing for infrastructure availability; default is `false`, meaning after infrastructure is available (see [Best Practices, Anomalies, and Caveats](#best-practices-anomalies-and-caveats) below); this value can be set differently for each downstream cluster in a deployment, as underlying infrastructure characteristics may vary.
 
 For additional configuration parameters, see the `jarvice_license_manager` section in [values.yaml](values.yaml)
 
@@ -161,7 +173,7 @@ The above configuration describes the following:
 
 #### Flex server host name resolution
 
-The Flex license server protocol requires a client to be able to reconnect to a host name that the license server thinks it's running on, which is usually specified in the license variable itself.  This needs to be resolvable from the client.  If the initial outbound address (`address` key) is an FQDN rather than an IP address, and `${HOSTALIASES}` is set, `jarvice-license-manager` will automatically create a host alias that resolves to the top-level license server name (e.g. `ansyslic1`).  The top-level name must match what the Flex server thinks its host name is.  If using an IP rather than an FQDN, the top-level license server name must be resolvable using either DNS or `/etc/hosts`.  If running the container directly with Docker, this can be done with the `--add-host` argument to `docker run`.  If running the container on Kubernetes, the pod spec YAML can specify `hostAliases` as described in [Adding entries to Pod /etc/hosts with HostAliases](https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/).
+The Flex license server protocol requires a client to be able to reconnect to a host name that the license server thinks it's running on, which is usually specified in the license variable itself.  This needs to be resolvable from the client.  If the initial outbound address (`address` key) is an FQDN rather than an IP address, `jarvice-license-manager` will automatically create a host alias to resolve the top-level license server name (e.g. `ansyslic1`) to this value.  The top-level name must match what the Flex server thinks its host name is.  If using an IP rather than an FQDN, the top-level license server name must be resolvable using either DNS or explicit value configured via `jarvice_license_manager.JARVICE_HOSTALIASES`, which is a JSON representation of Kubernetes Pod `hostAliases` as described in [Adding entries to Pod /etc/hosts with HostAliases](https://kubernetes.io/docs/concepts/services-networking/add-entries-to-pod-etc-hosts-with-host-aliases/).
 
 If you do not have access to the Flex license file itself to see the value of `SERVER`, you can determine this using an existing `lmutil` binary (usually supplied as an embedded componnet in a Flex-licensed application) as follows:
 
@@ -177,9 +189,13 @@ lmgrd is not running: License server machine is down or not responding. (-96,7:2
 ```
 Notice that the server answers and refers to itself as `1055@ansyslic1`, where `ansyslic1` is the server name.  This value must be used as the top-level key in the configuration file to define this license server, and must be resolvable from the `jarvice-license-manager` container.  During the stage of determining the server name, it is safe to ignore the error at the bottom.  Once resolvable, this command will provide successful status.
 
+[Back to Contents](#contents)
+
+---
+
 ## API
 
-`jarvice-license-manager` provides a web service API for control and status.  It supports both GET and POST methods.  The following endpoints are defined...
+`jarvice-license-manager` provides a web service API for control and status.  It supports both GET and POST methods.  All response payload formats are JSON format unless otherwise specified.  API access requires Ingress to be enabled for the license server, or some other manually configured externally-accessible Kubernetes service (e.g. `LoadBalancer` type).  The following endpoints are defined...
 
 ### /servers
 
@@ -207,11 +223,11 @@ Lists server configuration for a specific name/value pair (specified in *config*
 
 ### /reload
 
-Reloads `servers.json` configuration; note that a failure (e.g. all license server configurations invalid) will cause the web service to terminate; use this endpoint to reload after applying changes either directly to the file or via Kubernetes ConfigMap.  This endpoint also updates license counts for each configured server, even if performed outside the configured interval.
+Reloads `servers.json` configuration; note that a failure (e.g. all license server configurations invalid) will cause the web service to terminate; use this endpoint to reload after applying changes to the `jarvice-license-manager` Kubernetes ConfigMap.  This endpoint also updates license counts for each configured server, even if performed outside the configured interval.
 
 ### /update
 
-Updates license counts for all valid configured servers, even if called outside the configured interval.
+Updates license counts for all valid configured servers immediately, even if called outside the configured interval.
 
 ### /gc
 
@@ -222,7 +238,7 @@ Garbage collects expired reservations immediately, even if called outside the co
 Creates or updates reservations.  Parameters are as follows (GET or POST):
 
 * `rsvid` - reservation ID, must be globally unique; in JARVICE this will be a job number
-* `project` - optional project name to associate with reservation, used to calculate maximum available licenses
+* `project` - optional project name to associate with reservation, used to calculate maximum available licenses; note that the project name should contain the payer account prefix (`<payer>-<project>` format)
 * `kv` - key/value pair for the license server configuration (e.g. `ANSYS_LICENSE_SERVERS=192.168.30.101`) as a single string, or list of key/value pairs as serialized JSON; `jarvice-license-manager` will match the first one possible in order to find a configuration; note that some applications specify multiple license servers in variables, but only the first one can be used
 * `expiration` - expiration timeout, in seconds, for the reservation; 0 means the reservation never expires; -1 means it expires immediately and is valid only when updating an existing reservation.
 * `features` - comma-separated list of features expressed as *feature*:*count* - e.g. `spaceclaim:1`; multiple features may be specified
@@ -237,13 +253,78 @@ Returns 200 on success or HTTP error on failure - e.g. not enough licenses avail
 
 Liveness and Readiness endpoints - return 200 when the service is up.
 
+[Back to Contents](#contents)
+
+---
+
+## Usage
+
+License reservation requests are made as part of job submissions in either the web portal or JARVICE API's `/jarvice/submit` method.  Jobs that queue based on license availability will be labeled as such with an appropriate substatus, visible in red text in the portal's *Dashboard* view, as well as in the various system administrator views relating to job inspection (events, job details, etc.).  Kubernetes status and events are appropriate marked for each Pod in a given job when it queues based on licensing as well.
+
+### Web Portal
+
+To request license-based queuing for specific features, users should populate the *License Features* field in the *OPTIONAL* view of the task builder used to submit jobs, e.g.:
+
+![Example license feature request](portal-license-features.png)
+
+In the above example, 2 features are requested with varying counts, and the final `/60` indicates to hold the reservation for up to 60 seconds after the job starts.  60 is the default, but any positive integer (indicating seconds) can be used.  The example feature request can also be specified as `cfd_base:1,anshpc_pack:2` since the default reservation timeout is used.  Note that any number of features may be specified in the comma-separated list, and each item can be either a pseudo-feature defined for the cluster (see [License Server Configuration](#license-server-configuration]) above), or an actual licensed feature.  The number after the colon (`:`) for each feature is the count to queue on for that particular feature, and must be specified.
+
+### JARVICE API
+
+License feature requests can be specified with the `licenses` key in the job submission JSON of the `/jarvice/submit` endpoint, e.g.:
+
+```json
+{
+    "app": "ansys-fluids2020r2",
+    "staging": false,
+    "checkedout": false,
+    "application": {
+        "command": "fluent-batch",
+        "geometry": "1342x768",
+        "parameters": {
+            "-v": "3ddp",
+            "-i": "test.jou",
+            "-mpi": "intel",
+            "version": "202",
+            "-u": false
+        }
+    },
+    "machine": {
+        "type": "n3",
+        "nodes": 2
+    },
+    "vault": {
+        "name": "projects2",
+        "readonly": false,
+        "force": false
+    },
+    "licenses": "cfd_base:1,anshpc_pack:2/60",
+...
+```
+
+(The above API example mirrors the Web Portal example above.)
+
+[Back to Contents](#contents)
+
+---
+
 ## Troubleshooting
 
 All errors are logged, and in DEBUG mode (log level 10), large amounts of internal information is exposed.  Most error messages will be self explanatory.  Note that invalid license server configurations result in that configuration being eliminated from consideration rather than outright failure, unless no valid configurations are left.
 
-In all cases the output of `jarvice-license-server`, in log level 10, is the suggested troubleshooting route.
+In all cases the output of `jarvice-license-server`, in log level 10, is the suggested troubleshooting route.  This value can be set via the `jarvice.JARVICE_LICENSE_MANAGER_LOGLEVEL` variable.  The recommended production value is `20` (INFO).
+
+[Back to Contents](#contents)
+
+---
 
 ## Best Practices, Anomalies, and Caveats
-1. Because of the level of visibility and control the API provides, it is recommended that it not be exposed to non-system services; if deploying in Kubernetes, *NetworkPolicy* should be used to restrict it to the control plane only.  Alternatively, a basic auth token should be configured via `${JARVICE_LICENSE_MANAGER_KEY`}`.
-2. In a multi-cluster configuration, this service will need to be reachable from downstream cluster system services (e.g. `jarvice-pod-scheduler` and `jarvice-k8s-scheduler`); in this case *NetworkPolicy* may not be effective and basic auth may have to be used; also consider placing behind HTTPS *Ingress* if exposing on public networks.
-3. Reservations are persistent; `jarvice-license-manager` restarts will not cause problems other than temporarily being unable to create or update reservations.
+1. In a multi-cloud/multi-cluster configuration, the license manager service must be exposed via Ingress (or some other service type to make it available from downstream clusters, such as `LoadBalancer`); it is strongly recommended that an HTTP basic authentication token is set in this case, to avoid unauthorized use, via the `jarvice.JARVICE_LICENSE_MANAGER_KEY` setting.
+2. Reservations are persistent; `jarvice-license-manager` restarts will not cause problems other than temporarily being unable to create or update reservations.  The most immediate consequence of a service restart is that jobs queuing on license availability will continue to queue until the `jarvice-license-manager` service starts responding again.
+3. Use the value of `jarvice.JARVICE_POD_SCHED_LICENSE_PRE` wisely depending on cluster characteristics; in an auto-scaling cluster it may be desirable to set to `"true"` in order to avoid costly scale-up until licenses are actually available.  In a fixed cluster, the tradeoff is between licenses being reserved potentially for too long a time (if set to `"true"`) due to lack of infrastructure availability, or not available once the infrastructure becomes available and other jobs running first instead (if set to `"false"`, its default value).
+4. The scheduling algorithm is linear and jobs don't return to prior states once they progress; the progression is advisory limits enforcement, then released to the general queue to wait on license features or infrastructure (order depends on setting described above); therefore account limits take precedence over all conditions, including license availability.  Once a job progresses to the general queue, it will count against account limits even if it continues to queue for either license features or infrastructure.
+5. While the `jarvice-license-manager` service is technically multi-architecture capable, the default configuration selects nodes of the `amd64` (`x86_64`) architecture only; this is to remain compatible with the site-supplied FlexNet `lmutil` binaries that must be executed to query the configured license servers.
+6. Commercial ISVs (Independent Software Vendors) typically package FlexNet `lmutil` binaries along with their installations as they are commonly used for troubleshooting.  Please consult the respective documentation or contact the vendor directly for details if you are not sure where to find the `lmutil` binary.  Note that different applications use different versions of this binary, which is why each configuration for `jarvice-license-manager` supports its own specific `lmutil` binary.
+
+[Back to Contents](#contents)
+
