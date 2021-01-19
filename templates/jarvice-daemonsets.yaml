@@ -1,3 +1,8 @@
+{{- $daemonSetsNamespace := printf "%s-daemonsets" .Release.Namespace -}}
+{{- if (not (empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE)) }}
+{{- $daemonSetsNamespace = .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE -}}
+{{- end }}
+{{- $daemonSetsItems := (lookup "apps/v1" "DaemonSet" "" "").items -}}
 {{- if or .Values.jarvice.daemonsets.cache_pull.enabled .Values.jarvice.daemonsets.lxcfs.enabled .Values.jarvice.daemonsets.nvidia.enabled .Values.jarvice.daemonsets.rdma.enabled .Values.jarvice.daemonsets.node_init.enabled .Values.jarvice.daemonsets.disable_hyper_threading.enabled .Values.jarvice.daemonsets.dri_optional.enabled .Values.jarvice.daemonsets.nvidia_install.enabled .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.enabled }}
 apiVersion: {{ template "apiVersion.priorityClass" . }}
 kind: PriorityClass
@@ -98,11 +103,7 @@ spec:
       priorityClassName: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
 {{- end }}
 ---
-{{- $cachePullNamespace := printf "%s-daemonsets" .Release.Namespace -}}
-{{- if (not (empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE)) }}
-{{- $cachePullNamespace = .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE -}}
-{{- end }}
-{{- if (not (lookup "v1" "ConfigMap" $cachePullNamespace "jarvice-cache-pull").metadata) }}
+{{- if (not (lookup "v1" "ConfigMap" $daemonSetsNamespace "jarvice-cache-pull").metadata) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -465,6 +466,13 @@ spec:
 ---
 {{- end }}
 {{- if .Values.jarvice.daemonsets.dri_optional.enabled }}
+{{- $driPreviouslyInstalled := false }}
+{{- range $index, $service := $daemonSetsItems }}
+{{- if and (eq $service.metadata.name "jarvice-dri-optional-device-plugin") (not (eq $service.metadata.namespace $daemonSetsNamespace)) }}
+{{- $driPreviouslyInstalled = true }}
+{{- end }}
+{{- end }}
+{{- if (not ($driPreviouslyInstalled)) }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -536,6 +544,7 @@ spec:
       priorityClassName: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
 {{- end }}
 ---
+{{- end }}
 {{- end }}
 {{- if .Values.jarvice.daemonsets.disable_hyper_threading.enabled }}
 apiVersion: apps/v1
@@ -743,6 +752,13 @@ spec:
 ---
 {{- end }}
 {{- if .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.enabled }}
+{{- $flexPreviouslyInstalled := false }}
+{{- range $index, $service := $daemonSetsItems }}
+{{- if and (eq $service.metadata.name "jarvice-flex-volume-plugin-nfs-nolock-install") (not (eq $service.metadata.namespace $daemonSetsNamespace)) }}
+{{- $flexPreviouslyInstalled = true }}
+{{- end }}
+{{- end }}
+{{- if (not ($flexPreviouslyInstalled)) }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -809,4 +825,5 @@ spec:
       priorityClassName: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
 {{- end }}
 ---
+{{- end }}
 {{- end }}
