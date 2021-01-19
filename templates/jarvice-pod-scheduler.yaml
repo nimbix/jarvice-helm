@@ -96,6 +96,12 @@ spec:
 {{- end }}
           - name: JARVICE_POD_SCHED_LOGLEVEL
             value: "{{ .Values.jarvice.JARVICE_POD_SCHED_LOGLEVEL }}"
+          - name: JARVICE_POD_SCHED_LICENSE_PRE
+{{- if (not (empty .Values.jarvice.JARVICE_POD_SCHED_LICENSE_PRE)) }}
+            value: "{{ .Values.jarvice.JARVICE_POD_SCHED_LICENSE_PRE }}"
+{{- else }}
+            value: "false"
+{{- end }}
           - name: JARVICE_POD_SCHED_MULTIPLIERS
             value: '{{ .Values.jarvice.JARVICE_POD_SCHED_MULTIPLIERS }}'
           - name: JARVICE_JOBS_MULTI_TENANT
