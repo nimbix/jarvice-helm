@@ -299,8 +299,14 @@ License feature requests can be specified with the `licenses` key in the job sub
         "force": false
     },
     "licenses": "cfd_base:1,anshpc_pack:2/60",
-...
+    "user": {
+        "username": "not shown",
+        "apikey": "not shown"
+    }
+}
 ```
+
+
 
 (The above API example mirrors the Web Portal example above.)
 
