@@ -300,8 +300,8 @@ License feature requests can be specified with the `licenses` key in the job sub
     },
     "licenses": "cfd_base:1,anshpc_pack:2/60",
     "user": {
-        "username": "not shown",
-        "apikey": "not shown"
+        "username": "<<not-shown>>",
+        "apikey": "<<not-shown>>"
     }
 }
 ```
@@ -309,6 +309,8 @@ License feature requests can be specified with the `licenses` key in the job sub
 
 
 (The above API example mirrors the Web Portal example above.)
+
+For additional details, see [/jarvice/submit in the JARVICE API](https://jarvice.readthedocs.io/en/latest/api/#jarvicesubmit).
 
 [Back to Contents](#contents)
 
