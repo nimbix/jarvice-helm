@@ -24,14 +24,15 @@ $ git clone https://github.com/nimbix/jarvice-helm.git
 * [Installation Recommendations](#installation-recommendations)
     - [Kubernetes Cluster Shaping](#kubernetes-cluster-shaping)
         - [Node labels and selectors](#node-labels-and-selectors)
-        - [Node labels for jarvice-dockerbuild and jarvice-dockerpull](#node-labels-for-jarvice-dockerbuild-and-jarvice-dockerpull)
+        - [Node label for jarvice-dockerbuild](#node-label-for-jarvice-dockerbuild)
         - [Utilizing jarvice-compute labels](#utilizing-jarvice-compute-labels)
         - [Node taints and pod tolerations](#node-taints-and-pod-tolerations)
         - [jarvice-compute taints and pod tolerations](#jarvice-compute-taints-and-pod-tolerations)
 * [JARVICE Quick Installation (Demo without persistence)](#jarvice-quick-installation-demo-without-persistence)
+    - [Find the latest JARVICE helm chart release version](#find-the-latest-jarvice-helm-chart-release-version)
     - [Code repository of the JARVICE helm chart](#code-repository-of-the-jarvice-helm-chart)
     - [Quick install command with helm](#quick-install-command-with-helm)
-    - [Quick install to Amazon EKS or Google GKE](#quick-install-to-amazon-eks-or-google-gke)
+    - [Deployment to managed kubernetes services with `terraform`](#deployment-to-managed-kubernetes-services-with-terraform)
 * [JARVICE Standard Installation](#jarvice-standard-installation)
     - [Persistent volumes](#persistent-volumes)
     - [Selecting external, load balancer IP addresses](#selecting-external-load-balancer-ip-addresses)
@@ -40,7 +41,7 @@ $ git clone https://github.com/nimbix/jarvice-helm.git
         - [JARVICE helm deployment script](#jarvice-helm-deployment-script)
     - [Updating configuration (or upgrading to newer JARVICE chart version)](#updating-configuration-or-upgrading-to-newer-jarvice-chart-version)
     - [Non-JARVICE specific services](#non-jarvice-specific-services)
-        - [MySQL database (jarvice-db)](#mysql-database-jarvice-db)
+        - [MariaDB database (jarvice-db)](#mariadb-database-jarvice-db)
         - [Memcached (jarvice-memcached)](#memcached-jarvice-memcached)
         - [Docker registry (jarvice-registry)](#docker-registry-jarvice-registry)
 * [JARVICE Downstream Installation](#jarvice-downstream-installation)
@@ -73,7 +74,7 @@ more information.
 Deploying JARVICE requires that the `kubectl` executable be installed on a
 client machine which has access to a kubernetes cluster.
 The `install-kubectl` shell script included in the `scripts`
-directory of this helm chart can be used to install `kubectl`.
+directory of this git repository can be used to install `kubectl`.
 Simply execute `./scripts/install-kubectl` to do so.
 
 If the script does not support the client machine's operating system,
@@ -85,62 +86,25 @@ https://kubernetes.io/docs/tasks/tools/install-kubectl/
 Deploying JARVICE requires that the `helm` executable be installed on a
 client machine which has access to a kubernetes cluster.
 The `install-helm` shell script included in the `scripts`
-directory of this helm chart can be used to install `helm`.
+directory of this git repository can be used to install `helm`.
 Simply execute `./scripts/install-helm` to do so.
 
 If the script does not support the client machine's operating system,
 specific operating system instructions can be found here:
 https://github.com/helm/helm/releases
 
-**Note:** The JARVICE helm chart requires helm version 3.2.0 or newer.
-
-#### Add `stable` helm chart repository
-
-If `helm` was previously installed (without `install-helm`), it may be
-necessary to initialize and update the stable helm chart repository with the
-following commands:
-```bash
-$ helm repo add stable https://kubernetes-charts.storage.googleapis.com/
-$ helm repo update
-```
-
 Please see the Helm Quickstart Guide for more details:
 https://helm.sh/docs/intro/quickstart/
 
-**NOTE:**  This documentation assumes that Helm version 3.0 or newer is being
-used with the kubernetes cluster.  Older versions of Helm can be used, but the
-`helm` command examples documented here assume that Helm v3 is installed.
-If an older version of Helm was previously being used with the target
-kubernetes cluster, migration to Helm v3 is highly recommended:
-https://helm.sh/blog/migrate-from-helm-v2-to-helm-v3/
-
-<!--  Comment: helm repo not yet enabled
-After helm is installed, add the `jarvice-master` chart repository:
-```bash
-$ helm repo add jarvice-master https://repo.nimbix.net/charts/jarvice-master
-```
-
-To confirm that the chart repository was properly added, execute the following
-set of commands:
-```bash
-$ helm repo list
-$ helm repo update
-$ helm search jarvice
-```
-
-The `update` command will make sure that the helm installation has access to
-all of the latest JARVICE updates.  It will also need to be run before doing
-future JARVICE upgrades.
-The `search` command will output the latest available version of JARVICE:
-```bash
-NAME                   	CHART VERSION         	APP VERSION	DESCRIPTION
-jarvice-master/jarvice 	2.0.18-1.20190105.2358	2.0.18     	JARVICE cloud platform
-```
--->
+**Note:** The JARVICE helm chart requires helm version 3.2.0 or newer.
 
 ### Configure kubernetes CPU management policies
 
-**WARNING:** `static` CPU policy, at the time of this writing, is known to interfere with NVIDIA GPU operations in the container environment.  While this setting can be used to more accurately implement "Guaranteed" QoS for fractional node CPU allocation, **it may not be stable enough for many usecases!**
+**WARNING:** `static` CPU policy, at the time of this writing, is known to
+interfere with NVIDIA GPU operations in the container environment.  While
+this setting can be used to more accurately implement "Guaranteed" QoS for
+fractional node CPU allocation,
+**it may not be stable enough for many usecases!**
 
 If appropriate, `static` CPU policy can be set with the arguments given to a worker node's kublet on startup.  
 
@@ -196,17 +160,6 @@ If your cluster does not already have a load balancer deployed, see the
 section of the
 [Kubernetes Cluster Installation](KubernetesInstall.md) documentation.
 
-<!--
-However, if a more complex configuration is needed for your cluster,
-it will be necessary to adjust the script or execute `helm` manually.
-Please visit the MetalLB web site (https://metallb.universe.tf/) and/or
-execute the following to get more details on MetalLB configuration and
-installation:
-```bash
-$ helm inspect all stable/metallb
-```
--->
-
 ### Kubernetes ingress controller
 
 An ingress controller is required for making the JARVICE services and jobs
@@ -227,19 +180,12 @@ Please visit https://github.com/helm/charts/tree/master/stable/traefik and/or
 execute the following to get more details on Traefik configuration and
 installation via helm:
 ```bash
-$ helm inspect all stable/traefik
+$ helm inspect all traefik --repo https://charts.helm.sh/stable
 ```
 
-<!--
-There are a few things to note when installing Traefik for JARVICE.  In
-particular, the default resource setting for the helm chart are not sufficient
-for use with JARVICE.  If deploying Traefik with `helm` manually,
-it will be necessary to adjust the number of pod
-replicas, cpu, and memory settings per site specifications.
--->
-
-**Note:** It will be necessary to have a valid `loadBalancerIP` or `externalIP`
-which is accessible via DNS lookups.  The site domain's DNS settings will need
+**Note:** If not using a `NodePort` service for `traefik`, it will be
+necessary to have a valid `loadBalancerIP` which is accessible via DNS
+lookups.  In that case, the site domain's DNS settings will need
 to allow wildcard lookups so that the ingress controller can use random host
 names for routing JARVICE jobs.  A JARVICE job hostname will look similar to
 `jarvice-system-jobs-80.<domain>`.
@@ -257,13 +203,12 @@ to install the NVIDIA device plugin and it's
 [prerequisites](https://github.com/NVIDIA/k8s-device-plugin#prerequisites)
 in order for JARVICE to make use of them.
 
-This helm chart includes a script which will install and configure all of the
-device plugin
-[prerequisites](https://github.com/NVIDIA/k8s-device-plugin#prerequisites) on
-kubernetes worker nodes running Ubuntu or CentOS/RHEL distributions.  It can
-be run directly with the following command line:
+This helm chart includes a DaemonSet which can be used to install and
+configure the NVIDIA dervice driver and it's prerequisites.
+In order to enable the NVIDIA installation DaemonSet provided in this helm
+chart, add the following `--set` flag to the helm install/upgrade command:
 ```bash
-$ curl https://raw.githubusercontent.com/nimbix/jarvice-helm/master/scripts/nvidia-docker-install | bash
+--set jarvice.daemonsets.nvidia_install.enabled="true"
 ```
 
 In order to enable the NVIDIA device plugin DaemonSet provided in this helm
@@ -272,7 +217,7 @@ chart, add the following `--set` flag to the helm install/upgrade command:
 --set jarvice.daemonsets.nvidia.enabled="true"
 ```
 
-For further details on the NVIDIA device plugin itself,
+For further details on the NVIDIA device plugin,
 please see the following link:
 https://github.com/NVIDIA/k8s-device-plugin
 
@@ -292,7 +237,7 @@ https://github.com/nimbix/k8s-rdma-device-plugin
 
 ### Kubernetes persistent volumes (for non-demo installation)
 
-For those sites that do not wish to separately install/maintain a MySQL
+For those sites that do not wish to separately install/maintain a MariaDB
 database and docker registry, this helm chart provides installations for them
 via the `jarvice-db` and `jarvice-registry` deployments/services.  If you wish
 to use `jarvice-db` and `jarvice-registry` as is provided from this helm chart,
@@ -320,74 +265,6 @@ See the commands below for more detail on how to set and use these values.
 ------------------------------------------------------------------------------
 
 ## Installation Recommendations
-
-<!--
-### kubernetes-dashboard
-
-While not required, to ease the monitoring of JARVICE in the kubernetes
-cluster, it is recommended that the `kubernetes-dashboard` be installed into
-the cluster.
-
-To quickly install the dashboard, issue the following command:
-```bash
-$ helm install --namespace kube-system \
-    --name kubernetes-dashboard stable/kubernetes-dashboard
-```
-
-Please execute the following to get more details on dashboard configuration and
-installation:
-```bash
-$ helm inspect all stable/kubernetes-dashboard
-```
-
-After the dashboard is installed, it may be desirable to bind the
-`kubernetes-dashboard` service account to the `cluster-admin` role so that it
-can access the necessary kubernetes cluster components.  The
-`kubernetes-dashboard-crb.yaml` file can be used for this.  Modify as necessary
-for your cluster and issue the following commands:
-```bash
-$ kubectl --namespace kube-system create -f jarvice-helm/extra/kubernetes-dashboard-crb.yaml
-```
-
-Please be aware the default configuration as provided in
-`kubernetes-dashboard-crb.yaml` will allow users to select `SKIP` from the
-dashboard's login page.  If this is not desired, modify
-`kubernetes-dashboard-crb.yaml` so that it binds the `cluster-admin` role
-to a different service account.  See the access control documentation for
-more information:
-https://github.com/kubernetes/dashboard/wiki/Access-control#admin-privileges
-
-In order to access the dashboard from outside of the cluster, it will be
-necessary to expose the deployment.  Here is an example:
-```bash
-$ kubectl --namespace kube-system expose deployment kubernetes-dashboard \
-    --type=LoadBalancer --name kubernetes-dashboard-lb
-```
-
-Retrieve the IP address from the `kubernetes-dashboard-lb` service:
-```bash
-$ kubectl --namespace kube-system get services \
-    kubernetes-dashboard-lb -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
-```
-
-If a specific IP is desired, the `--load-balancer-ip` flag is required:
-```bash
-$ kubectl --namespace kube-system expose deployment kubernetes-dashboard \
-    --type=LoadBalancer --name kubernetes-dashboard-lb \
-    --load-balancer-ip='<available_IP_from_load_balancer_config>'
-```
-
-Login tokens for the dashboard can be retrieved via kubectl.  Here is an
-example:
-```bash
-$ secret=$(kubectl --namespace kube-system get secret -o name | \
-    grep '<service_account>-token-')
-$ kubectl --namespace kube-system describe $secret | grep '^token:' \
-    | awk '{print $2}'
-```
-
-Use `https://$DASHBOARD_IP:8443/` to log into the dashboard.
--->
 
 ### Kubernetes Cluster Shaping
 
@@ -426,45 +303,45 @@ $ kubectl label nodes <node_name> node-role.kubernetes.io/jarvice-system=true
 ```
 
 Once the kubernetes nodes are labeled, the JARVICE helm chart can direct pod
-types to specific nodes by utilizing node selectors.  The JARVICE helm chart
-provides node selector settings which can be applied to all of the
-`jarvice-system` components (`jarvice.nodeSelector`), as well as node
-selectors for each individual JARVICE component.  These can be set in a
+types to specific nodes by utilizing node affinity and/or selectors.  The
+JARVICE helm chart provides node affinity and selector settings which can be
+applied to all of the `jarvice-system` components (`jarvice.nodeAffinity` and
+`jarvice.nodeSelector`), as well as node affinity/selectors for each
+individual JARVICE component.  These can be set in a
 configuration values `override.yaml` file or on the `helm` command line.
 
-Note that node selectors are specified using JSON syntax.  When using `--set`
-on the `helm` command line, special characters must be escaped.  Also,
+Note that node affinity/selectors are specified using JSON syntax.  When using
+`--set` on the `helm` command line, special characters must be escaped.  Also,
 individual component node selectors are not additive.  They will override
-`jarvice.nodeSelector` if they are set.
+`jarvice.nodeAffinity` and/or `jarvice.nodeSelector` if they are set.
 
 For example, if both `jarvice.nodeSelector` and
-`jarvice_dockerpull.nodeSelector` are specified on the `helm` command line:
+`jarvice_dockerbuild.nodeSelector` are specified on the `helm` command line:
 ```bash
 --set-string jarvice.nodeSelector="\{\"node-role.jarvice.io/jarvice-system\": \"true\"\}"
---set-string jarvice_dockerpull.nodeSelector="\{\"node-role.jarvice.io/jarvice-dockerpull\": \"true\"\}"
+--set-string jarvice_dockerbuild.nodeSelector="\{\"node-role.jarvice.io/jarvice-dockerbuild\": \"true\"\}"
 ```
 
 In the example above,
 `node-role.jarvice.io/jarvice-system` will not be
-applied to `jarvice_dockerpull.nodeSelector`.  In the case that both node
-selectors are desired for `jarvice_dockerpull.nodeSelector`, use:
+applied to `jarvice_dockerbuild.nodeSelector`.  In the case that both node
+selectors are desired for `jarvice_dockerbuild.nodeSelector`, use:
 ```bash
---set-string jarvice_dockerpull.nodeSelector="\{\"node-role.jarvice.io/jarvice-system\": \"true\"\, \"node-role.jarvice.io/jarvice-dockerpull\": \"true\"\}"
+--set-string jarvice_dockerbuild.nodeSelector="\{\"node-role.jarvice.io/jarvice-system\": \"true\"\, \"node-role.jarvice.io/jarvice-dockerbuild\": \"true\"\}"
 ```
 
 For more information on assigning kubernetes node labels and using node
-selectors, please see the kubernetes documentation:
+affinity and/or selectors, please see the kubernetes documentation:
 https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
 
-##### Node labels for `jarvice-dockerbuild` and `jarvice-dockerpull`
+##### Node label for `jarvice-dockerbuild` node
 
-In order to take advantage of docker layer caching when building and pulling
-application images into JARVICE, it may be advantageous that a node in the
-kubernetes cluster be labeled for both of those operations simultaneously.
-Use commands similar to the following to do so:
+In order to take advantage of docker layer caching when building
+application images with JARVICE, it would be advantageous to label a node in
+the kubernetes cluster for this operations specifically.
+Use a command similar to the following to do so:
 ```bash
 $ kubectl label nodes <node_name> node-role.jarvice.io/jarvice-dockerbuild=true
-$ kubectl label nodes <node_name> node-role.jarvice.io/jarvice-dockerpull=true
 ```
 
 Or, it may be desirable to simply combine those into a single label:
@@ -472,8 +349,8 @@ Or, it may be desirable to simply combine those into a single label:
 $ kubectl label nodes <node_name> node-role.jarvice.io/jarvice-dockerbuildpull=true
 ```
 
-To take advantage of such a setup, set `jarvice_dockerbuild.nodeSelector` and
-`jarvice_dockerpull.nodeSelector` in the JARVICE helm chart.
+To take advantage of such a setup, set `jarvice_dockerbuild.nodeSelector`
+in the JARVICE helm chart.
 
 ##### Utilizing `jarvice-compute` labels
 
@@ -496,7 +373,8 @@ information.
 #### Node taints and pod tolerations
 
 Kubernetes node taints can be used to provide an effect opposite to that of
-nodes selectors.  That is, they are used to "repel" pod types from nodes.
+nodes affinity and/or selectors.  That is, they are used to "repel" pod types
+from nodes.
 For example, a node marked with a `jarvice-compute` label for sending jobs to
 it with a node selector could also have a `jarvice-compute` taint in order to
 keep non `jarvice-compute` pods from running on it.  This would be the best
@@ -552,7 +430,7 @@ $ kubectl taint nodes -l node-role.jarvice.io/jarvice-compute=true \
 
 By default, the JARVICE job scheduler creates job pods that tolerate the
 `NoSchedule` effect on nodes with the `node-role.jarvice.io/jarvice-compute`
-and `node-role.jarvice.io/jarvice-compute` taints.  This is currently not
+and `node-role.kubernetes.io/jarvice-compute` taints.  This is currently not
 configurable.
 Tolerations for `jarvice-compute` will be made configurable in future
 releases of JARVICE.
@@ -561,78 +439,81 @@ releases of JARVICE.
 
 ## JARVICE Quick Installation (Demo without persistence)
 
-<!--  Comment: helm repo not yet enabled
-The installation commands assume that they are being run on a client machine
-that has access to the kubernetes cluster and has `helm` installed as
-mentioned in the installation prerequisites above.  They also assume that the
-`jarvice-master` chart repository has also been added.
+The installation commands outlined in this documentation assume that the
+commands are being run on a client machine
+that has access to the kubernetes cluster and has `kubectl` and `helm`
+installed as mentioned in the installation prerequisites above.
 
-### Find the latest JARVICE chart version
+### Find the latest JARVICE helm chart release version
 
-It is first necessary to find the latest available JARVICE chart version:
-```bash
-$ helm repo update
-$ helm search jarvice
-```
-
-Optionally, with the chart version returned by the search, verify the chart
-signature:
-```bash
-$ helm inspect chart --verify --version <chart-version> jarvice-master/jarvice
-```
-
-It will also be necessary to provide `--version <chart-version>` to execute
-the helm install and upgrade functions mentioned below.
--->
+The preferred method of deployment is to use the JARVICE helm chart repository
+located at [https://nimbix.github.io/jarvice-helm/](https://nimbix.github.io/jarvice-helm/).
+The latest JARVICE helm chart release versions can be found on the
+[Releases](https://github.com/nimbix/jarvice-helm/releases) page.
+See the [ChangeLog](ReleaseNotes.md#changelog) section of the
+[JARVICE Release Notes](ReleaseNotes.md) to view more detailed information
+on each release.
 
 ### Code repository of the JARVICE helm chart
 
-It is first necessary to clone this git repository to a client machine that
-has access to the kubernetes cluster and has `helm` installed.
+If running in an air-gapped environment, or otherwise wishing to deploy via
+a local directory instead of the remote
+[JARVICE helm repository](https://nimbix.github.io/jarvice-helm/), it will
+first be necessary to download the desired release from the JARVICE helm
+[Releases](https://github.com/nimbix/jarvice-helm/releases) page or
+clone this git repository.
 
 ```bash
 $ git clone https://github.com/nimbix/jarvice-helm.git
 ```
 
+After cloning the helm repository, checkout the tag corresponding to the
+desired deployment version:
+```bash
+$ git checkout 3.0.0-1.XXXXXXXXXXXX
+```
+
 ### Quick install command with helm
 
-Once cloned, JARVICE can be quickly installed via the following `helm` command:
+JARVICE can be quickly installed from the remote helm repository via the
+following `helm` command:
 
 ```bash
 $ kubectl create namespace jarvice-system
-$ helm upgrade jarvice ./jarvice-helm --namespace jarvice-system --install \
+$ helm upgrade jarvice jarvice \
+    --version 3.0.0-1.XXXXXXXXXXXX \
+    --repo https://nimbix.github.io/jarvice-helm/ \
+    --namespace jarvice-system --install \
     --set jarvice.imagePullSecret="$(echo "_json_key:$(cat jarvice-reg-creds.json)" | base64 -w 0)" \
     --set jarvice.JARVICE_LICENSE_LIC="<jarvice_license_key>"
 ```
-<!--
-    --namespace jarvice-system --name jarvice \
-    --version <chart-version> jarvice-master/jarvice
--->
 
 Alternatively, in order to install and get the application catalog
 synchronized, use the following `helm` command:
 ```bash
 $ kubectl create namespace jarvice-system
-$ helm upgrade jarvice ./jarvice-helm --namespace jarvice-system --install \
+$ helm upgrade jarvice jarvice \
+    --version 3.0.0-1.XXXXXXXXXXXX \
+    --repo https://nimbix.github.io/jarvice-helm/ \
+    --namespace jarvice-system --install \
     --set jarvice.imagePullSecret="$(echo "_json_key:$(cat jarvice-reg-creds.json)" | base64 -w 0)" \
     --set jarvice.JARVICE_LICENSE_LIC="<jarvice_license_key>" \
     --set jarvice.JARVICE_REMOTE_USER="<jarvice_upstream_user>" \
     --set jarvice.JARVICE_REMOTE_APIKEY="<jarvice_upstream_user_apikey>"
 ```
-<!--
-    --version <chart-version> jarvice-master/jarvice
--->
 
-**NOTE:** `jarvice.JARVICE_APPSYNC_USERONLY=true` can be set to only synchronize application catalog items owned by the user set in `jarvice.JARVICE_REMOTE_USER`; this is a simple way to restrict the applications that get synchronized from the upstream service catalog.
+**NOTE:** `jarvice.JARVICE_APPSYNC_USERONLY=true` can be set to only
+synchronize application catalog items owned by the user set in
+`jarvice.JARVICE_REMOTE_USER`; this is a simple way to restrict the
+applications that get synchronized from the upstream service catalog.
 
-### Quick install to Amazon EKS or Google GKE
+### Deployment to managed kubernetes services with `terraform`
 
 If a kubernetes cluster is not readily available, JARVICE can be quickly
 deployed and demoed using kubernetes cluster services such as
-Amazon EKS on AWS or Google GKE on GCP.
-See the following link for details:
-
-https://github.com/nimbix/jarvice-helm/tree/master/scripts
+Amazon EKS on AWS, Google GKE on GCP, or Microsoft AKS on Azure.
+See the [JARVICE Deployment with Terraform](Terraform.md) documentation
+for more details.
 
 ------------------------------------------------------------------------------
 
@@ -656,8 +537,9 @@ from site to site and is thus beyond the scope of the helm installation.
 
 The `jarvice-db-pv.yaml` and `jarvice-registry-pv.yaml` files are provided as
 simple examples for setting up a persistent volumes which are backed by a NFS
-server.  These can be found in the `jarvice-helm/extra` directory.  It is
-expected, however, that most sites may want/need a more robust solution.
+server.  These can be found in the `jarvice-helm/extra` directory of this git
+repository.  It is expected, however, that most sites may want/need a more
+robust solution.
 
 Please review the detailed kubernetes documentation for further information
 on persistent volumes:
@@ -667,7 +549,10 @@ Expanding upon the previous quick installation command, the following command
 could then be used to install JARVICE with persistence enabled:
 ```bash
 $ kubectl create namespace jarvice-system
-$ helm upgrade jarvice ./jarvice-helm --namespace jarvice-system --install \
+$ helm upgrade jarvice jarvice \
+    --version 3.0.0-1.XXXXXXXXXXXX \
+    --repo https://nimbix.github.io/jarvice-helm/ \
+    --namespace jarvice-system --install \
     --set jarvice.imagePullSecret="$(echo "_json_key:$(cat jarvice-reg-creds.json)" | base64 -w 0)" \
     --set jarvice.JARVICE_LICENSE_LIC="<jarvice_license_key>" \
     --set jarvice.JARVICE_REMOTE_USER="<jarvice_upstream_user>" \
@@ -732,7 +617,10 @@ jobs over HTTPS.
 
 ### Additional LoadBalancer service annotation for jobs
 
-On some platforms/deployments, the LoadBalancer service type must be annotated for it to properly assign an address.  The value for `jarvice.JARVICE_JOBS_LB_ANNOTATIONS` should be set to a JSON dictionary of name/value pairs as needed.
+On some platforms/deployments, the LoadBalancer service type must be annotated
+for it to properly assign an address.  The value for
+`jarvice.JARVICE_JOBS_LB_ANNOTATIONS` should be set to a JSON dictionary of
+name/value pairs as needed.
 
 #### Example: using an internal LoadBalancer on AWS
 
@@ -744,7 +632,8 @@ Set the parameter `jarvice.JARVICE_JOBS_LB_ANNOTATIONS` to the following value:
 
 See [https://docs.aws.amazon.com/eks/latest/userguide/load-balancing.html](https://docs.aws.amazon.com/eks/latest/userguide/load-balancing.html) for additional details.
 
-Please note that this parameter is ignored when Ingress is used unless the application specifically requests a LoadBalancer address via its configuration.
+Please note that this parameter is ignored when Ingress is used unless the
+application specifically requests a LoadBalancer address via its configuration.
 
 
 ### Site specific configuration
@@ -755,22 +644,39 @@ a part of the helm installation command:
 
 ```bash
 $ cp jarvice-helm/values.yaml jarvice-helm/override.yaml
-$ helm upgrade jarvice ./jarvice-helm --namespace jarvice-system --install \
+$ helm upgrade jarvice jarvice \
+    --version 3.0.0-1.XXXXXXXXXXXX \
+    --repo https://nimbix.github.io/jarvice-helm/ \
+    --namespace jarvice-system --install \
     --values jarvice-helm/override.yaml
 ```
 
+If deploying JARVICE from the remote helm repository, the corresponding
+`values.yaml` file for the release version being deployed can be downloaded
+with the following command:
+```bash
+$ version=3.0.0-1.XXXXXXXXXXXX
+$ curl https://raw.githubusercontent.com/nimbix/jarvice-helm/$version/values.yaml >values.yaml
+```
 
 #### JARVICE helm deployment script
 
-Alternatively, the simplified `deploy2k8s-jarvice` shell script included in
-the `scripts` directory of this helm chart can be used to install/upgrade
-the JARVICE helm deployment.
-Simply execute `./scripts/deploy2k8s-jarvice --help` to see it's usage.
+Alternatively, the simplified `deploy2k8s-jarvice` shell script can be used
+to install/upgrade the JARVICE helm deployment.  The latest version can be
+downloaded with `curl`:
+```bash
+$ curl https://raw.githubusercontent.com/nimbix/jarvice-helm/master/scripts/deploy2k8s-jarvice >deploy2k8s-jarvice
+$ chmod 755 ./deploy2k8s-jarvice
+```
+
+If you have already cloned this helm chart git repository, the
+`deploy2k8s-jarvice` can be found in the `scripts` directory.
+
+Simply execute `deploy2k8s-jarvice` with the `--help` flag to see it's usage.
 
 ```bash
-$ ./jarvice-helm/scripts/deploy2k8s-jarvice --help
 Usage:
-    ./jarvice-helm/scripts/deploy2k8s-jarvice [options]
+    ./deploy2k8s-jarvice [options] -- [extra_helm_options]
 
 Options:
     -r, --release <release>             Helm release name
@@ -778,10 +684,23 @@ Options:
     -n, --namespace <kube_namespace>    Kubernetes namespace to deploy to
                                         (Default: jarvice-system)
     -f, --values <values_file>          Site specific values YAML file
-                                        (Default: jarvice-helm/override.yaml)
+                                        (Default: ./override.yaml)
+    -r, --repo <helm_repo>              JARVICE helm repository
+                                        (Default: https://nimbix.github.io/jarvice-helm/)
+    -v, --version <jarvice_version>     JARVICE chart version from helm repo
+                                        (Default: install via local chart dir)
 
-Example:
-    ./jarvice-helm/scripts/deploy2k8s-jarvice -f jarvice-helm/override.yaml
+Example deployment using remote JARVICE helm chart repository (preferred):
+    ./deploy2k8s-jarvice -f ./override.yaml -v 3.0.0-1.XXXXXXXXXXXX
+
+Example deployment using local JARVICE helm chart directory:
+    ./deploy2k8s-jarvice -f ./override.yaml
+
+Visit the JARVICE helm releases page for the latest release versions:
+https://github.com/nimbix/jarvice-helm/releases
+
+Available helm values for a released version can be found via:
+curl https://raw.githubusercontent.com/nimbix/jarvice-helm/<jarvice_version>/values.yaml
 ```
 
 ### Updating configuration (or upgrading to newer JARVICE chart version)
@@ -793,31 +712,37 @@ command could be used to update the number of replicas/pods for the
 JARVICE DAL deployment:
 
 ```bash
-$ helm upgrade jarvice ./jarvice-helm --namespace jarvice-system --install \
+$ helm upgrade jarvice jarvice \
+    --version 3.0.0-1.XXXXXXXXXXXX \
+    --repo https://nimbix.github.io/jarvice-helm/ \
+    --namespace jarvice-system --install \
     --reuse-values --set jarvice_dal.replicaCount=3
 ```
 
 This could also be done from an `override.yaml` file:
 
 ```bash
-$ helm upgrade jarvice ./jarvice-helm --namespace jarvice-system --install \
+$ helm upgrade jarvice jarvice \
+    --version 3.0.0-1.XXXXXXXXXXXX \
+    --repo https://nimbix.github.io/jarvice-helm/ \
+    --namespace jarvice-system --install \
     --reuse-values --values jarvice-helm/override.yaml
 ```
 
 ### Non-JARVICE specific services
 
-#### MySQL database (`jarvice-db`)
+#### MariaDB database (`jarvice-db`)
 
-If there is an already existing MySQL installation that you wish to use with
+If there is an already existing MariaDB installation that you wish to use with
 JARVICE, it will be necessary to create an `override.yaml` file (shown above)
 and edit the settings database settings (`JARVICE_DBHOST`, `JARVICE_DBUSER`,
 `JARVICE_DBPASSWD`) in the base `jarvice` configuration stanza.
 
-If there is not an existing MySQL installation, but wish to maintain the
+If there is not an existing MariaDB installation, but wish to maintain the
 database in kubernetes, but outside of the JARVICE helm chart, execute the
 following to get more details on using helm to perform the installation:
 ```bash
-$ helm inspect all stable/mysql
+$ helm inspect all mariadb --repo https://charts.helm.sh/stable
 ```
 
 When using a database outside of the JARVICE helm chart, it will be necessary
@@ -826,7 +751,7 @@ to disable it in the JARVICE helm chart.  This can be done either in an
 
 `--set jarvice_db.enabled=false`
 
-Note that the MySQL installation will require a database named `nimbix`.
+Note that the MariaDB installation will require a database named `nimbix`.
 If session management is desired for `jarvice-mc-portal` a database named
 `nimbix_portal` is also required along with a `memcached` installation.
 
@@ -841,7 +766,7 @@ If there is not an existing Memcached installation, but wish to maintain the
 one in kubernetes, but outside of the JARVICE helm chart, execute the
 following to get more details on using helm to perform the installation:
 ```bash
-$ helm inspect all stable/memcached
+$ helm inspect all memcached --repo https://charts.helm.sh/stable
 ```
 
 When using Memcached outside of the JARVICE helm chart, it will be necessary
@@ -875,7 +800,7 @@ in the kubernetes cluster which has a valid TLS certificate and key.
 There is also a docker-registry specific helm chart available for deployment.
 Use the helm inspect command for details:
 ```bash
-$ helm inspect all stable/docker-registry
+$ helm inspect all docker-registry --repo https://charts.helm.sh/stable
 ```
 
 ------------------------------------------------------------------------------
@@ -890,7 +815,10 @@ command similar to the following:
 
 ```bash
 $ kubectl create namespace jarvice-system
-$ helm upgrade jarvice ./jarvice-helm --namespace jarvice-system --install \
+$ helm upgrade jarvice jarvice \
+    --version 3.0.0-1.XXXXXXXXXXXX \
+    --repo https://nimbix.github.io/jarvice-helm/ \
+    --namespace jarvice-system --install \
     --set jarvice.imagePullSecret="$(echo "_json_key:$(cat jarvice-reg-creds.json)" | base64 -w 0)" \
     --set jarvice.JARVICE_CLUSTER_TYPE="downstream" \
     --set jarvice.JARVICE_SCHED_SERVER_KEY="<user>:<password>" \

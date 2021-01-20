@@ -21,7 +21,7 @@ global = {
             # Subsequent helm upgrades require that a specific release version
             # be set.  e.g. "3.0.0-1.XXXXXXXXXXXX"
             # Visit the following link for the latest release versions:
-            # https://github.com/nimbix/jarvice-helm/blob/master/ReleaseNotes.md#changelog
+            # https://github.com/nimbix/jarvice-helm/releases
             version = null  # "../"  # "~/github/nimbix/jarvice-helm"
 
             # Available helm values for a released version can be found via:
