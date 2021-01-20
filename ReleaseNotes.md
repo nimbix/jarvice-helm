@@ -115,6 +115,13 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.0.0-1.202101202004
+
+* (3391) (3917) Future support for traditional HPC queues and submission clients.
+* (3609) Fixed file locking failure when using dynamic filer and RWO PVC vaults; note that distributed locking is not supported, and this storage type should be used with caution.
+* (3781) License-based job queuing support.  See [JARVICE License Manager](LicenseManager.md) for details.
+* (3838) Fixed `jarvice-dri-optional` DaemonSet to work properly on certain infrastructure where host drivers are not loaded before the Kubernetes kubelet is (e.g. Google GKE).
+
 ## 3.0.0-1.202101062006
 
 * (3841) Fixed bug where refreshing users prevent row selection in *Administration->Users*
