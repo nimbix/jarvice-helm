@@ -233,6 +233,16 @@ See [README.md](README.md) in the top level of this repository for more
 in depth details on JARVICE Helm chart settings:
 https://github.com/nimbix/jarvice-helm
 
+Execute the following to view the available JARVICE helm chart `values.yaml`
+for a particular JARVICE release:
+```bash
+$ version=3.0.0-1.XXXXXXXXXXXX
+$ curl https://raw.githubusercontent.com/nimbix/jarvice-helm/$version/values.yaml
+```
+
+Visit the JARVICE helm chart releases page ([https://github.com/nimbix/jarvice-helm/releases](https://github.com/nimbix/jarvice-helm/releases))
+to view the latest available release versions.
+
 ### Arm64 (AArch64) cluster deployment
 
 In addition to AMD64 (x86_64), Terraform deployments are supported for
