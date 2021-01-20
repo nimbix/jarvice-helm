@@ -8,6 +8,7 @@ args="$*"
 release=jarvice
 namespace=jarvice-system
 values=$jarvice_chart_dir/override.yaml
+[ ! -f "$jarvice_chart_dir/values.yaml" ] && values=./override.yaml
 repo=https://nimbix.github.io/jarvice-helm/
 version=
 
@@ -34,8 +35,8 @@ Example deployment using remote JARVICE helm chart repository (preferred):
 Example deployment using local JARVICE helm chart directory:
     $0 -f $values
 
-Visit the JARVICE release notes for the latest release versions:
-https://github.com/nimbix/jarvice-helm/blob/master/ReleaseNotes.md#changelog
+Visit the JARVICE helm releases page for the latest release versions:
+https://github.com/nimbix/jarvice-helm/releases
 
 Available helm values for a released version can be found via:
 curl https://raw.githubusercontent.com/nimbix/jarvice-helm/<jarvice_version>/values.yaml
