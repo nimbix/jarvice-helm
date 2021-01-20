@@ -109,5 +109,5 @@ echo "* Deployment successful..."
 
 echo
 echo "For advanced setup details, visit https://github.com/kubernetes-sigs/metrics-server and/or execute:"
-echo "$ helm inspect all stable/metrics-server"
+echo "$ helm inspect all metrics-server --repo $repo"
 

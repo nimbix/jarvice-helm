@@ -1,0 +1,30 @@
+{
+    "ansyslic1": {
+        "config": { 
+            "name": "ANSYS_LICENSE_SERVERS",
+            "value": "192.168.30.101"
+        },
+        "address": "192.168.30.101",
+        "port": 1055,
+        "binary": "s3:///flexnet/lmutil-ansys2019r3",
+        "features": {
+            "spaceclaim": {
+                "a_spaceclaim_dirmod": 0,
+                "a_spaceclaim_faceteddata": 1
+            }
+        },
+        "projects": {
+            "team1-design": {
+                "a_spaceclaim_faceteddata": "25%"
+            }
+        }
+    },
+    "adslic1": {
+        "config": { 
+            "name": "ADS_LICENSE_SERVERS",
+            "value": "27009@adslic1.internal.io"
+        },
+        "port": "27009",
+        "binary": "s3:///flexnet/lmutil-ads"
+    }
+}

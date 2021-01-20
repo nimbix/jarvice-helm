@@ -8,7 +8,7 @@ jarvice:
   JARVICE_REMOTE_API_URL: https://api.jarvice.com
   JARVICE_REMOTE_USER:
   JARVICE_REMOTE_APIKEY:
-  JARVICE_APPSYNC_USERONLY: false
+  JARVICE_APPSYNC_USERONLY: "false"
 
   JARVICE_LOCAL_REGISTRY: # jarvice-registry:5000
   JARVICE_LOCAL_REPO_BASE: jarvice
@@ -32,9 +32,9 @@ jarvice:
 
   # JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
   JARVICE_JOBS_DOMAIN: # my-domain.com  # (host based ingress)
-  JARVICE_JOBS_LB_SERVICE: false
+  JARVICE_JOBS_LB_SERVICE: "false"
   JARVICE_JOBS_LB_ANNOTATIONS: # '{}'
-  JARVICE_JOBS_MULTI_TENANT: false
+  JARVICE_JOBS_MULTI_TENANT: "false"
   # At least one of JARVICE_JOBS_MULTI_TENANT_* must be set to a non-empty
   # set/list to enable access to interactive jobs via per job NetworkPolicy
   JARVICE_JOBS_MULTI_TENANT_INGRESS_POD_LABELS: '{}' # '{"app": "traefik"}'
@@ -67,6 +67,13 @@ jarvice:
   JARVICE_SCHED_LOGLEVEL: 30
   JARVICE_K8S_SCHED_LOGLEVEL: 30
   JARVICE_API_LOGLEVEL: 30
+  JARVICE_LICENSE_MANAGER_LOGLEVEL: 10
+
+  # JARVICE_LICENSE_MANAGER_URL is auto-set in "upstream" deployments if
+  # jarvice_license_manager.enabled is true (may still be modified as needed)
+  JARVICE_LICENSE_MANAGER_URL: # "https://jarvice-license-manager.my-domain.com"
+  JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
+  JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
 
   JARVICE_MAIL_SERVER: jarvice-smtpd:25
   JARVICE_MAIL_USERNAME: # "mail-username"
@@ -83,6 +90,7 @@ jarvice:
   # uncomment value to relax node weight calculations in order to account
   # for minor inconsequential variance (e.g. when using explicit node selectors
   # any way, such as specific instance types)
+  JARVICE_POD_SCHED_LICENSE_PRE: "false"
   JARVICE_POD_SCHED_MULTIPLIERS: # '{"cpu": 0, "memory": 0, "ephemeral-storage": 0, "pods": 0}'
 
   # Global setting for enabling a secure NetworkPolicy for all JARVICE services
@@ -182,10 +190,13 @@ jarvice:
       tolerations: # '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
-      image: gcr.io/jarvice/k8s-dri-optional-device:1.0.1
+      image: gcr.io/jarvice/k8s-dri-optional-device:1.0.2
       imagePullPolicy: IfNotPresent
+      env:
+        DRI_INIT_DELAY: 1
+        DRI_DEFAULT_CAPACITY: 1
     flex_volume_plugin_nfs_nolock_install:
-      enabled: false
+      enabled: true
       tolerations: '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.jarvice.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.jarvice.io/jarvice-storage", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-storage", "effect": "NoSchedule", "operator": "Exists"}]'
       nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-system", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-storage", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-storage", "operator": "Exists"}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true", "kubernetes.io/arch": "amd64"}'
@@ -596,6 +607,43 @@ jarvice_pod_scheduler:
   nodeSelector: # '{"node-role.jarvice.io/jarvice-pod-scheduler": "true"}'
   env:
     JARVICE_POD_SCHED_NAME:  # auto-set, should not need to be updated
+
+# jarvice-license-manager runs on amd64 nodes only. In a multi-arch cluster, it
+# may be necessary to set tolerations, nodeAffinity, and/or nodeSelector.
+# Also, create/update jarvice-license-manager ConfigMap w/ servers.json data
+# Uses "user:password" pair set in jarvice.JARVICE_LICENSE_MANAGER_KEY
+jarvice_license_manager: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  enabled: false
+  loadBalancerIP:
+  ingressHost: # jarvice-license-manager.my-domain.com
+  resources:
+    limits:
+      cpu: 1
+      memory: 2Gi
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 30
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 60
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+  tolerations: # '[{"key": "node-role.jarvice.io/jarvice-license-manager", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-license-manager", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64"]}]}] }}'  # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-license-manager", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64"]}]}] }}'
+  nodeSelector: # '{"kubernetes.io/arch": "amd64"}'  # '{"node-role.jarvice.io/jarvice-license-manager": "true", "kubernetes.io/arch": "amd64"}'
+  networkPolicy:
+    enabled: # Inherits from jarvice.networkPolicy.enabled if unset
+  env:
+    JARVICE_HOSTALIASES: # '[ {"ip": "10.20.0.1", "hostnames": ["hostname-1a"]}, {"ip": "10.20.0.2", "hostnames": ["hostname-2a", "hostname-2b"]} ]'
+    JARVICE_LMSTAT_INTERVAL: 60
+    JARVICE_S3_BUCKET:
+    JARVICE_S3_ACCESSKEY:
+    JARVICE_S3_SECRETKEY:
+    JARVICE_S3_ENDPOINTURL: # https://s3.my-domain.com
 
 jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true

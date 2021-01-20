@@ -255,7 +255,10 @@ spec:
 {{- else }}
             value: "{{ .Values.jarvice.JARVICE_SELINUX_ENFORCING }}"
 {{- end }}
-{{- if (not (empty .Values.jarvice.JARVICE_LICENSE_MANAGER_URL)) }}
+{{- if and .Values.jarvice_license_manager.enabled (empty .Values.jarvice.JARVICE_LICENSE_MANAGER_URL) }}
+          - name: JARVICE_LICENSE_MANAGER_URL
+            value: "http://jarvice-license-manager:8080"
+{{- else if (not (empty .Values.jarvice.JARVICE_LICENSE_MANAGER_URL)) }}
           - name: JARVICE_LICENSE_MANAGER_URL
             value: "{{ .Values.jarvice.JARVICE_LICENSE_MANAGER_URL }}"
 {{- end }}
@@ -265,7 +268,10 @@ spec:
 {{- end }}
 {{- if (not (empty .Values.jarvice.JARVICE_LICENSE_MANAGER_KEY)) }}
           - name: JARVICE_LICENSE_MANAGER_KEY
-            value: "{{ .Values.jarvice.JARVICE_LICENSE_MANAGER_KEY }}"
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-license-manager
+                key: JARVICE_LICENSE_MANAGER_KEY
 {{- end }}
         resources:
 {{- if .Values.jarvice_k8s_scheduler.resources }}

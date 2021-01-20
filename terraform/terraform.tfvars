@@ -16,8 +16,16 @@ global = {
 
     helm = {
         jarvice = {
-            version = "./"
+            repository = "https://nimbix.github.io/jarvice-helm/"
+            # null version installs latest release from the helm repository.
+            # Subsequent helm upgrades require that a specific release version
+            # be set.  e.g. "3.0.0-1.XXXXXXXXXXXX"
+            # Visit the following link for the latest release versions:
+            # https://github.com/nimbix/jarvice-helm/releases
+            version = null  # "../"  # "~/github/nimbix/jarvice-helm"
 
+            # Available helm values for a released version can be found via:
+            # version=3.0.0-1.XXXXXXXXXXXX; curl https://raw.githubusercontent.com/nimbix/jarvice-helm/$version/values.yaml
             values_file = "values.yaml"  # ignored if file does not exist
             values_yaml = <<EOF
 # global values_yaml - Uncomment or add any values that should be
@@ -35,7 +43,13 @@ global = {
   #JARVICE_REMOTE_API_URL: https://api.jarvice.com
   #JARVICE_REMOTE_USER:
   #JARVICE_REMOTE_APIKEY:
-  #JARVICE_APPSYNC_USERONLY: false
+  #JARVICE_APPSYNC_USERONLY: "false"
+
+  # JARVICE_LICENSE_MANAGER_URL is auto-set in "upstream" deployments if
+  # jarvice_license_manager.enabled is true (may still be modified as needed)
+  #JARVICE_LICENSE_MANAGER_URL: # "https://jarvice-license-manager.my-domain.com"
+  #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
+  #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
 
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
@@ -66,7 +80,7 @@ k8s = {
 
         helm = {
             jarvice = {
-                # version = "./"  # Uncomment to override global version
+                # version = "3.0.0-1.XXXXXXXXXXXX"  # Override global version
                 namespace = "jarvice-system"
 
                 # global values_yaml take precedence over cluster
@@ -78,7 +92,7 @@ k8s = {
 
 #jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
-  #JARVICE_IMAGES_VERSION:
+  #JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
 
   # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
   # settings in jarvice_* component stanzas are ignored.
@@ -89,12 +103,22 @@ k8s = {
 
   #JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
   #JARVICE_JOBS_DOMAIN: # my-domain.com  # (host based ingress)
-  #JARVICE_JOBS_LB_SERVICE: false
+  #JARVICE_JOBS_LB_SERVICE: "false"
+
+  #tolerations: '[{"key": "node-role.jarvice.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}]'
+  #nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-system", "operator": "Exists"}]}] }}'
+  #nodeSelector: # '{"node-role.jarvice.io/jarvice-system": "true"}'
 
   #JARVICE_PVC_VAULT_NAME: persistent
   #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
+
+  # JARVICE_LICENSE_MANAGER_URL is auto-set in "upstream" deployments if
+  # jarvice_license_manager.enabled is true (may still be modified as needed)
+  #JARVICE_LICENSE_MANAGER_URL: # "https://jarvice-license-manager.my-domain.com"
+  #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
+  #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
 
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
@@ -103,6 +127,42 @@ k8s = {
   #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
+
+  #daemonsets:
+  #  lxcfs:
+  #    enabled: false
+
+#jarvice_db: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  #persistence:
+  #  enabled: false
+  #  # Set to "keep" to prevent removal or jarvice-db-pvc on helm delete
+  #  resourcePolicy: ""  # "keep"
+  #  # Use empty existingClaimName for dynamic provisioning via storageClass
+  #  existingClaimName: # "jarvice-db-pvc"
+  #  # storageClass: "-"
+  #  storageClass: "jarvice-db"
+  #  accessMode: ReadWriteOnce
+  #  size: 8Gi
+  #securityContext:
+  #  enabled: false  # Enable when PersistentVolume is root squashed
+  #  fsGroup: 999
+  #  runAsUser: 999
+
+# jarvice-license-manager runs on amd64 nodes only. In a multi-arch cluster, it
+# may be necessary to set tolerations, nodeAffinity, and/or nodeSelector.
+# Also, update/create jarvice-license-manager ConfigMap w/ servers.json data
+# Uses "user:password" pair set in jarvice.JARVICE_LICENSE_MANAGER_KEY
+#jarvice_license_manager: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  #enabled: false
+  #loadBalancerIP:
+  #ingressHost: # jarvice-license-manager.my-domain.com
+  #env:
+  #  JARVICE_HOSTALIASES: # '[ {"ip": "10.20.0.1", "hostnames": ["hostname-1a"]}, {"ip": "10.20.0.2", "hostnames": ["hostname-2a", "hostname-2b"]} ]'
+  #  JARVICE_LMSTAT_INTERVAL: 60
+  #  JARVICE_S3_BUCKET:
+  #  JARVICE_S3_ACCESSKEY:
+  #  JARVICE_S3_SECRETKEY:
+  #  JARVICE_S3_ENDPOINTURL: # https://s3.my-domain.com
 
 #jarvice_k8s_scheduler:
   # loadBalancerIP and ingressHost are only applicable when
@@ -136,7 +196,7 @@ EOF
 
         helm = {
             jarvice = {
-                # version = "./"  # Uncomment to override global version
+                # version = "3.0.0-1.XXXXXXXXXXXX"  # Override global version
                 namespace = "jarvice-downstream"
 
                 # global values_yaml take precedence over cluster
@@ -148,7 +208,7 @@ EOF
 
 jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
-  #JARVICE_IMAGES_VERSION:
+  #JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
 
   # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
   # settings in jarvice_* component stanzas are ignored.
@@ -159,12 +219,22 @@ jarvice:
 
   #JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
   #JARVICE_JOBS_DOMAIN: # my-domain.com  # (host based ingress)
-  #JARVICE_JOBS_LB_SERVICE: false
+  #JARVICE_JOBS_LB_SERVICE: "false"
+
+  #tolerations: '[{"key": "node-role.jarvice.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}]'
+  #nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-system", "operator": "Exists"}]}] }}'
+  #nodeSelector: # '{"node-role.jarvice.io/jarvice-system": "true"}'
 
   #JARVICE_PVC_VAULT_NAME: persistent
   #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
+
+  # JARVICE_LICENSE_MANAGER_URL is auto-set in "upstream" deployments if
+  # jarvice_license_manager.enabled is true (may still be modified as needed)
+  #JARVICE_LICENSE_MANAGER_URL: # "https://jarvice-license-manager.my-domain.com"
+  #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
+  #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
 
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
@@ -173,6 +243,26 @@ jarvice:
   #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
+
+  #daemonsets:
+  #  lxcfs:
+  #    enabled: false
+
+#jarvice_db: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  #persistence:
+  #  enabled: false
+  #  # Set to "keep" to prevent removal or jarvice-db-pvc on helm delete
+  #  resourcePolicy: ""  # "keep"
+  #  # Use empty existingClaimName for dynamic provisioning via storageClass
+  #  existingClaimName: # "jarvice-db-pvc"
+  #  # storageClass: "-"
+  #  storageClass: "jarvice-db"
+  #  accessMode: ReadWriteOnce
+  #  size: 8Gi
+  #securityContext:
+  #  enabled: false  # Enable when PersistentVolume is root squashed
+  #  fsGroup: 999
+  #  runAsUser: 999
 
 #jarvice_k8s_scheduler:
   # loadBalancerIP and ingressHost are only applicable when
@@ -262,7 +352,7 @@ gke = {
 
         helm = {
             jarvice = {
-                # version = "./"  # Uncomment to override global version
+                # version = "3.0.0-1.XXXXXXXXXXXX"  # Override global version
                 namespace = "jarvice-system"
 
                 # global values_yaml take precedence over cluster
@@ -274,7 +364,7 @@ gke = {
 
 #jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
-  #JARVICE_IMAGES_VERSION:
+  #JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
 
   # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
   # settings in jarvice_* component stanzas are ignored.
@@ -288,6 +378,12 @@ gke = {
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
 
+  # JARVICE_LICENSE_MANAGER_URL is auto-set in "upstream" deployments if
+  # jarvice_license_manager.enabled is true (may still be modified as needed)
+  #JARVICE_LICENSE_MANAGER_URL: # "https://jarvice-license-manager.my-domain.com"
+  #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
+  #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
+
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
   #JARVICE_MAIL_PASSWORD: # "Pass1234"
@@ -295,6 +391,17 @@ gke = {
   #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
+
+# Uses "user:password" pair set in jarvice.JARVICE_LICENSE_MANAGER_KEY
+#jarvice_license_manager: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  #enabled: false
+  #env:
+  #  JARVICE_HOSTALIASES: # '[ {"ip": "10.20.0.1", "hostnames": ["hostname-1a"]}, {"ip": "10.20.0.2", "hostnames": ["hostname-2a", "hostname-2b"]} ]'
+  #  JARVICE_LMSTAT_INTERVAL: 60
+  #  JARVICE_S3_BUCKET:
+  #  JARVICE_S3_ACCESSKEY:
+  #  JARVICE_S3_SECRETKEY:
+  #  JARVICE_S3_ENDPOINTURL: # https://s3.my-domain.com
 EOF
             }
         }
@@ -362,7 +469,7 @@ EOF
 
         helm = {
             jarvice = {
-                # version = "./"  # Uncomment to override global version
+                # version = "3.0.0-1.XXXXXXXXXXXX"  # Override global version
                 namespace = "jarvice-system"
 
                 # global values_yaml take precedence over cluster
@@ -374,7 +481,7 @@ EOF
 
 jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
-  #JARVICE_IMAGES_VERSION:
+  #JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
 
   # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
   # settings in jarvice_* component stanzas are ignored.
@@ -387,6 +494,12 @@ jarvice:
   #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
+
+  # JARVICE_LICENSE_MANAGER_URL is auto-set in "upstream" deployments if
+  # jarvice_license_manager.enabled is true (may still be modified as needed)
+  #JARVICE_LICENSE_MANAGER_URL: # "https://jarvice-license-manager.my-domain.com"
+  #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
+  #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
 
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
@@ -458,7 +571,7 @@ eks = {
 
         helm = {
             jarvice = {
-                # version = "./"  # Uncomment to override global version
+                # version = "3.0.0-1.XXXXXXXXXXXX"  # Override global version
                 namespace = "jarvice-system"
 
                 # global values_yaml take precedence over cluster
@@ -470,7 +583,7 @@ eks = {
 
 #jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
-  #JARVICE_IMAGES_VERSION:
+  #JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
 
   # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
   # settings in jarvice_* component stanzas are ignored.
@@ -484,6 +597,12 @@ eks = {
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
 
+  # JARVICE_LICENSE_MANAGER_URL is auto-set in "upstream" deployments if
+  # jarvice_license_manager.enabled is true (may still be modified as needed)
+  #JARVICE_LICENSE_MANAGER_URL: # "https://jarvice-license-manager.my-domain.com"
+  #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
+  #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
+
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
   #JARVICE_MAIL_PASSWORD: # "Pass1234"
@@ -491,6 +610,17 @@ eks = {
   #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
+
+# Uses "user:password" pair set in jarvice.JARVICE_LICENSE_MANAGER_KEY
+#jarvice_license_manager: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  #enabled: false
+  #env:
+  #  JARVICE_HOSTALIASES: # '[ {"ip": "10.20.0.1", "hostnames": ["hostname-1a"]}, {"ip": "10.20.0.2", "hostnames": ["hostname-2a", "hostname-2b"]} ]'
+  #  JARVICE_LMSTAT_INTERVAL: 60
+  #  JARVICE_S3_BUCKET:
+  #  JARVICE_S3_ACCESSKEY:
+  #  JARVICE_S3_SECRETKEY:
+  #  JARVICE_S3_ENDPOINTURL: # https://s3.my-domain.com
 EOF
             }
         }
@@ -547,7 +677,7 @@ EOF
 
         helm = {
             jarvice = {
-                # version = "./"  # Uncomment to override global version
+                # version = "3.0.0-1.XXXXXXXXXXXX"  # Override global version
                 namespace = "jarvice-system"
 
                 # global values_yaml take precedence over cluster
@@ -559,7 +689,7 @@ EOF
 
 jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
-  #JARVICE_IMAGES_VERSION:
+  #JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
 
   # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
   # settings in jarvice_* component stanzas are ignored.
@@ -572,6 +702,12 @@ jarvice:
   #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
+
+  # JARVICE_LICENSE_MANAGER_URL is auto-set in "upstream" deployments if
+  # jarvice_license_manager.enabled is true (may still be modified as needed)
+  #JARVICE_LICENSE_MANAGER_URL: # "https://jarvice-license-manager.my-domain.com"
+  #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
+  #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
 
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
@@ -642,7 +778,7 @@ aks = {
 
         helm = {
             jarvice = {
-                # version = "./"  # Uncomment to override global version
+                # version = "3.0.0-1.XXXXXXXXXXXX"  # Override global version
                 namespace = "jarvice-system"
 
                 # global values_yaml take precedence over cluster
@@ -654,7 +790,7 @@ aks = {
 
 #jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
-  #JARVICE_IMAGES_VERSION:
+  #JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
 
   # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
   # settings in jarvice_* component stanzas are ignored.
@@ -668,6 +804,12 @@ aks = {
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
 
+  # JARVICE_LICENSE_MANAGER_URL is auto-set in "upstream" deployments if
+  # jarvice_license_manager.enabled is true (may still be modified as needed)
+  #JARVICE_LICENSE_MANAGER_URL: # "https://jarvice-license-manager.my-domain.com"
+  #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
+  #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
+
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
   #JARVICE_MAIL_PASSWORD: # "Pass1234"
@@ -675,6 +817,17 @@ aks = {
   #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
+
+# Uses "user:password" pair set in jarvice.JARVICE_LICENSE_MANAGER_KEY
+#jarvice_license_manager: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  #enabled: false
+  #env:
+  #  JARVICE_HOSTALIASES: # '[ {"ip": "10.20.0.1", "hostnames": ["hostname-1a"]}, {"ip": "10.20.0.2", "hostnames": ["hostname-2a", "hostname-2b"]} ]'
+  #  JARVICE_LMSTAT_INTERVAL: 60
+  #  JARVICE_S3_BUCKET:
+  #  JARVICE_S3_ACCESSKEY:
+  #  JARVICE_S3_SECRETKEY:
+  #  JARVICE_S3_ENDPOINTURL: # https://s3.my-domain.com
 EOF
             }
         }
@@ -730,7 +883,7 @@ EOF
 
         helm = {
             jarvice = {
-                # version = "./"  # Uncomment to override global version
+                # version = "3.0.0-1.XXXXXXXXXXXX"  # Override global version
                 namespace = "jarvice-system"
 
                 # global values_yaml take precedence over cluster
@@ -742,7 +895,7 @@ EOF
 
 jarvice:
   #JARVICE_IMAGES_TAG: jarvice-master
-  #JARVICE_IMAGES_VERSION:
+  #JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
 
   # If JARVICE_CLUSTER_TYPE is set to "downstream", relevant "upstream"
   # settings in jarvice_* component stanzas are ignored.
@@ -755,6 +908,12 @@ jarvice:
   #JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
   #JARVICE_PVC_VAULT_ACCESSMODES: ReadWriteOnce
   #JARVICE_PVC_VAULT_SIZE: 10
+
+  # JARVICE_LICENSE_MANAGER_URL is auto-set in "upstream" deployments if
+  # jarvice_license_manager.enabled is true (may still be modified as needed)
+  #JARVICE_LICENSE_MANAGER_URL: # "https://jarvice-license-manager.my-domain.com"
+  #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
+  #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
 
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"

@@ -96,11 +96,20 @@ spec:
 {{- end }}
           - name: JARVICE_POD_SCHED_LOGLEVEL
             value: "{{ .Values.jarvice.JARVICE_POD_SCHED_LOGLEVEL }}"
+          - name: JARVICE_POD_SCHED_LICENSE_PRE
+{{- if (not (empty .Values.jarvice.JARVICE_POD_SCHED_LICENSE_PRE)) }}
+            value: "{{ .Values.jarvice.JARVICE_POD_SCHED_LICENSE_PRE }}"
+{{- else }}
+            value: "false"
+{{- end }}
           - name: JARVICE_POD_SCHED_MULTIPLIERS
             value: '{{ .Values.jarvice.JARVICE_POD_SCHED_MULTIPLIERS }}'
           - name: JARVICE_JOBS_MULTI_TENANT
             value: "{{ .Values.jarvice.JARVICE_JOBS_MULTI_TENANT }}"
-{{- if (not (empty .Values.jarvice.JARVICE_LICENSE_MANAGER_URL)) }}
+{{- if and .Values.jarvice_license_manager.enabled (empty .Values.jarvice.JARVICE_LICENSE_MANAGER_URL) }}
+          - name: JARVICE_LICENSE_MANAGER_URL
+            value: "http://jarvice-license-manager:8080"
+{{- else if (not (empty .Values.jarvice.JARVICE_LICENSE_MANAGER_URL)) }}
           - name: JARVICE_LICENSE_MANAGER_URL
             value: "{{ .Values.jarvice.JARVICE_LICENSE_MANAGER_URL }}"
 {{- end }}
@@ -110,7 +119,10 @@ spec:
 {{- end }}
 {{- if (not (empty .Values.jarvice.JARVICE_LICENSE_MANAGER_KEY)) }}
           - name: JARVICE_LICENSE_MANAGER_KEY
-            value: "{{ .Values.jarvice.JARVICE_LICENSE_MANAGER_KEY }}"
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-license-manager
+                key: JARVICE_LICENSE_MANAGER_KEY
 {{- end }}
         resources:
 {{ toYaml .Values.jarvice_pod_scheduler.resources | indent 10 }}

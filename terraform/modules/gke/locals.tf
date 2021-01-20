@@ -36,11 +36,27 @@ jarvice:
     nvidia_install:
       enabled: true
       nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "cloud.google.com/gke-accelerator", "operator": "Exists"}]}] }}'
+    dri_optional:
+      enabled: true
+      env:
+        DRI_INIT_DELAY: 180
+        DRI_DEFAULT_CAPACITY: 1
+    flex_volume_plugin_nfs_nolock_install:
+      enabled: true
+      env:
+        KUBELET_PLUGIN_DIR: /home/kubernetes/flexvolume
 EOF
     jarvice_ingress_upstream = <<EOF
 ${local.cluster_values_yaml}
 
 # GKE cluster upstream ingress related settings
+jarvice_license_manager:
+  #ingressPath: "/license-manager"
+  #ingressHost: "-"
+  #ingressService: "traefik"
+  #ingressServiceNamespace: "kube-system"
+  nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64"]}]}] }}'
+
 jarvice_api:
   ingressPath: "/api"
   ingressHost: "-"

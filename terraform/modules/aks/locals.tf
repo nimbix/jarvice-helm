@@ -21,11 +21,20 @@ jarvice:
     nvidia:
       enabled: true
       nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "accelerator", "operator": "In", "values": ["nvidia"]}]}] }}'
+    flex_volume_plugin_nfs_nolock_install:
+      enabled: true
+      env:
+        KUBELET_PLUGIN_DIR: /etc/kubernetes/volumeplugins
 EOF
     jarvice_ingress_upstream = <<EOF
 ${local.cluster_values_yaml}
 
 # AKS cluster upstream ingress related settings
+jarvice_license_manager:
+  #ingressHost: ${azurerm_public_ip.jarvice.fqdn}
+  #ingressPath: "/license-manager"
+  nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64"]}]}] }}'
+
 jarvice_api:
   ingressHost: ${azurerm_public_ip.jarvice.fqdn}
   ingressPath: "/api"

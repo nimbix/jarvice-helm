@@ -207,7 +207,7 @@ variable definitions.
 
 ### Terraform variable definitions
 
-The `terraform.tfvars` file found in the top level of the `jarvice-helm`
+The `terraform.tfvars` file found in the `jarvice-helm/terraform`
 directory provides the variable settings which are used to configure
 the cluster(s) for creation and deployment with `terraform`.
 
@@ -232,6 +232,16 @@ chart values are passed to the helm deployment in the following order
 See [README.md](README.md) in the top level of this repository for more
 in depth details on JARVICE Helm chart settings:
 https://github.com/nimbix/jarvice-helm
+
+Execute the following to view the available JARVICE helm chart `values.yaml`
+for a particular JARVICE release:
+```bash
+$ version=3.0.0-1.XXXXXXXXXXXX
+$ curl https://raw.githubusercontent.com/nimbix/jarvice-helm/$version/values.yaml
+```
+
+Visit the JARVICE helm chart releases page ([https://github.com/nimbix/jarvice-helm/releases](https://github.com/nimbix/jarvice-helm/releases))
+to view the latest available release versions.
 
 ### Arm64 (AArch64) cluster deployment
 
@@ -277,15 +287,23 @@ another architecture.
 ### Initialize `terraform`
 
 On the first run, it will be necessary to download and initialize the required
-`terraform` providers and modules.  Execute the following to do so:
+`terraform` providers and modules.  Execute the following from within the
+`jarvice-helm/terraform` directory to do so:
 
 ```bash
-$ terraform init ./terraform
+$ terraform init
+```
+
+If executing `terraform` from outside of the `jarvice-helm/terraform`
+directory, it will be necessary to specify the path to that directory with
+any `terraform` commands being executed:
+```bash
+$ terraform init <jarvice-helm-path>/terraform
 ```
 
 **Note:**  Whenever a `git pull` on this repository is done to get the latest
 updates, it may also be necessary to execute
-`terraform init -upgrade=true ./terraform` before applying any cluster updates.
+`terraform init -upgrade=true` before applying any cluster updates.
 
 ### Configure `terraform` variables and `helm` values
 
@@ -299,16 +317,15 @@ create (or re-create) the cluster definitions file and make sure the required
 providers and modules are initialized.  Execute the following to do so:
 
 ```bash
-$ terraform apply -target=local_file.clusters -auto-approve -compact-warnings ./terraform && terraform init ./terraform
+$ terraform apply -target=local_file.clusters -auto-approve -compact-warnings && terraform init
 ```
 
 ### Applying `terraform` configuration
 
-Once your configuration is in place, execute the following from the top level
-directory of `jarvice-helm` to deploy JARVICE:
+Once your configuration is in place, execute the following to deploy JARVICE:
 
 ```bash
-$ terraform apply ./terraform
+$ terraform apply
 ```
 
 This will `apply` the configuration which will provision the cluster
@@ -344,10 +361,10 @@ and initialize the new deployment(s).
 
 To remove **all** of the cluster(s) that you are managing with `terraform`
 and delete all of their provisioned resources, execute the
-following from the top level directory of `jarvice-helm` to deploy JARVICE:
+following to destroy the cluster(s):
 
 ```bash
-$ terraform destroy ./terraform
+$ terraform destroy
 ```
 
 In order to destroy only one of the `terraform` managed clusters, it will be
@@ -356,14 +373,14 @@ similar to the following to do so:
 
 ```bash
 $ cluster_config=aks_cluster_00
-$ terraform destroy -target=module.$cluster_config ./terraform
+$ terraform destroy -target=module.$cluster_config
 ```
 
 After destroying an individual cluster, be sure to disable it in your
 `.tfvars` configuration(s) and re-create the cluster definitions file:
 
 ```bash
-$ terraform apply -target=local_file.clusters -auto-approve -compact-warnings ./terraform
+$ terraform apply -target=local_file.clusters -auto-approve -compact-warnings
 ```
 
 **Warning:**  When destroying clusters which were provisioned using managed
