@@ -601,9 +601,17 @@ By default, interactive JARVICE jobs request LoadBalancer addresses; to use
 an Ingress controller, set the parameter `jarvice.JARVICE_JOBS_DOMAIN` to the
 FQDN of the Ingress controller; JARVICE will create `*.${JARVICE_JOBS_DOMAIN}`
 address for accessing interactive jobs over HTTPS.  To assign LoadBalancer
-addresses even if Ingress is used, set `jarvice.JARVICE_JOBS_LB_SERVICE=true`,
+addresses even if Ingress is used, set `jarvice.JARVICE_JOBS_LB_SERVICE=always`,
 in which case JARVICE will create both Ingress as well as LoadBalancer service
 IPs for interactive jobs.
+
+#### Possible settings for `jarvice.JARVICE_JOBS_LB_SERVICE`
+
+Value|Behavior w/Ingress|Behavior w/out Ingress
+---|---|---
+`always` or `"true"`|All interactive jobs get (and wait for) a LoadBalancer service address before users can connect to them; do not use if there is no load balancer as this will cause jobs to queue indefinitely|This is the default behavior without Ingress
+`never`|Jobs never request a LoadBalancer service address even if interactive and their AppDef or API submission requests one; use if there is no load balancer on the cluster to avoid certain jobs queuing indefinitely|This is setting is invalid without Ingress and should not be used
+`"false"` (legacy/default)|Interactive jobs get (and wait for) a LoadBalancer service address if the application or job submission requests it; otherwise only Ingress is used|Ignored, as the default behavior is to request a LoadBalancer service address
 
 #### Enable path based ingress
 
