@@ -83,7 +83,7 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 - JARVICE calls the filer pod *`jarvice-<user>-<vault>-0`*, in the "jobs" namespace; for example, for the user `root` with a vault named `pvcdata`, the filer pod would be called `jarvice-root-pvcdata-0` in the "jobs" namespace.  The `-0` is actually generated automatically by Kubernetes as part of the StatefulSet.  Never delete this pod manually as it can lead to data corruption and certain job failure of any job consuming it.  It is garbage collected automatically when not used.
 - For information about resizing PersistentVolumes and related StorageClass configuration, please see [Resizing Persistent Volumes using Kubernetes](https://kubernetes.io/blog/2018/07/12/resizing-persistent-volumes-using-kubernetes/).  Note that JARVICE terminates the filer pod after all jobs of that storage complete.
 - RWO-backed vaults are still presented as *FILE* type to JARVICE applications, since this is the behavior they emulate; this also increases application compatibility.
-- The dynamic filter used to front RWO-backed vaults does not support distributed NFS locking; use caution when using the same datasets across multiple jobs, as file locking cannot be relied upon for synchronization.
+- The dynamic filer used to front RWO-backed vaults does not support distributed NFS locking; use caution when using the same datasets across multiple jobs, as file locking cannot be relied upon for synchronization.
 
 ##### Advanced
 
