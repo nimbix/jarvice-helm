@@ -229,11 +229,12 @@ chart values are passed to the helm deployment in the following order
 * Global `values_yaml` found in the `.tfvars` configuration(s)
 * Per cluster `values_yaml` found in the `.tfvars` configuration(s)
 
-See [README.md](README.md) in the top level of this repository for more
-in depth details on JARVICE Helm chart settings:
-https://github.com/nimbix/jarvice-helm
+**Note:**  The `terraform.tfvars` file already includes the most pertinent
+values which might need to be modified for JARVICE deployments.  Additional
+values only need to be included if the helm chart defaults require
+modification.
 
-Execute the following to view the available JARVICE helm chart `values.yaml`
+Execute the following to view the default JARVICE helm chart `values.yaml`
 for a particular JARVICE release:
 ```bash
 $ version=3.0.0-1.XXXXXXXXXXXX
@@ -242,6 +243,10 @@ $ curl https://raw.githubusercontent.com/nimbix/jarvice-helm/$version/values.yam
 
 Visit the JARVICE helm chart releases page ([https://github.com/nimbix/jarvice-helm/releases](https://github.com/nimbix/jarvice-helm/releases))
 to view the latest available release versions.
+
+See [README.md](README.md) in the top level of this repository for more
+in depth details on JARVICE Helm chart settings:
+https://github.com/nimbix/jarvice-helm
 
 ### Arm64 (AArch64) cluster deployment
 

@@ -140,14 +140,14 @@ jarvice:
       tolerations: #'[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64"]}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64"]}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true", "kubernetes.io/arch": "amd64"}'
-      image: busybox:latest
+      image: gcr.io/jarvice/busybox:latest
       imagePullPolicy: IfNotPresent
     node_init:
       enabled: false
       tolerations: # '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
-      image: busybox:latest
+      image: gcr.io/jarvice/busybox:latest
       imagePullPolicy: IfNotPresent
       env:
         COMMAND: |
@@ -159,14 +159,14 @@ jarvice:
       tolerations: # '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64", "ppc64le"]}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64", "ppc64le"]}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true", "kubernetes.io/arch": "amd64"}'
-      image: nvidia/k8s-device-plugin:1.11
+      image: gcr.io/jarvice/nvidia-k8s-device-plugin:1.11
       imagePullPolicy: IfNotPresent
     nvidia_install:
       enabled: false
       tolerations: # '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64", "ppc64le"]}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64", "ppc64le"]}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true", "kubernetes.io/arch": "amd64"}'
-      image: busybox:latest
+      image: gcr.io/jarvice/busybox:latest
       imagePullPolicy: IfNotPresent
       env:
         NVIDIA_DRIVER_VERSION: 450.80.02-1
@@ -176,7 +176,7 @@ jarvice:
       # Xilinx FPGA only support amd64 arch
       nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64"]}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64"]}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true", "kubernetes.io/arch": "amd64"}'
-      image: xilinxatg/xilinx_k8s_fpga_plugin:latest
+      image: gcr.io/jarvice/xilinx_k8s_fpga_plugin:2020.11.24
       imagePullPolicy: IfNotPresent
     rdma:
       enabled: false
@@ -200,7 +200,7 @@ jarvice:
       tolerations: '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.jarvice.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.jarvice.io/jarvice-storage", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-storage", "effect": "NoSchedule", "operator": "Exists"}]'
       nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-system", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-storage", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-storage", "operator": "Exists"}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true", "kubernetes.io/arch": "amd64"}'
-      image: busybox:latest
+      image: gcr.io/jarvice/busybox:latest
       imagePullPolicy: IfNotPresent
       env:
         KUBELET_PLUGIN_DIR: /usr/libexec/kubernetes/kubelet-plugins/volume/exec
@@ -228,7 +228,7 @@ jarvice_db: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   nodeSelector: # '{"node-role.jarvice.io/jarvice-db": "true"}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
-  image: mariadb:10.5
+  image: gcr.io/jarvice/mariadb:10.5
   imagePullPolicy: IfNotPresent
   persistence:
     enabled: false
@@ -380,7 +380,7 @@ jarvice_memcached: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   nodeSelector: # '{"node-role.jarvice.io/jarvice-memcached": "true"}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
-  image: memcached:1.5
+  image: gcr.io/jarvice/memcached:1.5
   imagePullPolicy: IfNotPresent
   maxItemMemory: 64
   verbosity: v
