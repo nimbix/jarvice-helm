@@ -518,7 +518,7 @@ spec:
             path: /var/lib/kubelet/device-plugins
       initContainers:
       - name: init-delay
-        image: busybox:latest
+        image: gcr.io/jarvice/busybox:latest
         imagePullPolicy: "IfNotPresent"
         command: ['sh', '-c', 'sleep ${DRI_INIT_DELAY}']
         env:
