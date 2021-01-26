@@ -55,6 +55,8 @@ jarvice:
   JARVICE_PVC_VAULT_ACCESSMODES: ${local.jarvice_helm_values["JARVICE_PVC_VAULT_ACCESSMODES"] == null ? "ReadWriteOnce" : local.jarvice_helm_values["JARVICE_PVC_VAULT_ACCESSMODES"]}
   JARVICE_PVC_VAULT_SIZE: ${local.jarvice_helm_values["JARVICE_PVC_VAULT_SIZE"] == null ? 10 : local.jarvice_helm_values["JARVICE_PVC_VAULT_SIZE"]}
 
+  JARVICE_POD_SCHED_MULTIPLIERS: '{"cpu": 0, "memory": 0, "ephemeral-storage": 0, "pods": 0}'
+
   daemonsets:
     nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}] }}'
     lxcfs:
@@ -68,6 +70,10 @@ jarvice_db:
 jarvice_dal:
   env:
     JARVICE_MACHINES_ADD: '${local.jarvice_machines_add}'
+
+jarvice_k8s_scheduler:
+  env:
+    JARVICE_UNFS_NODE_SELECTOR: '{"node-role.jarvice.io/jarvice-system": "true"}'
 EOF
 }
 
