@@ -529,7 +529,7 @@ eks = {
 
         meta = {
             cluster_name = "tf-jarvice"
-            kubernetes_version = "1.17"
+            kubernetes_version = "1.18"
             #arch = "arm64"  # Uncomment to deploy an arm64 cluster
 
             ssh_public_key = null  # global setting used if null specified
@@ -635,7 +635,7 @@ EOF
 
         meta = {
             cluster_name = "tf-jarvice-downstream"
-            kubernetes_version = "1.17"
+            kubernetes_version = "1.18"
             #arch = "arm64"  # Uncomment to deploy an arm64 cluster
 
             ssh_public_key = null  # global setting used if null specified
