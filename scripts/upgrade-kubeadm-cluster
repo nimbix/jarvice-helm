@@ -71,7 +71,7 @@ EOF
 function strict_version {
     ver=$1
     ver_req=$2
-    python -c "from distutils.version import StrictVersion;print StrictVersion('$ver') >= StrictVersion('$ver_req');" 2>/dev/null || /bin/true
+    $(type -p python3 || type -p python) -c "from distutils.version import StrictVersion;print(StrictVersion('$ver') >= StrictVersion('$ver_req'));" 2>/dev/null || /bin/true
 }
 
 function prompt_continue {
