@@ -162,6 +162,19 @@ spec:
 {{- else }}
             value: "http://jarvice-api:8080"
 {{- end }}
+{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_API_PUBLIC_URL)) }}
+          - name: JARVICE_API_PUBLIC_URL
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_API_PUBLIC_URL }}"
+{{- else if (not (empty .Values.jarvice_api.ingressHost)) }}
+          - name: JARVICE_API_PUBLIC_URL
+{{- if or (eq "lookupip" .Values.jarvice_api.ingressHost) (eq "-" .Values.jarvice_api.ingressHost) }}
+            value: 'https://{{- (first (lookup "v1" "Service" .Values.jarvice_api.ingressServiceNamespace .Values.jarvice_api.ingressService).status.loadBalancer.ingress).ip }}{{ .Values.jarvice_api.ingressPath }}'
+{{- else if eq "lookup" .Values.jarvice_api.ingressHost }}
+            value: 'https://{{- (first (lookup "v1" "Service" .Values.jarvice_api.ingressServiceNamespace .Values.jarvice_api.ingressService).status.loadBalancer.ingress).hostname }}{{ .Values.jarvice_api.ingressPath }}'
+{{- else }}
+            value: "https://{{ .Values.jarvice_api.ingressHost }}{{ .Values.jarvice_api.ingressPath }}"
+{{- end }}
+{{- end }}
           - name: JARVICE_USER_DEFAULT_ENABLED
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_USER_DEFAULT_ENABLED }}"
           - name: JARVICE_USER_DEFAULT_DEVELOPER
