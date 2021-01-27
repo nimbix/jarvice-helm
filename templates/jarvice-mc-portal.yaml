@@ -162,6 +162,10 @@ spec:
 {{- else }}
             value: "http://jarvice-api:8080"
 {{- end }}
+{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_API_PUBLIC_URL)) }}
+          - name: JARVICE_API_PUBLIC_URL
+            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_API_PUBLIC_URL }}"
+{{- end }}
           - name: JARVICE_USER_DEFAULT_ENABLED
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_USER_DEFAULT_ENABLED }}"
           - name: JARVICE_USER_DEFAULT_DEVELOPER

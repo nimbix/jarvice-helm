@@ -804,4 +804,6 @@ jarvice_mc_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     JARVICE_PORTAL_DBPASSWD: # Pass1234
     # If a non-empty string is passed, the MC portal will not warn about the use of API key related substitutions
     JARVICE_DISABLE_API_SUBST_WARNING: # ""
+    # If a non-empty string is passed, the MC portal will use this URL for build and pull web links shown to the user
+    JARVICE_API_PUBLIC_URL: # ""
 
