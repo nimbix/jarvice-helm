@@ -68,7 +68,7 @@ done
 function strict_version {
     ver=$1
     ver_req=$2
-    python -c "from distutils.version import StrictVersion;print StrictVersion('$ver') >= StrictVersion('$ver_req');"
+    $(type -p python3 || type -p python) -c "from distutils.version import StrictVersion;print(StrictVersion('$ver') >= StrictVersion('$ver_req'));" 2>/dev/null || /bin/true
 }
 
 function check_deps {
