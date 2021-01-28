@@ -5,11 +5,18 @@
 # See the JARVICE Terraform Configuration documentation for more information
 # on terraform variable definitions and JARVICE helm chart values:
 # https://github.com/nimbix/jarvice-helm/blob/master/Terraform.md#terraform-configuration
+#
+# The following configuration sections available below:
+#   * Global settings - Configuration options that apply to all clusters
+#   * Kubernetes clusters - Deploy JARVICE to pre-existing K8s clusters
+#   * GKE clusters - Provision GKE infrastructure/clusters and deploy JARVICE
+#   * EKS clusters - Provision EKS infrastructure/clusters and deploy JARVICE
+#   * AKS clusters - Provision AKS infrastructure/clusters and deploy JARVICE
 
 #######################
 ### Global settings ###
 #######################
-global = {
+global = {  # Global config options can be overridden in cluster configs
     meta = {
         ssh_public_key = "~/.ssh/id_rsa.pub"
     }
@@ -64,9 +71,9 @@ EOF
 }
 
 ###########################
-### Kubernetes settings ###
+### Kubernetes clusters ###
 ###########################
-k8s = {
+k8s = {  # Deploy JARVICE to pre-existing K8s clusters
     k8s_cluster_00 = {
         enabled = false
 
@@ -286,9 +293,9 @@ EOF
 }
 
 #################################
-### Google Cloud GKE Settings ###
+### Google Cloud GKE clusters ###
 #################################
-gke = {
+gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
     gke_cluster_00 = {
         enabled = false
 
@@ -516,9 +523,9 @@ EOF
 
 
 ###########################
-### Amazon EKS Settings ###
+### Amazon EKS clusters ###
 ###########################
-eks = {
+eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
     eks_cluster_00 = {
         enabled = false
 
@@ -724,9 +731,9 @@ EOF
 
 
 ##########################
-### Azure AKS settings ###
+### Azure AKS clusters ###
 ##########################
-aks = {
+aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
     aks_cluster_00 = {
         enabled = false
 
