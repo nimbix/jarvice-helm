@@ -27,7 +27,20 @@ locals {
         "https://www.googleapis.com/auth/cloud-platform"
     ]
 
+    project_services = [
+        "compute.googleapis.com",
+        "container.googleapis.com"
+    ]
+
     username = "kubernetes-admin"
+}
+
+resource "google_project_service" "project_services" {
+    for_each = toset(local.project_services)
+
+    service = each.value
+    disable_dependent_services = false
+    disable_on_destroy = false
 }
 
 resource "random_id" "password" {
@@ -115,6 +128,8 @@ EOF
     resource_labels = {
         "cluster_name" = var.cluster.meta["cluster_name"]
     }
+
+    depends_on = [google_project_service.project_services]
 }
 
 resource "google_container_node_pool" "jarvice_system" {
