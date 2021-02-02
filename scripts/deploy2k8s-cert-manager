@@ -1,0 +1,130 @@
+#!/bin/bash
+
+version_tag=
+namespace=cert-manager
+
+function usage {
+    cat <<EOF
+Usage:
+    $0 [options]
+
+Options:
+    --version-tag <tag>             cert-manager version (optional)
+    --namespace <kube_namespace>    Kubernetes namespace to deploy to
+                                    (Default: $namespace)
+
+Example:
+    $0 --version-tag v1.1.0
+EOF
+}
+
+HELM=$(type -p helm)
+if [ -z "$HELM" ]; then
+    cat <<EOF
+Could not find 'helm' in PATH.  It may not be installed.
+Run 'install-helm' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+KUBECTL=$(type -p kubectl)
+if [ -z "$KUBECTL" ]; then
+    cat <<EOF
+Could not find 'kubectl' in PATH.  It may not be installed.
+Run 'install-kubectl' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        --help)
+            usage
+            exit 0
+            ;;
+        --version-tag)
+            version_tag=$2
+            shift; shift
+            ;;
+        --namespace)
+            namespace=$2
+            shift; shift
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+set -e
+
+echo
+echo "* Creating namespace: $namespace"
+$KUBECTL create namespace $namespace 2>/dev/null || /bin/true
+
+echo
+echo "* Deploying..."
+repo=https://charts.jetstack.io
+$HELM upgrade cert-manager cert-manager --repo $repo \
+    --namespace $namespace --install --reset-values \
+    \
+    --set installCRDs=true \
+    \
+    ${version_tag:+--set image.tag=$version_tag} \
+    \
+    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key="node-role\.jarvice\.io/jarvice-system" \
+    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator="Exists" \
+    \
+    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[1].matchExpressions[0].key="node-role\.kubernetes\.io/jarvice-system" \
+    --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[1].matchExpressions[0].operator="Exists" \
+    \
+    --set tolerations[0]."key"="node-role\.jarvice\.io/jarvice-system" \
+    --set tolerations[0]."effect"="NoSchedule" \
+    --set tolerations[0]."operator"="Exists" \
+    \
+    --set tolerations[1]."key"="node-role\.kubernetes\.io/jarvice-system" \
+    --set tolerations[1]."effect"="NoSchedule" \
+    --set tolerations[1]."operator"="Exists" \
+    \
+    --set prometheus.enabled=false \
+    \
+    --set webhook.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key="node-role\.jarvice\.io/jarvice-system" \
+    --set webhook.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator="Exists" \
+    \
+    --set webhook.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[1].matchExpressions[0].key="node-role\.kubernetes\.io/jarvice-system" \
+    --set webhook.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[1].matchExpressions[0].operator="Exists" \
+    \
+    --set webhook.tolerations[0]."key"="node-role\.jarvice\.io/jarvice-system" \
+    --set webhook.tolerations[0]."effect"="NoSchedule" \
+    --set webhook.tolerations[0]."operator"="Exists" \
+    \
+    --set webhook.tolerations[1]."key"="node-role\.kubernetes\.io/jarvice-system" \
+    --set webhook.tolerations[1]."effect"="NoSchedule" \
+    --set webhook.tolerations[1]."operator"="Exists" \
+    \
+    ${version_tag:+--set webhook.image.tag=$version_tag} \
+    \
+    --set cainjector.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key="node-role\.jarvice\.io/jarvice-system" \
+    --set cainjector.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator="Exists" \
+    \
+    --set cainjector.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[1].matchExpressions[0].key="node-role\.kubernetes\.io/jarvice-system" \
+    --set cainjector.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[1].matchExpressions[0].operator="Exists" \
+    \
+    --set cainjector.tolerations[0]."key"="node-role\.jarvice\.io/jarvice-system" \
+    --set cainjector.tolerations[0]."effect"="NoSchedule" \
+    --set cainjector.tolerations[0]."operator"="Exists" \
+    \
+    --set cainjector.tolerations[1]."key"="node-role\.kubernetes\.io/jarvice-system" \
+    --set cainjector.tolerations[1]."effect"="NoSchedule" \
+    --set cainjector.tolerations[1]."operator"="Exists" \
+    \
+    ${version_tag:+--set cainjector.image.tag=$version_tag} \
+
+echo
+echo "* Deployment successful..."
+
+echo
+echo "For advanced setup details, visit https://artifacthub.io/packages/helm/jetstack/cert-manager and/or execute:"
+echo "$ helm inspect all cert-manager --repo $repo"
+
