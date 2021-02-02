@@ -529,7 +529,7 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
     eks_cluster_00 = {
         enabled = false
 
-        auth = {
+        auth = {  # Optional, null values are replaced with aws CLI defaults
             access_key = null
             secret_key = null
         }
@@ -635,7 +635,7 @@ EOF
     eks_cluster_01 = {
         enabled = false
 
-        auth = {
+        auth = {  # Optional, null values are replaced with aws CLI defaults
             access_key = null
             secret_key = null
         }
