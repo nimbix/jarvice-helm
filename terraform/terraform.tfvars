@@ -299,9 +299,9 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
     gke_cluster_00 = {
         enabled = false
 
-        auth = {
+        auth = {  # Optional, null values are replaced with gcloud CLI defaults
             project = null
-            credentials = null
+            credentials = null  # Path to JSON service account key file
         }
 
         meta = {
@@ -416,9 +416,9 @@ EOF
     gke_cluster_01 = {
         enabled = false
 
-        auth = {
+        auth = {  # Optional, null values are replaced with gcloud CLI defaults
             project = null
-            credentials = null
+            credentials = null  # Path to JSON service account key file
         }
 
         meta = {
