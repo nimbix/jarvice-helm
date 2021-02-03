@@ -115,6 +115,15 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.21.9-1.202102032013
+
+* (2471) Fixed build and pull confirmation dialog boxes in *PushToCompute* view to include remotely accessible URLs that can be copied and used outside of portal; this "public" URL defaults to the `jarvice_api.ingressHost` (and associated `jarvice_api.ingressPath` value if applicable), but can be overridden with the `jarvice_mc_portal.env.JARVICE_API_PUBLIC_URL` value as well.
+* (3680) Moved CSS into main portal site to avoid rare rendering issues if CSS cannot be loaded.
+* (3891) Support for traditional HPC queues and submission clients; please see [nimbix/jarvice-hpc](https://github.com/nimbix/jarvice-hpc) on GitHub for details.
+* (3909) Added ability to prevent interactive jobs from requesting *LoadBalancer* service addresses, as a downstream cluster setting, to avoid infinite queuing on clusters without LB capabilities, by setting `jarvice.JARVICE_JOBS_LB_SERVICE=never`; see [Using an Ingress controller for jobs](README.md#using-an-ingress-controller-for-jobs) for more details on this setting.
+* (3910) Added feature to allow users to explicitly request an *LoadBalancer* IP address in the task builder's *OPTIONAL* tab, if the target cluster supports it, in order to allow inbound connections from protocols other than HTTP(S) via Ingress; note that this option is simply a hint for the target cluster, and may be ignored if *LoadBalancer* requests are forbidden on it (see above).
+* (3950) Fixed API authentication issue.
+
 ## 3.0.0-1.202101202004
 
 * (3391) (3917) Future support for traditional HPC queues and submission clients.
