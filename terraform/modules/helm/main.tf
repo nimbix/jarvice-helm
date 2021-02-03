@@ -51,6 +51,22 @@ resource "helm_release" "external_dns" {
     values = [var.charts["external-dns"]["values"]]
 }
 
+resource "helm_release" "cert_manager" {
+    count = contains(keys(var.charts), "cert-manager") ? 1 : 0
+
+    name = "cert-manager"
+    repository = "https://charts.jetstack.io"
+    chart = "cert-manager"
+    namespace = "cert-manager"
+    create_namespace = true
+    reuse_values = false
+    reset_values = true
+    render_subchart_notes = false
+    timeout = 600
+
+    values = [var.charts["cert-manager"]["values"]]
+}
+
 resource "helm_release" "traefik" {
     count = contains(keys(var.charts), "traefik") ? 1 : 0
 
@@ -90,6 +106,6 @@ resource "helm_release" "jarvice" {
         var.cluster_values_yaml
     ]
 
-    depends_on = [helm_release.traefik]
+    depends_on = [helm_release.cert_manager, helm_release.traefik]
 }
 

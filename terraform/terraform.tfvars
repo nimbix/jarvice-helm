@@ -5,11 +5,18 @@
 # See the JARVICE Terraform Configuration documentation for more information
 # on terraform variable definitions and JARVICE helm chart values:
 # https://github.com/nimbix/jarvice-helm/blob/master/Terraform.md#terraform-configuration
+#
+# The following configuration sections available below:
+#   * Global settings - Configuration options that apply to all clusters
+#   * Kubernetes clusters - Deploy JARVICE to pre-existing K8s clusters
+#   * GKE clusters - Provision GKE infrastructure/clusters and deploy JARVICE
+#   * EKS clusters - Provision EKS infrastructure/clusters and deploy JARVICE
+#   * AKS clusters - Provision AKS infrastructure/clusters and deploy JARVICE
 
 #######################
 ### Global settings ###
 #######################
-global = {
+global = {  # Global config options can be overridden in cluster configs
     meta = {
         ssh_public_key = "~/.ssh/id_rsa.pub"
     }
@@ -64,9 +71,9 @@ EOF
 }
 
 ###########################
-### Kubernetes settings ###
+### Kubernetes clusters ###
 ###########################
-k8s = {
+k8s = {  # Deploy JARVICE to pre-existing K8s clusters
     k8s_cluster_00 = {
         enabled = false
 
@@ -286,15 +293,15 @@ EOF
 }
 
 #################################
-### Google Cloud GKE Settings ###
+### Google Cloud GKE clusters ###
 #################################
-gke = {
+gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
     gke_cluster_00 = {
         enabled = false
 
-        auth = {
+        auth = {  # Optional, null values are replaced with gcloud CLI defaults
             project = null
-            credentials = null
+            credentials = null  # Path to JSON service account key file
         }
 
         meta = {
@@ -409,9 +416,9 @@ EOF
     gke_cluster_01 = {
         enabled = false
 
-        auth = {
+        auth = {  # Optional, null values are replaced with gcloud CLI defaults
             project = null
-            credentials = null
+            credentials = null  # Path to JSON service account key file
         }
 
         meta = {
@@ -516,20 +523,20 @@ EOF
 
 
 ###########################
-### Amazon EKS Settings ###
+### Amazon EKS clusters ###
 ###########################
-eks = {
+eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
     eks_cluster_00 = {
         enabled = false
 
-        auth = {
+        auth = {  # Optional, null values are replaced with aws CLI defaults
             access_key = null
             secret_key = null
         }
 
         meta = {
             cluster_name = "tf-jarvice"
-            kubernetes_version = "1.16"
+            kubernetes_version = "1.18"
             #arch = "arm64"  # Uncomment to deploy an arm64 cluster
 
             ssh_public_key = null  # global setting used if null specified
@@ -628,14 +635,14 @@ EOF
     eks_cluster_01 = {
         enabled = false
 
-        auth = {
+        auth = {  # Optional, null values are replaced with aws CLI defaults
             access_key = null
             secret_key = null
         }
 
         meta = {
             cluster_name = "tf-jarvice-downstream"
-            kubernetes_version = "1.16"
+            kubernetes_version = "1.18"
             #arch = "arm64"  # Uncomment to deploy an arm64 cluster
 
             ssh_public_key = null  # global setting used if null specified
@@ -724,9 +731,9 @@ EOF
 
 
 ##########################
-### Azure AKS settings ###
+### Azure AKS clusters ###
 ##########################
-aks = {
+aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
     aks_cluster_00 = {
         enabled = false
 
