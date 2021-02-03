@@ -13,6 +13,78 @@ module "common" {
 
 locals {
     charts = {
+        "cert-manager" = {
+            "values" = <<EOF
+installCRDs: true
+
+#ingressShim:
+#  defaultIssuerName: letsencrypt-prod
+#  defaultIssuerKind: ClusterIssuer
+#  defaultIssuerGroup: cert-manager.io
+
+prometheus:
+  enabled: false
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: node-role.jarvice.io/jarvice-system
+          operator: Exists
+      - matchExpressions:
+        - key: node-role.kubernetes.io/jarvice-system
+          operator: Exists
+
+tolerations:
+  - key: node-role.jarvice.io/jarvice-system
+    effect: NoSchedule
+    operator: Exists
+  - key: node-role.kubernetes.io/jarvice-system
+    effect: NoSchedule
+    operator: Exists
+
+webhook:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: node-role.jarvice.io/jarvice-system
+            operator: Exists
+        - matchExpressions:
+          - key: node-role.kubernetes.io/jarvice-system
+            operator: Exists
+
+  tolerations:
+    - key: node-role.jarvice.io/jarvice-system
+      effect: NoSchedule
+      operator: Exists
+    - key: node-role.kubernetes.io/jarvice-system
+      effect: NoSchedule
+      operator: Exists
+
+cainjector:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: node-role.jarvice.io/jarvice-system
+            operator: Exists
+        - matchExpressions:
+          - key: node-role.kubernetes.io/jarvice-system
+            operator: Exists
+
+  tolerations:
+    - key: node-role.jarvice.io/jarvice-system
+      effect: NoSchedule
+      operator: Exists
+    - key: node-role.kubernetes.io/jarvice-system
+      effect: NoSchedule
+      operator: Exists
+EOF
+        },
         "traefik" = {
             "values" = <<EOF
 replicas: 2
