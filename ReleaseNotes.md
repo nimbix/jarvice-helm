@@ -115,7 +115,7 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
-## 3.21.9-1.202102032013
+## 3.21.0-0.202102032037 LTS
 
 * (2471) Fixed build and pull confirmation dialog boxes in *PushToCompute* view to include remotely accessible URLs that can be copied and used outside of portal; this "public" URL defaults to the `jarvice_api.ingressHost` (and associated `jarvice_api.ingressPath` value if applicable), but can be overridden with the `jarvice_mc_portal.env.JARVICE_API_PUBLIC_URL` value as well.
 * (3680) Moved CSS into main portal site to avoid rare rendering issues if CSS cannot be loaded.
