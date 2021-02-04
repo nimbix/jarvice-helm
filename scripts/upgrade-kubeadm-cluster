@@ -74,6 +74,12 @@ function strict_version {
     $(type -p python3 || type -p python) -c "from distutils.version import StrictVersion;print(StrictVersion('$ver') >= StrictVersion('$ver_req'));" 2>/dev/null || /bin/true
 }
 
+function version_gt {
+    ver=$1
+    ver_req=$2
+    $(type -p python3 || type -p python) -c "from distutils.version import StrictVersion;print(StrictVersion('$ver') > StrictVersion('$ver_req'));" 2>/dev/null || /bin/true
+}
+
 function prompt_continue {
     prompt=
     until [ -n "$YES" -o "$prompt" == "yes" ]; do
@@ -230,7 +236,7 @@ echo
 # Find kubectl
 [ -z "$KUBECTL" ] && KUBECTL=$(type -p kubectl)
 [ -z "$KUBECTL" ] && echo "Cannot find kubectl executable.  Exiting..." && exit 1
-[ ! -x "$KUBECTL" ] && echo "Cannot $KUBECTL is not executable.  Exiting..." && exit 1
+[ ! -x "$KUBECTL" ] && echo "$KUBECTL is not executable.  Exiting..." && exit 1
 echo "Found kubectl executable: $KUBECTL"
 KUBECTL_VER_CURR=$($KUBECTL version 2>/dev/null | grep ^Client | sed -E 's/.*GitVersion:"v([\.0-9]+)".*/\1/')
 KUBECTL_VER_MAJOR=$($KUBECTL version 2>/dev/null | grep ^Client | sed -E 's/.*Major:"([0-9]+)".*/\1/')
@@ -393,7 +399,7 @@ if [ "$(basename $0)" == "upgrade-kubeadm-cluster" ]; then
         prompt_continue ""
         set -e
         echo
-        $KUBECTL drain $node --ignore-daemonsets --delete-local-data $DRY_RUN
+        $KUBECTL drain $node --ignore-daemonsets --force --delete-local-data $DRY_RUN
 
         cmd=/tmp/upgrade-kubeadm
         args="$MINOR $PATCH $NO_DRY_RUN $YES"
@@ -435,7 +441,7 @@ fi
 # Find kubelet
 [ -z "$KUBELET" ] && KUBELET=$(type -p kubelet)
 [ -z "$KUBELET" ] && echo "Cannot find kubelet executable.  Exiting..." && exit 1
-[ ! -x "$KUBELET" ] && echo "Cannot $KUBELET is not executable.  Exiting..." && exit 1
+[ ! -x "$KUBELET" ] && echo "$KUBELET is not executable.  Exiting..." && exit 1
 echo "Found kubelet executable: $KUBELET"
 KUBELET_VER_CURR=$($KUBELET --version 2>/dev/null | awk '{print $2}' | sed s/^v//)
 KUBELET_VER_MAJOR=$(echo $KUBELET_VER_CURR | awk -F. '{print $1}')
@@ -450,7 +456,7 @@ fi
 # Find kubeadm
 [ -z "$KUBEADM" ] && KUBEADM=$(type -p kubeadm)
 [ -z "$KUBEADM" ] && echo "Cannot find kubeadm executable.  Exiting..." && exit 1
-[ ! -x "$KUBEADM" ] && echo "Cannot $KUBEADM is not executable.  Exiting..." && exit 1
+[ ! -x "$KUBEADM" ] && echo "$KUBEADM is not executable.  Exiting..." && exit 1
 echo "Found kubeadm executable: $KUBEADM"
 KUBEADM_VER_CURR=$($KUBEADM version 2>/dev/null | sed -E 's/.*GitVersion:"v([\.0-9]+)".*/\1/')
 KUBEADM_VER_MAJOR=$($KUBEADM version 2>/dev/null | sed -E 's/.*Major:"([0-9]+)".*/\1/')
@@ -461,6 +467,13 @@ if [ "$(basename $0)" == "upgrade-kubeadm" ]; then
     KUBEBIN_VER_CURR=$KUBEADM_VER_CURR
     KUBEBIN_VER_MAJOR=$KUBEADM_VER_MAJOR
     KUBEBIN_VER_MINOR=$KUBEADM_VER_MINOR
+
+    if [ "$(version_gt $KUBEADM_VER_MAJOR.$KUBEADM_VER_MINOR $KUBELET_VER_MAJOR.$KUBELET_VER_MINOR)" == "True" ]; then
+        echo "kubeadm version ($KUBEADM_VER_MAJOR.$KUBEADM_VER_MINOR) is already newer than kubelet version ($KUBELET_VER_MAJOR.$KUBELET_VER_MINOR)."
+        echo "There is nothing to do until kubelet is upgraded to match version $KUBEADM_VER_MAJOR.$KUBEADM_VER_MINOR.  Exiting..."
+        echo
+        exit 0
+    fi
 fi
 
 if [ "$(strict_version $KUBEBIN_VER_CURR $KUBE_VER_REQ)" != "True" ]; then
