@@ -14,7 +14,7 @@ A system administrator would create a Kubernetes *Service* that targets pods bas
 2. Single endpoint --> any pod in a job (e.g. stateless web service started on all parallel workers of a job)
 3. Single endpoint --> mode 1 or 2 across multiple jobs
 
-Additionally, multiple endpoints can also target be used, but this is not a typical pattern.
+Additionally, multiple endpoints can also be used, but this is not a typical pattern.  Ensuring proper configuration is up to the system administrator or service provider.
 
 ## Service Configuration
 
@@ -36,6 +36,7 @@ The above example targets the first pod of a job where the user `user1` specifie
 1. The user-specified tag is case sensitive.
 2. Per the syntax and character set rules referred to above, the entire value must be 63 characters or less, including the JARVICE user name and the tag.
 3. If a user launches multiple jobs with the same tag specification, and a load balancer service is used, this becomes the "Single endpoint --> mode 1 or 2 across multiple jobs" mode.
+4. If using multi-tenant network policies, the service must adhere to the rules configured for external load balancers and ingress controllers.  See [JARVICE Multi-tenant Overview](MultiTenant.md) for details.
 
 ## End-user Configuration
 
