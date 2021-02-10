@@ -37,6 +37,7 @@ The above example targets the first pod of a job where the user `user1` specifie
 2. Per the syntax and character set rules referred to above, the entire value must be 63 characters or less, including the JARVICE user name and the tag.
 3. If a user launches multiple jobs with the same tag specification, and a load balancer service is used, this becomes the "Single endpoint --> mode 1 or 2 across multiple jobs" mode.
 4. If using multi-tenant network policies, the service must adhere to the rules configured for external load balancers and ingress controllers.  See [JARVICE Multi-tenant Overview](MultiTenant.md) for details.
+5. The load balancing algorithm of the external service is out of scope of JARVICE, and may produce different than intended results for the modes described in [Pattern Overview](#pattern-overview); for best results, the first mode (*Single endpoint --> first pod in a job*) is recommended as most likely to work as intended regardless of application.
 
 ## End-user Configuration
 
