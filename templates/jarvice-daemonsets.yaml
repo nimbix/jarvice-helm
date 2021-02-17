@@ -3,7 +3,7 @@
 {{- $daemonSetsNamespace = .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE -}}
 {{- end }}
 {{- $daemonSetsItems := (lookup "apps/v1" "DaemonSet" "" "").items -}}
-{{- if or .Values.jarvice.daemonsets.cache_pull.enabled .Values.jarvice.daemonsets.lxcfs.enabled .Values.jarvice.daemonsets.nvidia.enabled .Values.jarvice.daemonsets.rdma.enabled .Values.jarvice.daemonsets.node_init.enabled .Values.jarvice.daemonsets.disable_hyper_threading.enabled .Values.jarvice.daemonsets.dri_optional.enabled .Values.jarvice.daemonsets.nvidia_install.enabled .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.enabled }}
+{{- if or .Values.jarvice.daemonsets.cache_pull.enabled .Values.jarvice.daemonsets.lxcfs.enabled .Values.jarvice.daemonsets.nvidia.enabled .Values.jarvice.daemonsets.rdma.enabled .Values.jarvice.daemonsets.node_init.enabled .Values.jarvice.daemonsets.disable_hyper_threading.enabled .Values.jarvice.daemonsets.dri_optional.enabled .Values.jarvice.daemonsets.nvidia_install.enabled .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.enabled .Values.jarvice_registry_proxy.enabled }}
 apiVersion: {{ template "apiVersion.priorityClass" . }}
 kind: PriorityClass
 metadata:
@@ -609,6 +609,78 @@ spec:
             done
             echo "Finished CPU hyper-threading disablement on $(hostname)..."
             lscpu --extended || /bin/true
+        securityContext:
+          privileged: true
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+      priorityClassName: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+      priorityClassName: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
+---
+{{- end }}
+{{- if .Values.jarvice_registry_proxy.enabled }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: jarvice-registry-proxy
+{{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+  namespace: {{ .Release.Namespace }}-daemonsets
+{{- else }}
+  namespace: {{ .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-registry-proxy
+spec:
+  selector:
+    matchLabels:
+      component: jarvice-registry-proxy
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-registry-proxy
+    spec:
+      hostPID: true
+{{- if (not (empty .Values.jarvice.daemonsets.jarvice_registry_proxy.tolerations)) }}
+      tolerations: {{ .Values.jarvice.daemonsets.jarvice_registry_proxy.tolerations }}
+{{- else if (not (empty .Values.jarvice.daemonsets.tolerations)) }}
+      tolerations: {{ .Values.jarvice.daemonsets.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice.daemonsets.jarvice_registry_proxy.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.daemonsets.jarvice_registry_proxy.nodeAffinity  }}
+{{- else if (not (empty .Values.jarvice.daemonsets.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.daemonsets.nodeAffinity }}
+{{- end }}
+{{- if (not (empty .Values.jarvice.daemonsets.jarvice_registry_proxy.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.daemonsets.jarvice_registry_proxy.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.daemonsets.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.daemonsets.nodeSelector }}
+{{- end }}
+      containers:
+      - name: pause
+        image: "gcr.io/google-containers/pause:3.2"
+        imagePullPolicy: "IfNotPresent"
+      initContainers:
+      - name: jarvice-registry-proxy-ds
+        image: {{ .Values.jarvice.daemonsets.jarvice_registry_proxy.image }}
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.jarvice_registry_proxy.imagePullPolicy }}
+        command:
+          - /bin/sh
+          - -c
+          - nsenter -t 1 -m -u -i -n -p -- /bin/sh -c "$DEPLOY_CA_CERTIFICATE"
+        env:
+        - name: DOCKER_CERTS_DIR
+          value: "{{ .Values.jarvice.daemonsets.jarvice_registry_proxy.env.DOCKER_CERTS_DIR }}"
+        - name: DEPLOY_CA_CERTIFICATE
+          value: |
+            echo "Deploying jarvice-registry-proxy CA certificate to $DOCKER_CERTS_DIR on $(hostname)..."
+            certs_dir="$DOCKER_CERTS_DIR/localhost:{{ .Values.jarvice_registry_proxy.nodePort }}"
+            mkdir -p $certs_dir
+            echo | openssl s_client -showcerts -connect localhost:{{ .Values.jarvice_registry_proxy.nodePort }} </dev/null 2>/dev/null | openssl x509 -outform PEM >$certs_dir/ca.crt
+            echo "Finished deploying jarvice-registry-proxy CA certificate to $DOCKER_CERTS_DIR on $(hostname)..."
         securityContext:
           privileged: true
 {{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
