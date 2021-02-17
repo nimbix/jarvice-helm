@@ -115,6 +115,90 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.21.9-1.202102032013
+
+* (2471) Fixed build and pull confirmation dialog boxes in *PushToCompute* view to include remotely accessible URLs that can be copied and used outside of portal; this "public" URL defaults to the `jarvice_api.ingressHost` (and associated `jarvice_api.ingressPath` value if applicable), but can be overridden with the `jarvice_mc_portal.env.JARVICE_API_PUBLIC_URL` value as well.
+* (3680) Moved CSS into main portal site to avoid rare rendering issues if CSS cannot be loaded.
+* (3891) Support for traditional HPC queues and submission clients; please see [nimbix/jarvice-hpc](https://github.com/nimbix/jarvice-hpc) on GitHub for details.
+* (3909) Added ability to prevent interactive jobs from requesting *LoadBalancer* service addresses, as a downstream cluster setting, to avoid infinite queuing on clusters without LB capabilities, by setting `jarvice.JARVICE_JOBS_LB_SERVICE=never`; see [Using an Ingress controller for jobs](README.md#using-an-ingress-controller-for-jobs) for more details on this setting.
+* (3910) Added feature to allow users to explicitly request an *LoadBalancer* IP address in the task builder's *OPTIONAL* tab, if the target cluster supports it, in order to allow inbound connections from protocols other than HTTP(S) via Ingress; note that this option is simply a hint for the target cluster, and may be ignored if *LoadBalancer* requests are forbidden on it (see above).
+* (3950) Fixed API authentication issue.
+
+## 3.0.0-1.202101202004
+
+* (3391) (3917) Future support for traditional HPC queues and submission clients.
+* (3609) Fixed file locking failure when using dynamic filer and RWO PVC vaults; note that distributed locking is not supported, and this storage type should be used with caution.
+* (3781) License-based job queuing support.  See [JARVICE License Manager](LicenseManager.md) for details.
+* (3838) Fixed `jarvice-dri-optional` DaemonSet to work properly on certain infrastructure where host drivers are not loaded before the Kubernetes kubelet is (e.g. Google GKE).
+
+## 3.0.0-1.202101062006
+
+* (3841) Fixed bug where refreshing users prevent row selection in *Administration->Users*
+
+## 3.0.0-1.202012232023 - *(TECHNOLOGY PREVIEW RELEASE)*
+
+* (3290) Finalized architecture updates in `jarvice-dal` for performance, security, and scalability.
+* (3557) Documented known issue relating to linked PVC vaults; see [General](#general-1) in *PersistentVolume Vaults* under *Known Issues, Anomalies, and Caveats* for details.
+* (3763) Fixed inconsistent state issues with optional use of file name as job label in portal task builder.
+* (3767) Support for GPU-enabled node groups in AKS and GKE; note that GPU use on GKE is considered experimental at this time.
+* (3773) Fixed bug in portal allowing blank date range selection in *Administration->Stats* view.
+* (3790) Minor internal optimizations in `jarvice-pod-scheduler`.
+* (3792) Use path-based ingress by default in EKS, GKE, and AKS deployments via Terraform.
+* (3830) Fixed bug in *Vaults* dialog box under *Administration->Users* view related to opening successive user vaults.
+* (3831) Fixed bug with clearing user search box in *Administration->Users* view.
+
+## 3.0.0-1.202012092030 - *(TECHNOLOGY PREVIEW RELEASE)*
+
+* (3187) Default to using mariadb rather than mysql for `jarvice-db` service.
+* (3282) (3288) (3295) (3764) Architecture updates in `jarvice-dal` for performance, security, and scalability.
+* (3678) Avoid bundling development components in `jarvice-mc-portal` service.
+* (3712) New `jarvice-dri-optional-device-plugin` DaemonSet, deployed by default, to facilitate hardware accelerated 3D offload without requiring privileged security context for containers leveraging this feature.
+* (3713) Rearchitected 3D offload feature to leverage `jarvice-dri-optional-device-plugin` DaemonSet and avoid using privileged security context for applications requesting the `egl` pseudo-device; this feature is now GA; for additional details please see [Accelerated 3D Remote Display Capabilities](3D.md).
+* (3714) Use GPU-capable AMI on x86 EKS deployments by default.
+* (3754) Fixed spurious JS console error when closing task builder in portal.
+* (3757) Implemented horizontal pod autoscaler support in `jarvice-api`, `jarvice-dal`, and `jarvice-mc-portal` services for high CPU and memory pressure situations.
+
+## 3.0.0-1.202012012257
+
+* (2532) EXPERIMENTAL Technology preview for 3D offload using EGL on NVIDIA Kepler (or newer) class GPUs and driver version 450 or newer; use the `egl` pseudo-device in the machine definition to enable, but note that this currently implies `privileged`; **use with extreme caution and for testing purposes only**
+* (3191) Support for MariaDB as well as MySQL in deployments by setting `jarvice_db.image` to `mariadb:10.5` in either the Helm or Terraform overrides; note that this is certified for new deployments only, and should not (yet) be changed for existing deployments or risk data corruption.  Also note that this is required for `arm64` deployments as official MySQL images are not available for that architecture.
+* (3604) Added initial support for project management features in the *Account->Projects* view.
+* (3654) Official support for AArch64 (`arm64`) architecture for both control plane and compute/apps.  For additional information on AWS deployment, see [Arm64 (AArch64) cluster deployment](Terraform.md#arm64-on-aws) in *JARVICE Deployment with Terraform*.
+* (3668) Moved JARVICE DaemonSet container images to `gcr.io/jarvice` bucket to avoid issues with *DockerHub* limits and throttling.
+* (3672) Require explicit selection of projects for users with more than one project defined in the portal task builder.
+* (3673) Added project attribute reporting in team and system administration usage reports.
+* (3675) Increased utilization of multi-node jobs when using fractional nodes as defined in machine definitions; `jarvice-pod-scheduler` now packs these pods, if possible, rather than spreading them across multiple worker nodes by default.
+* (3706) Fixed bug where multiple properties in a machine definition were not being reflected as node selectors in jobs running on those machine types.
+
+## 3.0.0-1.202011121727
+
+* (3703) Fixed portal regression that prevented successfully cloning jobs from history.
+
+## 3.0.0-1.202011112040
+
+* (2831) Selective systemwide relaxation of warnings related to jobs submitting other jobs; set `jarvice_mc_portal.env.JARVICE_DISABLE_API_SUBST_WARNING` to any non-empty value in order to disable these warnings on job submission for any app that uses the `%APIKEY` substitution in its parameters.
+* (3603) (3605) (3606) Future architecture support for project management for users and jobs.
+* (3654) **EXPERIMENTAL** AArch64 (arm64) support for compute and downstream clusters; general JARVICE control plane support will be available in a subsequent release.
+* (3655) Fixed button wrapping in *Administration->Users* view in the portal.
+* (3666) Fixed typo in default cluster environment setting in `jarvice-dal`.
+* (3679) Fixed race condition in `jarvice-scheduler` when deleting orphaned jobs downstream which was leading to jobs occasionally being deleted while still starting.
+
+## 3.0.0-1.202010282029
+
+* (2845) Added optional checkbox in portal task builder to automatically populate the job label with the value of the first selected input file, if any.
+* (3389) (3390) Job scheduler evolution for future functionality.
+* (3394) Full support for multi-tenant isolation of job pods as well as networks.  See [JARVICE Multi-tenant Overview](MultiTenant.md) for details.
+* (3399) JARVICE XE system pod resource and replica adjustments, as well as scaling guide.  See [Resource Planning and Scaling Guide](Scaling.md) for details.
+* (3479) Paginated view for *Administration->Users*, including advanced filtering options.
+* (3555) Added *REFRESH* button to file picker in task builder to reload the current directory view.
+* (3558) Fixed bug with *Account->Team Apps* view that would leave the portal unresponsive if managing users with previously deleted applications.
+* (3559) Added timeout on certain runtime status calls into running jobs to work around possible Docker engine bugs on running containers.
+
+## 3.0.0-1.202010212159
+
+* (1498) Added configurable node resource weight multipliers settable via `${JARVICE_POD_SCHED_MULTIPLIERS}`, as a JSON dictionary; note that any resource not named there defaults to a weight of `1`.  See the value setting in [values.yaml](values.yaml) for an example to account for minor variance in node/instance capacities.
+* (3596) Fixed browser clipboard compatibility in web portal when using HTTP protocol rather than HTTPS, and attempting to copy user signup invitations to clipboard.
+
 ## 3.0.0-1.202010141909
 
 * (2955) Improved file picker performance when using PVC vaults by keeping lister pods running for up to 90 seconds of inactivity.
