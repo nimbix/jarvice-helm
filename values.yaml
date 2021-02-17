@@ -169,7 +169,7 @@ jarvice:
       image: gcr.io/jarvice/busybox:latest
       imagePullPolicy: IfNotPresent
       env:
-        NVIDIA_DRIVER_VERSION: 450.80.02-1
+        NVIDIA_DRIVER_VERSION: 450.102.04-1
     xilinx_fpga:
       enabled: false
       tolerations: # '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'

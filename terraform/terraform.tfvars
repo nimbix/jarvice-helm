@@ -6,7 +6,7 @@
 # on terraform variable definitions and JARVICE helm chart values:
 # https://github.com/nimbix/jarvice-helm/blob/master/Terraform.md#terraform-configuration
 #
-# The following configuration sections available below:
+# The following configuration sections are available below:
 #   * Global settings - Configuration options that apply to all clusters
 #   * Kubernetes clusters - Deploy JARVICE to pre-existing K8s clusters
 #   * GKE clusters - Provision GKE infrastructure/clusters and deploy JARVICE
@@ -306,7 +306,7 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
 
         meta = {
             cluster_name = "tf-jarvice"
-            kubernetes_version = "1.16"
+            kubernetes_version = "1.18"
 
             ssh_public_key = null  # global setting used if null specified
         }
@@ -423,7 +423,7 @@ EOF
 
         meta = {
             cluster_name = "tf-jarvice-downstream"
-            kubernetes_version = "1.16"
+            kubernetes_version = "1.18"
 
             ssh_public_key = null  # global setting used if null specified
         }
@@ -746,7 +746,7 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
 
         meta = {
             cluster_name = "tf-jarvice"
-            kubernetes_version = "1.16"
+            kubernetes_version = "1.18"
 
             ssh_public_key = null  # global setting used if null specified
         }
@@ -851,7 +851,7 @@ EOF
 
         meta = {
             cluster_name = "tf-jarvice-downstream"
-            kubernetes_version = "1.16"
+            kubernetes_version = "1.18"
 
             ssh_public_key = null  # global setting used if null specified
         }

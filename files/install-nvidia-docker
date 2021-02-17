@@ -1,6 +1,7 @@
 #!/bin/bash
 
-NVIDIA_DRIVER_VERSION="${NVIDIA_DRIVER_VERSION:-450.80.02-1}"
+NVIDIA_DRIVER_VERSION="${NVIDIA_DRIVER_VERSION:-450.102.04-1}"
+NVIDIA_DRIVER_MAJOR_VERSION=$(echo $NVIDIA_DRIVER_VERSION | awk -F. '{print $1}')
 
 if [ "$(docker info --format '{{json .DefaultRuntime}}')" = '"nvidia"' ]; then
     echo "$(hostname) docker default runtime is already set 'nvidia'."
@@ -78,7 +79,7 @@ if [ "$ID" = "ubuntu" ]; then
     curl -fsSL $URL_NVIDIA_CUDA_KEY | apt-key add -
     curl -fsSL $URL_NVIDIA_GITHUB_KEY | apt-key add -
     apt-get -y update
-    apt-get -y install nvidia-docker2 cuda-drivers=$NVIDIA_DRIVER_VERSION #cuda
+    apt-get -y install nvidia-docker2 cuda-drivers-$NVIDIA_DRIVER_MAJOR_VERSION=$NVIDIA_DRIVER_VERSION #cuda
 else
     yum -y install nvidia-docker2 cuda-drivers-$NVIDIA_DRIVER_VERSION #cuda
 fi
