@@ -20,7 +20,7 @@ locals {
 jarvice_api:
   XXXdummy: XXXdummyvalue
   ${lookup(local.jarvice_api, "ingressHost", null) == null ? "" : "ingressHost: ${local.jarvice_api["ingressHost"]}"}
-  ${lookup(local.jarvice_api, "ingressPath", null) == null ? "" : "ingressHost: ${local.jarvice_api["ingressPath"]}"}
+  ${lookup(local.jarvice_api, "ingressPath", null) == null ? "" : "ingressPath: ${local.jarvice_api["ingressPath"]}"}
 EOF
 
     jarvice_mc_portal = lookup(local.jarvice_helm_values, "jarvice_mc_portal", null)
@@ -28,7 +28,7 @@ EOF
 jarvice_mc_portal:
   XXXdummy: XXXdummyvalue
   ${lookup(local.jarvice_mc_portal, "ingressHost", null) == null ? "" : "ingressHost: ${local.jarvice_mc_portal["ingressHost"]}"}
-  ${lookup(local.jarvice_mc_portal, "ingressPath", null) == null ? "" : "ingressHost: ${local.jarvice_mc_portal["ingressPath"]}"}
+  ${lookup(local.jarvice_mc_portal, "ingressPath", null) == null ? "" : "ingressPath: ${local.jarvice_mc_portal["ingressPath"]}"}
 EOF
 
     jarvice_k8s_scheduler = lookup(local.jarvice_helm_values, "jarvice_k8s_scheduler", null)
@@ -36,7 +36,7 @@ EOF
 jarvice_k8s_scheduler:
   XXXdummy: XXXdummyvalue
   ${lookup(local.jarvice_k8s_scheduler, "ingressHost", null) == null ? "" : "ingressHost: ${local.jarvice_k8s_scheduler["ingressHost"]}"}
-  ${lookup(local.jarvice_k8s_scheduler, "ingressPath", null) == null ? "" : "ingressHost: ${local.jarvice_k8s_scheduler["ingressPath"]}"}
+  ${lookup(local.jarvice_k8s_scheduler, "ingressPath", null) == null ? "" : "ingressPath: ${local.jarvice_k8s_scheduler["ingressPath"]}"}
 EOF
 
     jarvice_ingress_values = <<EOF
