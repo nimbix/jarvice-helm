@@ -415,7 +415,7 @@ jarvice_registry_proxy:
   nodeSelector: # '{"node-role.jarvice.io/jarvice-registry-proxy": "true"}'
   networkPolicy:
     enabled: false # Inherits from jarvice.networkPolicy.enabled if unset
-  image: docker.io/library/registry:2
+  image: gcr.io/jarvice/registry:2
   imagePullPolicy: IfNotPresent
   persistence:
     enabled: false
