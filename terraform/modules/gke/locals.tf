@@ -25,7 +25,7 @@ jarvice:
     tolerations: '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}, {"key": "nvidia.com/gpu", "effect": "NoSchedule", "operator": "Exists"}]'
     disable_hyper_threading:
       enabled: true
-      nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-pool.jarvice.io/jarvice-compute", "operator": "In", "values": [${join(",", formatlist("\"%s\"", local.disable_hyper_threading_pools))}]}]} ] }}'
+      nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-pool.jarvice.io/jarvice-compute", "operator": "In", "values": [${join(",", formatlist("\"%s\"", concat(local.disable_hyper_threading_pools, ["dummyXXX"])))}]}]} ] }}'
     node_init:
       enabled: true
       env:

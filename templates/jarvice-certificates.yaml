@@ -1,0 +1,9 @@
+{{- if .Values.jarvice_registry_proxy.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: jarvice-issuer-selfsigned
+spec:
+  selfSigned: {}
+---
+{{- end }}
