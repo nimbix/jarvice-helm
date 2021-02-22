@@ -413,8 +413,6 @@ jarvice_registry_proxy:
   tolerations: # '[{"key": "node-role.jarvice.io/jarvice-registry-proxy", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-registry-proxy", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-registry-proxy", "operator": "Exists"}]}] }}'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-registry-proxy": "true"}'
-  networkPolicy:
-    enabled: false # Inherits from jarvice.networkPolicy.enabled if unset
   image: gcr.io/jarvice/registry:2
   imagePullPolicy: IfNotPresent
   persistence:
