@@ -1,0 +1,222 @@
+{{- if .Values.jarvice_registry_proxy.enabled }}
+{{- if and .Values.jarvice_registry_proxy.persistence.enabled (empty .Values.jarvice_registry_proxy.persistence.existingClaimName) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jarvice-registry-proxy-pvc
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-registry-proxy
+{{- if eq .Values.jarvice_registry_proxy.persistence.resourcePolicy "keep" }}
+  annotations:
+    helm.sh/resource-policy: keep
+{{- end }}
+spec:
+  accessModes:
+    - {{ .Values.jarvice_registry_proxy.persistence.accessMode }}
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: {{ .Values.jarvice_registry_proxy.persistence.size }}
+{{- if .Values.jarvice_registry_proxy.persistence.storageClass }}
+{{- if (eq "-" .Values.jarvice_registry_proxy.persistence.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: "{{ .Values.jarvice_registry_proxy.persistence.storageClass }}"
+{{- end }}
+{{- end }}
+---
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jarvice-registry-proxy
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-registry-proxy
+    deployment: jarvice-registry-proxy
+spec:
+  replicas: {{ .Values.jarvice_registry_proxy.replicaCount }}
+  selector:
+    matchLabels:
+      deployment: jarvice-registry-proxy
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-registry-proxy
+        deployment: jarvice-registry-proxy
+    spec:
+{{- if (not (empty .Values.jarvice_registry_proxy.tolerations)) }}
+      tolerations: {{ .Values.jarvice_registry_proxy.tolerations }}
+{{- else if (not (empty .Values.jarvice.tolerations)) }}
+      tolerations: {{ .Values.jarvice.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice_registry_proxy.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice_registry_proxy.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.nodeSelector }}
+{{- end }}
+{{- if (not (empty .Values.jarvice_registry_proxy.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice_registry_proxy.nodeAffinity }}
+{{- else if (not (empty .Values.jarvice.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ .Values.jarvice.nodeAffinity }}
+{{- end }}
+      volumes:
+        - name: jarvice-registry-proxy-config
+          configMap:
+            name: jarvice-registry-proxy-config
+        - name: jarvice-registry-proxy-cert
+          secret:
+            secretName: jarvice-registry-proxy-cert
+        - name: jarvice-registry-proxy-htpasswd
+          secret:
+            secretName: jarvice-registry-proxy
+            items:
+            - key: "htpasswd"
+              path: htpasswd
+{{- if .Values.jarvice_registry_proxy.persistence.enabled }}
+        - name: registry-data-vol
+          persistentVolumeClaim:
+{{- if (empty .Values.jarvice_registry_proxy.persistence.existingClaimName) }}
+            claimName: jarvice-registry-proxy-pvc
+{{- else }}
+            claimName: {{ .Values.jarvice_registry_proxy.persistence.existingClaimName }}
+{{- end }}
+{{- end }}
+      containers:
+      - name: jarvice-registry-proxy
+        image: {{ .Values.jarvice_registry_proxy.image }}
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice_registry_proxy.imagePullPolicy }}
+        command:
+        - /bin/registry
+        - serve
+        - /etc/docker/registry/config.yml
+        ports:
+          - name: https
+            containerPort: {{ .Values.jarvice_registry_proxy.nodePort }}
+        readinessProbe:
+          httpGet:
+            scheme: HTTPS
+            path: /
+            port: {{ .Values.jarvice_registry_proxy.nodePort }}
+          initialDelaySeconds: {{ .Values.jarvice_registry_proxy.readinessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.jarvice_registry_proxy.readinessProbe.timeoutSeconds }}
+        livenessProbe:
+          httpGet:
+            scheme: HTTPS
+            path: /
+            port: {{ .Values.jarvice_registry_proxy.nodePort }}
+          initialDelaySeconds: {{ .Values.jarvice_registry_proxy.livenessProbe.initialDelaySeconds }}
+          timeoutSeconds: {{ .Values.jarvice_registry_proxy.livenessProbe.timeoutSeconds }}
+        env:
+          - name: REGISTRY_HTTP_TLS_CERTIFICATE
+            value: /etc/ssl/docker/tls.crt
+          - name: REGISTRY_HTTP_TLS_KEY
+            value: /etc/ssl/docker/tls.key
+          - name: REGISTRY_PROXY_REMOTEURL
+{{- if empty .Values.jarvice_registry_proxy.env.REGISTRY_PROXY_REMOTEURL }}
+            value: "https://{{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}"
+{{- else }}
+            value: "{{ .Values.jarvice_registry_proxy.env.REGISTRY_PROXY_REMOTEURL }}"
+{{- end }}
+          - name: REGISTRY_PROXY_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-registry-proxy
+                key: REGISTRY_PROXY_USERNAME
+          - name: REGISTRY_PROXY_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-registry-proxy
+                key: REGISTRY_PROXY_PASSWORD
+        volumeMounts:
+        - name: jarvice-registry-proxy-config
+          mountPath: "/etc/docker/registry"
+        - name: jarvice-registry-proxy-cert
+          mountPath: "/etc/ssl/docker"
+          readOnly: true
+        - name: jarvice-registry-proxy-htpasswd
+          mountPath: "/etc/auth/docker/htpasswd"
+          subPath: "htpasswd"
+          readOnly: true
+{{- if .Values.jarvice_registry_proxy.persistence.enabled }}
+        - name: registry-data-vol
+          mountPath: /var/lib/registry
+{{- end }}
+        resources:
+{{ toYaml .Values.jarvice_registry_proxy.resources | indent 10 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-registry-proxy
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-registry-proxy
+spec:
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: {{ .Values.jarvice_registry_proxy.nodePort }}
+    targetPort: https
+    name: https
+  selector:
+    deployment: jarvice-registry-proxy
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-registry-proxy-np
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-registry-proxy
+spec:
+  type: NodePort
+  ports:
+  - protocol: TCP
+    port: {{ .Values.jarvice_registry_proxy.nodePort }}
+    targetPort: https
+    nodePort: {{ .Values.jarvice_registry_proxy.nodePort }}
+    name: https
+  selector:
+    deployment: jarvice-registry-proxy
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jarvice-registry-proxy-config
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-registry-proxy
+data:
+  config.yml: |-
+    version: 0.1
+    storage:
+      filesystem:
+        rootdirectory: /var/lib/registry
+    http:
+      addr: :{{ .Values.jarvice_registry_proxy.nodePort }}
+      headers:
+        X-Content-Type-Options: [nosniff]
+    auth:
+      htpasswd:
+        realm: jarvice-registry-proxy
+        path: /etc/auth/docker/htpasswd
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: jarvice-registry-proxy-cert
+spec:
+  dnsNames:
+    - localhost
+    - jarvice-registry-proxy
+    - jarvice-registry-proxy.{{ .Release.Namespace }}
+  secretName: jarvice-registry-proxy-cert
+  issuerRef:
+    name: jarvice-issuer-selfsigned
+---
+{{- end }}
