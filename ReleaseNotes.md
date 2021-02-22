@@ -115,6 +115,16 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.21.9-1.202102222036
+
+* (1211) Updated React.js components on the front-end.
+* (3710) Support for port range settings in AppDefs, for exposing non-standard ports on *LoadBalancer* services.  See the `ports` parameter in the [commands Object Reference](https://jarvice.readthedocs.io/en/latest/appdef/#commands-object-reference) for details.
+* (3711) Support for external services (e.g. for static IP address support for jobs), as documented in [Using External Services for Interactive User Jobs](ExternalService.md).
+* (3760) Kubernetes 1.19 support.  See [Kubernetes Support](#kubernetes-support) for the latest list of supported Kubernetes versions.
+* (3964) Future support for Docker registry cache proxy for JARVICE service containers and apps.
+* (4001) Fixed bug in portal where *PushToCompute* application endpoints would fail after updating AppDefs.
+* (4008) Fixed scheduler bug in Kubernetes versions greater than 1.17 when encountering non-JARVICE *ConfigMap* objects in jobs namespace (e.g. *RootCAConfigMap* feature).
+
 ## 3.21.9-1.202102032013
 
 * (2471) Fixed build and pull confirmation dialog boxes in *PushToCompute* view to include remotely accessible URLs that can be copied and used outside of portal; this "public" URL defaults to the `jarvice_api.ingressHost` (and associated `jarvice_api.ingressPath` value if applicable), but can be overridden with the `jarvice_mc_portal.env.JARVICE_API_PUBLIC_URL` value as well.
