@@ -17,15 +17,15 @@ The following assumes the latest version of JARVICE is in use; this version will
 
 #### Latest Version Supported
 
-Kubernetes **1.18**; newer versions are not explicitly supported.  Using the latest patch release of each version is recommended but not required.
+Kubernetes **1.19**; newer versions are not explicitly supported.  Using the latest patch release of each version is recommended but not required.
 
 #### Previous Version(s) Supported
 
 Up to 3 previous minor revisions (from the one indicated in [Latest Version Supported](#latest-version-supported)) will be supported at any given time, unless otherwise noted.  Currently this list is limited to:
 
+* Kubernetes **1.18**
 * Kubernetes **1.17**
 * Kubernetes **1.16**
-* Kubernetes **1.15**
 
 
 ---
