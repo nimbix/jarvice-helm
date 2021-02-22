@@ -396,44 +396,8 @@ jarvice_memcached: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   verbosity: v
   extendedOptions: modern
 
-jarvice_registry:
-  enabled: false
-  replicaCount: 1
-  loadBalancerIP:
-  ingressHost: # jarvice-registry.my-domain.com
-  ingressPath: "/"  # Valid values are "/" (default) or "/registry"
-  resources:
-    limits:
-      cpu: 250m
-      memory: 512Mi
-  readinessProbe:
-    initialDelaySeconds: 5
-    timeoutSeconds: 1
-  livenessProbe:
-    initialDelaySeconds: 30
-    timeoutSeconds: 5
-  tolerations: # '[{"key": "node-role.jarvice.io/jarvice-registry", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-registry", "effect": "NoSchedule", "operator": "Exists"}]'
-  nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-registry", "operator": "Exists"}]}] }}'
-  nodeSelector: # '{"node-role.jarvice.io/jarvice-registry": "true"}'
-  networkPolicy:
-    enabled: # Inherits from jarvice.networkPolicy.enabled if unset
-  image: docker.io/library/registry:2
-  imagePullPolicy: IfNotPresent
-  persistence:
-    enabled: false
-    # Set to "keep" to prevent removal of jarvice-registry-pvc on helm delete
-    resourcePolicy: ""  # "keep"
-    # Use empty existingClaimName for dynamic provisioning via storageClass
-    existingClaimName: # "jarvice-registry-pvc"
-    # storageClass: "-"
-    storageClass: "jarvice-registry"
-    accessMode: ReadWriteOnce
-    size: 10Gi
-  env:
-    REGISTRY_HTTP_ADDR: 0.0.0.0:5000
-
 jarvice_registry_proxy:
-  enabled: true
+  enabled: false
   replicaCount: 1
   nodePort: 32443
   resources:
