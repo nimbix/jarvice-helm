@@ -12,8 +12,14 @@ locals {
         yamldecode("XXXdummy: value\n\n${fileexists(var.jarvice["values_file"]) ? file(var.jarvice["values_file"]) : ""}"),
         yamldecode("XXXdummy: value\n\n${var.global["values_yaml"]}"),
         yamldecode("XXXdummy: value\n\n${var.jarvice["values_yaml"]}"),
-        yamldecode("XXXdummy: value\n\n${var.common_values_yaml}")
     )
+
+    jarvice = lookup(local.jarvice_helm_values, "jarvice", null)
+    jarvice_jobs_domain = local.jarvice == null ? "" : <<EOF
+jarvice:
+  XXXdummy: XXXdummyvalue
+  ${lookup(local.jarvice, "JARVICE_JOBS_DOMAIN", null) == null ? "" : "JARVICE_JOBS_DOMAIN: ${local.jarvice["JARVICE_JOBS_DOMAIN"]}"}
+EOF
 
     jarvice_api = lookup(local.jarvice_helm_values, "jarvice_api", null)
     jarvice_ingress_api = local.jarvice_api == null ? "" : <<EOF
@@ -41,6 +47,8 @@ EOF
 
     jarvice_ingress_values = <<EOF
 # local.jarvice_ingress_values
+${local.jarvice_jobs_domain}
+
 ${local.jarvice_ingress_api}
 
 ${local.jarvice_ingress_mc_portal}
