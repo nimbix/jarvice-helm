@@ -12,8 +12,10 @@ Options:
                                     (Default: $namespace)
     --query <sql_query>             SQL query to execute (required)
 
-Example:
-    $0 --namespace jarvice-system --query 'SELECT job_submit_time, job_start_time FROM jobs;'
+Examples:
+    $0 --namespace jarvice-system --query "SELECT job_submit_time, job_start_time FROM jobs;"
+    $0 --query "SELECT job_start_time-job_submit_time FROM jobs WHERE job_start_time!=0;"
+    $0 --query "SELECT AVG(job_start_time-job_submit_time) FROM jobs WHERE job_start_time!=0;"
 EOF
 }
 
@@ -56,7 +58,6 @@ pod=$($KUBECTL -n $namespace get pods \
 [ -z "$pod" ] && echo "* Could not find jarvice-db pod in $namespace namespace...Exiting..." && exit 1
 cmd='mariadb '
 cmd+=' --user="root" --password="$MYSQL_ROOT_PASSWORD" nimbix'
-echo "* Running query on JARVICE database in $namespace namespace..."
+echo "* Running query on JARVICE database in $namespace namespace..."; echo
 $KUBECTL -n $namespace exec $pod -- bash -c "echo '$query' | $cmd"
-echo; echo "* Successfully ran query on JARVICE database in $namespace namespace..."
 
