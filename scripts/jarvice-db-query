@@ -14,7 +14,9 @@ Options:
 
 Examples:
     $0 --namespace jarvice-system --query "SELECT job_submit_time, job_start_time FROM jobs;"
+
     $0 --query "SELECT job_start_time-job_submit_time FROM jobs WHERE job_start_time!=0;"
+
     $0 --query "SELECT AVG(job_start_time-job_submit_time) FROM jobs WHERE job_start_time!=0;"
 EOF
 }
