@@ -402,7 +402,7 @@ jarvice_registry_proxy:
   nodePort: 32443
   resources:
     limits:
-      cpu: 250m
+      cpu: 1
       memory: 512Mi
   readinessProbe:
     initialDelaySeconds: 5

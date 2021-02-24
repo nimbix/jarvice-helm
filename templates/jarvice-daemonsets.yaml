@@ -598,7 +598,7 @@ spec:
         command:
           - /bin/sh
           - -c
-          - nsenter -t 1 -m -u -i -n -p -- /bin/sh -c "$DISABLE_HYPER_THREADING"
+          - nsenter -t 1 -m -u -i -n -p -- /bin/sh -e -c "$DISABLE_HYPER_THREADING"
         env:
         - name: DISABLE_HYPER_THREADING
           value: |
@@ -670,16 +670,17 @@ spec:
         command:
           - /bin/sh
           - -c
-          - nsenter -t 1 -m -u -i -n -p -- /bin/sh -c "$DEPLOY_CA_CERTIFICATE"
+          - nsenter -t 1 -m -u -i -n -p -- /bin/sh -e -c "$DEPLOY_CA_CERTIFICATE"
         env:
         - name: DOCKER_CERTS_DIR
           value: "{{ .Values.jarvice.daemonsets.jarvice_registry_proxy.env.DOCKER_CERTS_DIR }}"
         - name: DEPLOY_CA_CERTIFICATE
           value: |
             echo "Deploying jarvice-registry-proxy CA certificate to $DOCKER_CERTS_DIR on $(hostname)..."
+            sleep 5
             certs_dir="$DOCKER_CERTS_DIR/localhost:{{ .Values.jarvice_registry_proxy.nodePort }}"
             mkdir -p $certs_dir
-            echo | openssl s_client -showcerts -connect localhost:{{ .Values.jarvice_registry_proxy.nodePort }} </dev/null 2>/dev/null | openssl x509 -outform PEM >$certs_dir/ca.crt
+            timeout 5 /bin/sh -c "echo | openssl s_client -showcerts -connect localhost:{{ .Values.jarvice_registry_proxy.nodePort }} </dev/null 2>/dev/null | openssl x509 -outform PEM >$certs_dir/ca.crt"
             echo "Finished deploying jarvice-registry-proxy CA certificate to $DOCKER_CERTS_DIR on $(hostname)..."
         securityContext:
           privileged: true
@@ -742,7 +743,7 @@ spec:
         command:
           - /bin/sh
           - -c
-          - nsenter -t 1 -m -u -i -n -p -- /bin/sh -c "$COMMAND"
+          - nsenter -t 1 -m -u -i -n -p -- /bin/sh -e -c "$COMMAND"
         env:
         - name: COMMAND
           value: {{ toYaml .Values.jarvice.daemonsets.node_init.env.COMMAND | indent 10 }}
