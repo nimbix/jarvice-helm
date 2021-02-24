@@ -55,12 +55,13 @@ done
 [ -z "$query" ] && usage && exit 1
 
 pod=$($KUBECTL -n $namespace get pods \
-        -l component=jarvice-db \
+        -l component=jarvice-dal \
         --field-selector=status.phase=Running \
         -o jsonpath={.items[0].metadata.name})
 [ -z "$pod" ] && echo "* Could not find jarvice-db pod in $namespace namespace...Exiting..." && exit 1
 cmd='mariadb '
-cmd+=' --user="root" --password="$MYSQL_ROOT_PASSWORD" nimbix'
+cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
+cmd+=' --host="$JARVICE_SITE_DBHOST" nimbix'
 echo "* Running query on JARVICE database in $namespace namespace..."; echo
 $KUBECTL -n $namespace exec $pod -- bash -c "echo '$query' | $cmd"
 
