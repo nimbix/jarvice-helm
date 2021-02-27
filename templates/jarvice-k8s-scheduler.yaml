@@ -274,23 +274,23 @@ spec:
                 key: JARVICE_LICENSE_MANAGER_KEY
 {{- end }}
 {{- if and (not (empty .Values.jarvice.JARVICE_S3_SECRETKEY)) (not (empty .Values.jarvice.JARVICE_S3_ACCESSKEY)) (not (empty .Values.jarvice.JARVICE_S3_BUCKET)) }}
-          - name: JARVICE_S3_BUCKET:
+          - name: JARVICE_S3_BUCKET
             value: "{{ .Values.jarvice.JARVICE_S3_BUCKET }}"
-          - name: JARVICE_S3_ACCESSKEY:
+          - name: JARVICE_S3_ACCESSKEY
             valueFrom:
               secretKeyRef:
                 name: jarvice-s3-joboutput
                 key: JARVICE_S3_ACCESSKEY
-          - name: JARVICE_S3_SECRETKEY:
+          - name: JARVICE_S3_SECRETKEY
             valueFrom:
               secretKeyRef:
                 name: jarvice-s3-joboutput
                 key: JARVICE_S3_SECRETKEY
-          - name: JARVICE_S3_PREFIX:
+          - name: JARVICE_S3_PREFIX
             value: "{{ .Values.jarvice.JARVICE_S3_PREFIX }}"
-          - name: JARVICE_S3_REGION:
+          - name: JARVICE_S3_REGION
             value: "{{ .Values.jarvice.JARVICE_S3_REGION }}"
-          - name: JARVICE_S3_ENDPOINTURL:
+          - name: JARVICE_S3_ENDPOINTURL
             value: "{{ .Values.jarvice.JARVICE_S3_ENDPOINTURL }}"
 {{- end }}
         resources:
