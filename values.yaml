@@ -118,7 +118,7 @@ jarvice:
 
   # the following values are optional (defaults noted)
   JARVICE_S3_REGION: # defaults to None
-  JARVICE_S3_PREFIX: # object name prefix, defaults to output/
+  JARVICE_S3_PREFIX: "output/" # object name prefix
   JARVICE_S3_ENDPOINTURL: # object store endpoint URL, defaults to AWS
 
   # Optionally, quick enable DaemonSets here.  More details can be found at:
