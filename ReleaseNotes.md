@@ -27,6 +27,14 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 * Kubernetes **1.17**
 * Kubernetes **1.16**
 
+### External S3-compatible Object Storage Service Compatibility
+
+At the time of this writing, JARVICE supports the following service/providers:
+* **radosgw** (REST gateway for RADOS object store, part of Ceph)
+* AWS S3
+* GCP Cloud Storage
+
+Other providers may or may not be compatible, and are not officially supported.
 
 ---
 ## Known Issues, Anomalies, and Caveats
