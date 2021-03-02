@@ -208,7 +208,7 @@ jarvice:
     # jarvice_registry_proxy Deployment is enabled below
     jarvice_registry_proxy:
       tolerations: '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.jarvice.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
-      nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-system", "operator": "Exists"}]}] }}'
+      nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-system", "operator": "Exists"}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}' # '{"node-role.jarvice.io/jarvice-system": "true"}'
       image: gcr.io/jarvice/busybox:latest
       imagePullPolicy: IfNotPresent
@@ -428,7 +428,7 @@ jarvice_registry_proxy:
   env:
     # jarvice.JARVICE_SYSTEM_REGISTRY and jarvice.imagePullSecret will be used
     # to set the values for REGISTRY_PROXY_* unless overridden here
-    REGISTRY_PROXY_REMOTEURL: # https://gcr.io
+    REGISTRY_PROXY_REMOTEURL: # gcr.io  # (auto-prefixed with "https://")
     REGISTRY_PROXY_USERNAME: # _json_key
     REGISTRY_PROXY_PASSWORD: # cat gcr.io.json | base64 -w 0
 
