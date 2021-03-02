@@ -43,7 +43,7 @@ $ git clone https://github.com/nimbix/jarvice-helm.git
     - [Non-JARVICE specific services](#non-jarvice-specific-services)
         - [MariaDB database (jarvice-db)](#mariadb-database-jarvice-db)
         - [Memcached (jarvice-memcached)](#memcached-jarvice-memcached)
-        - [Docker registry proxy/cache (jarvice-registry-proxy)](#docker-registry-proxy-cache-jarvice-registry-proxy)
+        - [Docker registry proxy/cache (jarvice-registry-proxy)](#docker-registry-proxycache-jarvice-registry-proxy
 * [JARVICE Downstream Installation](#jarvice-downstream-installation)
     - [Upstream cluster settings](#upstream-cluster-settings)
 * [JARVICE Configuration Values Reference](#jarvice-configuration-values-reference)
@@ -238,9 +238,9 @@ https://github.com/nimbix/k8s-rdma-device-plugin
 ### Kubernetes persistent volumes (for non-demo installation)
 
 For those sites that do not wish to separately install/maintain a MariaDB
-database and docker registry, this helm chart provides installations for them
-via the `jarvice-db` and `jarvice-registry` deployments/services.  If you wish
-to use `jarvice-db` and `jarvice-registry` as is provided from this helm chart,
+database, this helm chart provides an installation
+via the `jarvice-db` deployments/services.  If you wish
+to use `jarvice-db` as is provided from this helm chart,
 persistent volumes will be required for the kubernetes cluster in order to
 maintain state for the JARVICE database and applications registry.  This will
 be addressed below, but the full details on the setup and management of
