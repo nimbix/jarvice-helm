@@ -76,9 +76,13 @@ spec:
           items:
           - key: ".dockerconfigjson"
             path: config.json
+{{- if .Values.jarvice_registry_proxy.enabled }}
+      imagePullSecrets:
+      - name: jarvice-docker
+{{- end }}
       containers:
       - name: jarvice-cache-pull
-        image: {{ .Values.jarvice.daemonsets.cache_pull.image }}
+        image: {{ template "jarvice.registrysub" merge (dict "image" .Values.jarvice.daemonsets.cache_pull.image) . }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.cache_pull.imagePullPolicy }}
         command:
           - /usr/local/bin/jarvice-cache-pull.sh
@@ -234,9 +238,13 @@ spec:
         - name: rootfs
           hostPath:
             path: /
+{{- if .Values.jarvice_registry_proxy.enabled }}
+      imagePullSecrets:
+      - name: jarvice-docker
+{{- end }}
       containers:
       - name: jarvice-lxcfs
-        image: {{ .Values.jarvice.daemonsets.lxcfs.image }}
+        image: {{ template "jarvice.registrysub" merge (dict "image" .Values.jarvice.daemonsets.lxcfs.image) . }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.lxcfs.imagePullPolicy }}
         env:
           - name: HOST_LXCFS_DIR
@@ -307,9 +315,13 @@ spec:
         - name: device-plugins
           hostPath:
             path: /var/lib/kubelet/device-plugins
+{{- if .Values.jarvice_registry_proxy.enabled }}
+      imagePullSecrets:
+      - name: jarvice-docker
+{{- end }}
       containers:
       - name: jarvice-nvidia-device-plugin
-        image: {{ .Values.jarvice.daemonsets.nvidia.image }}
+        image: {{ template "jarvice.registrysub" merge (dict "image" .Values.jarvice.daemonsets.nvidia.image) . }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.nvidia.imagePullPolicy }}
         volumeMounts:
           - name: device-plugins
@@ -372,9 +384,13 @@ spec:
         - name: dev
           hostPath:
             path: /dev
+{{- if .Values.jarvice_registry_proxy.enabled }}
+      imagePullSecrets:
+      - name: jarvice-docker
+{{- end }}
       containers:
       - name: jarvice-xilinx-fpga-device-plugin
-        image: {{ .Values.jarvice.daemonsets.xilinx_fpga.image }}
+        image: {{ template "jarvice.registrysub" merge (dict "image" .Values.jarvice.daemonsets.xilinx_fpga.image) . }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.xilinx_fpga.imagePullPolicy }}
         volumeMounts:
           - name: device-plugins
@@ -443,9 +459,13 @@ spec:
         - name: devknem
           hostPath:
             path: /dev/knem
+{{- if .Values.jarvice_registry_proxy.enabled }}
+      imagePullSecrets:
+      - name: jarvice-docker
+{{- end }}
       containers:
       - name: jarvice-rdma-device-plugin
-        image: {{ .Values.jarvice.daemonsets.rdma.image }}
+        image: {{ template "jarvice.registrysub" merge (dict "image" .Values.jarvice.daemonsets.rdma.image) . }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.rdma.imagePullPolicy }}
         volumeMounts:
           - name: device-plugins
@@ -516,9 +536,13 @@ spec:
         - name: device-plugins
           hostPath:
             path: /var/lib/kubelet/device-plugins
+{{- if .Values.jarvice_registry_proxy.enabled }}
+      imagePullSecrets:
+      - name: jarvice-docker
+{{- end }}
       initContainers:
       - name: init-delay
-        image: gcr.io/jarvice/busybox:latest
+        image: {{ include "jarvice.registry" . }}/jarvice/busybox:latest
         imagePullPolicy: "IfNotPresent"
         command: ['sh', '-c', 'sleep ${DRI_INIT_DELAY}']
         env:
@@ -526,7 +550,7 @@ spec:
           value: "{{ default 300 .Values.jarvice.daemonsets.dri_optional.env.DRI_INIT_DELAY }}"
       containers:
       - name: jarvice-dri-optional-device-plugin
-        image: {{ .Values.jarvice.daemonsets.dri_optional.image }}
+        image: {{ template "jarvice.registrysub" merge (dict "image" .Values.jarvice.daemonsets.dri_optional.image) . }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.dri_optional.imagePullPolicy }}
         env:
         - name: DRI_DEFAULT_CAPACITY
@@ -587,13 +611,17 @@ spec:
 {{- else if (not (empty .Values.jarvice.daemonsets.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice.daemonsets.nodeSelector }}
 {{- end }}
+{{- if .Values.jarvice_registry_proxy.enabled }}
+      imagePullSecrets:
+      - name: jarvice-docker
+{{- end }}
       containers:
       - name: pause
         image: "gcr.io/google-containers/pause:3.2"
         imagePullPolicy: "IfNotPresent"
       initContainers:
       - name: jarvice-disable-hyper-threading
-        image: {{ .Values.jarvice.daemonsets.disable_hyper_threading.image }}
+        image: {{ template "jarvice.registrysub" merge (dict "image" .Values.jarvice.daemonsets.disable_hyper_threading.image) . }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.disable_hyper_threading.imagePullPolicy }}
         command:
           - /bin/sh
@@ -680,7 +708,7 @@ spec:
             sleep 5
             certs_dir="$DOCKER_CERTS_DIR/localhost:{{ .Values.jarvice_registry_proxy.nodePort }}"
             mkdir -p $certs_dir
-            timeout 5 /bin/sh -c "echo | openssl s_client -showcerts -connect localhost:{{ .Values.jarvice_registry_proxy.nodePort }} </dev/null 2>/dev/null | openssl x509 -outform PEM >$certs_dir/ca.crt"
+            timeout 10 /bin/sh -c "echo | openssl s_client -showcerts -connect localhost:{{ .Values.jarvice_registry_proxy.nodePort }} </dev/null 2>/dev/null | openssl x509 -outform PEM >$certs_dir/ca.crt"
             echo "Finished deploying jarvice-registry-proxy CA certificate to $DOCKER_CERTS_DIR on $(hostname)..."
         securityContext:
           privileged: true
@@ -732,13 +760,17 @@ spec:
 {{- else if (not (empty .Values.jarvice.daemonsets.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice.daemonsets.nodeSelector }}
 {{- end }}
+{{- if .Values.jarvice_registry_proxy.enabled }}
+      imagePullSecrets:
+      - name: jarvice-docker
+{{- end }}
       containers:
       - name: pause
         image: "gcr.io/google-containers/pause:3.2"
         imagePullPolicy: "IfNotPresent"
       initContainers:
       - name: jarvice-node-init
-        image: {{ .Values.jarvice.daemonsets.node_init.image }}
+        image: {{ template "jarvice.registrysub" merge (dict "image" .Values.jarvice.daemonsets.node_init.image) . }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.node_init.imagePullPolicy }}
         command:
           - /bin/sh
@@ -797,13 +829,17 @@ spec:
 {{- else if (not (empty .Values.jarvice.daemonsets.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice.daemonsets.nodeSelector }}
 {{- end }}
+{{- if .Values.jarvice_registry_proxy.enabled }}
+      imagePullSecrets:
+      - name: jarvice-docker
+{{- end }}
       containers:
       - name: pause
         image: "gcr.io/google-containers/pause:3.2"
         imagePullPolicy: "IfNotPresent"
       initContainers:
       - name: jarvice-nvidia-install
-        image: {{ .Values.jarvice.daemonsets.nvidia_install.image }}
+        image: {{ template "jarvice.registrysub" merge (dict "image" .Values.jarvice.daemonsets.nvidia_install.image) . }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.nvidia_install.imagePullPolicy }}
         command:
           - /bin/sh
@@ -872,13 +908,17 @@ spec:
 {{- else if (not (empty .Values.jarvice.daemonsets.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice.daemonsets.nodeSelector }}
 {{- end }}
+{{- if .Values.jarvice_registry_proxy.enabled }}
+      imagePullSecrets:
+      - name: jarvice-docker
+{{- end }}
       containers:
       - name: pause
         image: "gcr.io/google-containers/pause:3.2"
         imagePullPolicy: "IfNotPresent"
       initContainers:
       - name: jarvice-flex-volume-plugin-nfs-nolock-install
-        image: {{ .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.image }}
+        image: {{ template "jarvice.registrysub" merge (dict "image" .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.image) . }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.imagePullPolicy }}
         command:
           - /bin/sh

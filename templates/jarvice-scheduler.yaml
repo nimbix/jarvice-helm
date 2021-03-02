@@ -80,7 +80,7 @@ spec:
             optional: true
       containers:
       - name: jarvice-scheduler
-        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-scheduler:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+        image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-scheduler:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
 {{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
         imagePullPolicy: Always
 {{- else }}
@@ -152,7 +152,7 @@ spec:
             value: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
 {{- end }}
           - name: JARVICE_SYSTEM_REGISTRY
-            value: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}
+            value: {{ include "jarvice.registry" . }}
           - name: JARVICE_SYSTEM_REPO_BASE
             value: {{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}
           - name: JARVICE_IMAGES_TAG
