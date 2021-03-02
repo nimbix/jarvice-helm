@@ -46,7 +46,7 @@ spec:
       - name: jarvice-docker
       containers:
       - name: jarvice-appsync
-        image: {{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-appsync:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+        image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-appsync:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
 {{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
         imagePullPolicy: Always
 {{- else }}
@@ -115,7 +115,7 @@ spec:
 {{- if (not (empty .Values.jarvice_appsync.env.JARVICE_SYSTEM_REGISTRY)) }}
             value: "{{ .Values.jarvice_appsync.env.JARVICE_SYSTEM_REGISTRY }}"
 {{- else }}
-            value: "{{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}"
+            value: "{{ include "jarvice.registry" . }}"
 {{- end }}
           - name: JARVICE_SYSTEM_REPO_BASE
 {{- if (not (empty .Values.jarvice_appsync.env.JARVICE_SYSTEM_REPO_BASE)) }}

@@ -64,9 +64,13 @@ spec:
                 matchLabels:
                   deployment: jarvice-smtpd
         {{- end }}
+{{- if .Values.jarvice_registry_proxy.enabled }}
+      imagePullSecrets:
+      - name: jarvice-docker
+{{- end }}
       containers:
       - name: jarvice-smtpd
-        image: {{ .Values.jarvice_smtpd.image }}
+        image: {{ template "jarvice.registrysub" merge (dict "image" .Values.jarvice_smtpd.image) . }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice_smtpd.imagePullPolicy }}
         ports:
           - name: "smtp"
