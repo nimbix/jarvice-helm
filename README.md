@@ -43,7 +43,7 @@ $ git clone https://github.com/nimbix/jarvice-helm.git
     - [Non-JARVICE specific services](#non-jarvice-specific-services)
         - [MariaDB database (jarvice-db)](#mariadb-database-jarvice-db)
         - [Memcached (jarvice-memcached)](#memcached-jarvice-memcached)
-        - [Docker registry proxy/cache (jarvice-registry-proxy)](#docker-registry-proxycache-jarvice-registry-proxy
+        - [Docker registry proxy/cache (jarvice-registry-proxy)](#docker-registry-proxycache-jarvice-registry-proxy)
 * [JARVICE Downstream Installation](#jarvice-downstream-installation)
     - [Upstream cluster settings](#upstream-cluster-settings)
 * [JARVICE Configuration Values Reference](#jarvice-configuration-values-reference)
