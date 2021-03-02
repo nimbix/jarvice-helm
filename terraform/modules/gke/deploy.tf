@@ -145,7 +145,7 @@ EOF
 ${local.jarvice_ingress}
 EOF
 
-    depends_on = [google_container_cluster.jarvice, google_container_node_pool.jarvice_system]
+    depends_on = [google_container_cluster.jarvice, google_container_node_pool.jarvice_system, google_container_node_pool.jarvice_compute]
 }
 
 resource "kubernetes_daemonset" "nvidia_driver_installer_cos" {
