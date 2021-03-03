@@ -43,7 +43,7 @@ $ git clone https://github.com/nimbix/jarvice-helm.git
     - [Non-JARVICE specific services](#non-jarvice-specific-services)
         - [MariaDB database (jarvice-db)](#mariadb-database-jarvice-db)
         - [Memcached (jarvice-memcached)](#memcached-jarvice-memcached)
-        - [Docker registry (jarvice-registry)](#docker-registry-jarvice-registry)
+        - [Docker registry proxy/cache (jarvice-registry-proxy)](#docker-registry-proxycache-jarvice-registry-proxy)
 * [JARVICE Downstream Installation](#jarvice-downstream-installation)
     - [Upstream cluster settings](#upstream-cluster-settings)
 * [JARVICE Configuration Values Reference](#jarvice-configuration-values-reference)
@@ -238,9 +238,9 @@ https://github.com/nimbix/k8s-rdma-device-plugin
 ### Kubernetes persistent volumes (for non-demo installation)
 
 For those sites that do not wish to separately install/maintain a MariaDB
-database and docker registry, this helm chart provides installations for them
-via the `jarvice-db` and `jarvice-registry` deployments/services.  If you wish
-to use `jarvice-db` and `jarvice-registry` as is provided from this helm chart,
+database, this helm chart provides an installation
+via the `jarvice-db` deployments/services.  If you wish
+to use `jarvice-db` as is provided from this helm chart,
 persistent volumes will be required for the kubernetes cluster in order to
 maintain state for the JARVICE database and applications registry.  This will
 be addressed below, but the full details on the setup and management of
@@ -783,33 +783,21 @@ to disable it in the JARVICE helm chart.  This can be done either in an
 
 `--set jarvice_memcached.enabled=false`
 
-#### Docker registry (`jarvice-registry`)
+#### Docker registry proxy/cache (`jarvice-registry-proxy`)
 
-As with the above, you may already have or wish to use a docker registry
-outside of the control of the JARVICE helm chart.  If doing so, it will
-be necessary to set the `JARVICE_LOCAL_REGISTRY` from the `values.yaml` to
-point to the hostname/IP of the docker registry.  (Currently, the default
-registry setting points to `docker.io`)
+It may be desirable to enable the docker registry proxy cache available in
+the helm chart to reduce docker image pull times and network downloads for
+JARVICE system and DaemonSet containers.
+In order to enable the registry proxy/cache, it will be necessary to set
+`jarvice_registry_proxy.enabled` to `true`.  The registry proxy runs as a
+`NodePort` service which uses port `32443` on all of the `jarvice-system` and
+`jarvice-compute` nodes.  These default settings are configurable in the
+`jarvice_registry_proxy` stanza found in the helm chart `values.yaml` file.
 
-When using the registry provided with the JARVICE helm chart, it will be
-necessary to enable it in the JARVICE helm chart.  This can be done either in
-an `override.yaml` file or via the command line with:
+This service can be enabled within an `override.yaml` file or via the command
+line with:
 
-`--set jarvice_registry.enabled=true`
-`--set jarvice.JARVICE_LOCAL_REGISTRY=jarvice-registry:443`
-
-The registry can be exposed for access from outside the cluster via:
-
-`--set jarvice_registry.ingressHost=<jarvice-registry.my-domain.com>`
-
-Please note, that this will require that an ingress controller is installed
-in the kubernetes cluster which has a valid TLS certificate and key.
-
-There is also a docker-registry specific helm chart available for deployment.
-Use the helm inspect command for details:
-```bash
-$ helm inspect all docker-registry --repo https://charts.helm.sh/stable
-```
+`--set jarvice_registry_proxy.enabled=true`
 
 ------------------------------------------------------------------------------
 

@@ -67,9 +67,13 @@ spec:
       affinity:
         nodeAffinity: {{ .Values.jarvice.nodeAffinity }}
 {{- end }}
+{{- if .Values.jarvice_registry_proxy.enabled }}
+      imagePullSecrets:
+      - name: jarvice-docker
+{{- end }}
       containers:
       - name: jarvice-db
-        image: {{ .Values.jarvice_db.image }}
+        image: {{ template "jarvice.registrysub" merge (dict "image" .Values.jarvice_db.image) . }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice_db.imagePullPolicy }}
         #command:
         #  - docker-entrypoint.sh

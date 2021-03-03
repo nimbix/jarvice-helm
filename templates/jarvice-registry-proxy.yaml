@@ -68,12 +68,15 @@ spec:
         - name: jarvice-registry-proxy-config
           configMap:
             name: jarvice-registry-proxy-config
+            optional: false
         - name: jarvice-registry-proxy-cert
           secret:
             secretName: jarvice-registry-proxy-cert
+            optional: false
         - name: jarvice-registry-proxy-htpasswd
           secret:
             secretName: jarvice-registry-proxy
+            optional: false
             items:
             - key: "htpasswd"
               path: htpasswd
@@ -120,18 +123,20 @@ spec:
 {{- if empty .Values.jarvice_registry_proxy.env.REGISTRY_PROXY_REMOTEURL }}
             value: "https://{{ .Values.jarvice.JARVICE_SYSTEM_REGISTRY }}"
 {{- else }}
-            value: "{{ .Values.jarvice_registry_proxy.env.REGISTRY_PROXY_REMOTEURL }}"
+            value: "https://{{ .Values.jarvice_registry_proxy.env.REGISTRY_PROXY_REMOTEURL }}"
 {{- end }}
           - name: REGISTRY_PROXY_USERNAME
             valueFrom:
               secretKeyRef:
                 name: jarvice-registry-proxy
                 key: REGISTRY_PROXY_USERNAME
+                optional: false
           - name: REGISTRY_PROXY_PASSWORD
             valueFrom:
               secretKeyRef:
                 name: jarvice-registry-proxy
                 key: REGISTRY_PROXY_PASSWORD
+                optional: false
         volumeMounts:
         - name: jarvice-registry-proxy-config
           mountPath: "/etc/docker/registry"

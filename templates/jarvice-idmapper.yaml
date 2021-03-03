@@ -63,9 +63,13 @@ spec:
                 matchLabels:
                   deployment: jarvice-idmapper
         {{- end }}
+{{- if .Values.jarvice_registry_proxy.enabled }}
+      imagePullSecrets:
+      - name: jarvice-docker
+{{- end }}
       containers:
       - name: jarvice-idmapper
-        image: {{ .Values.jarvice_idmapper.image }}
+        image: {{ template "jarvice.registrysub" merge (dict "image" .Values.jarvice_idmapper.image) . }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice_idmapper.imagePullPolicy }}
         ports:
           - name: http

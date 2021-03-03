@@ -103,7 +103,8 @@ resource "helm_release" "jarvice" {
         var.global["values_yaml"],
         var.jarvice["values_yaml"],
         var.common_values_yaml,
-        var.cluster_values_yaml
+        var.cluster_values_yaml,
+        local.jarvice_ingress_values
     ]
 
     depends_on = [helm_release.cert_manager, helm_release.traefik]

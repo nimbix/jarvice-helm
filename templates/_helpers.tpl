@@ -25,6 +25,28 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{/*
+JARVICE registry for images
+*/}}
+{{- define "jarvice.registry" -}}
+{{- if .Values.jarvice_registry_proxy.enabled -}}
+{{- printf "localhost:%s" (.Values.jarvice_registry_proxy.nodePort | toString) -}}
+{{- else -}}
+{{- printf "%s" .Values.jarvice.JARVICE_SYSTEM_REGISTRY -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+JARVICE registry substitution for images
+*/}}
+{{- define "jarvice.registrysub" -}}
+{{- if .Values.jarvice_registry_proxy.enabled -}}
+{{- printf "localhost:%s/%s" (.Values.jarvice_registry_proxy.nodePort | toString) (trimPrefix (printf "%s/" .Values.jarvice.JARVICE_SYSTEM_REGISTRY) .image) -}}
+{{- else -}}
+{{- printf "%s" .image -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 JARVICE tag for images
 */}}
 {{- define "jarvice.tag" -}}

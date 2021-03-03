@@ -65,9 +65,13 @@ spec:
                 matchLabels:
                   deployment: jarvice-memcached
         {{- end }}
+{{- if .Values.jarvice_registry_proxy.enabled }}
+      imagePullSecrets:
+      - name: jarvice-docker
+{{- end }}
       containers:
       - name: jarvice-memcached
-        image: {{ .Values.jarvice_memcached.image }}
+        image: {{ template "jarvice.registrysub" merge (dict "image" .Values.jarvice_memcached.image) . }}
         imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice_memcached.imagePullPolicy }}
         command:
         - memcached
