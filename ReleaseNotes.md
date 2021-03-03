@@ -115,6 +115,11 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.21.9-1.202103031953
+
+* (4023) Support for using a gcr.io registry proxy for JARVICE system and DaemonSet containers, in order to reduce network downloads on large clusters; see [Docker registry proxy/cache](README.md#docker-registry-proxycache-jarvice-registry-proxy) for details on how to configure.
+* (4047) Fixed portal bug where cloning jobs was not including any wall time values from the *OPTIONAL* parameters in the Task Builder.
+
 ## 3.21.9-1.202102222036
 
 * (1211) Updated React.js components on the front-end.
