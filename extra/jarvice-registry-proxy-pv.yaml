@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: jarvice-registry-pv
+  name: jarvice-registry-proxy-pv
 spec:
   capacity:
     storage: 8Gi
@@ -9,11 +9,11 @@ spec:
   accessModes:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
-  storageClassName: jarvice-registry
+  storageClassName: jarvice-registry-proxy
 #  hostPath:
-#    path: /home/jarvice-registry
+#    path: /home/jarvice-registry-proxy
   nfs:
-    path: /home/jarvice-registry
+    path: /home/jarvice-registry-proxy
     server: 10.20.0.144
 #  mountOptions:
 #    - hard
