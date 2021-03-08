@@ -62,6 +62,9 @@ jarvice:
   JARVICE_PVC_VAULT_SUBPATH:      # optional subpath (supports substitutions)
   JARVICE_PVC_VAULT_ZONE:         # optional zone ID for vault (defaults to 0 - default)
 
+  JARVICE_EPHEMERAL_VAULT_ZONE:   # (defaults to -1 if not set)
+  JARVICE_DAL_HOOK_META:          # opaque (unset by default)
+
   JARVICE_POD_SCHED_LOGLEVEL: 30
   JARVICE_SCHED_PASS_LOGLEVEL: 30
   JARVICE_SCHED_LOGLEVEL: 30
