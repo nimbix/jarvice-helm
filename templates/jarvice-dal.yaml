@@ -239,6 +239,10 @@ spec:
             value: "{{ .Values.jarvice.JARVICE_PVC_VAULT_SUBPATH }}"
           - name: JARVICE_PVC_VAULT_ZONE
             value: "{{ .Values.jarvice.JARVICE_PVC_VAULT_ZONE }}"
+          - name: JARVICE_EPHEMERAL_VAULT_ZONE
+            value: "{{ .Values.jarvice.JARVICE_EPHEMERAL_VAULT_ZONE }}"
+          - name: JARVICE_DAL_HOOK_META
+            value: "{{ .Values.jarvice.JARVICE_DAL_HOOK_META }}"
           - name: JARVICE_MACHINES_ADD
             value: '{{ .Values.jarvice_dal.env.JARVICE_MACHINES_ADD }}'
           - name: JARVICE_CFG_NETWORK
