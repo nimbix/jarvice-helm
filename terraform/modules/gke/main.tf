@@ -258,7 +258,7 @@ EOF
     }
 
     lifecycle {
-        ignore_changes = [node_config[0].taint]
+        ignore_changes = [version, node_config[0].taint]
     }
 }
 
