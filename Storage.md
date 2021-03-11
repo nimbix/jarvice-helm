@@ -5,6 +5,7 @@ JARVICE provides comprehensive mechanisms to attach end-user persistent storage 
 * [Basic Pattern](#basic-pattern)
 * [Configuring Default Vault for New Users](#configuring-default-vault-for-new-users)
 * [Summary](#summary)
+* [Other Topics](#other-topics)
 
 ## Basic Pattern
 
@@ -138,3 +139,16 @@ The above example creats a vault named `data` for each user that mounts from `nf
 |Shared storage across all users|All parameters set, including `jarvice.JARVICE_PVC_VAULT_VOLUMENAME`|Statically provisioned *PersistentVolume* per namespace|
 |Shared storage volume for all users but with unique per-user subdirectories|All parameters set, including `jarvice.JARVICE_PVC_VAULT_VOLUMENAME` and `jarvice.JARVICE_PVC_VAULT_SUBPATH` using substitutions|Statically provisioned *PersistentVolume* per namespace, with each user getting their own subdirectory in the volume|
 |Custom|[DAL Hook](#dal-hook)|Expert configuration with unlimited flexibility using scripting|
+
+## Other Topics
+
+### Ephemeral Vault Zoning
+
+By default, ephemeral vaults (created automatically for all users and set as default if no PVC vault configuration exists) are unzoned (in zone `-1`).  In a multi-zone setup, this gives all users access to *at least* the default zone, in addition to any other explicit zones they have vaults for.  To pin default ephemeral vaults for new accounts to a specific zone, set the `jarvice.JARVICE_EPHEMERAL_VAULT_ZONE` value.  Note that you will need to do this after creating zones, as the ID numbers are not known until then.  This will therefore require a Helm upgrade after creating zones if setting this value is desired.
+
+**IMPORTANT NOTE**: users may be locked out of the system if all they have is a zoned ephemeral vault and there are no machines they can access in the respective zone.  Use with caution.
+
+### DAL Hook Metadata
+
+It's possible to pass opaque metadata (as an environment variable value) to DAL hooks by setting the `jarvice.JARVICE_DAL_HOOK_META` value; this may be useful for custom DAL hooks.
+
