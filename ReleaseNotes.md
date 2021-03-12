@@ -115,7 +115,16 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
-## 3.21.0-0.202102032037 LTS
+## 3.21.0-1.202103121945 (3.21.0 LTS SP1)
+
+* (3710) Support for port range settings in AppDefs, for exposing non-standard ports on *LoadBalancer* services. See the `ports` parameter in the [commands Object Reference](https://jarvice.readthedocs.io/en/latest/appdef/#commands-object-reference) for details.
+* (3760) Kubernetes 1.19 support. See [Kubernetes Support](#kubernetes-support) for the latest list of supported Kubernetes versions.
+* (4001) Fixed bug in portal where *PushToCompute* application endpoints would fail after updating AppDefs.
+* (4008) Fixed scheduler bug in Kubernetes versions greater than 1.17 when encountering non-JARVICE *ConfigMap* objects in jobs namespace (e.g. *RootCAConfigMap* feature).
+* (4087) Fixed bug when pulling containers with multiple path elements in their address (e.g. `xyz.io/bucket/name/repo` versus `xyz.io/name/repo`)
+
+
+## 3.21.0-0.202102032037 (3.21.0 LTS)
 
 * (2471) Fixed build and pull confirmation dialog boxes in *PushToCompute* view to include remotely accessible URLs that can be copied and used outside of portal; this "public" URL defaults to the `jarvice_api.ingressHost` (and associated `jarvice_api.ingressPath` value if applicable), but can be overridden with the `jarvice_mc_portal.env.JARVICE_API_PUBLIC_URL` value as well.
 * (3680) Moved CSS into main portal site to avoid rare rendering issues if CSS cannot be loaded.
