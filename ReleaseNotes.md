@@ -27,6 +27,14 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 * Kubernetes **1.17**
 * Kubernetes **1.16**
 
+### External S3-compatible Object Storage Service Compatibility
+
+At the time of this writing, JARVICE supports the following service/providers:
+* **radosgw** (REST gateway for RADOS object store, part of Ceph)
+* AWS S3
+* GCP Cloud Storage
+
+Other providers may or may not be compatible, and are not officially supported.
 
 ---
 ## Known Issues, Anomalies, and Caveats
@@ -89,6 +97,10 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 - JARVICE uses guaranteed QoS for filer pods.  By default it requests 1 CPU and 1 gigabyte of RAM.  The filer pod runs a userspace NFS service which may benefit from additional resources for larger deployments.  To adjust, set the environment variables `${JARVICE_UNFS_REQUEST_MEM}` and `${JARVICE_UNFS_REQUEST_CPU}` in the `jarvice-scheduler` deployment.  Note that the memory request is in standard Kubernetes resource format, so 1 Gigabyte is expressed as `1Gi`.
 - JARVICE runs filer pods with the node selector provided in `${JARVICE_UNFS_NODE_SELECTOR}`; when using the Helm chart, the values default to the "system" node selector(s), unless `jarvice_dal` has a node selector defined.
+
+#### Multi-tenant Storage Isolation
+
+If using tenant (payer) account storage parameters, the best practice is to not set up system defaults for PVC storage.  Instead, storage parameters should be set per tenant (payer) at the time of account invite.
 
 ### JARVICE API
 

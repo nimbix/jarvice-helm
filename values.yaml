@@ -62,6 +62,9 @@ jarvice:
   JARVICE_PVC_VAULT_SUBPATH:      # optional subpath (supports substitutions)
   JARVICE_PVC_VAULT_ZONE:         # optional zone ID for vault (defaults to 0 - default)
 
+  JARVICE_EPHEMERAL_VAULT_ZONE:   # (defaults to -1 if not set)
+  JARVICE_DAL_HOOK_META:          # opaque (unset by default)
+
   JARVICE_POD_SCHED_LOGLEVEL: 30
   JARVICE_SCHED_PASS_LOGLEVEL: 30
   JARVICE_SCHED_LOGLEVEL: 30
@@ -109,6 +112,17 @@ jarvice:
   JARVICE_BUILDS_NAMESPACE: # auto-set, should not need to be updated
   JARVICE_PULLS_NAMESPACE: # auto-set, should not need to be updated
   JARVICE_DAEMONSETS_NAMESPACE: # auto-set, should not need to be updated
+
+  # If using an S3-compatible object storage to store complete job output
+  # and pod JSON, set ALL of the following mandatory values:
+  JARVICE_S3_BUCKET: # bucket to store job output in
+  JARVICE_S3_ACCESSKEY: # access key for bucket
+  JARVICE_S3_SECRETKEY: # secret access key for bucket
+
+  # the following values are optional (defaults noted)
+  JARVICE_S3_REGION: # defaults to None
+  JARVICE_S3_PREFIX: "output/" # object name prefix
+  JARVICE_S3_ENDPOINTURL: # object store endpoint URL, defaults to AWS
 
   # Optionally, quick enable DaemonSets here.  More details can be found at:
   # https://github.com/nimbix/jarvice-helm#kubernetes-device-plugins
