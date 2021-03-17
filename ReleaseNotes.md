@@ -127,6 +127,14 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202103171856
+
+* (3073) Support for parallel authorized application synchronization from `/jarvice/apps` endpoint in `jarvice-api` (EXPERIMENTAL)
+* (4048) (4049) Support for per-tenant (payer) storage configuration overrides for default persistnet and ephemeral PVC vaults.  See [Other Topics](Storage.md#other-topics) in *User Storage Patterns and Configuration* and [Zone Isolation](MultiTenant.md#zone-isolation) in *JARVICE Multi-tenant Overview* for additional details.
+* (4050) Added new *Administration->Metadata* view in portal to manage user metadata keys.
+* (4052) (4053) (4057) Support for optionally using S3-based object storage to host job output rather than database.  See [Using an External S3-compatible Object Storage Service for Storing Job Output](S3.md) for details.
+* (4087) Fixed bug when pulling containers with multiple path elements in their address (e.g. `xyz.io/bucket/name/repo` versus `xyz.io/name/repo`)
+
 ## 3.21.9-1.202103031953
 
 * (4023) Support for using a gcr.io registry proxy for JARVICE system and DaemonSet containers, in order to reduce network downloads on large clusters; see [Docker registry proxy/cache](README.md#docker-registry-proxycache-jarvice-registry-proxy) for details on how to configure.
