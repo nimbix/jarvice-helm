@@ -239,6 +239,12 @@ spec:
 {{- end }}
           - name: JARVICE_API_LOGLEVEL
             value: "{{ .Values.jarvice.JARVICE_API_LOGLEVEL }}"
+          - name: JARVICE_API_POOL_SIZE
+{{- if empty .Values.jarvice_api.env.JARVICE_API_POOL_SIZE }}
+            value: "4"
+{{- else }}
+            value: "{{ .Values.jarvice_api.env.JARVICE_API_POOL_SIZE }}"
+{{- end }}
         resources:
 {{ toYaml .Values.jarvice_api.resources | indent 10 }}
 ---
