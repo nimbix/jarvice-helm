@@ -65,11 +65,11 @@ spec:
           nodeSelector: {{ .Values.jarvice.nodeSelector }}
 {{- end }}
 {{- if (not (empty .Values.jarvice_db_dump.nodeAffinity)) }}
-      affinity:
-        nodeAffinity: {{ .Values.jarvice_db_dump.nodeAffinity }}
+          affinity:
+            nodeAffinity: {{ .Values.jarvice_db_dump.nodeAffinity }}
 {{- else if (not (empty .Values.jarvice.nodeAffinity)) }}
-      affinity:
-        nodeAffinity: {{ .Values.jarvice.nodeAffinity }}
+          affinity:
+            nodeAffinity: {{ .Values.jarvice.nodeAffinity }}
 {{- end }}
           imagePullSecrets:
           - name: jarvice-docker
