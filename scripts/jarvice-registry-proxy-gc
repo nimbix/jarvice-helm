@@ -1,0 +1,143 @@
+#!/bin/sh
+
+namespace=${JARVICE_SYSTEM_NAMESPACE:-jarvice-system}
+last_access_seconds=${IMAGE_LAST_ACCESS_SECONDS:-2592000}  # Default: (30 days)
+
+function usage {
+    cat <<EOF
+Usage:
+    $0 [options]
+
+Options:
+    --namespace <kube_namespace>    Kubernetes namespace of JARVICE deployment
+                                    (Default: $namespace)
+    --last-access <seconds>         Remove images with last access older than
+                                    (Default: $last_access_seconds)
+
+Examples:
+    $0 --namespace jarvice-system --last-access $last_access_seconds
+
+EOF
+}
+
+KUBECTL=$(type -p kubectl)
+if [ -z "$KUBECTL" ]; then
+    cat <<EOF
+Could not find 'kubectl' in PATH.  It may not be installed.
+Run 'install-kubectl' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        --help)
+            usage
+            exit 0
+            ;;
+        --namespace)
+            namespace=$2
+            shift; shift
+            ;;
+        --last-access)
+            last_access_seconds=$2
+            shift; shift
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+script=$(cat <<'EOF'
+#!/bin/sh
+#set -e
+REGDIR=/var/lib/registry
+REPODIR=$REGDIR/docker/registry/v2/repositories
+last_access_seconds=$1
+
+df_before=$(df -h $REGDIR)
+tag_count=0
+tag_deleted_count=0
+now=$(date +%s)
+echo "Finding tags..."
+for tag_dir in $REPODIR/*/*/_manifests/tags/*; do
+    [ ! -d "$tag_dir" ] && continue
+    tag=$(echo $tag_dir | sed -e "s|^$REPODIR/||" | sed -e "s|/_manifests/tags/|:|")
+    echo "Found tag: $tag"
+    tag_count=$((tag_count+1))
+    timestamp=$(stat -t $tag_dir | awk '{print $13}')
+    diff=$((now - timestamp))
+    if [ "$diff" -gt "$last_access_seconds" ]; then
+        echo "Deleting tag: $tag"
+        rm -rf $tag_dir
+        tag_deleted_count=$((tag_deleted_count+1))
+    fi
+    echo
+done
+
+echo
+echo "Finding untagged manifests..."
+cd $REPODIR
+find . -type f -path "./*/*/_manifests/revisions/sha256/*/link" | grep -v "\/signatures\/sha256\/" | awk -F/ '{print $(NF-1)}' | sort -u >/tmp/files1
+find . -type f -path './*/*/_manifests/tags/*/current/link' | xargs sed 's/^ sha256://' | sort -u >/tmp/files2
+manifests=$(comm -23 /tmp/files1 /tmp/files2)
+rm -f /tmp/files1 /tmp/files2
+
+manifest_count=0
+manifest_deleted_count=0
+manifest_delete_fail_count=0
+for manifest in $manifests; do
+    echo "Found manifest: $manifest"
+    manifest_count=$((manifest_count+1))
+    timestamps=$(stat -t $REPODIR/*/*/_manifests/tags/*/index/sha256/$manifest/link $REPODIR/*/*/_manifests/revisions/sha256/$manifest/link 2>/dev/null | awk '{print $13}' || /bin/true)
+    delete=yes
+    for timestamp in $timestamps; do
+        diff=$((now - timestamp))
+        if [ "$diff" -lt "$last_access_seconds" ]; then
+            delete=no
+        fi
+    done
+    if [ "$delete" = "yes" ]; then
+        if rm -rf $REPODIR/*/*/_manifests/tags/*/index/sha256/$manifest $REPODIR/*/*/_manifests/revisions/sha256/$manifest; then
+            manifest_deleted_count=$((manifest_deleted_count+1))
+        else
+            manifest_delete_fail_count=$((manifest_delete_fail_count+1))
+        fi
+    fi
+done
+
+if [ $tag_deleted_count -gt 0 -o $manifest_deleted_count -gt 0 ]; then
+    echo
+    echo "Running registry garbage collection..."
+    registry garbage-collect /etc/docker/registry/config.yml -m
+fi
+
+df_after=$(df -h $REGDIR)
+echo
+echo "Summary..."
+echo "Total tags found: $tag_count"
+echo "Total tags deleted: $tag_deleted_count"
+echo "Total manifests found: $manifest_count"
+echo "Total manifests deleted: $manifest_deleted_count"
+echo "Total manifests failed to delete: $manifest_delete_fail_count"
+echo
+echo "Disk usage of partition before clean:"
+echo "$df_before"
+echo
+echo "Disk usage of partition after clean:"
+echo "$df_after"
+echo
+EOF
+)
+
+pod=$($KUBECTL -n $namespace get pods \
+        -l component=jarvice-registry-proxy \
+        --field-selector=status.phase=Running \
+        -o jsonpath={.items[0].metadata.name})
+[ -z "$pod" ] && echo "* Could not find jarvice-registry-proxy pod in $namespace namespace...Exiting..." && exit 1
+echo "* Running image cleanup on jarvice-registry-proxy in $namespace namespace..."; echo
+$KUBECTL -n $namespace exec $pod -- sh -c "$script" -s $last_access_seconds
+echo; echo "* Finished image cleanup on jarvice-registry-proxy in $namespace namespace..."
+
