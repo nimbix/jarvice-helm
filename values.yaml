@@ -446,7 +446,7 @@ jarvice_registry_proxy:
     # storageClass: "-"
     storageClass: "jarvice-registry-proxy"
     accessMode: ReadWriteOnce
-    size: 100Gi
+    size: 500Gi
   env:
     # jarvice.JARVICE_SYSTEM_REGISTRY and jarvice.imagePullSecret will be used
     # to set the values for REGISTRY_PROXY_* unless overridden here
