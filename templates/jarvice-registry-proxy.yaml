@@ -1,4 +1,16 @@
 {{- if .Values.jarvice_registry_proxy.enabled }}
+{{- if and (gt (.Values.jarvice_registry_proxy.replicaCount | int) 1) (eq .Values.jarvice_registry_proxy.persistence.accessMode "ReadWriteMany") }}
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: jarvice-registry-proxy
+spec:
+  selector:
+    matchLabels:
+      deployment: jarvice-registry-proxy
+  minAvailable: {{ .Values.jarvice_registry_proxy.pdb.minAvailable }}
+---
+{{- end }}
 {{- if and .Values.jarvice_registry_proxy.persistence.enabled (empty .Values.jarvice_registry_proxy.persistence.existingClaimName) }}
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -36,7 +48,11 @@ metadata:
     component: jarvice-registry-proxy
     deployment: jarvice-registry-proxy
 spec:
+{{- if (eq .Values.jarvice_registry_proxy.persistence.accessMode "ReadWriteMany") }}
   replicas: {{ .Values.jarvice_registry_proxy.replicaCount }}
+{{- else }}
+  replicas: 1
+{{- end }}
   selector:
     matchLabels:
       deployment: jarvice-registry-proxy
@@ -57,13 +73,28 @@ spec:
 {{- else if (not (empty .Values.jarvice.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice.nodeSelector }}
 {{- end }}
-{{- if (not (empty .Values.jarvice_registry_proxy.nodeAffinity)) }}
       affinity:
+{{- if (not (empty .Values.jarvice_registry_proxy.nodeAffinity)) }}
         nodeAffinity: {{ .Values.jarvice_registry_proxy.nodeAffinity }}
 {{- else if (not (empty .Values.jarvice.nodeAffinity)) }}
-      affinity:
         nodeAffinity: {{ .Values.jarvice.nodeAffinity }}
 {{- end }}
+        podAntiAffinity:
+        {{- if eq .Values.jarvice_registry_proxy.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                deployment: jarvice-registry-proxy
+        {{- else if eq .Values.jarvice_registry_proxy.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  deployment: jarvice-registry-proxy
+        {{- end }}
       volumes:
         - name: jarvice-registry-proxy-config
           configMap:
@@ -115,6 +146,8 @@ spec:
           initialDelaySeconds: {{ .Values.jarvice_registry_proxy.livenessProbe.initialDelaySeconds }}
           timeoutSeconds: {{ .Values.jarvice_registry_proxy.livenessProbe.timeoutSeconds }}
         env:
+          - name: REGISTRY_HTTP_ADDR
+            value: ":{{ .Values.jarvice_registry_proxy.nodePort }}"
           - name: REGISTRY_HTTP_TLS_CERTIFICATE
             value: /etc/ssl/docker/tls.crt
           - name: REGISTRY_HTTP_TLS_KEY
@@ -203,7 +236,6 @@ data:
       filesystem:
         rootdirectory: /var/lib/registry
     http:
-      addr: :{{ .Values.jarvice_registry_proxy.nodePort }}
       headers:
         X-Content-Type-Options: [nosniff]
     auth:
@@ -224,4 +256,85 @@ spec:
   issuerRef:
     name: jarvice-issuer-selfsigned
 ---
+{{- if .Values.jarvice_registry_proxy_gc.enabled }}
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: jarvice-registry-proxy-gc
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-registry-proxy-gc
+    cronjob: jarvice-registry-proxy-gc
+spec:
+  schedule: "{{ .Values.jarvice_registry_proxy_gc.schedule }}"
+  failedJobsHistoryLimit: {{ .Values.jarvice_registry_proxy_gc.failedJobsHistoryLimit }}
+  successfulJobsHistoryLimit: {{ .Values.jarvice_registry_proxy_gc.successfulJobsHistoryLimit }}
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            {{- include "jarvice.release_labels" . | indent 12 }}
+            component: jarvice-registry-proxy-gc
+            cronjob: jarvice-registry-proxy-gc
+          annotations:
+            deployment-date: {{ now | quote }}
+        spec:
+          serviceAccountName: jarvice-system
+          restartPolicy: Never
+{{- if (not (empty .Values.jarvice_registry_proxy_gc.tolerations)) }}
+          tolerations: {{ .Values.jarvice_registry_proxy_gc.tolerations }}
+{{- else if (not (empty .Values.jarvice.tolerations)) }}
+          tolerations: {{ .Values.jarvice.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice_registry_proxy_gc.nodeSelector)) }}
+          nodeSelector: {{ .Values.jarvice_registry_proxy_gc.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.nodeSelector)) }}
+          nodeSelector: {{ .Values.jarvice.nodeSelector }}
+{{- end }}
+{{- if (not (empty .Values.jarvice_registry_proxy_gc.nodeAffinity)) }}
+          affinity:
+            nodeAffinity: {{ .Values.jarvice_registry_proxy_gc.nodeAffinity }}
+{{- else if (not (empty .Values.jarvice.nodeAffinity)) }}
+          affinity:
+            nodeAffinity: {{ .Values.jarvice.nodeAffinity }}
+{{- end }}
+          imagePullSecrets:
+          - name: jarvice-docker
+          volumes:
+            - name: jarvice-registry-proxy-gc
+              configMap:
+                name: jarvice-registry-proxy-gc
+                optional: false
+          containers:
+          - name: jarvice-registry-proxy-gc
+            image: {{ template "jarvice.registrysub" merge (dict "image" .Values.jarvice_registry_proxy_gc.image) . }}
+            imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice_registry_proxy_gc.imagePullPolicy }}
+            command:
+            - /bin/sh
+            - /opt/bin/jarvice-registry-proxy-gc
+            env:
+              - name: JARVICE_SYSTEM_NAMESPACE
+{{- if empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+                value: {{ .Release.Namespace }}
+{{- else }}
+                value: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+{{- end }}
+              - name: IMAGE_LAST_ACCESS_SECONDS
+                value: "{{ .Values.jarvice_registry_proxy_gc.env.IMAGE_LAST_ACCESS_SECONDS | int }}"
+            volumeMounts:
+            - name: jarvice-registry-proxy-gc
+              mountPath: /opt/bin
+              readOnly: true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jarvice-registry-proxy-gc
+data:
+  jarvice-registry-proxy-gc: |-
+{{ .Files.Get "files/jarvice-registry-proxy-gc" | indent 4 }}
+{{- end }}
 {{- end }}

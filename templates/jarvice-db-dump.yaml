@@ -54,22 +54,22 @@ spec:
             deployment-date: {{ now | quote }}
         spec:
           restartPolicy: Never
-{{- if (not (empty .Values.jarvice_dal.tolerations)) }}
-          tolerations: {{ .Values.jarvice_dal.tolerations }}
+{{- if (not (empty .Values.jarvice_db_dump.tolerations)) }}
+          tolerations: {{ .Values.jarvice_db_dump.tolerations }}
 {{- else if (not (empty .Values.jarvice.tolerations)) }}
           tolerations: {{ .Values.jarvice.tolerations }}
 {{- end }}
-{{- if (not (empty .Values.jarvice_dal.nodeSelector)) }}
-          nodeSelector: {{ .Values.jarvice_dal.nodeSelector }}
+{{- if (not (empty .Values.jarvice_db_dump.nodeSelector)) }}
+          nodeSelector: {{ .Values.jarvice_db_dump.nodeSelector }}
 {{- else if (not (empty .Values.jarvice.nodeSelector)) }}
           nodeSelector: {{ .Values.jarvice.nodeSelector }}
 {{- end }}
-{{- if (not (empty .Values.jarvice_dal.nodeAffinity)) }}
-      affinity:
-        nodeAffinity: {{ .Values.jarvice_dal.nodeAffinity }}
+{{- if (not (empty .Values.jarvice_db_dump.nodeAffinity)) }}
+          affinity:
+            nodeAffinity: {{ .Values.jarvice_db_dump.nodeAffinity }}
 {{- else if (not (empty .Values.jarvice.nodeAffinity)) }}
-      affinity:
-        nodeAffinity: {{ .Values.jarvice.nodeAffinity }}
+          affinity:
+            nodeAffinity: {{ .Values.jarvice.nodeAffinity }}
 {{- end }}
           imagePullSecrets:
           - name: jarvice-docker

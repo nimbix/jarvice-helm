@@ -54,7 +54,7 @@ spec:
 #---
 # Optionally, use the YAML below to manually create a PVC for jarvice-db-dump.
 # If going the manually route, it will be necessary to set the existing claim
-# option jarvice_db.persistence.existingClaimName during helm install/upgrade.
+# option jarvice_db_dump.persistence.existingClaimName during helm install/upgrade.
 #
 #apiVersion: v1
 #kind: PersistentVolumeClaim
