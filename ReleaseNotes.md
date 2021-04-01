@@ -127,6 +127,12 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202104011842
+
+* (JAR-4124) Reduced the number of runtime tail and screenshot requests from the portal to only the app cards visible in view at any given time.
+* (JAR-4126) Added pagination, filtering, and column search to *Administration->Metadata* view.
+* (JAR-4165) Fixed bug with downloading job output from the *Dashboard->History* view.
+
 ## 3.21.9-1.202103171856
 
 * (3073) Support for parallel authorized application synchronization from `/jarvice/apps` endpoint in `jarvice-api` (EXPERIMENTAL)
