@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION=v1.1.1
+VERSION=v1.2.1
 IPALLOC_RANGE=10.32.0.0/12
 
 function usage {

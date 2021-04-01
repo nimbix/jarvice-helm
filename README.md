@@ -799,6 +799,29 @@ line with:
 
 `--set jarvice_registry_proxy.enabled=true`
 
+**Note:** If storage persistence is enabled, the underlying volume will need to
+have `atime` support in order for garbage collection to function properly.
+
+##### `cert-manager`
+
+Note that `cert-manager` must be deployed prior to enabling
+`jarvice-registry-proxy`.
+The `deploy2k8s-cert-manager` shell script included in the `scripts`
+directory of this helm chart can be used to deploy it.
+
+##### Garbage collection
+
+It may be desirable to schedule clean up of cached images that have
+not been recently accessed.  This can be automated via this
+helm chart by setting `jarvice_registry_proxy_gc.enabled` to `true` and
+setting `jarvice_registry_proxy_gc.env.IMAGE_LAST_ACCESS_SECONDS` to the
+desired value.  `IMAGE_LAST_ACCESS_SECONDS` defaults to `2592000` (30 days
+ago).
+
+**Note:** See
+[Cron schedule syntax](https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#cron-schedule-syntax)
+for details on modifying `jarvice_registry_proxy_gc.schedule`.
+
 ------------------------------------------------------------------------------
 
 ## JARVICE Downstream Installation
@@ -956,6 +979,10 @@ creating a persistent volume that can be used for persistent storage.
 
 Please review the `jarvice_db_dump` stanza found in `values.yaml` for more
 details on the CronJob settings for backups.
+
+**Note:** See
+[Cron schedule syntax](https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#cron-schedule-syntax)
+for details on modifying `jarvice_db_dump.schedule`.
 
 #### Dumping the database with the `jarvice-db-dump` script
 

@@ -288,9 +288,9 @@ jarvice_db_dump: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   deleteOldBackups:
     enabled: true
     keep: 14  # Number of dumps to keep
-  tolerations: # '[{"key": "node-role.jarvice.io/jarvice-db", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-db", "effect": "NoSchedule", "operator": "Exists"}]'
-  nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-db", "operator": "Exists"}]}] }}'
-  nodeSelector: # '{"node-role.jarvice.io/jarvice-db": "true"}'
+  tolerations: # '[{"key": "node-role.jarvice.io/jarvice-dal", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-dal", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-dal", "operator": "Exists"}]}] }}'
+  nodeSelector: # '{"node-role.jarvice.io/jarvice-dal": "true"}'
   persistence:
     # Set to "keep" to prevent removal of jarvice-db-dump-pvc on helm delete
     resourcePolicy: ""  # "keep"
@@ -410,10 +410,18 @@ jarvice_memcached: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   verbosity: v
   extendedOptions: modern
 
+# cert-manager must be deployed before enabling jarvice-registry-proxy
 jarvice_registry_proxy:
   enabled: false
-  replicaCount: 1
   nodePort: 32443
+  # replicaCount>1 requires ReadWriteMany storageClass/accessMode persistence
+  replicaCount: 1
+  # PodDisruptionBudget default requires 25% minimum of pods must be running
+  pdb:
+    minAvailable: "25%"
+  # antiAffinity default of "soft" prefers that pods run on diff nodes.
+  # Set to "hard" to require pods to run on diff nodes.
+  antiAffinity: "soft"
   resources:
     limits:
       cpu: 1
@@ -438,13 +446,27 @@ jarvice_registry_proxy:
     # storageClass: "-"
     storageClass: "jarvice-registry-proxy"
     accessMode: ReadWriteOnce
-    size: 100Gi
+    size: 500Gi
   env:
     # jarvice.JARVICE_SYSTEM_REGISTRY and jarvice.imagePullSecret will be used
     # to set the values for REGISTRY_PROXY_* unless overridden here
     REGISTRY_PROXY_REMOTEURL: # gcr.io  # (auto-prefixed with "https://")
     REGISTRY_PROXY_USERNAME: # _json_key
     REGISTRY_PROXY_PASSWORD: # cat gcr.io.json | base64 -w 0
+
+# Enable to use a kubernetes CronJob to schedule image garbage collection
+jarvice_registry_proxy_gc: # N/A if jarvice_registry_proxy.enabled is false
+  enabled: false
+  schedule: "0 4 * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  tolerations: # '[{"key": "node-role.jarvice.io/jarvice-registry-proxy", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-registry-proxy", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-registry-proxy", "operator": "Exists"}]}] }}'
+  nodeSelector: # '{"node-role.jarvice.io/jarvice-registry-proxy": "true"}'
+  image: gcr.io/jarvice/jarvice-kubectl:v1.20.5
+  imagePullPolicy: IfNotPresent
+  env:
+    IMAGE_LAST_ACCESS_SECONDS: 2592000  # Default: 2592000 (30 days)
 
 jarvice_dal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
@@ -700,7 +722,7 @@ jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   resources:
     limits:
       cpu: 1
-      memory: 256Mi
+      memory: 1Gi
   readinessProbe:
     initialDelaySeconds: 5
     periodSeconds: 30
@@ -716,6 +738,8 @@ jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   tolerations: # '[{"key": "node-role.jarvice.io/jarvice-api", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-api", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-api", "operator": "Exists"}]}] }}'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-api": "true"}'
+  env:
+    JARVICE_API_POOL_SIZE: 4
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
 
