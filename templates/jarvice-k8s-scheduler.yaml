@@ -103,13 +103,13 @@ spec:
           failureThreshold: {{ .Values.jarvice_k8s_scheduler.livenessProbe.failureThreshold }}
         env:
 {{- if .Values.jarvice_registry_proxy.enabled }}
-          - name: JARVICE_PROXY_PORT
+          - name: JARVICE_REGISTRY_PROXY_PORT
             value: "{{ .Values.jarvice_registry_proxy.nodePort }}"
           - name: JARVICE_PROXY_BUCKET
-{{- if empty .Values.jarvice.JARVICE_PROXY_BUCKET }}
+{{- if empty .Values.jarvice.JARVICE_REGISTRY_PROXY_BUCKET }}
             value: "gcr.io/jarvice,gcr.io/jarvice-system,gcr.io/jarvice-apps"
 {{- else }}
-            value: "{{ .Values.jarvice.JARVICE_PROXY_BUCKET }}"
+            value: "{{ .Values.jarvice.JARVICE_REGISTRY_PROXY_BUCKET }}"
 {{- end }}
 {{- end }}
           - name: JARVICE_SYSTEM_K8S
