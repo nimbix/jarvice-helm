@@ -105,6 +105,7 @@ spec:
 {{- if .Values.jarvice_registry_proxy.enabled }}
           - name: JARVICE_PROXY_PORT
             value: "{{ .Values.jarvice_registry_proxy.nodePort }}"
+          - name: JARVICE_PROXY_BUCKET
 {{- if empty .Values.jarvice.JARVICE_PROXY_BUCKET }}
             value: "gcr.io/jarvice,gcr.io/jarvice-system,gcr.io/jarvice-apps"
 {{- else }}
