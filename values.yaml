@@ -13,6 +13,8 @@ jarvice:
   JARVICE_LOCAL_REGISTRY: # jarvice-registry:5000
   JARVICE_LOCAL_REPO_BASE: jarvice
 
+  JARVICE_PROXY_BUCKET: "gcr.io/jarvice,gcr.io/jarvice-system,gcr.io/jarvice-apps"
+
   JARVICE_SYSTEM_REGISTRY: gcr.io
   JARVICE_SYSTEM_REPO_BASE: jarvice-system
   JARVICE_IMAGES_TAG: jarvice-master
