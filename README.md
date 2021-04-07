@@ -800,7 +800,7 @@ line with:
 `--set jarvice_registry_proxy.enabled=true`
 
 Repositories listed in `JARVICE_REGISTRY_PROXY_REPOS` will utilize the proxy
-for application containers. This comma separated lists defaults to
+for application containers. This comma separated list defaults to
 `gcr.io/jarvice,gcr.io/jarvice-system,gcr.io/jarvice-apps` and can be
 customized within `override.yaml` file or via the command line with:
 
