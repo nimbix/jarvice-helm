@@ -787,7 +787,7 @@ to disable it in the JARVICE helm chart.  This can be done either in an
 
 It may be desirable to enable the docker registry proxy cache available in
 the helm chart to reduce docker image pull times and network downloads for
-JARVICE system and DaemonSet containers.
+JARVICE system, JARVICE application, and DaemonSet containers.
 In order to enable the registry proxy/cache, it will be necessary to set
 `jarvice_registry_proxy.enabled` to `true`.  The registry proxy runs as a
 `NodePort` service which uses port `32443` on all of the `jarvice-system` and
@@ -798,6 +798,13 @@ This service can be enabled within an `override.yaml` file or via the command
 line with:
 
 `--set jarvice_registry_proxy.enabled=true`
+
+Repositories listed in `JARVICE_REGISTRY_PROXY_REPOS` will utilize the proxy
+for application containers. This comma separated list defaults to
+`gcr.io/jarvice,gcr.io/jarvice-system,gcr.io/jarvice-apps` and can be
+customized within `override.yaml` file or via the command line with:
+
+`--set jarvice.JARVICE_REGISTRY_PROXY_REPOS="<repo_lists_served_by_proxy>"`
 
 **Note:** If storage persistence is enabled, the underlying volume will need to
 have `atime` support in order for garbage collection to function properly.
