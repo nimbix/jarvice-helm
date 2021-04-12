@@ -47,7 +47,7 @@ global = {  # Global config options can be overridden in cluster configs
   #JARVICE_LICENSE_LIC:
 
   # JARVICE_REMOTE_* settings are used for application synchronization
-  #JARVICE_REMOTE_API_URL: https://api.jarvice.com
+  #JARVICE_REMOTE_API_URL: https://cloud.nimbix.net/api
   #JARVICE_REMOTE_USER:
   #JARVICE_REMOTE_APIKEY:
   #JARVICE_APPSYNC_USERONLY: "false"
