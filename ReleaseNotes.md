@@ -127,6 +127,12 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202104151840
+
+* (JAR-105) Full support for local Docker cache proxy for system and most application containers. See [Docker registry proxy/cache (`jarvice-registry-proxy`)](README.md#docker-registry-proxycache-jarvice-registry-proxy) for details.
+* (JAR-110) Added new *Dashboard-By Label* view in portal to view and act on running jobs grouped by label (when labels are specified during job submission).
+* (JAR-4125) Fixed bug where PVC vault subpath substitutions (e.g. `%IDUSER%`, etc.) were incorrect when sharing vaults between users in a team.
+
 ## 3.21.9-1.202104011842
 
 * (JAR-4124) Reduced the number of runtime tail and screenshot requests from the portal to only the app cards visible in view at any given time.
