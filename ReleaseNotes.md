@@ -127,6 +127,10 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202104192100
+
+* (JAR-4236) Fixed job submission regression when not using `jarvice-idmapper`.
+
 ## 3.21.9-1.202104151840
 
 * (JAR-105) Full support for local Docker cache proxy for system and most application containers. See [Docker registry proxy/cache (`jarvice-registry-proxy`)](README.md#docker-registry-proxycache-jarvice-registry-proxy) for details.
