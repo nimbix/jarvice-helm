@@ -127,6 +127,45 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202104192100
+
+* (JAR-4236) Fixed job submission regression when not using `jarvice-idmapper`.
+
+## 3.21.9-1.202104151840
+
+* (JAR-105) Full support for local Docker cache proxy for system and most application containers. See [Docker registry proxy/cache (`jarvice-registry-proxy`)](README.md#docker-registry-proxycache-jarvice-registry-proxy) for details.
+* (JAR-110) Added new *Dashboard-By Label* view in portal to view and act on running jobs grouped by label (when labels are specified during job submission).
+* (JAR-4125) Fixed bug where PVC vault subpath substitutions (e.g. `%IDUSER%`, etc.) were incorrect when sharing vaults between users in a team.
+
+## 3.21.9-1.202104011842
+
+* (JAR-4124) Reduced the number of runtime tail and screenshot requests from the portal to only the app cards visible in view at any given time.
+* (JAR-4126) Added pagination, filtering, and column search to *Administration->Metadata* view.
+* (JAR-4165) Fixed bug with downloading job output from the *Dashboard->History* view.
+
+## 3.21.9-1.202103171856
+
+* (3073) Support for parallel authorized application synchronization from `/jarvice/apps` endpoint in `jarvice-api` (EXPERIMENTAL)
+* (4048) (4049) Support for per-tenant (payer) storage configuration overrides for default persistnet and ephemeral PVC vaults.  See [Other Topics](Storage.md#other-topics) in *User Storage Patterns and Configuration* and [Zone Isolation](MultiTenant.md#zone-isolation) in *JARVICE Multi-tenant Overview* for additional details.
+* (4050) Added new *Administration->Metadata* view in portal to manage user metadata keys.
+* (4052) (4053) (4057) Support for optionally using S3-based object storage to host job output rather than database.  See [Using an External S3-compatible Object Storage Service for Storing Job Output](S3.md) for details.
+* (4087) Fixed bug when pulling containers with multiple path elements in their address (e.g. `xyz.io/bucket/name/repo` versus `xyz.io/name/repo`)
+
+## 3.21.9-1.202103031953
+
+* (4023) Support for using a gcr.io registry proxy for JARVICE system and DaemonSet containers, in order to reduce network downloads on large clusters; see [Docker registry proxy/cache](README.md#docker-registry-proxycache-jarvice-registry-proxy) for details on how to configure.
+* (4047) Fixed portal bug where cloning jobs was not including any wall time values from the *OPTIONAL* parameters in the Task Builder.
+
+## 3.21.9-1.202102222036
+
+* (1211) Updated React.js components on the front-end.
+* (3710) Support for port range settings in AppDefs, for exposing non-standard ports on *LoadBalancer* services.  See the `ports` parameter in the [commands Object Reference](https://jarvice.readthedocs.io/en/latest/appdef/#commands-object-reference) for details.
+* (3711) Support for external services (e.g. for static IP address support for jobs), as documented in [Using External Services for Interactive User Jobs](ExternalService.md).
+* (3760) Kubernetes 1.19 support.  See [Kubernetes Support](#kubernetes-support) for the latest list of supported Kubernetes versions.
+* (3964) Future support for Docker registry cache proxy for JARVICE service containers and apps.
+* (4001) Fixed bug in portal where *PushToCompute* application endpoints would fail after updating AppDefs.
+* (4008) Fixed scheduler bug in Kubernetes versions greater than 1.17 when encountering non-JARVICE *ConfigMap* objects in jobs namespace (e.g. *RootCAConfigMap* feature).
+
 ## 3.21.9-1.202102032013
 
 * (2471) Fixed build and pull confirmation dialog boxes in *PushToCompute* view to include remotely accessible URLs that can be copied and used outside of portal; this "public" URL defaults to the `jarvice_api.ingressHost` (and associated `jarvice_api.ingressPath` value if applicable), but can be overridden with the `jarvice_mc_portal.env.JARVICE_API_PUBLIC_URL` value as well.

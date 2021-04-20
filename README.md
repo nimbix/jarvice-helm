@@ -1,4 +1,4 @@
-# JARVICE cloud platform
+# JARVICE XE Hybrid Cloud HPC platform
 
 This is the Helm chart for installation of JARVICE into a kubernetes cluster.
 The chart's git repository can be cloned with the following command:
