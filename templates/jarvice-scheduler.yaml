@@ -189,7 +189,7 @@ spec:
             value: {{ toYaml .Values.jarvice.JARVICE_MAIL_SERVER | indent 12 }}
           - name: JARVICE_MAIL_USERNAME
             value: {{ toYaml .Values.jarvice.JARVICE_MAIL_USERNAME | indent 12 }}
-{{- if (not (empty .Values.JARVICE_MAIL_PASSWORD)) }}
+{{- if (not (empty .Values.jarvice.JARVICE_MAIL_PASSWORD)) }}
           - name: JARVICE_MAIL_PASSWORD
             valueFrom:
               secretKeyRef:
