@@ -100,11 +100,10 @@ resource "helm_release" "jarvice" {
     values = [
         fileexists(var.global["values_file"]) ? "# Values from file: ${var.global["values_file"]}\n\n${file(var.global["values_file"])}" : "",
         fileexists(var.jarvice["values_file"]) ? "# Values from file: ${var.jarvice["values_file"]}\n\n${file(var.jarvice["values_file"])}" : "",
-        var.global["values_yaml"],
-        var.jarvice["values_yaml"],
         var.common_values_yaml,
         var.cluster_values_yaml,
-        local.jarvice_ingress_values
+        var.global["values_yaml"],
+        var.jarvice["values_yaml"]
     ]
 
     depends_on = [helm_release.cert_manager, helm_release.traefik]
