@@ -43,7 +43,6 @@ jarvice:
         DRI_DEFAULT_CAPACITY: 1
     flex_volume_plugin_nfs_nolock_install:
       enabled: true
-      tolerations: '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.jarvice.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}]'
       env:
         KUBELET_PLUGIN_DIR: /home/kubernetes/flexvolume
 EOF
