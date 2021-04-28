@@ -115,6 +115,13 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.21.0-1.202104261600 (3.21.0 LTS SP2)
+
+* (JAR-108) Allow team administrators to optionally set per-user CPU limits rather than team-wide CPU limits in the *Account->Limits* view.
+* (JAR-4124) Reduced the number of runtime tail and screenshot requests from the portal to only the app cards visible in view at any given time.
+* (JAR-4206) Added new *Dashboard->By* Label view in portal to view and act on running jobs grouped by label (when labels are specified during job submission).
+* (JAR-4242) Added optional `vault` parameter to the `/jarvice/machines` public API call, in order to return lists of machines that are compatible (by zone) with specific vaults. See The [JARVICE API](https://jarvice.readthedocs.io/en/latest/api/#jarvicemachines) for details.
+
 ## 3.21.0-1.202103121945 (3.21.0 LTS SP1)
 
 * (3710) Support for port range settings in AppDefs, for exposing non-standard ports on *LoadBalancer* services. See the `ports` parameter in the [commands Object Reference](https://jarvice.readthedocs.io/en/latest/appdef/#commands-object-reference) for details.
