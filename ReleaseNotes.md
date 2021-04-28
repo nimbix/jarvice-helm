@@ -127,6 +127,13 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202104281919
+
+* (JAR-108) Allow team administrators to optionally set per-user CPU limits rather than team-wide CPU limits in the *Account->Limits* view.
+* (JAR-4205) Allow system administrators to edit ephemeral vaults in order to change zone in the *Administration->Users* view.
+* (JAR-4242) Added optional `vault` parameter to the `/jarvice/machines` public API call, in order to return lists of machines that are compatible (by zone) with specific vaults.  See [The JARVICE API](https://jarvice.readthedocs.io/en/latest/api/#jarvicemachines) for details.
+* (JAR-4245) Removed empty black box for jobs that are queued in the *Dashboard* view.
+
 ## 3.21.9-1.202104192100
 
 * (JAR-4236) Fixed job submission regression when not using `jarvice-idmapper`.
