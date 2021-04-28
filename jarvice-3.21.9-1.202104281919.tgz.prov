@@ -1,0 +1,38 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+annotations:
+  tag: jarvice-master
+  version: 3.21.9-1.202104281919
+apiVersion: v2
+appVersion: 3.21.9
+description: JARVICE cloud platform
+home: http://www.nimbix.net/
+icon: https://github.com/nimbix/jarvice-helm/raw/master/skin-default/favicon.png
+keywords:
+- - JARVICE
+- - HPC
+- - cloud
+kubeVersion: '>=1.14.0-0'
+maintainers:
+- - email: support@nimbix.net
+  name: Nimbix, Inc.
+  url: http://www.nimbix.net/
+name: jarvice
+sources:
+- - https://github.com/nimbix/jarvice-helm
+version: 3.21.9-1.202104281919
+
+...
+files:
+  jarvice-3.21.9-1.202104281919.tgz: sha256:a4a3b6285a53003aad4902dc75e41e7d50a2a8e8b048d6471b164a59385b8605
+-----BEGIN PGP SIGNATURE-----
+
+wsBcBAEBCgAQBQJgibdqCRANj/zL34E/zwAAmFgIAFgvjiEReX4+Y4C2Ib4kdszI
+zeK4cQ+hfAdXSVmvYlXLcmhWYDhWC/nV/OiLGPrtshL4O1QfHV+SuSoq/HwP7nKu
+6LRziaclZVaZTwNtnKziKh/94+NPinnCm25OZ09TWQByKIDwqlxFylJgbEXuoKMf
+sPYEWtUlkquHiwFpK9rAIPN1DOcpDDKJ1egmwTVSGZ/1OHfhf+8eDmU9IQl+T5Ve
+AnE0tMBKcjCcLJX4DeQ2sJkf7miHzzxmr12VUoWpRtam+2FiGekucpjGLbGleEEH
+ZIMq9AwWOH9STuNn6pNnxJ6tpJjvQHVAlfAz/XaqbLBucZQkwMabzVHzuMC+pmg=
+=qY1/
+-----END PGP SIGNATURE-----
