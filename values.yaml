@@ -742,6 +742,7 @@ jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   nodeSelector: # '{"node-role.jarvice.io/jarvice-api": "true"}'
   env:
     JARVICE_API_POOL_SIZE: 4
+    # JARVICE_API_URL: # jarvice-api.my-domain.com # set API URL
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
 
