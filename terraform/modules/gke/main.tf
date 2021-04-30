@@ -130,6 +130,10 @@ EOF
     }
 
     depends_on = [google_project_service.project_services]
+
+    lifecycle {
+        ignore_changes = [node_version]
+    }
 }
 
 resource "google_container_node_pool" "jarvice_system" {
@@ -181,6 +185,10 @@ EOF
         ]
 
         tags = [google_container_cluster.jarvice.name, "jxesystem"]
+    }
+
+    lifecycle {
+        ignore_changes = [version]
     }
 }
 
