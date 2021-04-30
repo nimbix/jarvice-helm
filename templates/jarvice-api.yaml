@@ -141,10 +141,14 @@ spec:
             value: "http://jarvice-dal.{{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}:8080"
 {{- end }}
           - name: JARVICE_API_URL
+{{- if .Values.jarvice_api.env.JARVICE_API_URL }}
+            value: "{{ .Values.jarvice_api.env.JARVICE_API_URL }}"
+{{- else }}
 {{- if empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
             value: "http://jarvice-api.{{ .Release.Namespace }}:8080"
 {{- else }}
             value: "http://jarvice-api.{{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}:8080"
+{{- end }}
 {{- end }}
           - name: JARVICE_SCHED_URL
             value: "https://jarvice-scheduler:9443"
