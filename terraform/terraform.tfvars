@@ -333,6 +333,8 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
                 meta = {
                     disable_hyperthreading = "true"
 
+                    disk_type = "pd-standard" # "pd-ssd" # "pd-balanced"
+
                     # Visit the following link for GCP accelerator type specs:
                     # https://cloud.google.com/compute/docs/gpus
                     #accelerator_type = "nvidia-tesla-v100"
@@ -348,6 +350,8 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
             #    nodes_max = 16
             #    meta = {
             #        disable_hyperthreading = "true"
+            #
+            #        disk_type = "pd-standard" # "pd-ssd" # "pd-balanced"
             #
             #        # Visit the following link for GCP accelerator type specs:
             #        # https://cloud.google.com/compute/docs/gpus
@@ -450,6 +454,8 @@ EOF
                 meta = {
                     disable_hyperthreading = "true"
 
+                    disk_type = "pd-standard" # "pd-ssd" # "pd-balanced"
+
                     # Visit the following link for GCP accelerator type specs:
                     # https://cloud.google.com/compute/docs/gpus
                     #accelerator_type = "nvidia-tesla-v100"
@@ -465,6 +471,8 @@ EOF
             #    nodes_max = 16
             #    meta = {
             #        disable_hyperthreading = "true"
+            #
+            #        disk_type = "pd-standard" # "pd-ssd" # "pd-balanced"
             #
             #        # Visit the following link for GCP accelerator type specs:
             #        # https://cloud.google.com/compute/docs/gpus

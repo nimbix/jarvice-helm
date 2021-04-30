@@ -227,6 +227,7 @@ resource "google_container_node_pool" "jarvice_compute" {
     node_config {
         machine_type = each.value["nodes_type"]
         disk_size_gb = each.value["nodes_disk_size_gb"]
+        disk_type = lookup(each.value.meta, "disk_type", "pd-standard")
 
         #image_type = "UBUNTU_CONTAINERD"
         image_type = "UBUNTU"
