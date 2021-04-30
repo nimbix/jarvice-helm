@@ -132,7 +132,7 @@ EOF
     depends_on = [google_project_service.project_services]
 
     lifecycle {
-        ignore_changes = [node_version]
+        ignore_changes = [min_master_version, node_version]
     }
 }
 
