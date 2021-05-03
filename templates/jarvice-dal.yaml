@@ -340,7 +340,7 @@ metadata:
 {{- if .Values.jarvice_dal.ingressAnnotations }}
   annotations:
 {{ toYaml .Values.jarvice_dal.ingressAnnotations | indent 4 }}
-{{- end }
+{{- end }}
 spec:
   rules:
   - host: {{ .Values.jarvice_dal.ingressHost }}
