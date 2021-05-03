@@ -230,7 +230,7 @@ resource "kubernetes_daemonset" "nvidia_driver_installer_cos" {
                     image_pull_policy = "Never"
                     name = "nvidia-driver-installer"
                     resources {
-                        requests {
+                        requests = {
                             cpu = "0.15"
                         }
                     }

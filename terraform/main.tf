@@ -11,8 +11,8 @@ terraform {
         aws = "~> 3.21.0"
         azurerm = "~> 2.41.0"
 
-        helm = "~> 1.3.2"
-        kubernetes = "~> 1.13.3"
+        helm = "~> 2.1.2"
+        kubernetes = "~> 2.1.0"
 
         null = "~> 3.0.0"
         local = "~> 2.0.0"
@@ -103,7 +103,6 @@ resource "local_file" "clusters" {
 provider "kubernetes" {
     alias = "${key}"
 
-    load_config_file = true
     config_path = module.${key}.kube_config["config_path"]
 }
 
@@ -111,7 +110,6 @@ provider "helm" {
     alias = "${key}"
 
     kubernetes {
-        load_config_file = true
         config_path = module.${key}.kube_config["config_path"]
     }
 }
@@ -160,7 +158,6 @@ provider "google-beta" {
 provider "kubernetes" {
     alias = "${key}"
 
-    load_config_file = false
     host = module.${key}.kube_config["host"]
     cluster_ca_certificate = base64decode(module.${key}.kube_config["cluster_ca_certificate"])
     client_certificate = base64decode(module.${key}.kube_config["client_certificate"])
@@ -174,7 +171,6 @@ provider "helm" {
     alias = "${key}"
 
     kubernetes {
-        load_config_file = false
         host = module.${key}.kube_config["host"]
         cluster_ca_certificate = base64decode(module.${key}.kube_config["cluster_ca_certificate"])
         client_certificate = base64decode(module.${key}.kube_config["client_certificate"])
@@ -223,7 +219,6 @@ provider "aws" {
 provider "kubernetes" {
     alias = "${key}"
 
-    load_config_file = false
     host = module.${key}.kube_config["host"]
     cluster_ca_certificate = base64decode(module.${key}.kube_config["cluster_ca_certificate"])
 #    client_certificate = base64decode(module.${key}.kube_config["client_certificate"])
@@ -235,7 +230,6 @@ provider "helm" {
     alias = "${key}"
 
     kubernetes {
-        load_config_file = false
         host = module.${key}.kube_config["host"]
         cluster_ca_certificate = base64decode(module.${key}.kube_config["cluster_ca_certificate"])
 #        client_certificate = base64decode(module.${key}.kube_config["client_certificate"])
@@ -280,7 +274,6 @@ provider "helm" {
     alias = "${key}"
 
     kubernetes {
-        load_config_file = false
         host = module.${key}.kube_config["host"]
         cluster_ca_certificate = base64decode(module.${key}.kube_config["cluster_ca_certificate"])
         client_certificate = base64decode(module.${key}.kube_config["client_certificate"])

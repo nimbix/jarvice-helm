@@ -2,7 +2,7 @@
 
 terraform {
   required_providers {
-    helm = "~> 1.3.2"
+    helm = "~> 2.1.2"
   }
 }
 
