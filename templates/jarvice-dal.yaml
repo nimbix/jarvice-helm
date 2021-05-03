@@ -361,6 +361,10 @@ metadata:
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-dal
+{{- if .Values.jarvice_dal.ingressAnnotations }}
+  annotations:
+{{ toYaml .Values.jarvice_dal.ingressAnnotations | indent 4 }}
+{{- end }}
 spec:
   rules:
   - host: {{ .Values.jarvice_dal.ingressHost }}
