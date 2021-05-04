@@ -332,8 +332,8 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
                 nodes_max = 16
                 meta = {
                     disable_hyperthreading = "true"
-
                     disk_type = "pd-standard" # "pd-ssd" # "pd-balanced"
+                    #zones = "us-west1-a,us-west1-b,us-west1-c"
 
                     # Visit the following link for GCP accelerator type specs:
                     # https://cloud.google.com/compute/docs/gpus
@@ -350,8 +350,8 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
             #    nodes_max = 16
             #    meta = {
             #        disable_hyperthreading = "true"
-            #
             #        disk_type = "pd-standard" # "pd-ssd" # "pd-balanced"
+            #        #zones = "us-west1-a,us-west1-b,us-west1-c"
             #
             #        # Visit the following link for GCP accelerator type specs:
             #        # https://cloud.google.com/compute/docs/gpus
@@ -453,8 +453,8 @@ EOF
                 nodes_max = 16
                 meta = {
                     disable_hyperthreading = "true"
-
                     disk_type = "pd-standard" # "pd-ssd" # "pd-balanced"
+                    #zones = "us-west1-a,us-west1-b,us-west1-c"
 
                     # Visit the following link for GCP accelerator type specs:
                     # https://cloud.google.com/compute/docs/gpus
@@ -471,8 +471,8 @@ EOF
             #    nodes_max = 16
             #    meta = {
             #        disable_hyperthreading = "true"
-            #
             #        disk_type = "pd-standard" # "pd-ssd" # "pd-balanced"
+            #        #zones = "us-west1-a,us-west1-b,us-west1-c"
             #
             #        # Visit the following link for GCP accelerator type specs:
             #        # https://cloud.google.com/compute/docs/gpus
