@@ -208,7 +208,7 @@ resource "google_container_node_pool" "jarvice_compute" {
 
     name = each.key
     location = local.region
-    node_locations = local.zones
+    node_locations = lookup(each.value.meta, "zones", null) != null ? split(",", each.value.meta["zones"]) : local.zones
 
     cluster = google_container_cluster.jarvice.name
     version = local.node_version
