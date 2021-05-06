@@ -165,6 +165,9 @@ spec:
 {{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_API_PUBLIC_URL)) }}
           - name: JARVICE_API_PUBLIC_URL
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_API_PUBLIC_URL }}"
+{{- else if (not (empty .Values.jarvice.JARVICE_API_PUBLIC_URL)) }}
+          - name: JARVICE_API_PUBLIC_URL
+            value: "{{ .Values.jarvice.JARVICE_API_PUBLIC_URL }}"
 {{- else if (not (empty .Values.jarvice_api.ingressHost)) }}
           - name: JARVICE_API_PUBLIC_URL
 {{- if or (eq "lookupip" .Values.jarvice_api.ingressHost) (eq "-" .Values.jarvice_api.ingressHost) }}
