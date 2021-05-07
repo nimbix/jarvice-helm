@@ -115,6 +115,9 @@ jarvice:
   JARVICE_PULLS_NAMESPACE: # auto-set, should not need to be updated
   JARVICE_DAEMONSETS_NAMESPACE: # auto-set, should not need to be updated
 
+  # Optionally, override FQDN used by the API
+  # JARVICE_API_PUBLIC_URL: # jarvice-api.my-domain.com # set API URL
+
   # If using an S3-compatible object storage to store complete job output
   # and pod JSON, set ALL of the following mandatory values:
   JARVICE_S3_BUCKET: # bucket to store job output in
