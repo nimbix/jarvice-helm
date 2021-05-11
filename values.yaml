@@ -110,6 +110,9 @@ jarvice:
   JARVICE_PULLS_NAMESPACE: # auto-set, should not need to be updated
   JARVICE_DAEMONSETS_NAMESPACE: # auto-set, should not need to be updated
 
+  # Optionally, override FQDN used by the API
+  # JARVICE_API_PUBLIC_URL: # jarvice-api.my-domain.com # set API URL
+
   # Optionally, quick enable DaemonSets here.  More details can be found at:
   # https://github.com/nimbix/jarvice-helm#kubernetes-device-plugins
   # https://github.com/nimbix/jarvice-helm#install-recommended-daemonsets
@@ -692,8 +695,6 @@ jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   tolerations: # '[{"key": "node-role.jarvice.io/jarvice-api", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-api", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-api", "operator": "Exists"}]}] }}'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-api": "true"}'
-  env:
-    # JARVICE_API_URL: # jarvice-api.my-domain.com # set API URL
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
 
