@@ -151,13 +151,7 @@ spec:
             value: "{{ .Values.jarvice.JARVICE_API_PUBLIC_URL }}"
 {{- else if (not (empty .Values.jarvice_api.ingressHost)) }}
           - name: JARVICE_API_PUBLIC_URL
-{{- if or (eq "lookupip" .Values.jarvice_api.ingressHost) (eq "-" .Values.jarvice_api.ingressHost) }}
-            value: 'https://{{- (first (lookup "v1" "Service" .Values.jarvice_api.ingressServiceNamespace .Values.jarvice_api.ingressService).status.loadBalancer.ingress).ip }}{{ .Values.jarvice_api.ingressPath }}'
-{{- else if eq "lookup" .Values.jarvice_api.ingressHost }}
-            value: 'https://{{- (first (lookup "v1" "Service" .Values.jarvice_api.ingressServiceNamespace .Values.jarvice_api.ingressService).status.loadBalancer.ingress).hostname }}{{ .Values.jarvice_api.ingressPath }}'
-{{- else }}
-            value: "https://{{ .Values.jarvice_api.ingressHost }}{{ .Values.jarvice_api.ingressPath }}"
-{{- end }}
+            value: 'https://{{- include "jarvice.ingressHostApi" . -}}{{- .Values.jarvice_api.ingressPath -}}'
 {{- end }}
           - name: JARVICE_SCHED_URL
             value: "https://jarvice-scheduler:9443"
@@ -329,6 +323,16 @@ metadata:
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-api
+  annotations:
+{{- if (not (empty .Values.jarvice.ingress.class)) }}
+    kubernetes.io/ingress.class: {{ .Values.jarvice.ingress.class }}
+{{- end }}
+{{- if and (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (empty .Values.jarvice.ingress.tls.crt) (empty .Values.jarvice.ingress.tls.key)) }}
+    cert-manager.io/issuer: {{ .Values.jarvice.ingress.tls.issuer.name }}
+{{- end }}
+{{- if .Values.jarvice_api.ingressAnnotations }}
+{{ toYaml .Values.jarvice_api.ingressAnnotations | indent 4 }}
+{{- end }}
 spec:
   rules:
   - http:
@@ -345,10 +349,16 @@ spec:
         path: /
 {{- end }}
 {{- if ne "-" .Values.jarvice_api.ingressHost }}
-{{- if eq "lookup" .Values.jarvice_api.ingressHost }}
-    host: '{{- (first (lookup "v1" "Service" .Values.jarvice_api.ingressServiceNamespace .Values.jarvice_api.ingressService).status.loadBalancer.ingress).hostname }}'
+    host: '{{- include "jarvice.ingressHostApi" . -}}'
+{{- if or (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}
+  tls:
+  - hosts:
+    - '{{- include "jarvice.ingressHostApi" . -}}'
+{{- if and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key)) }}
+    secretName: 'tls-jarvice'
 {{- else }}
-    host: {{ .Values.jarvice_api.ingressHost }}
+    secretName: 'tls-{{- include "jarvice.ingressHostApi" . -}}'
+{{- end }}
 {{- end }}
 {{- end }}
 ---
