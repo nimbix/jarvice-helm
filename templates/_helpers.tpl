@@ -73,6 +73,74 @@ JARVICE version for images
 {{- end -}}
 
 {{/*
+Get ingressHost for the portal
+*/}}
+{{- define "jarvice.ingressHostPortal" -}}
+{{- if hasSuffix ".gethostbyname.nip.io" .Values.jarvice_mc_portal.ingressHost -}}
+{{- printf "%s.%s.nip.io" (trimSuffix ".gethostbyname.nip.io" .Values.jarvice_mc_portal.ingressHost) (getHostByName (first (lookup "v1" "Service" .Values.jarvice_mc_portal.ingressServiceNamespace .Values.jarvice_mc_portal.ingressService).status.loadBalancer.ingress).hostname) -}}
+{{- else if hasSuffix ".nip.io" .Values.jarvice_mc_portal.ingressHost -}}
+{{- printf "%s.%s.nip.io" (trimSuffix ".nip.io" .Values.jarvice_mc_portal.ingressHost) (first (lookup "v1" "Service" .Values.jarvice_mc_portal.ingressServiceNamespace .Values.jarvice_mc_portal.ingressService).status.loadBalancer.ingress).ip -}}
+{{- else if or (eq "lookupip" .Values.jarvice_mc_portal.ingressHost) (eq "-" .Values.jarvice_mc_portal.ingressHost) -}}
+{{- printf "%s" (first (lookup "v1" "Service" .Values.jarvice_mc_portal.ingressServiceNamespace .Values.jarvice_mc_portal.ingressService).status.loadBalancer.ingress).ip -}}
+{{- else if eq "lookup" .Values.jarvice_mc_portal.ingressHost -}}
+{{- printf "%s" (first (lookup "v1" "Service" .Values.jarvice_mc_portal.ingressServiceNamespace .Values.jarvice_mc_portal.ingressService).status.loadBalancer.ingress).hostname -}}
+{{- else -}}
+{{- printf "%s" .Values.jarvice_mc_portal.ingressHost -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get ingressHost for the API endpoint
+*/}}
+{{- define "jarvice.ingressHostApi" -}}
+{{- if hasSuffix ".gethostbyname.nip.io" .Values.jarvice_api.ingressHost -}}
+{{- printf "%s.%s.nip.io" (trimSuffix ".gethostbyname.nip.io" .Values.jarvice_api.ingressHost) (getHostByName (first (lookup "v1" "Service" .Values.jarvice_api.ingressServiceNamespace .Values.jarvice_api.ingressService).status.loadBalancer.ingress).hostname) -}}
+{{- else if hasSuffix ".nip.io" .Values.jarvice_api.ingressHost -}}
+{{- printf "%s.%s.nip.io" (trimSuffix ".nip.io" .Values.jarvice_api.ingressHost) (first (lookup "v1" "Service" .Values.jarvice_api.ingressServiceNamespace .Values.jarvice_api.ingressService).status.loadBalancer.ingress).ip -}}
+{{- else if or (eq "lookupip" .Values.jarvice_api.ingressHost) (eq "-" .Values.jarvice_api.ingressHost) -}}
+{{- printf "%s" (first (lookup "v1" "Service" .Values.jarvice_api.ingressServiceNamespace .Values.jarvice_api.ingressService).status.loadBalancer.ingress).ip -}}
+{{- else if eq "lookup" .Values.jarvice_api.ingressHost -}}
+{{- printf "%s" (first (lookup "v1" "Service" .Values.jarvice_api.ingressServiceNamespace .Values.jarvice_api.ingressService).status.loadBalancer.ingress).hostname -}}
+{{- else -}}
+{{- printf "%s" .Values.jarvice_api.ingressHost -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get ingressHost for the k8s-scheduler
+*/}}
+{{- define "jarvice.ingressHostK8sScheduler" -}}
+{{- if hasSuffix ".gethostbyname.nip.io" .Values.jarvice_k8s_scheduler.ingressHost -}}
+{{- printf "%s.%s.nip.io" (trimSuffix ".gethostbyname.nip.io" .Values.jarvice_k8s_scheduler.ingressHost) (getHostByName (first (lookup "v1" "Service" .Values.jarvice_k8s_scheduler.ingressServiceNamespace .Values.jarvice_k8s_scheduler.ingressService).status.loadBalancer.ingress).hostname) -}}
+{{- else if hasSuffix ".nip.io" .Values.jarvice_k8s_scheduler.ingressHost -}}
+{{- printf "%s.%s.nip.io" (trimSuffix ".nip.io" .Values.jarvice_k8s_scheduler.ingressHost) (first (lookup "v1" "Service" .Values.jarvice_k8s_scheduler.ingressServiceNamespace .Values.jarvice_k8s_scheduler.ingressService).status.loadBalancer.ingress).ip -}}
+{{- else if or (eq "lookupip" .Values.jarvice_k8s_scheduler.ingressHost) (eq "-" .Values.jarvice_k8s_scheduler.ingressHost) -}}
+{{- printf "%s" (first (lookup "v1" "Service" .Values.jarvice_k8s_scheduler.ingressServiceNamespace .Values.jarvice_k8s_scheduler.ingressService).status.loadBalancer.ingress).ip -}}
+{{- else if eq "lookup" .Values.jarvice_k8s_scheduler.ingressHost -}}
+{{- printf "%s" (first (lookup "v1" "Service" .Values.jarvice_k8s_scheduler.ingressServiceNamespace .Values.jarvice_k8s_scheduler.ingressService).status.loadBalancer.ingress).hostname -}}
+{{- else -}}
+{{- printf "%s" .Values.jarvice_k8s_scheduler.ingressHost -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Get ingressHost for the license manager
+*/}}
+{{- define "jarvice.ingressHostLicenseManager" -}}
+{{- if hasSuffix ".gethostbyname.nip.io" .Values.jarvice_license_manager.ingressHost -}}
+{{- printf "%s.%s.nip.io" (trimSuffix ".gethostbyname.nip.io" .Values.jarvice_license_manager.ingressHost) (getHostByName (first (lookup "v1" "Service" .Values.jarvice_license_manager.ingressServiceNamespace .Values.jarvice_license_manager.ingressService).status.loadBalancer.ingress).hostname) -}}
+{{- else if hasSuffix ".nip.io" .Values.jarvice_license_manager.ingressHost -}}
+{{- printf "%s.%s.nip.io" (trimSuffix ".nip.io" .Values.jarvice_license_manager.ingressHost) (first (lookup "v1" "Service" .Values.jarvice_license_manager.ingressServiceNamespace .Values.jarvice_license_manager.ingressService).status.loadBalancer.ingress).ip -}}
+{{- else if or (eq "lookupip" .Values.jarvice_license_manager.ingressHost) (eq "-" .Values.jarvice_license_manager.ingressHost) -}}
+{{- printf "%s" (first (lookup "v1" "Service" .Values.jarvice_license_manager.ingressServiceNamespace .Values.jarvice_license_manager.ingressService).status.loadBalancer.ingress).ip -}}
+{{- else if eq "lookup" .Values.jarvice_license_manager.ingressHost -}}
+{{- printf "%s" (first (lookup "v1" "Service" .Values.jarvice_license_manager.ingressServiceNamespace .Values.jarvice_license_manager.ingressService).status.loadBalancer.ingress).hostname -}}
+{{- else -}}
+{{- printf "%s" .Values.jarvice_license_manager.ingressHost -}}
+{{- end -}}
+{{- end -}}
+
+{{/*
 Create chart name and version as used by the chart label.
 */}}
 {{- define "jarvice.chart" -}}

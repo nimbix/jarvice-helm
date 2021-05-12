@@ -20,7 +20,7 @@ locals {
     ]
     cluster_values_yaml = <<EOF
 jarvice:
-  JARVICE_JOBS_DOMAIN: "lookupip/job$"
+  JARVICE_JOBS_DOMAIN: "lookup/job$"
   daemonsets:
     tolerations: '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}, {"key": "nvidia.com/gpu", "effect": "NoSchedule", "operator": "Exists"}]'
     disable_hyper_threading:
@@ -52,20 +52,20 @@ ${local.cluster_values_yaml}
 # GKE cluster upstream ingress related settings
 jarvice_license_manager:
   #ingressPath: "/license-manager"
-  #ingressHost: "-"
+  #ingressHost: "${var.cluster.meta["cluster_name"]}.${var.cluster.location["region"]}.gke.jarvice.nip.io"
   #ingressService: "traefik"
   #ingressServiceNamespace: "kube-system"
   nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64"]}]}] }}'
 
 jarvice_api:
   ingressPath: "/api"
-  ingressHost: "-"
+  ingressHost: "${var.cluster.meta["cluster_name"]}.${var.cluster.location["region"]}.gke.jarvice.nip.io"
   ingressService: "traefik"
   ingressServiceNamespace: "kube-system"
 
 jarvice_mc_portal:
   ingressPath: "/"
-  ingressHost: "-"
+  ingressHost: "${var.cluster.meta["cluster_name"]}.${var.cluster.location["region"]}.gke.jarvice.nip.io"
   ingressService: "traefik"
   ingressServiceNamespace: "kube-system"
 EOF
@@ -75,7 +75,7 @@ ${local.cluster_values_yaml}
 
 # GKE cluster upstream ingress related settings
 jarvice_k8s_scheduler:
-  ingressHost: "-"
+  ingressHost: "${var.cluster.meta["cluster_name"]}.${var.cluster.location["region"]}.gke.jarvice.nip.io"
   ingressService: "traefik"
   ingressServiceNamespace: "kube-system"
 EOF

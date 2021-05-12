@@ -44,7 +44,7 @@ resource "null_resource" "ingress_host_file" {
     }
 
     provisioner "local-exec" {
-        command = "mkdir -p ${dirname(pathexpand(self.triggers.path))} && kubectl --kubeconfig ${local_file.kube_config.filename} -n kube-system get service traefik -o jsonpath='{.status.loadBalancer.ingress[0].ip}' >${pathexpand(self.triggers.path)}"
+        command = "mkdir -p ${dirname(pathexpand(self.triggers.path))} && kubectl --kubeconfig ${local_file.kube_config.filename} -n ${var.cluster.helm.jarvice["namespace"]} get ingress ${local.jarvice_ingress_name} -o jsonpath='{.spec.rules[0].host}' >${pathexpand(self.triggers.path)}"
     }
 
     provisioner "local-exec" {
