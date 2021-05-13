@@ -110,6 +110,9 @@ jarvice:
   JARVICE_PULLS_NAMESPACE: # auto-set, should not need to be updated
   JARVICE_DAEMONSETS_NAMESPACE: # auto-set, should not need to be updated
 
+  # Optionally, override FQDN used by the API
+  # JARVICE_API_PUBLIC_URL: # jarvice-api.my-domain.com # set API URL
+
   # Optionally, quick enable DaemonSets here.  More details can be found at:
   # https://github.com/nimbix/jarvice-helm#kubernetes-device-plugins
   # https://github.com/nimbix/jarvice-helm#install-recommended-daemonsets
