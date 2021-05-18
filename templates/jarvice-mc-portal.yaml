@@ -179,20 +179,14 @@ spec:
 {{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_REALM)) }}
           - name: JARVICE_PORTAL_GSS_REALM
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_REALM }}"
-{{- else }}
-            value: "ADSERVER-VM.JARVICEDEV.COM"
 {{- end }}
 {{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_DOMAIN)) }}
           - name: JARVICE_PORTAL_GSS_DOMAIN
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_DOMAIN }}"
-{{- else }}
-            value: "jarvice-development.jarvicedev.com"
 {{- end }}
 {{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_LOG)) }}
           - name: JARVICE_PORTAL_GSS_LOG
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_LOG }}"
-{{- else }}
-            value: "debug"
 {{- end }}
 {{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_DISABLE_API_SUBST_WARNING)) }}
           - name: JARVICE_DISABLE_API_SUBST_WARNING
