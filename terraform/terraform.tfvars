@@ -325,6 +325,9 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
             cluster_name = "tf-jarvice"
             kubernetes_version = "1.18"
 
+            # Sync ingress hosts to zones/domains managed w/ Google Cloud DNS
+            #manage_dns_records = "true"
+
             ssh_public_key = null  # global setting used if null specified
         }
 
@@ -463,6 +466,9 @@ EOF
         meta = {
             cluster_name = "tf-jarvice-downstream"
             kubernetes_version = "1.18"
+
+            # Sync ingress hosts to zones/domains managed w/ Google Cloud DNS
+            #manage_dns_records = "true"
 
             ssh_public_key = null  # global setting used if null specified
         }

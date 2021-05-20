@@ -11,7 +11,11 @@ terraform {
     }
 }
 
+data "google_project" "jarvice" {
+}
+
 locals {
+    project = trimprefix(data.google_project.jarvice.id, "projects/")
     region = var.cluster.location["region"]
     zones = var.cluster.location["zones"]
 
@@ -29,7 +33,8 @@ locals {
 
     project_services = [
         "compute.googleapis.com",
-        "container.googleapis.com"
+        "container.googleapis.com",
+        "dns.googleapis.com"
     ]
 
     username = "kubernetes-admin"
@@ -91,12 +96,20 @@ ${local.username}:${module.common.ssh_public_key}
 EOF
         }
 
+        #workload_metadata_config {
+        #    node_metadata = "GKE_METADATA_SERVER"
+        #}
+
         labels = {
             "node-role.jarvice.io/default" = "true"
         }
 
         tags = [var.cluster.meta["cluster_name"], "jxedefault"]
     }
+
+    #workload_identity_config {
+    #    identity_namespace = "${local.project}.svc.id.goog"
+    #}
 
     network = "default"
     subnetwork = "default"
@@ -132,6 +145,7 @@ EOF
     depends_on = [google_project_service.project_services]
 
     lifecycle {
+        #ignore_changes = [min_master_version, node_version, node_config[0].workload_metadata_config, workload_identity_config]
         ignore_changes = [min_master_version, node_version]
     }
 }

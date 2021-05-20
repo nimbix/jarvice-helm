@@ -11,8 +11,70 @@ module "common" {
     storage_class_provisioner = "kubernetes.io/gce-pd"
 }
 
+resource "google_service_account" "external_dns" {
+    account_id = "${var.cluster.meta["cluster_name"]}-external-dns"
+    display_name = substr("JARVICE ExternalDNS service account for GKE cluster: ${var.cluster.meta["cluster_name"]}", 0, 100)
+}
+
+resource "google_project_iam_member" "external_dns_admin" {
+    role = "roles/dns.admin"
+    member = "serviceAccount:${google_service_account.external_dns.email}"
+}
+
+resource "google_service_account_key" "external_dns" {
+    service_account_id = google_service_account.external_dns.name
+}
+
+#resource "google_service_account_iam_member" "external_dns_workload_identity_user" {
+#    service_account_id = google_service_account.external_dns.name
+#    role = "roles/iam.workloadIdentityUser"
+#    member = "serviceAccount:${local.project}.svc.id.goog[${module.helm.metadata["external-dns"]["namespace"]}/external-dns]"
+#}
+
 locals {
     charts = {
+        "external-dns" = {
+            "values" = <<EOF
+sources:
+  - ingress
+
+provider: google
+
+google:
+  project: "${local.project}"
+  serviceAccountKey: |
+    ${indent(4, base64decode(google_service_account_key.external_dns.private_key))}
+
+dryRun: ${lookup(var.cluster["meta"], "manage_dns_records", "false") != "true" ? "true" : "false" }
+
+logLevel: info
+
+txtOwnerId: "${var.cluster.meta["cluster_name"]}"
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: node-role.jarvice.io/jarvice-system
+          operator: Exists
+      - matchExpressions:
+        - key: node-role.kubernetes.io/jarvice-system
+          operator: Exists
+
+tolerations:
+  - key: node-role.jarvice.io/jarvice-system
+    effect: NoSchedule
+    operator: Exists
+  - key: node-role.kubernetes.io/jarvice-system
+    effect: NoSchedule
+    operator: Exists
+
+#serviceAccount:
+#  annotations:
+#    iam.gke.io/gcp-service-account: "${google_service_account.external_dns.email}"
+EOF
+        },
         "cert-manager" = {
             "values" = <<EOF
 installCRDs: true
@@ -111,6 +173,10 @@ tolerations:
   - key: node-role.kubernetes.io/jarvice-system
     effect: NoSchedule
     operator: Exists
+
+kubernetes:
+  ingressEndpoint:
+    useDefaultPublishedService: true
 
 ssl:
   enabled: true
