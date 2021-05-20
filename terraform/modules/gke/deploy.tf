@@ -12,7 +12,7 @@ module "common" {
 }
 
 resource "google_service_account" "external_dns" {
-    account_id = "${var.cluster.meta["cluster_name"]}-external-dns"
+    account_id = substr("${var.cluster.meta["cluster_name"]}-external-dns", 0, 30)
     display_name = substr("JARVICE ExternalDNS service account for GKE cluster: ${var.cluster.meta["cluster_name"]}", 0, 100)
 }
 
