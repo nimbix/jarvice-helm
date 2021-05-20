@@ -15,6 +15,7 @@ resource "helm_release" "cluster_autoscaler" {
     namespace = "kube-system"
     reuse_values = false
     reset_values = true
+    max_history = 12
     render_subchart_notes = false
     timeout = 600
 
@@ -30,6 +31,7 @@ resource "helm_release" "metrics_server" {
     namespace = "kube-system"
     reuse_values = false
     reset_values = true
+    max_history = 12
     render_subchart_notes = false
     timeout = 600
 
@@ -45,6 +47,7 @@ resource "helm_release" "external_dns" {
     namespace = "kube-system"
     reuse_values = false
     reset_values = true
+    max_history = 12
     render_subchart_notes = false
     timeout = 600
 
@@ -63,6 +66,7 @@ resource "helm_release" "cert_manager" {
     create_namespace = true
     reuse_values = false
     reset_values = true
+    max_history = 12
     render_subchart_notes = false
     timeout = 600
 
@@ -80,6 +84,7 @@ resource "helm_release" "traefik" {
     namespace = "kube-system"
     reuse_values = false
     reset_values = true
+    max_history = 12
     render_subchart_notes = false
     timeout = 600
 
@@ -97,6 +102,7 @@ resource "helm_release" "jarvice" {
     create_namespace = true
     reuse_values = false
     reset_values = true
+    max_history = 12
     render_subchart_notes = false
     timeout = 600
     wait = false
