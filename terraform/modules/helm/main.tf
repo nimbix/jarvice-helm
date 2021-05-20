@@ -49,6 +49,8 @@ resource "helm_release" "external_dns" {
     timeout = 600
 
     values = [var.charts["external-dns"]["values"]]
+
+    depends_on = [helm_release.traefik]
 }
 
 resource "helm_release" "cert_manager" {
@@ -65,6 +67,8 @@ resource "helm_release" "cert_manager" {
     timeout = 600
 
     values = [var.charts["cert-manager"]["values"]]
+
+    depends_on = [helm_release.traefik]
 }
 
 resource "helm_release" "traefik" {
@@ -106,6 +110,6 @@ resource "helm_release" "jarvice" {
         var.jarvice["values_yaml"]
     ]
 
-    depends_on = [helm_release.cert_manager, helm_release.traefik]
+    depends_on = [helm_release.external_dns, helm_release.cert_manager, helm_release.traefik]
 }
 
