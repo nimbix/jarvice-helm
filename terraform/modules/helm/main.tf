@@ -72,7 +72,7 @@ resource "helm_release" "cert_manager" {
 
     values = [var.charts["cert-manager"]["values"]]
 
-    depends_on = [helm_release.traefik]
+    depends_on = [helm_release.traefik, helm_release.external_dns]
 }
 
 resource "helm_release" "traefik" {
