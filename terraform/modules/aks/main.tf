@@ -4,8 +4,8 @@ terraform {
   required_providers {
     azurerm = "~> 2.41.0"
 
-    local = "~> 2.0.0"
-    random = "~> 3.0.0"
+    local = "~> 2.1.0"
+    random = "~> 3.1.0"
   }
 }
 
