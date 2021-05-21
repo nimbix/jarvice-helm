@@ -202,7 +202,7 @@ EOF
     }
 
     lifecycle {
-        ignore_changes = [version]
+        ignore_changes = [version, initial_node_count]
     }
 }
 
@@ -281,7 +281,7 @@ EOF
     }
 
     lifecycle {
-        ignore_changes = [version, node_config[0].taint]
+        ignore_changes = [version, initial_node_count, node_config[0].taint]
     }
 }
 
