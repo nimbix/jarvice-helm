@@ -6,8 +6,8 @@ terraform {
 
     # Make sure all providers are downloaded with the initial init
     required_providers {
-        google = "~> 3.50.0"
-        google-beta = "~> 3.50.0"
+        google = "~> 3.68.0"
+        google-beta = "~> 3.68.0"
         aws = "~> 3.21.0"
         azurerm = "~> 2.41.0"
 
