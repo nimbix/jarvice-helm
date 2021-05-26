@@ -1,12 +1,15 @@
 # main.tf - AKS module
 
 terraform {
-  required_providers {
-    azurerm = "~> 2.41.0"
+    required_providers {
+        azurerm = "~> 2.41.0"
 
-    local = "~> 2.1.0"
-    random = "~> 3.1.0"
-  }
+        helm = "~> 2.1.2"
+        kubernetes = "~> 2.1.0"
+
+        local = "~> 2.1.0"
+        random = "~> 3.1.0"
+    }
 }
 
 resource "azurerm_resource_group" "jarvice" {
