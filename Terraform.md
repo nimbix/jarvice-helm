@@ -250,11 +250,11 @@ https://github.com/nimbix/jarvice-helm
 In the `terraform.tfvars` file, the ingress TLS certificate
 configuration can be set via the helm values on a global or per cluster basis.
 If the ingress TLS setting are not configured, an unsiged TLS certificate
-will be used by default.  It is *recommended* that the ingress TLS settings
-be used for all JARVICE deployments.
+will be used by default.  It is strongly recommended that the ingress TLS
+settings be configured for all JARVICE deployments.
 
 The following `jarvice.ingress` stanza helm values can be uncommented and
-configured in the global and individual cluster configurations:
+configured in the global and/or individual cluster configurations:
 ```bash
   #ingress:
   #  tls:
@@ -322,7 +322,7 @@ The encoded strings must then be used for the `tls.crt` and `tls.key` values:
 
 By default, terraform JARVICE deployments will be deployed using a
 [nip.io](https://nip.io/) hostname which is mapped to the static IP
-address issued to the ingress controller.  (i.e. Wildcard DNS)
+address issued for the ingress controller.  (i.e. Wildcard DNS)
 The hostname will be formatted as such:
 ```bash
 https://<cluster_name>.<cluster_region>.<k8s_service>.jarvice.<ip_address>.nip.io/
@@ -363,7 +363,7 @@ issued for your terraform JARVICE deployment(s).
 
 The terraform JARVICE configuration can automatically manage DNS records of
 your JARVICE deployment(s) if a DNS zone is being managed by the same
-cloud service thta the JARVICE cluster is being deployed on.  In order to
+cloud service that the JARVICE cluster is being deployed on.  In order to
 enable this, simply uncomment `dns_manage_records` in the cluster's `meta`
 configuration section and be sure that it is set to `true`.
 
