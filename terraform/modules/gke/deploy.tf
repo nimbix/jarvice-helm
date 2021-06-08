@@ -41,6 +41,8 @@ resource "google_compute_address" "jarvice" {
 }
 
 locals {
+    load_balancer_ip = lookup(var.cluster["meta"], "use_static_ip", null) != "false" ? "loadBalancerIP: ${google_compute_address.jarvice.address}" : ""
+
     charts = {
         "external-dns" = {
             "values" = <<EOF
@@ -160,7 +162,7 @@ EOF
             "values" = <<EOF
 imageTag: "1.7"
 
-loadBalancerIP: ${google_compute_address.jarvice.address}
+${local.load_balancer_ip}
 replicas: 2
 memoryRequest: 1Gi
 memoryLimit: 1Gi
