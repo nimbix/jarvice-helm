@@ -324,7 +324,7 @@ EOF
 
 resource "null_resource" "helm_module_sleep_after_destroy" {
     triggers = {
-        sleep_after_destroy = "sleep 180"
+        sleep_after_destroy = "sleep 120"
     }
 
     provisioner "local-exec" {
