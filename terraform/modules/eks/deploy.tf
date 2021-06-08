@@ -21,7 +21,7 @@ resource "aws_eip" "jarvice" {
         load_balancer = "traefik"
     }
 
-    depends_on = [module.vpc, module.eks]
+    depends_on = [module.vpc]
 }
 
 locals {
@@ -322,6 +322,19 @@ EOF
     }
 }
 
+resource "null_resource" "helm_module_sleep_after_destroy" {
+    triggers = {
+        sleep_after_destroy = "sleep 180"
+    }
+
+    provisioner "local-exec" {
+        when = destroy
+        command = self.triggers.sleep_after_destroy
+    }
+
+    depends_on = [module.eks, module.vpc, module.iam_assumable_role_admin_cluster_autoscaler, module.iam_assumable_role_admin_aws_load_balancer_controller, module.iam_assumable_role_admin_external_dns, aws_eip.jarvice, local_file.kube_config]
+}
+
 module "helm" {
     source = "../helm"
 
@@ -339,6 +352,6 @@ EOF
 ${local.jarvice_ingress}
 EOF
 
-    depends_on = [module.eks, module.vpc, module.iam_assumable_role_admin_cluster_autoscaler, module.iam_assumable_role_admin_aws_load_balancer_controller, module.iam_assumable_role_admin_external_dns, aws_eip.jarvice, local_file.kube_config]
+    depends_on = [module.eks, module.vpc, module.iam_assumable_role_admin_cluster_autoscaler, module.iam_assumable_role_admin_aws_load_balancer_controller, module.iam_assumable_role_admin_external_dns, aws_eip.jarvice, local_file.kube_config, null_resource.helm_module_sleep_after_destroy]
 }
 
