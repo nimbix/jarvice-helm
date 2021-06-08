@@ -170,7 +170,7 @@ spec:
             value: "{{ .Values.jarvice.JARVICE_API_PUBLIC_URL }}"
 {{- else if (not (empty .Values.jarvice_api.ingressHost)) }}
           - name: JARVICE_API_PUBLIC_URL
-            value: 'https://{{- include "jarvice.ingressHostApi" . -}}{{- .Values.jarvice_api.ingressPath -}}'
+            value: 'https://{{- .Values.jarvice_api.ingressHost -}}{{- .Values.jarvice_api.ingressPath -}}'
 {{- end }}
           - name: JARVICE_USER_DEFAULT_ENABLED
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_USER_DEFAULT_ENABLED }}"
@@ -197,7 +197,7 @@ spec:
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_WEB_HOST }}"
 {{- else if (not (empty .Values.jarvice_mc_portal.ingressHost)) }}
           - name: JARVICE_PORTAL_WEB_HOST
-            value: 'https://{{- include "jarvice.ingressHostPortal" . -}}{{- .Values.jarvice_mc_portal.ingressPath -}}'
+            value: 'https://{{- .Values.jarvice_mc_portal.ingressHost -}}{{- .Values.jarvice_mc_portal.ingressPath -}}'
 {{- end }}
           - name: JARVICE_PORTAL_MEMCACHED_LOCATIONS
 {{- if and .Values.jarvice_memcached.enabled (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MEMCACHED_LOCATIONS) }}
@@ -399,15 +399,15 @@ spec:
         path: /
 {{- end }}
 {{- if ne "-" .Values.jarvice_mc_portal.ingressHost }}
-    host: '{{- include "jarvice.ingressHostPortal" . -}}'
+    host: '{{- .Values.jarvice_mc_portal.ingressHost -}}'
 {{- if or (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}
   tls:
   - hosts:
-    - '{{- include "jarvice.ingressHostPortal" . -}}'
+    - '{{- .Values.jarvice_mc_portal.ingressHost -}}'
 {{- if and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key)) }}
     secretName: 'tls-jarvice'
 {{- else }}
-    secretName: 'tls-{{- include "jarvice.ingressHostPortal" . -}}'
+    secretName: 'tls-{{- .Values.jarvice_mc_portal.ingressHost -}}'
 {{- end }}
 {{- end }}
 {{- end }}

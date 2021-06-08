@@ -367,6 +367,11 @@ cloud service that the JARVICE cluster is being deployed on.  In order to
 enable this, simply uncomment `dns_manage_records` in the cluster's `meta`
 configuration section and be sure that it is set to `true`.
 
+**Note:**  Terraform JARVICE deployments will not overwrite DNS records that
+it itself did not create.  If a DNS record was already created for the
+desired hostname, it must be deleted before it can be automatically managed
+with terraform JARVICE.
+
 ##### Google Cloud DNS
 
 If your Google Cloud DNS zone is not being managed in the same project as

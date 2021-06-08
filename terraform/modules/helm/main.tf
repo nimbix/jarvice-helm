@@ -6,6 +6,22 @@ terraform {
   }
 }
 
+resource "helm_release" "aws_load_balancer_controller" {
+    count = contains(keys(var.charts), "aws-load-balancer-controller") ? 1 : 0
+
+    name = "aws-load-balancer-controller"
+    repository = "https://aws.github.io/eks-charts"
+    chart = "aws-load-balancer-controller"
+    namespace = "kube-system"
+    reuse_values = false
+    reset_values = true
+    max_history = 12
+    render_subchart_notes = false
+    timeout = 600
+
+    values = [var.charts["aws-load-balancer-controller"]["values"]]
+}
+
 resource "helm_release" "cluster_autoscaler" {
     count = contains(keys(var.charts), "cluster-autoscaler") ? 1 : 0
 
@@ -53,7 +69,7 @@ resource "helm_release" "external_dns" {
 
     values = [var.charts["external-dns"]["values"]]
 
-    depends_on = [helm_release.traefik]
+    depends_on = [helm_release.aws_load_balancer_controller]
 }
 
 resource "helm_release" "cert_manager" {
@@ -89,6 +105,8 @@ resource "helm_release" "traefik" {
     timeout = 600
 
     values = [var.charts["traefik"]["values"]]
+
+    depends_on = [helm_release.aws_load_balancer_controller, helm_release.external_dns]
 }
 
 resource "helm_release" "jarvice" {
@@ -116,6 +134,6 @@ resource "helm_release" "jarvice" {
         var.jarvice["values_yaml"]
     ]
 
-    depends_on = [helm_release.external_dns, helm_release.cert_manager, helm_release.traefik]
+    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik]
 }
 

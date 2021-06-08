@@ -227,9 +227,9 @@ spec:
           - name: JARVICE_JOBS_DOMAIN
 {{- if (hasPrefix "lookup" .Values.jarvice.JARVICE_JOBS_DOMAIN) }}
 {{- if (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE) }}
-            value: '{{- include "jarvice.ingressHostK8sScheduler" . -}}{{- trimPrefix "lookup" (trimPrefix "lookupip" .Values.jarvice.JARVICE_JOBS_DOMAIN) -}}'
+            value: '{{- .Values.jarvice_k8s_scheduler.ingressHost -}}{{- trimPrefix "lookup" .Values.jarvice.JARVICE_JOBS_DOMAIN -}}'
 {{- else }}
-            value: '{{- include "jarvice.ingressHostPortal" . -}}{{- trimPrefix "lookup" (trimPrefix "lookupip" .Values.jarvice.JARVICE_JOBS_DOMAIN) -}}'
+            value: '{{- .Values.jarvice_mc_portal.ingressHost -}}{{- trimPrefix "lookup" .Values.jarvice.JARVICE_JOBS_DOMAIN -}}'
 {{- end }}
 {{- else }}
             value: "{{ .Values.jarvice.JARVICE_JOBS_DOMAIN }}"
@@ -403,15 +403,15 @@ spec:
           serviceName: jarvice-k8s-scheduler
           servicePort: http
 {{- if ne "-" .Values.jarvice_k8s_scheduler.ingressHost }}
-    host: '{{- include "jarvice.ingressHostK8sScheduler" . -}}'
+    host: '{{- .Values.jarvice_k8s_scheduler.ingressHost -}}'
 {{- if or (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}
   tls:
   - hosts:
-    - '{{- include "jarvice.ingressHostK8sScheduler" . -}}'
+    - '{{- .Values.jarvice_k8s_scheduler.ingressHost -}}'
 {{- if and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key)) }}
     secretName: 'tls-jarvice'
 {{- else }}
-    secretName: 'tls-{{- include "jarvice.ingressHostK8sScheduler" . -}}'
+    secretName: 'tls-{{- .Values.jarvice_k8s_scheduler.ingressHost -}}'
 {{- end }}
 {{- end }}
 {{- end }}
