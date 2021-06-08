@@ -96,7 +96,7 @@ latest Terraform releases:
 https://www.terraform.io/downloads.html
 
 **Note:**  Terraform 0.14.0 or newer is required.
-The latest Terraform 0.15.x release is recommended.
+The latest Terraform 1.x.x release is recommended.
 
 ### Cloud provider command line interface (CLI)
 
