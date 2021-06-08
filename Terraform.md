@@ -249,7 +249,7 @@ https://github.com/nimbix/jarvice-helm
 
 In the `terraform.tfvars` file, the ingress TLS certificate
 configuration can be set via the helm values on a global or per cluster basis.
-If the ingress TLS setting are not configured, an unsiged TLS certificate
+If the ingress TLS settings are not configured, an unsigned TLS certificate
 will be used by default.  It is strongly recommended that the ingress TLS
 settings be configured for all JARVICE deployments.
 
