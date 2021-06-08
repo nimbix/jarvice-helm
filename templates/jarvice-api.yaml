@@ -151,7 +151,7 @@ spec:
             value: "{{ .Values.jarvice.JARVICE_API_PUBLIC_URL }}"
 {{- else if (not (empty .Values.jarvice_api.ingressHost)) }}
           - name: JARVICE_API_PUBLIC_URL
-            value: 'https://{{- include "jarvice.ingressHostApi" . -}}{{- .Values.jarvice_api.ingressPath -}}'
+            value: 'https://{{- .Values.jarvice_api.ingressHost -}}{{- .Values.jarvice_api.ingressPath -}}'
 {{- end }}
           - name: JARVICE_SCHED_URL
             value: "https://jarvice-scheduler:9443"
@@ -349,15 +349,15 @@ spec:
         path: /
 {{- end }}
 {{- if ne "-" .Values.jarvice_api.ingressHost }}
-    host: '{{- include "jarvice.ingressHostApi" . -}}'
+    host: '{{- .Values.jarvice_api.ingressHost -}}'
 {{- if or (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}
   tls:
   - hosts:
-    - '{{- include "jarvice.ingressHostApi" . -}}'
+    - '{{- .Values.jarvice_api.ingressHost -}}'
 {{- if and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key)) }}
     secretName: 'tls-jarvice'
 {{- else }}
-    secretName: 'tls-{{- include "jarvice.ingressHostApi" . -}}'
+    secretName: 'tls-{{- .Values.jarvice_api.ingressHost -}}'
 {{- end }}
 {{- end }}
 {{- end }}

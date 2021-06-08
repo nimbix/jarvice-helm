@@ -3,7 +3,10 @@
 terraform {
     required_providers {
         google = "~> 3.68.0"
-        #google-beta = "~> 3.68.0"
+        google-beta = "~> 3.68.0"
+
+        helm = "~> 2.1.2"
+        kubernetes = "~> 2.1.0"
 
         null = "~> 3.1.0"
         local = "~> 2.1.0"

@@ -27,10 +27,19 @@ https://github.com/nimbix/jarvice-helm
             - [AWS Credentials](#aws-credentials)
         - [Azure for AKS: `az`](#azure-for-aks-az)
             - [Azure Credentials](#azure-credentials)
-                - [Creating a Service Principal using the Azure CLI](#creating-a-service-principal-using-the-azure-cli)
 * [Terraform Configuration](#terraform-configuration)
     - [Terraform variable definitions](#terraform-variable-definitions)
     - [JARVICE helm chart values](#jarvice-helm-chart-values)
+    - [Ingress TLS certificate configuration](#ingress-tls-certificate-configuration)
+        - [Using certificates via Let's Encrypt](#using-certificates-via-lets-encrypt)
+            - [Let's Encrypt rate limits](#lets-encrypt-rate-limits)
+        - [Using certificates issued by other certificate authorities](#using-certificates-issued-by-other-certificate-authorities)
+    - [Ingress DNS configuration](#ingress-dns-configuration)
+        - [Using a custom DNS domain (or subdomain)](#using-a-custom-dns-domain-or-subdomain)
+        - [Manual DNS records management](#manual-dns-records-management)
+        - [Automatic DNS records management](#automatic-dns-records-management)
+            - [Google Cloud DNS](#google-cloud-dns)
+            - [Azure DNS](#azure-dns)
     - [Arm64 (AArch64) cluster deployment](#arm64-aarch64-cluster-deployment)
         - [Arm64 on AWS](#arm64-on-aws)
 * [Deploying JARVICE](#deploying-jarvice)
@@ -76,7 +85,7 @@ $ ./jarvice-helm/scripts/install-helm
 ### `terraform`
 
 The `install-terraform` helper script can be used to install the latest
-version of Terraform on Linux amd64/x86_64 platforms.
+version of Terraform on Linux amd64/x86_64 or arm64/aarch64 platforms.
 Simply execute the following to install the `terraform` executable:
 ```bash
 $ ./jarvice-helm/scripts/install-terraform
@@ -87,6 +96,7 @@ latest Terraform releases:
 https://www.terraform.io/downloads.html
 
 **Note:**  Terraform 0.14.0 or newer is required.
+The latest Terraform 0.15.x release is recommended.
 
 ### Cloud provider command line interface (CLI)
 
@@ -161,6 +171,8 @@ the `az` executable and log in to your Azure account.  Please visit the
 following link for more details:
 https://docs.microsoft.com/en-us/cli/azure/install-azure-cli
 
+**Note:**  Azure CLI version 2.23.0 or later is required
+
 ##### Azure Credentials
 
 If you don't already have an Azure user with the appropriate permissions to
@@ -178,22 +190,7 @@ $ az login
 See the following link for more details:
 https://docs.microsoft.com/en-us/cli/azure/authenticate-azure-cli?view=azure-cli-latest
 
-###### Creating a Service Principal using the Azure CLI
-
-Execute the following to create a service principal which can be used for
-deploying JARVICE to Azure:
-```bash
-$ az ad sp create-for-rbac --name jarvice-terraform
-```
-
-The above command will output an `appId` and `password`.  Be sure to save
-those values.  They will be used when configuring the
-`service_principal_client_id` and `service_principal_client_secret`
-authentication options respectively.
-
-See the following link for more details regarding Azure service principal
-creation:
-https://www.terraform.io/docs/providers/azurerm/guides/service_principal_client_secret.html
+**Note:**  Creating an Azure service principal is no longer required.
 
 ------------------------------------------------------------------------------
 
@@ -247,6 +244,145 @@ to view the latest available release versions.
 See [README.md](README.md) in the top level of this repository for more
 in depth details on JARVICE Helm chart settings:
 https://github.com/nimbix/jarvice-helm
+
+### Ingress TLS certificate configuration
+
+In the `terraform.tfvars` file, the ingress TLS certificate
+configuration can be set via the helm values on a global or per cluster basis.
+If the ingress TLS setting are not configured, an unsiged TLS certificate
+will be used by default.  It is strongly recommended that the ingress TLS
+settings be configured for all JARVICE deployments.
+
+The following `jarvice.ingress` stanza helm values can be uncommented and
+configured in the global and/or individual cluster configurations:
+```bash
+  #ingress:
+  #  tls:
+  #    issuer:
+  #      name: "letsencrypt-prod"  # "letsecrypt-staging" # "selfsigned"
+  #      # An admin email is required when letsencrypt issuer is set. The first
+  #      # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
+  #      email: # "admin@my-domain.com"
+  #    # If crt and key values are provided, issuer settings will be ignored
+  #    crt: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.pem
+  #    key: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.key
+```
+
+#### Using certificates via Let's Encrypt
+
+The simplest way to get started with a valid certificate is to allow
+[Let's Encrypt](https://letsencrypt.org/) to automatically issue and sign it
+for you.  A valid email address is all that is needed for this:
+```bash
+  ingress:
+    tls:
+      issuer:
+        name: "letsencrypt-prod"  # "letsecrypt-staging" # "selfsigned"
+        # An admin email is required when letsencrypt issuer is set. The first
+        # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
+        email: "my-email@my-domain.com"
+  #    # If crt and key values are provided, issuer settings will be ignored
+  #    crt: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.pem
+  #    key: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.key
+```
+
+##### Let's Encrypt rate limits
+
+If you will be deploying clusters in your own domain, please be
+aware that Let's Encrypt does have
+[rate limits](https://letsencrypt.org/docs/rate-limits/).  This should not
+present any issues unless you will be deploying and tearing down many JARVICE
+deployments within a short time period.  In that case, you will want to use
+the `letsecrypt-staging` issuer instead of `letsencrypt-prod`.
+
+#### Using certificates issued by other certificate authorities
+
+If you already have an issued certificate/key pair to use with your JARVICE
+deployment(s), it must be `base64` encoded.  With your issued certificate/key
+files, simply execute the following to encode them:
+```bash
+$ base64 -w 0 <crt-or-key-file>
+```
+
+The encoded strings must then be used for the `tls.crt` and `tls.key` values:
+```bash
+  ingress:
+    tls:
+  #    issuer:
+  #      name: "letsencrypt-prod"  # "letsecrypt-staging" # "selfsigned"
+  #      # An admin email is required when letsencrypt issuer is set. The first
+  #      # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
+  #      email: # "admin@my-domain.com"
+  #    # If crt and key values are provided, issuer settings will be ignored
+      crt: <base64-encoded-cert>
+      key: <base64-encoded-key>
+```
+
+### Ingress DNS configuration
+
+By default, terraform JARVICE deployments will be deployed using a
+[nip.io](https://nip.io/) hostname which is mapped to the static IP
+address issued for the ingress controller.  (i.e. Wildcard DNS)
+The hostname will be formatted as such:
+```bash
+https://<cluster_name>.<cluster_region>.<k8s_service>.jarvice.<ip_address>.nip.io/
+```
+
+Here is an example hostname that might be used by default for an EKS deployed
+cluster in the `us-west-2` region:
+```bash
+https://tf-jarvice.us-west-2.eks.jarvice.54.212.96.156.nip.io/
+```
+
+#### Using a custom DNS domain (or subdomain)
+
+In order to use a custom DNS domain, the `ingressHost` of the appropriate
+service(s) must be set.  Here is an example:
+```bash
+jarvice_api:
+  ingressHost: jarvice.eks.my-domain.com
+  ingressPath: "/api"  # Valid values are "/" (default) or "/api"
+
+jarvice_mc_portal:
+  ingressHost: jarvice.eks.my-domain.com
+  ingressPath: "/"  # Valid values are "/" (default) or "/portal"
+```
+
+**Note:**  If using a subdomain, the apex domain must have a corresponding
+`NS` record which points to the subdomain.  The details of DNS management
+and configuring `NS` records is beyond the scope of this document.
+
+#### Manual DNS records management
+
+If you will be manually managing DNS records for your terraform JARVICE
+deployments, manually assigned IP addresses are not currently supported.
+It will be necessary to update your DNS records after the IP addresses are
+issued for your terraform JARVICE deployment(s).
+
+#### Automatic DNS records management
+
+The terraform JARVICE configuration can automatically manage DNS records of
+your JARVICE deployment(s) if a DNS zone is being managed by the same
+cloud service that the JARVICE cluster is being deployed on.  In order to
+enable this, simply uncomment `dns_manage_records` in the cluster's `meta`
+configuration section and be sure that it is set to `true`.
+
+**Note:**  Terraform JARVICE deployments will not overwrite DNS records that
+it itself did not create.  If a DNS record was already created for the
+desired hostname, it must be deleted before it can be automatically managed
+with terraform JARVICE.
+
+##### Google Cloud DNS
+
+If your Google Cloud DNS zone is not being managed in the same project as
+the terraform JARVICE deployment, the `dns_zone_project` must be set in the
+cluster's `meta` configuration section.
+
+##### Azure DNS
+
+Azure DNS requires that the `dns_zone_resource_group` be set in cluster's
+`meta` configuration section.  This must match the resource group that
+the managed DNS zone is in.
 
 ### Arm64 (AArch64) cluster deployment
 
@@ -350,7 +486,7 @@ export KUBECONFIG=~/.kube/config-tf.eks.us-west-2.tf-jarvice
 
 Open the portal URL to initialize JARVICE:
 
-https://a568758ba79d641f0b08fce671e9a693-115733088.us-west-2.elb.amazonaws.com/
+https://tf-jarvice.us-west-2.eks.jarvice.54.212.96.156.nip.io/
 
 ===============================================================================
 ```

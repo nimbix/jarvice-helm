@@ -2,14 +2,18 @@
 
 terraform {
     required_providers {
-        aws = "~> 3.21.0"
+        aws = "~> 3.42.0"
 
-        null = "~> 3.0.0"
-        local = "~> 2.0.0"
+        helm = "~> 2.1.2"
+        kubernetes = "~> 2.1.0"
+
+        null = "~> 3.1.0"
+        local = "~> 2.1.0"
         template = "~> 2.2.0"
-        random = "~> 3.0.0"
+        random = "~> 3.1.0"
     }
 }
+
 
 data "aws_eks_cluster" "cluster" {
     name = module.eks.cluster_id
@@ -22,37 +26,30 @@ data "aws_eks_cluster_auth" "cluster" {
 data "aws_availability_zones" "available" {
 }
 
-#resource "aws_eip" "nat" {
-#    count = 1
-#
-#    vpc = true
-#}
 
 module "vpc" {
     source = "terraform-aws-modules/vpc/aws"
-    version = "~> 2.64.0"
+    version = "~> 3.0.0"
 
     name = "${var.cluster.meta["cluster_name"]}-vpc"
     cidr = "10.0.0.0/16"
     azs = var.cluster.location["zones"] != null ? distinct(concat(var.cluster.location["zones"], data.aws_availability_zones.available.names)) : data.aws_availability_zones.available.names
-    public_subnets = var.cluster.location["zones"] == null ? ["10.0.0.0/17", "10.0.128.0/17"] : length(var.cluster.location["zones"]) > 2 ? ["10.0.0.0/18", "10.0.64.0/18", "10.0.128.0/18", "10.0.192.0/18"] : ["10.0.0.0/17", "10.0.128.0/17"]
+    public_subnets = var.cluster.location["zones"] == null ? ["10.0.0.0/18", "10.0.64.0/18"] : length(var.cluster.location["zones"]) > 2 ? ["10.0.0.0/19", "10.0.32.0/19", "10.0.64.0/19", "10.0.96.0/19"] : ["10.0.0.0/18", "10.0.64.0/18"]
+    private_subnets = var.cluster.location["zones"] == null ? ["10.0.128.0/18", "10.0.192.0/18"] : length(var.cluster.location["zones"]) > 2 ? ["10.0.128.0/19", "10.0.160.0/19", "10.0.192.0/19", "10.0.224.0/19"] : ["10.0.128.0/18", "10.0.192.0/18"]
     enable_dns_hostnames = true
-
-    #enable_nat_gateway = true
-    #single_nat_gateway = true
-
-    #reuse_nat_ips = true
-    #external_nat_ip_ids = "${aws_eip.nat.*.id}"
+    enable_dns_support = true
+    enable_nat_gateway = true
+    single_nat_gateway = true
 
     public_subnet_tags = {
         "kubernetes.io/cluster/${var.cluster.meta["cluster_name"]}" = "shared"
         "kubernetes.io/role/elb" = "1"
     }
 
-    #private_subnet_tags = {
-    #    "kubernetes.io/cluster/${var.cluster.meta["cluster_name"]}" = "shared"
-    #    "kubernetes.io/role/internal-elb" = "1"
-    #}
+    private_subnet_tags = {
+        "kubernetes.io/cluster/${var.cluster.meta["cluster_name"]}" = "shared"
+        "kubernetes.io/role/internal-elb" = "1"
+    }
 }
 
 locals {
@@ -82,10 +79,15 @@ resource "aws_security_group" "jarvice" {
             "192.168.0.0/16",
         ]
     }
+
+    tags = {
+        cluster_name = var.cluster.meta["cluster_name"]
+    }
 }
 
 locals {
-    subnets = var.cluster.location["zones"] != null ? slice(module.vpc.public_subnets, 0, length(var.cluster.location["zones"])) : null
+    public_subnets = var.cluster.location["zones"] != null ? slice(module.vpc.public_subnets, 0, length(var.cluster.location["zones"])) : null
+    private_subnets = var.cluster.location["zones"] != null ? slice(module.vpc.private_subnets, 0, length(var.cluster.location["zones"])) : null
     disable_hyperthreading = <<EOF
 # Disable hyper-threading.  Visit the following link for details:
 # https://aws.amazon.com/blogs/compute/disabling-intel-hyper-threading-technology-on-amazon-linux/
@@ -94,17 +96,26 @@ for n in $(cat /sys/devices/system/cpu/cpu*/topology/thread_siblings_list | cut 
     echo 0 > /sys/devices/system/cpu/cpu$n/online
 done
 EOF
+    efa_install = <<EOF
+# Install EFA packages
+yum install -y wget
+wget -q --timeout=20 https://s3-us-west-2.amazonaws.com/aws-efa-installer/aws-efa-installer-latest.tar.gz -O /tmp/aws-efa-installer.tar.gz
+tar -xf /tmp/aws-efa-installer.tar.gz -C /tmp
+cd /tmp/aws-efa-installer
+./efa_installer.sh -y -g
+/opt/amazon/efa/bin/fi_info -p efa
+EOF
 
     default_nodes = [
         {
             "name" = "default",
-            "instance_type" = lookup(var.cluster.meta, "arch", "") == "arm64" ? "t4g.micro" : "t2.nano"
+            "instance_type" = lookup(var.cluster.meta, "arch", "") == "arm64" ? "t4g.small" : "t2.small"
             "asg_desired_capacity" = 2
             "asg_min_size" = 2
             "asg_max_size" = 2
             "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/default=true"
             "public_ip" = true
-            "subnets" = local.subnets
+            #"subnets" = local.private_subnets
             "key_name" = ""
             "pre_userdata" = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
@@ -122,7 +133,7 @@ EOF
             "asg_max_size" = module.common.system_nodes_num * 2
             "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-system=true,node-pool.jarvice.io/jarvice-system=jxesystem --register-with-taints=node-role.jarvice.io/jarvice-system=true:NoSchedule"
             "public_ip" = true
-            "subnets" = local.subnets
+            #"subnets" = local.private_subnets
             "key_name" = ""
             "pre_userdata" = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
@@ -142,7 +153,7 @@ EOF
                 "asg_max_size" = pool.nodes_max
                 "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-compute=true,node-pool.jarvice.io/jarvice-compute=${name},node-pool.jarvice.io/disable-hyperthreading=${lookup(pool.meta, "disable_hyperthreading", "false")} --register-with-taints=node-role.jarvice.io/jarvice-compute=true:NoSchedule"
                 "public_ip" = true
-                "subnets" = local.subnets
+                #"subnets" = local.private_subnets
                 "key_name" = ""
                 "pre_userdata" = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
@@ -150,6 +161,8 @@ EOF
 echo "${module.common.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
 
 ${lower(lookup(pool.meta, "disable_hyperthreading", "false")) == "true" ? local.disable_hyperthreading : ""}
+
+${lower(lookup(pool.meta, "enable_efa", "false")) == "true" ? local.efa_install : ""}
 EOF
                 "additional_userdata" = <<EOF
 # additional_userdata (executed after kubelet bootstrap and cluster join)
@@ -173,7 +186,7 @@ EOF
 
 module "eks" {
     source = "terraform-aws-modules/eks/aws"
-    version = "~> 13.2.0"
+    version = "~> 16.1.0"
 
     cluster_name = var.cluster.meta["cluster_name"]
     cluster_version = var.cluster.meta["kubernetes_version"]
@@ -184,16 +197,19 @@ module "eks" {
     vpc_id = module.vpc.vpc_id
     enable_irsa = true
 
-    subnets = module.vpc.public_subnets
+    subnets = module.vpc.private_subnets
 
-    worker_groups = concat(local.default_nodes, local.system_nodes, local.compute_nodes)
+    worker_groups_launch_template = concat(local.default_nodes, local.system_nodes, local.compute_nodes)
     worker_additional_security_group_ids = [for sg in aws_security_group.jarvice : sg.id]
     worker_ami_name_filter = lookup(var.cluster.meta, "arch", "") == "arm64" ? "amazon-eks-arm64-node-${var.cluster.meta["kubernetes_version"]}-*" : "amazon-eks-gpu-node-${var.cluster.meta["kubernetes_version"]}-v*"
 
     tags = {
         cluster_name = var.cluster.meta["cluster_name"]
     }
+
+    depends_on = [module.vpc, aws_security_group.jarvice]
 }
+
 
 data "aws_iam_policy_document" "cluster_autoscaler" {
     statement {
@@ -243,19 +259,279 @@ resource "aws_iam_policy" "cluster_autoscaler" {
     policy = data.aws_iam_policy_document.cluster_autoscaler.json
 }
 
-locals {
-    k8s_service_account_namespace = "kube-system"
-    k8s_service_account_name = "cluster-autoscaler-aws-cluster-autoscaler"
-}
-
-module "iam_assumable_role_admin" {
+module "iam_assumable_role_admin_cluster_autoscaler" {
     source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-    version = "~> 3.6.0"
+    version = "~> 4.1.0"
 
     create_role = true
     role_name = "${var.cluster.meta["cluster_name"]}-cluster-autoscaler"
     provider_url = replace(module.eks.cluster_oidc_issuer_url, "https://", "")
     role_policy_arns = [aws_iam_policy.cluster_autoscaler.arn]
-    oidc_fully_qualified_subjects = ["system:serviceaccount:${local.k8s_service_account_namespace}:${local.k8s_service_account_name}"]
+    oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:cluster-autoscaler-aws-cluster-autoscaler"]
+}
+
+
+resource "aws_iam_policy" "aws_load_balancer_controller" {
+    name_prefix = "${var.cluster.meta["cluster_name"]}-aws-load-balancer-controller"
+    description = "EKS aws-load-balancer-controller policy for cluster ${module.eks.cluster_id}"
+    policy = jsonencode({
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "iam:CreateServiceLinkedRole",
+                    "ec2:DescribeAccountAttributes",
+                    "ec2:DescribeAddresses",
+                    "ec2:DescribeAvailabilityZones",
+                    "ec2:DescribeInternetGateways",
+                    "ec2:DescribeVpcs",
+                    "ec2:DescribeSubnets",
+                    "ec2:DescribeSecurityGroups",
+                    "ec2:DescribeInstances",
+                    "ec2:DescribeNetworkInterfaces",
+                    "ec2:DescribeTags",
+                    "ec2:GetCoipPoolUsage",
+                    "ec2:DescribeCoipPools",
+                    "elasticloadbalancing:DescribeLoadBalancers",
+                    "elasticloadbalancing:DescribeLoadBalancerAttributes",
+                    "elasticloadbalancing:DescribeListeners",
+                    "elasticloadbalancing:DescribeListenerCertificates",
+                    "elasticloadbalancing:DescribeSSLPolicies",
+                    "elasticloadbalancing:DescribeRules",
+                    "elasticloadbalancing:DescribeTargetGroups",
+                    "elasticloadbalancing:DescribeTargetGroupAttributes",
+                    "elasticloadbalancing:DescribeTargetHealth",
+                    "elasticloadbalancing:DescribeTags"
+                ],
+                "Resource": "*"
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "cognito-idp:DescribeUserPoolClient",
+                    "acm:ListCertificates",
+                    "acm:DescribeCertificate",
+                    "iam:ListServerCertificates",
+                    "iam:GetServerCertificate",
+                    "waf-regional:GetWebACL",
+                    "waf-regional:GetWebACLForResource",
+                    "waf-regional:AssociateWebACL",
+                    "waf-regional:DisassociateWebACL",
+                    "wafv2:GetWebACL",
+                    "wafv2:GetWebACLForResource",
+                    "wafv2:AssociateWebACL",
+                    "wafv2:DisassociateWebACL",
+                    "shield:GetSubscriptionState",
+                    "shield:DescribeProtection",
+                    "shield:CreateProtection",
+                    "shield:DeleteProtection"
+                ],
+                "Resource": "*"
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "ec2:AuthorizeSecurityGroupIngress",
+                    "ec2:RevokeSecurityGroupIngress"
+                ],
+                "Resource": "*"
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "ec2:CreateSecurityGroup"
+                ],
+                "Resource": "*"
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "ec2:CreateTags"
+                ],
+                "Resource": "arn:aws:ec2:*:*:security-group/*",
+                "Condition": {
+                    "StringEquals": {
+                        "ec2:CreateAction": "CreateSecurityGroup"
+                    },
+                    "Null": {
+                        "aws:RequestTag/elbv2.k8s.aws/cluster": "false"
+                    }
+                }
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "ec2:CreateTags",
+                    "ec2:DeleteTags"
+                ],
+                "Resource": "arn:aws:ec2:*:*:security-group/*",
+                "Condition": {
+                    "Null": {
+                        "aws:RequestTag/elbv2.k8s.aws/cluster": "true",
+                        "aws:ResourceTag/elbv2.k8s.aws/cluster": "false"
+                    }
+                }
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "ec2:AuthorizeSecurityGroupIngress",
+                    "ec2:RevokeSecurityGroupIngress",
+                    "ec2:DeleteSecurityGroup"
+                ],
+                "Resource": "*",
+                "Condition": {
+                    "Null": {
+                        "aws:ResourceTag/elbv2.k8s.aws/cluster": "false"
+                    }
+                }
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "elasticloadbalancing:CreateLoadBalancer",
+                    "elasticloadbalancing:CreateTargetGroup"
+                ],
+                "Resource": "*",
+                "Condition": {
+                    "Null": {
+                        "aws:RequestTag/elbv2.k8s.aws/cluster": "false"
+                    }
+                }
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "elasticloadbalancing:CreateListener",
+                    "elasticloadbalancing:DeleteListener",
+                    "elasticloadbalancing:CreateRule",
+                    "elasticloadbalancing:DeleteRule"
+                ],
+                "Resource": "*"
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "elasticloadbalancing:AddTags",
+                    "elasticloadbalancing:RemoveTags"
+                ],
+                "Resource": [
+                    "arn:aws:elasticloadbalancing:*:*:targetgroup/*/*",
+                    "arn:aws:elasticloadbalancing:*:*:loadbalancer/net/*/*",
+                    "arn:aws:elasticloadbalancing:*:*:loadbalancer/app/*/*"
+                ],
+                "Condition": {
+                    "Null": {
+                        "aws:RequestTag/elbv2.k8s.aws/cluster": "true",
+                        "aws:ResourceTag/elbv2.k8s.aws/cluster": "false"
+                    }
+                }
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "elasticloadbalancing:AddTags",
+                    "elasticloadbalancing:RemoveTags"
+                ],
+                "Resource": [
+                    "arn:aws:elasticloadbalancing:*:*:listener/net/*/*/*",
+                    "arn:aws:elasticloadbalancing:*:*:listener/app/*/*/*",
+                    "arn:aws:elasticloadbalancing:*:*:listener-rule/net/*/*/*",
+                    "arn:aws:elasticloadbalancing:*:*:listener-rule/app/*/*/*"
+                ]
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "elasticloadbalancing:ModifyLoadBalancerAttributes",
+                    "elasticloadbalancing:SetIpAddressType",
+                    "elasticloadbalancing:SetSecurityGroups",
+                    "elasticloadbalancing:SetSubnets",
+                    "elasticloadbalancing:DeleteLoadBalancer",
+                    "elasticloadbalancing:ModifyTargetGroup",
+                    "elasticloadbalancing:ModifyTargetGroupAttributes",
+                    "elasticloadbalancing:DeleteTargetGroup"
+                ],
+                "Resource": "*",
+                "Condition": {
+                    "Null": {
+                        "aws:ResourceTag/elbv2.k8s.aws/cluster": "false"
+                    }
+                }
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "elasticloadbalancing:RegisterTargets",
+                    "elasticloadbalancing:DeregisterTargets"
+                ],
+                "Resource": "arn:aws:elasticloadbalancing:*:*:targetgroup/*/*"
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "elasticloadbalancing:SetWebAcl",
+                    "elasticloadbalancing:ModifyListener",
+                    "elasticloadbalancing:AddListenerCertificates",
+                    "elasticloadbalancing:RemoveListenerCertificates",
+                    "elasticloadbalancing:ModifyRule"
+                ],
+                "Resource": "*"
+            }
+        ]
+    })
+}
+
+module "iam_assumable_role_admin_aws_load_balancer_controller" {
+    source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
+    version = "~> 4.1.0"
+
+    create_role = true
+    role_name = "${var.cluster.meta["cluster_name"]}-aws-load-balancer-controller"
+    provider_url = replace(module.eks.cluster_oidc_issuer_url, "https://", "")
+    role_policy_arns = [aws_iam_policy.aws_load_balancer_controller.arn]
+    oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:aws-load-balancer-controller"]
+}
+
+
+resource "aws_iam_policy" "external_dns" {
+    name_prefix = "${var.cluster.meta["cluster_name"]}-external-dns"
+    description = "EKS external-dns policy for cluster ${module.eks.cluster_id}"
+    policy = jsonencode({
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "route53:ChangeResourceRecordSets"
+                ],
+                "Resource": [
+                    "arn:aws:route53:::hostedzone/*"
+                ]
+            },
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "route53:ListHostedZones",
+                    "route53:ListResourceRecordSets"
+                ],
+                "Resource": [
+                    "*"
+                ]
+            }
+        ]
+    })
+}
+
+module "iam_assumable_role_admin_external_dns" {
+    source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
+    version = "~> 4.1.0"
+
+    create_role = true
+    role_name = "${var.cluster.meta["cluster_name"]}-external-dns"
+    provider_url = replace(module.eks.cluster_oidc_issuer_url, "https://", "")
+    role_policy_arns = [aws_iam_policy.external_dns.arn]
+    oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:external-dns"]
 }
 

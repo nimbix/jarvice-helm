@@ -16,7 +16,7 @@ locals {
 locals {
     cluster_values_yaml = <<EOF
 jarvice:
-  JARVICE_JOBS_DOMAIN: "${azurerm_public_ip.jarvice.fqdn}/job$"
+  JARVICE_JOBS_DOMAIN: "lookup/job$"
   daemonsets:
     nvidia:
       enabled: true
@@ -31,16 +31,16 @@ ${local.cluster_values_yaml}
 
 # AKS cluster upstream ingress related settings
 jarvice_license_manager:
-  #ingressHost: ${azurerm_public_ip.jarvice.fqdn}
+  #ingressHost: "${var.cluster.meta["cluster_name"]}.${var.cluster.location["region"]}.aks.jarvice.${azurerm_public_ip.jarvice.ip_address}.nip.io"
   #ingressPath: "/license-manager"
   nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64"]}]}] }}'
 
 jarvice_api:
-  ingressHost: ${azurerm_public_ip.jarvice.fqdn}
+  ingressHost: "${var.cluster.meta["cluster_name"]}.${var.cluster.location["region"]}.aks.jarvice.${azurerm_public_ip.jarvice.ip_address}.nip.io"
   ingressPath: "/api"
 
 jarvice_mc_portal:
-  ingressHost: ${azurerm_public_ip.jarvice.fqdn}
+  ingressHost: "${var.cluster.meta["cluster_name"]}.${var.cluster.location["region"]}.aks.jarvice.${azurerm_public_ip.jarvice.ip_address}.nip.io"
   ingressPath: "/"
 EOF
 
@@ -49,7 +49,7 @@ ${local.cluster_values_yaml}
 
 # AKS cluster downstream ingress related settings
 jarvice_k8s_scheduler:
-  ingressHost: ${azurerm_public_ip.jarvice.fqdn}
+  ingressHost: "${var.cluster.meta["cluster_name"]}.${var.cluster.location["region"]}.aks.jarvice.${azurerm_public_ip.jarvice.ip_address}.nip.io"
 EOF
 
     jarvice_ingress = module.common.jarvice_cluster_type == "downstream" ? local.jarvice_ingress_downstream : local.jarvice_ingress_upstream

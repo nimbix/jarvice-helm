@@ -255,15 +255,15 @@ spec:
         path: /
 {{- end }}
 {{- if ne "-" .Values.jarvice_license_manager.ingressHost }}
-    host: '{{- include "jarvice.ingressHostLicenseManager" . -}}'
+    host: '{{- .Values.jarvice_license_manager.ingressHost -}}'
 {{- if or (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}
   tls:
   - hosts:
-    - '{{- include "jarvice.ingressHostLicenseManager" . -}}'
+    - '{{- .Values.jarvice_license_manager.ingressHost -}}'
 {{- if and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key)) }}
     secretName: 'tls-jarvice'
 {{- else }}
-    secretName: 'tls-{{- include "jarvice.ingressHostLicenseManager" . -}}'
+    secretName: 'tls-{{- .Values.jarvice_license_manager.ingressHost -}}'
 {{- end }}
 {{- end }}
 {{- end }}

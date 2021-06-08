@@ -14,11 +14,13 @@ module "common" {
 resource "google_service_account" "external_dns" {
     account_id = replace(substr("${var.cluster.meta["cluster_name"]}-external-dns", 0, 30), "/[^a-z0-9]$/", "")
     display_name = substr("JARVICE ExternalDNS service account for GKE cluster: ${var.cluster.meta["cluster_name"]}", 0, 100)
+    project = lookup(var.cluster["meta"], "dns_zone_project", null)
 }
 
 resource "google_project_iam_member" "external_dns_admin" {
     role = "roles/dns.admin"
     member = "serviceAccount:${google_service_account.external_dns.email}"
+    project = lookup(var.cluster["meta"], "dns_zone_project", null)
 }
 
 resource "google_service_account_key" "external_dns" {
@@ -31,6 +33,13 @@ resource "google_service_account_key" "external_dns" {
 #    member = "serviceAccount:${local.project}.svc.id.goog[${module.helm.metadata["external-dns"]["namespace"]}/external-dns]"
 #}
 
+resource "google_compute_address" "jarvice" {
+    name = "${var.cluster.meta["cluster_name"]}-${var.cluster.location["region"]}"
+    address_type = "EXTERNAL"
+
+    depends_on = [google_container_cluster.jarvice]
+}
+
 locals {
     charts = {
         "external-dns" = {
@@ -41,15 +50,15 @@ sources:
 provider: google
 
 google:
-  project: "${local.project}"
+  project: "${lookup(var.cluster["meta"], "dns_zone_project", local.project)}"
   serviceAccountKey: |
     ${indent(4, base64decode(google_service_account_key.external_dns.private_key))}
 
-dryRun: ${lookup(var.cluster["meta"], "manage_dns_records", "false") != "true" ? "true" : "false" }
+dryRun: ${lookup(var.cluster["meta"], "dns_manage_records", "false") != "true" ? "true" : "false" }
 
 logLevel: info
 
-txtOwnerId: "${var.cluster.meta["cluster_name"]}"
+txtOwnerId: "${var.cluster.meta["cluster_name"]}.${var.cluster.location["region"]}"
 
 affinity:
   nodeAffinity:
@@ -149,6 +158,9 @@ EOF
         },
         "traefik" = {
             "values" = <<EOF
+imageTag: "1.7"
+
+loadBalancerIP: ${google_compute_address.jarvice.address}
 replicas: 2
 memoryRequest: 1Gi
 memoryLimit: 1Gi
@@ -211,7 +223,7 @@ EOF
 ${local.jarvice_ingress}
 EOF
 
-    depends_on = [google_container_cluster.jarvice, google_container_node_pool.jarvice_system, google_container_node_pool.jarvice_compute]
+    depends_on = [google_container_cluster.jarvice, google_container_node_pool.jarvice_system, google_container_node_pool.jarvice_compute, google_compute_address.jarvice, local_file.kube_config]
 }
 
 resource "kubernetes_daemonset" "nvidia_driver_installer_cos" {

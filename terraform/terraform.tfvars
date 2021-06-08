@@ -326,7 +326,9 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
             kubernetes_version = "1.18"
 
             # Sync ingress hosts to zones/domains managed w/ Google Cloud DNS
-            #manage_dns_records = "true"
+            #dns_manage_records = "true"
+            # Google Cloud project which contains the DNS zone for domain(s)
+            #dns_zone_project = "tf-jarvice"  # If diff than cluster's project
 
             ssh_public_key = null  # global setting used if null specified
         }
@@ -468,7 +470,9 @@ EOF
             kubernetes_version = "1.18"
 
             # Sync ingress hosts to zones/domains managed w/ Google Cloud DNS
-            #manage_dns_records = "true"
+            #dns_manage_records = "true"
+            # Google Cloud project which contains the DNS zone for domain(s)
+            #dns_zone_project = "tf-jarvice"  # If diff than cluster's project
 
             ssh_public_key = null  # global setting used if null specified
         }
@@ -602,6 +606,9 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
             kubernetes_version = "1.18"
             #arch = "arm64"  # Uncomment to deploy an arm64 cluster
 
+            # Sync ingress hosts to zones/domains managed w/ AWS Route53 DNS
+            #dns_manage_records = "true"
+
             ssh_public_key = null  # global setting used if null specified
         }
 
@@ -726,6 +733,9 @@ EOF
             kubernetes_version = "1.18"
             #arch = "arm64"  # Uncomment to deploy an arm64 cluster
 
+            # Sync ingress hosts to zones/domains managed w/ AWS Route53 DNS
+            #dns_manage_records = "true"
+
             ssh_public_key = null  # global setting used if null specified
         }
 
@@ -832,16 +842,17 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
     aks_cluster_00 = {
         enabled = false
 
-        # Visit the following link for service principal creation information:
-        # https://github.com/nimbix/jarvice-helm/blob/testing/Terraform.md#creating-a-service-principal-using-the-azure-cli
-        auth = {
-            service_principal_client_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-            service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        auth = {  # Authenticate w/ 'az login' prior to deployment
         }
 
         meta = {
             cluster_name = "tf-jarvice"
             kubernetes_version = "1.18"
+
+            # Sync ingress hosts to zones/domains managed w/ Azure DNS
+            #dns_manage_records = "true"
+            # Azure resource group which contains the DNS zone for the domain
+            #dns_zone_resource_group = "tf-jarvice-dns"  # (required for mgmt)
 
             ssh_public_key = null  # global setting used if null specified
         }
@@ -955,16 +966,17 @@ EOF
     aks_cluster_01 = {
         enabled = false
 
-        # Visit the following link for service principal creation information:
-        # https://github.com/nimbix/jarvice-helm/blob/testing/Terraform.md#creating-a-service-principal-using-the-azure-cli
-        auth = {
-            service_principal_client_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-            service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        auth = {  # Authenticate w/ 'az login' prior to deployment
         }
 
         meta = {
             cluster_name = "tf-jarvice-downstream"
             kubernetes_version = "1.18"
+
+            # Sync ingress hosts to zones/domains managed w/ Azure DNS
+            #dns_manage_records = "true"
+            # Azure resource group which contains the DNS zone for the domain
+            #dns_zone_resource_group = "tf-jarvice-dns"  # (required for mgmt)
 
             ssh_public_key = null  # global setting used if null specified
         }

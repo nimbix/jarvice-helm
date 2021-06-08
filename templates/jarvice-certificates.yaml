@@ -36,22 +36,22 @@ spec:
   dnsNames:
 {{- if (not (empty .Values.jarvice_mc_portal.ingressHost)) }}
 {{- if ne "-" .Values.jarvice_mc_portal.ingressHost }}
-    - '{{- include "jarvice.ingressHostPortal" . -}}'
+    - '{{- .Values.jarvice_mc_portal.ingressHost -}}'
 {{- end }}
 {{- end }}
 {{- if (not (empty .Values.jarvice_api.ingressHost)) }}
 {{- if ne "-" .Values.jarvice_api.ingressHost }}
-    - '{{- include "jarvice.ingressHostApi" . -}}'
+    - '{{- .Values.jarvice_api.ingressHost -}}'
 {{- end }}
 {{- end }}
 {{- if (not (empty .Values.jarvice_k8s_scheduler.ingressHost)) }}
 {{- if ne "-" .Values.jarvice_k8s_scheduler.ingressHost }}
-    - '{{- include "jarvice.ingressHostK8sScheduler" . -}}'
+    - '{{- .Values.jarvice_k8s_scheduler.ingressHost -}}'
 {{- end }}
 {{- end }}
 {{- if (not (empty .Values.jarvice_license_manager.ingressHost)) }}
 {{- if ne "-" .Values.jarvice_license_manager.ingressHost }}
-    - '{{- include "jarvice.ingressHostLicenseManager" . -}}'
+    - '{{- .Values.jarvice_license_manager.ingressHost -}}'
 {{- end }}
 {{- end }}
 {{- if (not (empty .Values.jarvice_dal.ingressHost)) }}

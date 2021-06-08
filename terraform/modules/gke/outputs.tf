@@ -35,22 +35,9 @@ output "kube_config" {
     value = local.kube_config
 }
 
-resource "null_resource" "ingress_host_file" {
-    triggers = {
-        path = local.jarvice_config["ingress_host_path"]
-        jarvice_revision = module.helm.metadata["jarvice"]["revision"]
-        jarvice_version = module.helm.metadata["jarvice"]["version"]
-        jarvice_values = module.helm.metadata["jarvice"]["values"]
-    }
-
-    provisioner "local-exec" {
-        command = "mkdir -p ${dirname(pathexpand(self.triggers.path))} && kubectl --kubeconfig ${local_file.kube_config.filename} -n ${var.cluster.helm.jarvice["namespace"]} get ingress ${local.jarvice_ingress_name} -o jsonpath='{.spec.rules[0].host}' >${pathexpand(self.triggers.path)}"
-    }
-
-    provisioner "local-exec" {
-        when = destroy
-        command = fileexists(self.triggers.path) ? "rm -f ${self.triggers.path}" : "/bin/true"
-    }
+locals {
+    helm_jarvice_values = yamldecode(module.helm.metadata["jarvice"]["values"])
+    ingress_host = lookup(local.helm_jarvice_values["jarvice"], "JARVICE_CLUSTER_TYPE", "upstream") == "downstream" ? local.helm_jarvice_values["jarvice_k8s_scheduler"]["ingressHost"] : local.helm_jarvice_values["jarvice_mc_portal"]["ingressHost"]
 }
 
 output "cluster_info" {
@@ -69,9 +56,11 @@ export KUBECONFIG=${local.kube_config["config_path"]}
 
 ${module.common.cluster_output_message}:
 
-https://${fileexists(null_resource.ingress_host_file.triggers.path) ? file(null_resource.ingress_host_file.triggers.path) : "<undefined>"}/
+https://${local.ingress_host}/
 
 ===============================================================================
 EOF
+
+    depends_on = [module.helm]
 }
 

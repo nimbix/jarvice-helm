@@ -1,12 +1,15 @@
 # main.tf - AKS module
 
 terraform {
-  required_providers {
-    azurerm = "~> 2.41.0"
+    required_providers {
+        azurerm = "~> 2.61.0"
 
-    local = "~> 2.1.0"
-    random = "~> 3.1.0"
-  }
+        helm = "~> 2.1.2"
+        kubernetes = "~> 2.1.0"
+
+        local = "~> 2.1.0"
+        random = "~> 3.1.0"
+    }
 }
 
 resource "azurerm_resource_group" "jarvice" {
@@ -25,7 +28,7 @@ resource "azurerm_public_ip" "jarvice" {
 
     allocation_method = "Static"
     sku = "Standard"
-    domain_name_label = contains(["jarvice", "tf-jarvice", "jarvice-downstream", "tf-jarvice-downstream"], var.cluster.meta["cluster_name"]) ? format("%s-%s", var.cluster.meta["cluster_name"], random_id.jarvice.hex) : var.cluster.meta["cluster_name"]
+    #domain_name_label = contains(["jarvice", "tf-jarvice", "jarvice-downstream", "tf-jarvice-downstream"], var.cluster.meta["cluster_name"]) ? format("%s-%s", var.cluster.meta["cluster_name"], random_id.jarvice.hex) : var.cluster.meta["cluster_name"]
 
     tags = {
         cluster_name = var.cluster.meta["cluster_name"]
@@ -71,9 +74,13 @@ resource "azurerm_kubernetes_cluster" "jarvice" {
         }
     }
 
-    service_principal {
-        client_id = var.cluster.auth["service_principal_client_id"]
-        client_secret = var.cluster.auth["service_principal_client_secret"]
+    #service_principal {
+    #    client_id = var.cluster.auth["service_principal_client_id"]
+    #    client_secret = var.cluster.auth["service_principal_client_secret"]
+    #}
+
+    identity {
+        type = "SystemAssigned"
     }
 
     network_profile {
@@ -94,6 +101,10 @@ resource "azurerm_kubernetes_cluster" "jarvice" {
     }
 
     depends_on = [azurerm_public_ip.jarvice]
+
+    lifecycle {
+        ignore_changes = [kubernetes_version]
+    }
 }
 
 resource "azurerm_kubernetes_cluster_node_pool" "jarvice_system" {
