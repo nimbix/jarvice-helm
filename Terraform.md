@@ -321,7 +321,7 @@ The encoded strings must then be used for the `tls.crt` and `tls.key` values:
 ### Ingress DNS configuration
 
 By default, terraform JARVICE deployments will be deployed using a
-wildcard DNS hostname via the `nip.io` [https://nip.io/](https://nip.io/)
+wildcard DNS hostname via the `nip.io` ([https://nip.io/](https://nip.io/))
 service which is mapped to the static IP address issued for the ingress
 controller.  The hostname will be formatted as such:
 ```bash
