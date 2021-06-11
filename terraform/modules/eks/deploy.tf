@@ -324,7 +324,7 @@ EOF
 
 resource "null_resource" "helm_module_sleep_after_destroy" {
     triggers = {
-        sleep_after_destroy = "sleep 180"
+        sleep_after_destroy = "sleep 200"
     }
 
     provisioner "local-exec" {
@@ -353,5 +353,99 @@ ${local.jarvice_ingress}
 EOF
 
     depends_on = [module.eks, module.vpc, module.iam_assumable_role_admin_cluster_autoscaler, module.iam_assumable_role_admin_aws_load_balancer_controller, module.iam_assumable_role_admin_external_dns, aws_eip.jarvice, local_file.kube_config, null_resource.helm_module_sleep_after_destroy]
+}
+
+resource "kubernetes_daemonset" "aws_efa_k8s_device_plugin" {
+    metadata {
+        name = "aws-efa-k8s-device-plugin-daemonset"
+        namespace = "kube-system"
+    }
+
+    spec {
+        selector {
+            match_labels = {
+                name = "aws-efa-k8s-device-plugin"
+            }
+        }
+        strategy {
+            type = "RollingUpdate"
+        }
+
+        template {
+            metadata {
+                labels = {
+                    name = "aws-efa-k8s-device-plugin"
+                }
+            }
+
+            spec {
+                service_account_name = "default"
+                toleration {
+                    key = "CriticalAddonsOnly"
+                    operator = "Exists"
+                }
+                toleration {
+                    key = "aws.amazon.com/efa"
+                    operator = "Exists"
+                    effect = "NoSchedule"
+                }
+                toleration {
+                    key = "node-role.jarvice.io/jarvice-compute"
+                    operator = "Exists"
+                }
+                priority_class_name = "system-node-critical"
+                affinity {
+                    node_affinity {
+                        required_during_scheduling_ignored_during_execution {
+                            node_selector_term {
+                                match_expressions {
+                                    key = "node.kubernetes.io/instance-type"
+                                    operator = "In"
+                                    values = [
+                                        "c5n.18xlarge",
+                                        "c5n.metal",
+                                        "g4dn.metal",
+                                        "i3en.24xlarge",
+                                        "i3en.metal",
+                                        "inf1.24xlarge",
+                                        "m5dn.24xlarge",
+                                        "m5n.24xlarge",
+                                        "p3dn.24xlarge",
+                                        "r5dn.24xlarge",
+                                        "r5n.24xlarge",
+                                        "p4d.24xlarge"
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+                host_network = true
+                volume {
+                    name = "device-plugin"
+                    host_path {
+                        path = "/var/lib/kubelet/device-plugins"
+                    }
+                }
+                container {
+                    image = "602401143452.dkr.ecr.us-west-2.amazonaws.com/eks/aws-efa-k8s-device-plugin:v0.3.3"
+                    image_pull_policy = "Always"
+                    name = "aws-efa-k8s-device-plugin"
+                    security_context {
+                        allow_privilege_escalation = false
+                        capabilities {
+                            drop = ["ALL"]
+                        }
+                    }
+                    volume_mount {
+                        name = "device-plugin"
+                        mount_path = "/var/lib/kubelet/device-plugins"
+                    }
+                }
+            }
+        }
+    }
+
+    depends_on = [module.eks, module.vpc, local_file.kube_config]
 }
 
