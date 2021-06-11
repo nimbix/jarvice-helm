@@ -161,6 +161,7 @@ EOF
                 "asg_min_size" = pool.nodes_min
                 "asg_max_size" = pool.nodes_max
                 "key_name" = ""
+                "instance_refresh_enabled" = true
                 "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-compute=true,node-pool.jarvice.io/jarvice-compute=${name},node-pool.jarvice.io/disable-hyperthreading=${lookup(pool.meta, "disable_hyperthreading", "false")} --register-with-taints=node-role.jarvice.io/jarvice-compute=true:NoSchedule"
                 "public_ip" = true
                 "interface_type" = lookup(pool.meta, "interface_type", null)
@@ -211,6 +212,8 @@ module "eks" {
     enable_irsa = true
 
     subnets = module.vpc.private_subnets
+
+    wait_for_cluster_timeout = 600
 
     worker_groups_launch_template = concat(local.default_nodes, local.system_nodes, local.compute_nodes)
     worker_additional_security_group_ids = [aws_security_group.ssh.id]
