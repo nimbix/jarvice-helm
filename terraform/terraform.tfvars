@@ -634,7 +634,7 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
                     disable_hyperthreading = "true"
 
                     # EFA requires k8s ver >= 1.19.  Supported instance types:
-                    # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types  (p4d.24xlarge not yet supported)
+                    # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
                     #interface_type = "efa"
                 }
             },
@@ -648,7 +648,7 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
             #        disable_hyperthreading = "true"
             #
             #        # EFA requires k8s ver >= 1.19.  Supported instance types:
-            #        # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types  (p4d.24xlarge not yet supported)
+            #        # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
             #        #interface_type = "efa"
             #    }
             #},
@@ -769,7 +769,7 @@ EOF
                     disable_hyperthreading = "true"
 
                     # EFA requires k8s ver >= 1.19.  Supported instance types:
-                    # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types  (p4d.24xlarge not yet supported)
+                    # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
                     #interface_type = "efa"
                 }
             },
@@ -783,7 +783,7 @@ EOF
             #        disable_hyperthreading = "true"
             #
             #        # EFA requires k8s ver >= 1.19.  Supported instance types:
-            #        # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types  (p4d.24xlarge not yet supported)
+            #        # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
             #        #interface_type = "efa"
             #    }
             #},
