@@ -632,6 +632,10 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
                 nodes_max = 16
                 meta = {
                     disable_hyperthreading = "true"
+
+                    # EFA requires k8s ver >= 1.19.  Supported instance types:
+                    # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
+                    #interface_type = "efa"
                 }
             },
             #jxecompute01 = {
@@ -642,6 +646,10 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
             #    nodes_max = 16
             #    meta = {
             #        disable_hyperthreading = "true"
+            #
+            #        # EFA requires k8s ver >= 1.19.  Supported instance types:
+            #        # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
+            #        #interface_type = "efa"
             #    }
             #},
         }
@@ -759,6 +767,10 @@ EOF
                 nodes_max = 16
                 meta = {
                     disable_hyperthreading = "true"
+
+                    # EFA requires k8s ver >= 1.19.  Supported instance types:
+                    # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
+                    #interface_type = "efa"
                 }
             },
             #jxecompute01 = {
@@ -769,6 +781,10 @@ EOF
             #    nodes_max = 16
             #    meta = {
             #        disable_hyperthreading = "true"
+            #
+            #        # EFA requires k8s ver >= 1.19.  Supported instance types:
+            #        # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
+            #        #interface_type = "efa"
             #    }
             #},
         }

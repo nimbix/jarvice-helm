@@ -29,7 +29,7 @@ data "aws_availability_zones" "available" {
 
 module "vpc" {
     source = "terraform-aws-modules/vpc/aws"
-    version = "~> 3.0.0"
+    version = "~> 3.1.0"
 
     name = "${var.cluster.meta["cluster_name"]}-vpc"
     cidr = "10.0.0.0/16"
@@ -52,37 +52,76 @@ module "vpc" {
     }
 }
 
-locals {
-    sg_ports = {
-        "ssh" = {
-            "from_port" = 22,
-            "to_port" = 22,
-            "protocol" = "tcp"
-        }
-    }
-}
-
-resource "aws_security_group" "jarvice" {
-    for_each = local.sg_ports
-
-    name_prefix = var.cluster.meta["cluster_name"]
+resource "aws_security_group" "ssh" {
+    name_prefix = "${var.cluster.meta["cluster_name"]}-ssh"
     vpc_id = module.vpc.vpc_id
 
     ingress {
-        from_port = local.sg_ports[each.key]["from_port"]
-        to_port = local.sg_ports[each.key]["to_port"]
-        protocol = local.sg_ports[each.key]["protocol"]
+        from_port = 22
+        to_port = 22
+        protocol = "tcp"
 
-        cidr_blocks = [
-            "10.0.0.0/8",
-            "172.16.0.0/12",
-            "192.168.0.0/16",
-        ]
+        cidr_blocks = [module.vpc.vpc_cidr_block]
     }
 
     tags = {
         cluster_name = var.cluster.meta["cluster_name"]
     }
+}
+
+resource "aws_security_group" "efa" {
+    name_prefix = "${var.cluster.meta["cluster_name"]}-efa"
+    vpc_id = module.vpc.vpc_id
+
+    ingress {
+        from_port = 0
+        to_port = 0
+        protocol = "-1"
+        self = true
+    }
+
+    egress {
+        from_port = 0
+        to_port = 0
+        protocol = "-1"
+        self = true
+    }
+
+    tags = {
+        cluster_name = var.cluster.meta["cluster_name"]
+    }
+}
+
+data "aws_ami" "eks_amd64" {
+    filter {
+        name = "name"
+        values = ["amazon-eks-node-${var.cluster.meta["kubernetes_version"]}-v*"]
+    }
+    most_recent = true
+    owners = ["amazon"]
+}
+
+data "aws_ami" "eks_amd64_gpu" {
+    filter {
+        name = "name"
+        values = ["amazon-eks-gpu-node-${var.cluster.meta["kubernetes_version"]}-v*"]
+    }
+    most_recent = true
+    owners = ["amazon"]
+}
+
+data "aws_ami" "eks_arm64" {
+    filter {
+        name = "name"
+        values = ["amazon-eks-arm64-node-${var.cluster.meta["kubernetes_version"]}-*"]
+    }
+    most_recent = true
+    owners = ["amazon"]
+}
+
+resource "aws_placement_group" "efa" {
+    name = "${var.cluster.meta["cluster_name"]}-efa"
+    strategy = "cluster"
 }
 
 locals {
@@ -98,25 +137,25 @@ done
 EOF
     efa_install = <<EOF
 # Install EFA packages
-yum install -y wget
 wget -q --timeout=20 https://s3-us-west-2.amazonaws.com/aws-efa-installer/aws-efa-installer-latest.tar.gz -O /tmp/aws-efa-installer.tar.gz
 tar -xf /tmp/aws-efa-installer.tar.gz -C /tmp
 cd /tmp/aws-efa-installer
 ./efa_installer.sh -y -g
 /opt/amazon/efa/bin/fi_info -p efa
+#sysctl -w kernel.yama.ptrace_scope=0
 EOF
 
     default_nodes = [
         {
             "name" = "default",
             "instance_type" = lookup(var.cluster.meta, "arch", "") == "arm64" ? "t4g.small" : "t2.small"
+            "ami_id" = lookup(var.cluster.meta, "arch", "") == "arm64" ? data.aws_ami.eks_arm64.id : data.aws_ami.eks_amd64.id
             "asg_desired_capacity" = 2
             "asg_min_size" = 2
             "asg_max_size" = 2
+            "key_name" = ""
             "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/default=true"
             "public_ip" = true
-            #"subnets" = local.private_subnets
-            "key_name" = ""
             "pre_userdata" = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
 # Add authorized ssh key
@@ -128,13 +167,13 @@ EOF
         {
             "name" = "jxesystem",
             "instance_type" = module.common.system_nodes_type
+            "ami_id" = lookup(var.cluster.meta, "arch", "") == "arm64" ? data.aws_ami.eks_arm64.id : data.aws_ami.eks_amd64.id
             "asg_desired_capacity" = module.common.system_nodes_num
             "asg_min_size" = module.common.system_nodes_num
             "asg_max_size" = module.common.system_nodes_num * 2
+            "key_name" = ""
             "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-system=true,node-pool.jarvice.io/jarvice-system=jxesystem --register-with-taints=node-role.jarvice.io/jarvice-system=true:NoSchedule"
             "public_ip" = true
-            #"subnets" = local.private_subnets
-            "key_name" = ""
             "pre_userdata" = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
 # Add authorized ssh key
@@ -147,22 +186,27 @@ EOF
             {
                 "name" = name
                 "instance_type" = pool.nodes_type
+                "ami_id" = lookup(var.cluster.meta, "arch", "") == "arm64" ? data.aws_ami.eks_arm64.id : lookup(pool.meta, "interface_type", null) == "efa" ? data.aws_ami.eks_amd64.id : data.aws_ami.eks_amd64_gpu.id
                 "root_volume_size" = pool.nodes_disk_size_gb
                 "asg_desired_capacity" = pool.nodes_num
                 "asg_min_size" = pool.nodes_min
                 "asg_max_size" = pool.nodes_max
+                "key_name" = ""
+                "instance_refresh_enabled" = true
                 "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-compute=true,node-pool.jarvice.io/jarvice-compute=${name},node-pool.jarvice.io/disable-hyperthreading=${lookup(pool.meta, "disable_hyperthreading", "false")} --register-with-taints=node-role.jarvice.io/jarvice-compute=true:NoSchedule"
                 "public_ip" = true
-                #"subnets" = local.private_subnets
-                "key_name" = ""
+                "interface_type" = lookup(pool.meta, "interface_type", null)
+                "subnets" = lookup(pool.meta, "interface_type", null) == "efa" ? [module.vpc.private_subnets[0]] : module.vpc.private_subnets
+                "additional_security_group_ids" = lookup(pool.meta, "interface_type", null) == "efa" ? [aws_security_group.efa.id] : []
+                "placement_group" = lookup(pool.meta, "interface_type", null) == "efa" ? aws_placement_group.efa.id : null
                 "pre_userdata" = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
 # Add authorized ssh key
 echo "${module.common.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
 
-${lower(lookup(pool.meta, "disable_hyperthreading", "false")) == "true" ? local.disable_hyperthreading : ""}
+${lookup(pool.meta, "interface_type", null) == "efa" ? local.efa_install : ""}
 
-${lower(lookup(pool.meta, "enable_efa", "false")) == "true" ? local.efa_install : ""}
+${lower(lookup(pool.meta, "disable_hyperthreading", "false")) == "true" ? local.disable_hyperthreading : ""}
 EOF
                 "additional_userdata" = <<EOF
 # additional_userdata (executed after kubelet bootstrap and cluster join)
@@ -185,8 +229,9 @@ EOF
 }
 
 module "eks" {
-    source = "terraform-aws-modules/eks/aws"
-    version = "~> 16.1.0"
+    #source = "terraform-aws-modules/eks/aws"
+    #version = "~> 17.1.0"
+    source = "github.com/nimbix/terraform-aws-eks"
 
     cluster_name = var.cluster.meta["cluster_name"]
     cluster_version = var.cluster.meta["kubernetes_version"]
@@ -199,15 +244,17 @@ module "eks" {
 
     subnets = module.vpc.private_subnets
 
+    wait_for_cluster_timeout = 600
+
     worker_groups_launch_template = concat(local.default_nodes, local.system_nodes, local.compute_nodes)
-    worker_additional_security_group_ids = [for sg in aws_security_group.jarvice : sg.id]
+    worker_additional_security_group_ids = [aws_security_group.ssh.id]
     worker_ami_name_filter = lookup(var.cluster.meta, "arch", "") == "arm64" ? "amazon-eks-arm64-node-${var.cluster.meta["kubernetes_version"]}-*" : "amazon-eks-gpu-node-${var.cluster.meta["kubernetes_version"]}-v*"
 
     tags = {
         cluster_name = var.cluster.meta["cluster_name"]
     }
 
-    depends_on = [module.vpc, aws_security_group.jarvice]
+    depends_on = [module.vpc, aws_security_group.ssh]
 }
 
 
