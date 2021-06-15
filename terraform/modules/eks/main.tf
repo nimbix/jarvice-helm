@@ -92,6 +92,33 @@ resource "aws_security_group" "efa" {
     }
 }
 
+data "aws_ami" "eks_amd64" {
+    filter {
+        name = "name"
+        values = ["amazon-eks-node-${var.cluster.meta["kubernetes_version"]}-v*"]
+    }
+    most_recent = true
+    owners = ["amazon"]
+}
+
+data "aws_ami" "eks_amd64_gpu" {
+    filter {
+        name = "name"
+        values = ["amazon-eks-gpu-node-${var.cluster.meta["kubernetes_version"]}-v*"]
+    }
+    most_recent = true
+    owners = ["amazon"]
+}
+
+data "aws_ami" "eks_arm64" {
+    filter {
+        name = "name"
+        values = ["amazon-eks-arm64-node-${var.cluster.meta["kubernetes_version"]}-*"]
+    }
+    most_recent = true
+    owners = ["amazon"]
+}
+
 resource "aws_placement_group" "efa" {
     name = "${var.cluster.meta["cluster_name"]}-efa"
     strategy = "cluster"
@@ -113,7 +140,8 @@ EOF
 wget -q --timeout=20 https://s3-us-west-2.amazonaws.com/aws-efa-installer/aws-efa-installer-latest.tar.gz -O /tmp/aws-efa-installer.tar.gz
 tar -xf /tmp/aws-efa-installer.tar.gz -C /tmp
 cd /tmp/aws-efa-installer
-./efa_installer.sh -y
+./efa_installer.sh -y -g
+/opt/amazon/efa/bin/fi_info -p efa
 #sysctl -w kernel.yama.ptrace_scope=0
 EOF
 
@@ -121,6 +149,7 @@ EOF
         {
             "name" = "default",
             "instance_type" = lookup(var.cluster.meta, "arch", "") == "arm64" ? "t4g.small" : "t2.small"
+            "ami_id" = lookup(var.cluster.meta, "arch", "") == "arm64" ? data.aws_ami.eks_arm64.id : data.aws_ami.eks_amd64.id
             "asg_desired_capacity" = 2
             "asg_min_size" = 2
             "asg_max_size" = 2
@@ -138,6 +167,7 @@ EOF
         {
             "name" = "jxesystem",
             "instance_type" = module.common.system_nodes_type
+            "ami_id" = lookup(var.cluster.meta, "arch", "") == "arm64" ? data.aws_ami.eks_arm64.id : data.aws_ami.eks_amd64.id
             "asg_desired_capacity" = module.common.system_nodes_num
             "asg_min_size" = module.common.system_nodes_num
             "asg_max_size" = module.common.system_nodes_num * 2
@@ -156,6 +186,7 @@ EOF
             {
                 "name" = name
                 "instance_type" = pool.nodes_type
+                "ami_id" = lookup(var.cluster.meta, "arch", "") == "arm64" ? data.aws_ami.eks_arm64.id : lookup(pool.meta, "interface_type", null) == "efa" ? data.aws_ami.eks_amd64.id : data.aws_ami.eks_amd64_gpu.id
                 "root_volume_size" = pool.nodes_disk_size_gb
                 "asg_desired_capacity" = pool.nodes_num
                 "asg_min_size" = pool.nodes_min
