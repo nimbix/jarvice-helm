@@ -11,6 +11,11 @@ output "kube_config" {
     value = local.kube_config
 }
 
+locals {
+    helm_jarvice_values = yamldecode(module.helm.metadata["jarvice"]["values"])
+    ingress_host = lookup(local.helm_jarvice_values["jarvice"], "JARVICE_CLUSTER_TYPE", "upstream") == "downstream" ? local.helm_jarvice_values["jarvice_k8s_scheduler"]["ingressHost"] : local.helm_jarvice_values["jarvice_mc_portal"]["ingressHost"]
+}
+
 output "cluster_info" {
     value = <<EOF
 ===============================================================================
@@ -27,9 +32,11 @@ export KUBECONFIG=${local.kube_config["config_path"]}
 
 ${module.common.cluster_output_message}:
 
-https://${azurerm_public_ip.jarvice.fqdn}/
+https://${local.ingress_host}/
 
 ===============================================================================
 EOF
+
+    depends_on = [module.helm]
 }
 

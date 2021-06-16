@@ -290,6 +290,16 @@ metadata:
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-scheduler
+  annotations:
+{{- if (not (empty .Values.jarvice.ingress.class)) }}
+    kubernetes.io/ingress.class: {{ .Values.jarvice.ingress.class }}
+{{- end }}
+{{- if and (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (empty .Values.jarvice.ingress.tls.crt) (empty .Values.jarvice.ingress.tls.key)) }}
+    cert-manager.io/issuer: {{ .Values.jarvice.ingress.tls.issuer.name }}
+{{- end }}
+{{- if .Values.jarvice_scheduler.ingressAnnotations }}
+{{ toYaml .Values.jarvice_scheduler.ingressAnnotations | indent 4 }}
+{{- end }}
 spec:
   rules:
   - host: {{ .Values.jarvice_scheduler.ingressHost }}
@@ -298,6 +308,16 @@ spec:
       - backend:
           serviceName: jarvice-scheduler
           servicePort: https
+{{- if or (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}
+  tls:
+  - hosts:
+    - '{{- .Values.jarvice_scheduler.ingressHost -}}'
+{{- if and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key)) }}
+    secretName: 'tls-jarvice'
+{{- else }}
+    secretName: 'tls-{{- .Values.jarvice_scheduler.ingressHost -}}'
+{{- end }}
+{{- end }}
 ---
 {{- end }}
 {{- end }}

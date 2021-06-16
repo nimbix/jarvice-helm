@@ -222,6 +222,16 @@ metadata:
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-license-manager
+  annotations:
+{{- if (not (empty .Values.jarvice.ingress.class)) }}
+    kubernetes.io/ingress.class: {{ .Values.jarvice.ingress.class }}
+{{- end }}
+{{- if and (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (empty .Values.jarvice.ingress.tls.crt) (empty .Values.jarvice.ingress.tls.key)) }}
+    cert-manager.io/issuer: {{ .Values.jarvice.ingress.tls.issuer.name }}
+{{- end }}
+{{- if .Values.jarvice_license_manager.ingressAnnotations }}
+{{ toYaml .Values.jarvice_license_manager.ingressAnnotations | indent 4 }}
+{{- end }}
 spec:
   rules:
   - http:
@@ -245,10 +255,16 @@ spec:
         path: /
 {{- end }}
 {{- if ne "-" .Values.jarvice_license_manager.ingressHost }}
-{{- if eq "lookup" .Values.jarvice_license_manager.ingressHost }}
-    host: '{{- (first (lookup "v1" "Service" .Values.jarvice_license_manager.ingressServiceNamespace .Values.jarvice_license_manager.ingressService).status.loadBalancer.ingress).hostname }}'
+    host: '{{- .Values.jarvice_license_manager.ingressHost -}}'
+{{- if or (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}
+  tls:
+  - hosts:
+    - '{{- .Values.jarvice_license_manager.ingressHost -}}'
+{{- if and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key)) }}
+    secretName: 'tls-jarvice'
 {{- else }}
-    host: {{ .Values.jarvice_license_manager.ingressHost }}
+    secretName: 'tls-{{- .Values.jarvice_license_manager.ingressHost -}}'
+{{- end }}
 {{- end }}
 {{- end }}
 ---

@@ -361,6 +361,16 @@ metadata:
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-dal
+  annotations:
+{{- if (not (empty .Values.jarvice.ingress.class)) }}
+    kubernetes.io/ingress.class: {{ .Values.jarvice.ingress.class }}
+{{- end }}
+{{- if and (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (empty .Values.jarvice.ingress.tls.crt) (empty .Values.jarvice.ingress.tls.key)) }}
+    cert-manager.io/issuer: {{ .Values.jarvice.ingress.tls.issuer.name }}
+{{- end }}
+{{- if .Values.jarvice_dal.ingressAnnotations }}
+{{ toYaml .Values.jarvice_dal.ingressAnnotations | indent 4 }}
+{{- end }}
 spec:
   rules:
   - host: {{ .Values.jarvice_dal.ingressHost }}
@@ -369,6 +379,16 @@ spec:
       - backend:
           serviceName: jarvice-dal
           servicePort: http
+{{- if or (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}
+  tls:
+  - hosts:
+    - {{ .Values.jarvice_dal.ingressHost }}
+{{- if and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key)) }}
+    secretName: 'tls-jarvice'
+{{- else }}
+    secretName: 'tls-{{- .Values.jarvice_dal.ingressHost -}}'
+{{- end }}
+{{- end }}
 ---
 {{- end }}
 {{- end }}

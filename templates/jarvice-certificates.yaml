@@ -7,3 +7,101 @@ spec:
   selfSigned: {}
 ---
 {{- end }}
+{{- if and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key)) }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tls-jarvice-ca-key-pair
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-system
+type: kubernetes.io/tls
+data:
+  tls.crt: {{ .Values.jarvice.ingress.tls.crt }}
+  tls.key: {{ .Values.jarvice.ingress.tls.key }}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ca-issuer
+spec:
+  ca:
+    secretName: tls-jarvice-ca-key-pair
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: tls-jarvice
+spec:
+  dnsNames:
+{{- if (not (empty .Values.jarvice_mc_portal.ingressHost)) }}
+{{- if ne "-" .Values.jarvice_mc_portal.ingressHost }}
+    - '{{- .Values.jarvice_mc_portal.ingressHost -}}'
+{{- end }}
+{{- end }}
+{{- if (not (empty .Values.jarvice_api.ingressHost)) }}
+{{- if ne "-" .Values.jarvice_api.ingressHost }}
+    - '{{- .Values.jarvice_api.ingressHost -}}'
+{{- end }}
+{{- end }}
+{{- if (not (empty .Values.jarvice_k8s_scheduler.ingressHost)) }}
+{{- if ne "-" .Values.jarvice_k8s_scheduler.ingressHost }}
+    - '{{- .Values.jarvice_k8s_scheduler.ingressHost -}}'
+{{- end }}
+{{- end }}
+{{- if (not (empty .Values.jarvice_license_manager.ingressHost)) }}
+{{- if ne "-" .Values.jarvice_license_manager.ingressHost }}
+    - '{{- .Values.jarvice_license_manager.ingressHost -}}'
+{{- end }}
+{{- end }}
+{{- if (not (empty .Values.jarvice_dal.ingressHost)) }}
+    - '{{- .Values.jarvice_dal.ingressHost -}}'
+{{- end }}
+{{- if (not (empty .Values.jarvice_scheduler.ingressHost)) }}
+    - '{{- .Values.jarvice_scheduler.ingressHost -}}'
+{{- end }}
+  secretName: tls-jarvice
+  issuerRef:
+    name: ca-issuer
+---
+{{- else }}
+{{- if not (empty .Values.jarvice.ingress.tls.issuer.name) }}
+{{- if or (eq "letsencrypt-prod" .Values.jarvice.ingress.tls.issuer.name) (eq "letsencrypt-staging" .Values.jarvice.ingress.tls.issuer.name) }}
+{{- if and (empty .Values.jarvice.ingress.tls.issuer.email) (empty .Values.jarvice.JARVICE_MAIL_ADMINS) }}
+{{- required "***** !!!!! A valid administrator email is required in order for Let's Encrypt to provide certificates.  Please provide a value for jarvice.ingress.tls.issuer.email or jarvice.JARVICE_MAIL_ADMINS.  !!!!! *****" .Values.jarvice.ingress.tls.issuer.email }}
+{{- else }}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ .Values.jarvice.ingress.tls.issuer.name }}
+spec:
+  acme:
+{{- if (eq "letsencrypt-prod" .Values.jarvice.ingress.tls.issuer.name) }}
+    server: 'https://acme-v02.api.letsencrypt.org/directory'
+{{- else }}
+    server: 'https://acme-staging-v02.api.letsencrypt.org/directory'
+{{- end }}
+{{- if not (empty .Values.jarvice.ingress.tls.issuer.email) }}
+    email: "{{- .Values.jarvice.ingress.tls.issuer.email -}}"
+{{- else }}
+    email: "{{- (split "," .Values.jarvice.JARVICE_MAIL_ADMINS)._0 -}}"
+{{- end }}
+    privateKeySecretRef:
+      name: "{{- .Values.jarvice.ingress.tls.issuer.name -}}"
+    solvers:
+    - http01:
+        ingress:
+          class: {{ .Values.jarvice.ingress.tls.class }}
+---
+{{- end }}
+{{- else if (eq "selfsigned" .Values.jarvice.ingress.tls.issuer.name) }}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ .Values.jarvice.ingress.tls.issuer.name }}
+spec:
+  selfSigned: {}
+---
+{{- end }}
+{{- end }}
+{{- end }}

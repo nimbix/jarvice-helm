@@ -88,6 +88,19 @@ jarvice:
   JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 
+  ingress:
+    class: "traefik"
+    tls:
+      # cert-manager must be deployed in order to use certificate issuers
+      issuer:
+        name: # "letsencrypt-prod" # "letsecrypt-staging" # "selfsigned"
+        # An admin email is required when letsencrypt issuer is set. The first
+        # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
+        email: # "admin@my-domain.com"
+      # If crt and key values are provided, issuer settings will be ignored
+      crt: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.pem
+      key: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.key
+
   # Set to "true" if using SELinux in enforcing mode on hosts targetted for
   # computation, and see SELinux.md for details
   JARVICE_SELINUX_ENFORCING: # "true"
@@ -114,6 +127,9 @@ jarvice:
   JARVICE_BUILDS_NAMESPACE: # auto-set, should not need to be updated
   JARVICE_PULLS_NAMESPACE: # auto-set, should not need to be updated
   JARVICE_DAEMONSETS_NAMESPACE: # auto-set, should not need to be updated
+
+  # Optionally, override FQDN used by the API
+  # JARVICE_API_PUBLIC_URL: # jarvice-api.my-domain.com # set API URL
 
   # If using an S3-compatible object storage to store complete job output
   # and pod JSON, set ALL of the following mandatory values:

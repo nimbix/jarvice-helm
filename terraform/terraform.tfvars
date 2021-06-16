@@ -65,6 +65,17 @@ global = {  # Global config options can be overridden in cluster configs
   #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
+
+  #ingress:
+  #  tls:
+  #    issuer:
+  #      name: "letsencrypt-prod"  # "letsecrypt-staging" # "selfsigned"
+  #      # An admin email is required when letsencrypt issuer is set. The first
+  #      # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
+  #      email: # "admin@my-domain.com"
+  #    # If crt and key values are provided, issuer settings will be ignored
+  #    crt: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.pem
+  #    key: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.key
 EOF
         }
     }
@@ -135,6 +146,17 @@ k8s = {  # Deploy JARVICE to pre-existing K8s clusters
   #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 
+  #ingress:
+  #  tls:
+  #    issuer:
+  #      name: "letsencrypt-prod"  # "letsecrypt-staging" # "selfsigned"
+  #      # An admin email is required when letsencrypt issuer is set. The first
+  #      # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
+  #      email: # "admin@my-domain.com"
+  #    # If crt and key values are provided, issuer settings will be ignored
+  #    crt: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.pem
+  #    key: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.key
+
   #daemonsets:
   #  lxcfs:
   #    enabled: false
@@ -170,12 +192,6 @@ k8s = {  # Deploy JARVICE to pre-existing K8s clusters
   #  JARVICE_S3_ACCESSKEY:
   #  JARVICE_S3_SECRETKEY:
   #  JARVICE_S3_ENDPOINTURL: # https://s3.my-domain.com
-
-#jarvice_k8s_scheduler:
-  # loadBalancerIP and ingressHost are only applicable when
-  # jarvice.JARVICE_CLUSTER_TYPE is set to "downstream"
-  #loadBalancerIP:
-  #ingressHost: # jarvice-k8s-scheduler.my-domain.com
 
 #jarvice_api:
   #loadBalancerIP:
@@ -251,6 +267,17 @@ jarvice:
   #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 
+  #ingress:
+  #  tls:
+  #    issuer:
+  #      name: "letsencrypt-prod"  # "letsecrypt-staging" # "selfsigned"
+  #      # An admin email is required when letsencrypt issuer is set. The first
+  #      # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
+  #      email: # "admin@my-domain.com"
+  #    # If crt and key values are provided, issuer settings will be ignored
+  #    crt: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.pem
+  #    key: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.key
+
   #daemonsets:
   #  lxcfs:
   #    enabled: false
@@ -276,16 +303,6 @@ jarvice:
   # jarvice.JARVICE_CLUSTER_TYPE is set to "downstream"
   #loadBalancerIP:
   #ingressHost: # jarvice-k8s-scheduler.my-domain.com
-
-#jarvice_api:
-  #loadBalancerIP:
-  #ingressHost: # jarvice-api.my-domain.com
-  #ingressPath: "/"  # Valid values are "/" (default) or "/api"
-
-#jarvice_mc_portal:
-  #loadBalancerIP:
-  #ingressHost: # jarvice.my-domain.com
-  #ingressPath: "/"  # Valid values are "/" (default) or "/portal"
 EOF
             }
         }
@@ -307,6 +324,11 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
         meta = {
             cluster_name = "tf-jarvice"
             kubernetes_version = "1.18"
+
+            # Sync ingress hosts to zones/domains managed w/ Google Cloud DNS
+            #dns_manage_records = "true"
+            # Google Cloud project which contains the DNS zone for domain(s)
+            #dns_zone_project = "tf-jarvice"  # If diff than cluster's project
 
             ssh_public_key = null  # global setting used if null specified
         }
@@ -332,6 +354,8 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
                 nodes_max = 16
                 meta = {
                     disable_hyperthreading = "true"
+                    disk_type = "pd-standard" # "pd-ssd" # "pd-balanced"
+                    #zones = "us-west1-a,us-west1-b,us-west1-c"
 
                     # Visit the following link for GCP accelerator type specs:
                     # https://cloud.google.com/compute/docs/gpus
@@ -348,6 +372,8 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
             #    nodes_max = 16
             #    meta = {
             #        disable_hyperthreading = "true"
+            #        disk_type = "pd-standard" # "pd-ssd" # "pd-balanced"
+            #        #zones = "us-west1-a,us-west1-b,us-west1-c"
             #
             #        # Visit the following link for GCP accelerator type specs:
             #        # https://cloud.google.com/compute/docs/gpus
@@ -399,6 +425,17 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
   #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 
+  #ingress:
+  #  tls:
+  #    issuer:
+  #      name: "letsencrypt-prod"  # "letsecrypt-staging" # "selfsigned"
+  #      # An admin email is required when letsencrypt issuer is set. The first
+  #      # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
+  #      email: # "admin@my-domain.com"
+  #    # If crt and key values are provided, issuer settings will be ignored
+  #    crt: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.pem
+  #    key: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.key
+
 # Uses "user:password" pair set in jarvice.JARVICE_LICENSE_MANAGER_KEY
 #jarvice_license_manager: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   #enabled: false
@@ -409,6 +446,13 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
   #  JARVICE_S3_ACCESSKEY:
   #  JARVICE_S3_SECRETKEY:
   #  JARVICE_S3_ENDPOINTURL: # https://s3.my-domain.com
+
+#jarvice_api:
+  #ingressHost: tf-jarvice.my-domain.com
+  #ingressPath: "/api"
+
+#jarvice_mc_portal:
+  #ingressHost: tf-jarvice.my-domain.com
 EOF
             }
         }
@@ -424,6 +468,11 @@ EOF
         meta = {
             cluster_name = "tf-jarvice-downstream"
             kubernetes_version = "1.18"
+
+            # Sync ingress hosts to zones/domains managed w/ Google Cloud DNS
+            #dns_manage_records = "true"
+            # Google Cloud project which contains the DNS zone for domain(s)
+            #dns_zone_project = "tf-jarvice"  # If diff than cluster's project
 
             ssh_public_key = null  # global setting used if null specified
         }
@@ -449,6 +498,8 @@ EOF
                 nodes_max = 16
                 meta = {
                     disable_hyperthreading = "true"
+                    disk_type = "pd-standard" # "pd-ssd" # "pd-balanced"
+                    #zones = "us-west1-a,us-west1-b,us-west1-c"
 
                     # Visit the following link for GCP accelerator type specs:
                     # https://cloud.google.com/compute/docs/gpus
@@ -465,6 +516,8 @@ EOF
             #    nodes_max = 16
             #    meta = {
             #        disable_hyperthreading = "true"
+            #        disk_type = "pd-standard" # "pd-ssd" # "pd-balanced"
+            #        #zones = "us-west1-a,us-west1-b,us-west1-c"
             #
             #        # Visit the following link for GCP accelerator type specs:
             #        # https://cloud.google.com/compute/docs/gpus
@@ -515,6 +568,20 @@ jarvice:
   #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
+
+  #ingress:
+  #  tls:
+  #    issuer:
+  #      name: "letsencrypt-prod"  # "letsecrypt-staging" # "selfsigned"
+  #      # An admin email is required when letsencrypt issuer is set. The first
+  #      # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
+  #      email: # "admin@my-domain.com"
+  #    # If crt and key values are provided, issuer settings will be ignored
+  #    crt: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.pem
+  #    key: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.key
+
+#jarvice_k8s_scheduler:
+  #ingressHost: tf-jarvice-downstream.my-domain.com
 EOF
             }
         }
@@ -539,6 +606,9 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
             kubernetes_version = "1.18"
             #arch = "arm64"  # Uncomment to deploy an arm64 cluster
 
+            # Sync ingress hosts to zones/domains managed w/ AWS Route53 DNS
+            #dns_manage_records = "true"
+
             ssh_public_key = null  # global setting used if null specified
         }
 
@@ -562,6 +632,10 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
                 nodes_max = 16
                 meta = {
                     disable_hyperthreading = "true"
+
+                    # EFA requires k8s ver >= 1.19.  Supported instance types:
+                    # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
+                    #interface_type = "efa"
                 }
             },
             #jxecompute01 = {
@@ -572,6 +646,10 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
             #    nodes_max = 16
             #    meta = {
             #        disable_hyperthreading = "true"
+            #
+            #        # EFA requires k8s ver >= 1.19.  Supported instance types:
+            #        # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
+            #        #interface_type = "efa"
             #    }
             #},
         }
@@ -618,6 +696,17 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
   #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 
+  #ingress:
+  #  tls:
+  #    issuer:
+  #      name: "letsencrypt-prod"  # "letsecrypt-staging" # "selfsigned"
+  #      # An admin email is required when letsencrypt issuer is set. The first
+  #      # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
+  #      email: # "admin@my-domain.com"
+  #    # If crt and key values are provided, issuer settings will be ignored
+  #    crt: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.pem
+  #    key: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.key
+
 # Uses "user:password" pair set in jarvice.JARVICE_LICENSE_MANAGER_KEY
 #jarvice_license_manager: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   #enabled: false
@@ -628,6 +717,13 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
   #  JARVICE_S3_ACCESSKEY:
   #  JARVICE_S3_SECRETKEY:
   #  JARVICE_S3_ENDPOINTURL: # https://s3.my-domain.com
+
+#jarvice_api:
+  #ingressHost: tf-jarvice.my-domain.com
+  #ingressPath: "/api"
+
+#jarvice_mc_portal:
+  #ingressHost: tf-jarvice.my-domain.com
 EOF
             }
         }
@@ -644,6 +740,9 @@ EOF
             cluster_name = "tf-jarvice-downstream"
             kubernetes_version = "1.18"
             #arch = "arm64"  # Uncomment to deploy an arm64 cluster
+
+            # Sync ingress hosts to zones/domains managed w/ AWS Route53 DNS
+            #dns_manage_records = "true"
 
             ssh_public_key = null  # global setting used if null specified
         }
@@ -668,6 +767,10 @@ EOF
                 nodes_max = 16
                 meta = {
                     disable_hyperthreading = "true"
+
+                    # EFA requires k8s ver >= 1.19.  Supported instance types:
+                    # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
+                    #interface_type = "efa"
                 }
             },
             #jxecompute01 = {
@@ -678,6 +781,10 @@ EOF
             #    nodes_max = 16
             #    meta = {
             #        disable_hyperthreading = "true"
+            #
+            #        # EFA requires k8s ver >= 1.19.  Supported instance types:
+            #        # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
+            #        #interface_type = "efa"
             #    }
             #},
         }
@@ -723,6 +830,20 @@ jarvice:
   #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
+
+  #ingress:
+  #  tls:
+  #    issuer:
+  #      name: "letsencrypt-prod"  # "letsecrypt-staging" # "selfsigned"
+  #      # An admin email is required when letsencrypt issuer is set. The first
+  #      # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
+  #      email: # "admin@my-domain.com"
+  #    # If crt and key values are provided, issuer settings will be ignored
+  #    crt: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.pem
+  #    key: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.key
+
+#jarvice_k8s_scheduler:
+  #ingressHost: tf-jarvice-downstream.my-domain.com
 EOF
             }
         }
@@ -737,16 +858,17 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
     aks_cluster_00 = {
         enabled = false
 
-        # Visit the following link for service principal creation information:
-        # https://github.com/nimbix/jarvice-helm/blob/testing/Terraform.md#creating-a-service-principal-using-the-azure-cli
-        auth = {
-            service_principal_client_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-            service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        auth = {  # Authenticate w/ 'az login' prior to deployment
         }
 
         meta = {
             cluster_name = "tf-jarvice"
             kubernetes_version = "1.18"
+
+            # Sync ingress hosts to zones/domains managed w/ Azure DNS
+            #dns_manage_records = "true"
+            # Azure resource group which contains the DNS zone for the domain
+            #dns_zone_resource_group = "tf-jarvice-dns"  # (required for mgmt)
 
             ssh_public_key = null  # global setting used if null specified
         }
@@ -825,6 +947,17 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
   #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 
+  #ingress:
+  #  tls:
+  #    issuer:
+  #      name: "letsencrypt-prod"  # "letsecrypt-staging" # "selfsigned"
+  #      # An admin email is required when letsencrypt issuer is set. The first
+  #      # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
+  #      email: # "admin@my-domain.com"
+  #    # If crt and key values are provided, issuer settings will be ignored
+  #    crt: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.pem
+  #    key: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.key
+
 # Uses "user:password" pair set in jarvice.JARVICE_LICENSE_MANAGER_KEY
 #jarvice_license_manager: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   #enabled: false
@@ -835,6 +968,13 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
   #  JARVICE_S3_ACCESSKEY:
   #  JARVICE_S3_SECRETKEY:
   #  JARVICE_S3_ENDPOINTURL: # https://s3.my-domain.com
+
+#jarvice_api:
+  #ingressHost: tf-jarvice.my-domain.com
+  #ingressPath: "/api"
+
+#jarvice_mc_portal:
+  #ingressHost: tf-jarvice.my-domain.com
 EOF
             }
         }
@@ -842,16 +982,17 @@ EOF
     aks_cluster_01 = {
         enabled = false
 
-        # Visit the following link for service principal creation information:
-        # https://github.com/nimbix/jarvice-helm/blob/testing/Terraform.md#creating-a-service-principal-using-the-azure-cli
-        auth = {
-            service_principal_client_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-            service_principal_client_secret = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+        auth = {  # Authenticate w/ 'az login' prior to deployment
         }
 
         meta = {
             cluster_name = "tf-jarvice-downstream"
             kubernetes_version = "1.18"
+
+            # Sync ingress hosts to zones/domains managed w/ Azure DNS
+            #dns_manage_records = "true"
+            # Azure resource group which contains the DNS zone for the domain
+            #dns_zone_resource_group = "tf-jarvice-dns"  # (required for mgmt)
 
             ssh_public_key = null  # global setting used if null specified
         }
@@ -929,6 +1070,20 @@ jarvice:
   #JARVICE_MAIL_FROM: "JARVICE Job Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   #JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
+
+  #ingress:
+  #  tls:
+  #    issuer:
+  #      name: "letsencrypt-prod"  # "letsecrypt-staging" # "selfsigned"
+  #      # An admin email is required when letsencrypt issuer is set. The first
+  #      # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
+  #      email: # "admin@my-domain.com"
+  #    # If crt and key values are provided, issuer settings will be ignored
+  #    crt: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.pem
+  #    key: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.key
+
+#jarvice_k8s_scheduler:
+  #ingressHost: tf-jarvice-downstream.my-domain.com
 EOF
             }
         }

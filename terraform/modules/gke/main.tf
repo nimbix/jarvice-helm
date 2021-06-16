@@ -2,16 +2,23 @@
 
 terraform {
     required_providers {
-        google = "~> 3.50.0"
-        #google-beta = "~> 3.50.0"
+        google = "~> 3.68.0"
+        google-beta = "~> 3.68.0"
 
-        null = "~> 3.0.0"
-        local = "~> 2.0.0"
-        random = "~> 3.0.0"
+        helm = "~> 2.1.2"
+        kubernetes = "~> 2.1.0"
+
+        null = "~> 3.1.0"
+        local = "~> 2.1.0"
+        random = "~> 3.1.0"
     }
 }
 
+data "google_project" "jarvice" {
+}
+
 locals {
+    project = trimprefix(data.google_project.jarvice.id, "projects/")
     region = var.cluster.location["region"]
     zones = var.cluster.location["zones"]
 
@@ -29,7 +36,8 @@ locals {
 
     project_services = [
         "compute.googleapis.com",
-        "container.googleapis.com"
+        "container.googleapis.com",
+        "dns.googleapis.com"
     ]
 
     username = "kubernetes-admin"
@@ -91,12 +99,20 @@ ${local.username}:${module.common.ssh_public_key}
 EOF
         }
 
+        #workload_metadata_config {
+        #    node_metadata = "GKE_METADATA_SERVER"
+        #}
+
         labels = {
             "node-role.jarvice.io/default" = "true"
         }
 
         tags = [var.cluster.meta["cluster_name"], "jxedefault"]
     }
+
+    #workload_identity_config {
+    #    identity_namespace = "${local.project}.svc.id.goog"
+    #}
 
     network = "default"
     subnetwork = "default"
@@ -130,6 +146,11 @@ EOF
     }
 
     depends_on = [google_project_service.project_services]
+
+    lifecycle {
+        #ignore_changes = [min_master_version, node_version, node_config[0].workload_metadata_config, workload_identity_config]
+        ignore_changes = [min_master_version, node_version]
+    }
 }
 
 resource "google_container_node_pool" "jarvice_system" {
@@ -182,6 +203,10 @@ EOF
 
         tags = [google_container_cluster.jarvice.name, "jxesystem"]
     }
+
+    lifecycle {
+        ignore_changes = [version, initial_node_count]
+    }
 }
 
 #resource "google_compute_resource_policy" "jarvice_compute" {
@@ -200,7 +225,7 @@ resource "google_container_node_pool" "jarvice_compute" {
 
     name = each.key
     location = local.region
-    node_locations = local.zones
+    node_locations = lookup(each.value.meta, "zones", null) != null ? split(",", each.value.meta["zones"]) : local.zones
 
     cluster = google_container_cluster.jarvice.name
     version = local.node_version
@@ -219,6 +244,7 @@ resource "google_container_node_pool" "jarvice_compute" {
     node_config {
         machine_type = each.value["nodes_type"]
         disk_size_gb = each.value["nodes_disk_size_gb"]
+        disk_type = lookup(each.value.meta, "disk_type", "pd-standard")
 
         #image_type = "UBUNTU_CONTAINERD"
         image_type = "UBUNTU"
@@ -258,7 +284,7 @@ EOF
     }
 
     lifecycle {
-        ignore_changes = [version, node_config[0].taint]
+        ignore_changes = [version, initial_node_count, node_config[0].taint]
     }
 }
 

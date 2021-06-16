@@ -11,8 +11,81 @@ module "common" {
     storage_class_provisioner = "kubernetes.io/gce-pd"
 }
 
+resource "google_service_account" "external_dns" {
+    account_id = replace(substr("${var.cluster.meta["cluster_name"]}-external-dns", 0, 30), "/[^a-z0-9]$/", "")
+    display_name = substr("JARVICE ExternalDNS service account for GKE cluster: ${var.cluster.meta["cluster_name"]}", 0, 100)
+    project = lookup(var.cluster["meta"], "dns_zone_project", null)
+}
+
+resource "google_project_iam_member" "external_dns_admin" {
+    role = "roles/dns.admin"
+    member = "serviceAccount:${google_service_account.external_dns.email}"
+    project = lookup(var.cluster["meta"], "dns_zone_project", null)
+}
+
+resource "google_service_account_key" "external_dns" {
+    service_account_id = google_service_account.external_dns.name
+}
+
+#resource "google_service_account_iam_member" "external_dns_workload_identity_user" {
+#    service_account_id = google_service_account.external_dns.name
+#    role = "roles/iam.workloadIdentityUser"
+#    member = "serviceAccount:${local.project}.svc.id.goog[${module.helm.metadata["external-dns"]["namespace"]}/external-dns]"
+#}
+
+resource "google_compute_address" "jarvice" {
+    name = "${var.cluster.meta["cluster_name"]}-${var.cluster.location["region"]}"
+    address_type = "EXTERNAL"
+
+    depends_on = [google_container_cluster.jarvice]
+}
+
 locals {
+    load_balancer_ip = lookup(var.cluster["meta"], "use_static_ip", null) != "false" ? "loadBalancerIP: ${google_compute_address.jarvice.address}" : ""
+
     charts = {
+        "external-dns" = {
+            "values" = <<EOF
+sources:
+  - ingress
+
+provider: google
+
+google:
+  project: "${lookup(var.cluster["meta"], "dns_zone_project", local.project)}"
+  serviceAccountKey: |
+    ${indent(4, base64decode(google_service_account_key.external_dns.private_key))}
+
+dryRun: ${lookup(var.cluster["meta"], "dns_manage_records", "false") != "true" ? "true" : "false" }
+
+logLevel: info
+
+txtOwnerId: "${var.cluster.meta["cluster_name"]}.${var.cluster.location["region"]}"
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: node-role.jarvice.io/jarvice-system
+          operator: Exists
+      - matchExpressions:
+        - key: node-role.kubernetes.io/jarvice-system
+          operator: Exists
+
+tolerations:
+  - key: node-role.jarvice.io/jarvice-system
+    effect: NoSchedule
+    operator: Exists
+  - key: node-role.kubernetes.io/jarvice-system
+    effect: NoSchedule
+    operator: Exists
+
+#serviceAccount:
+#  annotations:
+#    iam.gke.io/gcp-service-account: "${google_service_account.external_dns.email}"
+EOF
+        },
         "cert-manager" = {
             "values" = <<EOF
 installCRDs: true
@@ -87,6 +160,9 @@ EOF
         },
         "traefik" = {
             "values" = <<EOF
+imageTag: "1.7"
+
+${local.load_balancer_ip}
 replicas: 2
 memoryRequest: 1Gi
 memoryLimit: 1Gi
@@ -111,6 +187,10 @@ tolerations:
   - key: node-role.kubernetes.io/jarvice-system
     effect: NoSchedule
     operator: Exists
+
+kubernetes:
+  ingressEndpoint:
+    useDefaultPublishedService: true
 
 ssl:
   enabled: true
@@ -145,7 +225,7 @@ EOF
 ${local.jarvice_ingress}
 EOF
 
-    depends_on = [google_container_cluster.jarvice, google_container_node_pool.jarvice_system, google_container_node_pool.jarvice_compute]
+    depends_on = [google_container_cluster.jarvice, google_container_node_pool.jarvice_system, google_container_node_pool.jarvice_compute, google_compute_address.jarvice, local_file.kube_config]
 }
 
 resource "kubernetes_daemonset" "nvidia_driver_installer_cos" {
@@ -230,7 +310,7 @@ resource "kubernetes_daemonset" "nvidia_driver_installer_cos" {
                     image_pull_policy = "Never"
                     name = "nvidia-driver-installer"
                     resources {
-                        requests {
+                        requests = {
                             cpu = "0.15"
                         }
                     }

@@ -107,10 +107,10 @@ heritage: {{ .Release.Service }}
 Return apiVersion for Ingress.
 */}}
 {{- define "apiVersion.ingress" -}}
-{{- if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
-{{- print "networking.k8s.io/v1beta1" -}}
+{{- if and false (semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion) -}}
+{{- print "networking.k8s.io/v1" -}}
 {{- else -}}
-{{- print "extensions/v1beta1" -}}
+{{- print "networking.k8s.io/v1beta1" -}}
 {{- end -}}
 {{- end -}}
 

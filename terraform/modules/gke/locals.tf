@@ -20,7 +20,7 @@ locals {
     ]
     cluster_values_yaml = <<EOF
 jarvice:
-  JARVICE_JOBS_DOMAIN: "lookupip/job$"
+  JARVICE_JOBS_DOMAIN: "lookup/job$"
   daemonsets:
     tolerations: '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}, {"key": "nvidia.com/gpu", "effect": "NoSchedule", "operator": "Exists"}]'
     disable_hyper_threading:
@@ -52,22 +52,16 @@ ${local.cluster_values_yaml}
 # GKE cluster upstream ingress related settings
 jarvice_license_manager:
   #ingressPath: "/license-manager"
-  #ingressHost: "-"
-  #ingressService: "traefik"
-  #ingressServiceNamespace: "kube-system"
+  #ingressHost: "${var.cluster.meta["cluster_name"]}.${var.cluster.location["region"]}.gke.jarvice.${google_compute_address.jarvice.address}.nip.io"
   nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64"]}]}] }}'
 
 jarvice_api:
   ingressPath: "/api"
-  ingressHost: "-"
-  ingressService: "traefik"
-  ingressServiceNamespace: "kube-system"
+  ingressHost: "${var.cluster.meta["cluster_name"]}.${var.cluster.location["region"]}.gke.jarvice.${google_compute_address.jarvice.address}.nip.io"
 
 jarvice_mc_portal:
   ingressPath: "/"
-  ingressHost: "-"
-  ingressService: "traefik"
-  ingressServiceNamespace: "kube-system"
+  ingressHost: "${var.cluster.meta["cluster_name"]}.${var.cluster.location["region"]}.gke.jarvice.${google_compute_address.jarvice.address}.nip.io"
 EOF
 
     jarvice_ingress_downstream = <<EOF
@@ -75,19 +69,9 @@ ${local.cluster_values_yaml}
 
 # GKE cluster upstream ingress related settings
 jarvice_k8s_scheduler:
-  ingressHost: "-"
-  ingressService: "traefik"
-  ingressServiceNamespace: "kube-system"
+  ingressHost: "${var.cluster.meta["cluster_name"]}.${var.cluster.location["region"]}.gke.jarvice.${google_compute_address.jarvice.address}.nip.io"
 EOF
 
     jarvice_ingress = module.common.jarvice_cluster_type == "downstream" ? local.jarvice_ingress_downstream : local.jarvice_ingress_upstream
-}
-
-locals {
-    jarvice_ingress_name = module.common.jarvice_cluster_type == "downstream" ? "jarvice-k8s-scheduler" : "jarvice-mc-portal"
-
-    jarvice_config = {
-        "ingress_host_path" = "~/.terraform-jarvice/ingress-tf.gke.${var.cluster.location.region}.${var.cluster.meta["cluster_name"]}"
-    }
 }
 
