@@ -14,11 +14,18 @@ locals {
 }
 
 locals {
-    jarvice_ingress_upstream = <<EOF
-# EKS cluster upstream ingress related settings
+    cluster_values_yaml = <<EOF
 jarvice:
   JARVICE_JOBS_DOMAIN: "lookup/job$"
+  daemonsets:
+    nvidia:
+      enabled: true
+      nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "accelerator", "operator": "In", "values": ["nvidia"]}]}] }}'
+EOF
+    jarvice_ingress_upstream = <<EOF
+${local.cluster_values_yaml}
 
+# EKS cluster upstream ingress related settings
 jarvice_license_manager:
   #ingressPath: "/license-manager"
   #ingressHost: "${var.cluster.meta["cluster_name"]}.${var.cluster.location["region"]}.eks.jarvice.${aws_eip.jarvice[0].public_ip}.nip.io"
@@ -40,10 +47,9 @@ jarvice_mc_portal:
 EOF
 
     jarvice_ingress_downstream = <<EOF
-# EKS cluster upstream ingress related settings
-jarvice:
-  JARVICE_JOBS_DOMAIN: "lookup/job$"
+${local.cluster_values_yaml}
 
+# EKS cluster upstream ingress related settings
 jarvice_k8s_scheduler:
   ingressHost: "${var.cluster.meta["cluster_name"]}.${var.cluster.location["region"]}.eks.jarvice.${aws_eip.jarvice[0].public_ip}.nip.io"
   ingressAnnotations:
