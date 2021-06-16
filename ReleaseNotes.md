@@ -127,6 +127,14 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202106161847
+
+* (JAR-214) Fixed bug where cloning a job after an application's AppDef changed could cause a browser hang.
+* (JAR-4279) Added automation for ingress using certificates and/or external DNS in Terraform deployments.  See [Ingress TLS certificate configuration](Terraform.md#ingress-tls-certificate-configuration) and [Ingress DNS configuration](Terraform.md#ingress-dns-configuration) for details on the available options.
+* (JAR-4292) Fixed inconsistent state bug in task builder optional checkbox to use the first file name parameter as the job label.
+* (JAR-4293) Added support for `devshm`, `hugepages2mi`, and `hugepages1gi` pseudo-devices, as well as `CAP_SYS_PTRACE` for running jobs in order to better support certain MPI fabrics and modes.  See [Devices](Configuration.md#devices) in *JARVICE System Configuration Notes* for details.
+* Amazon Elastic Fabric Adapter (EFA) support in the EKS provider for Terraform.  See example in the `eks` `compute_node_pools` section of [terraform.tfvars](terraform/terraform.tfvars) for details on how to enable.  Note that using EFA requires setting either `hugepages2mi` or `hugepages1gi` to take advantage of huge pages in the corresponding JARVICE machine definition.
+
 ## 3.21.9-1.202104281919
 
 * (JAR-108) Allow team administrators to optionally set per-user CPU limits rather than team-wide CPU limits in the *Account->Limits* view.
