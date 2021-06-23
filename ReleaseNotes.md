@@ -127,6 +127,12 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202106231923
+
+* (JAR-163) Fixed possible race condition in `jarvice-pod-scheduler` with pod binding, as well as recovery from legitimate pod binding failures not resulting in automatic job termination.
+* (JAR-4327) Fixed bug in portal that didn't show a user's default vault in the *Administration->Users* view's *VAULTS* dialog.
+* (JAR-4361) Fixed bug in portal with row selection not being shown properly in the *Administration->Metadata* view.
+
 ## 3.21.9-1.202106161847
 
 * (JAR-214) Fixed bug where cloning a job after an application's AppDef changed could cause a browser hang.
