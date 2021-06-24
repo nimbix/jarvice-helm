@@ -10,6 +10,33 @@ JARVICE has a concept of teams, with team leaders known as "payers" - this conce
 1. Avoid using the ```root``` account to lead a team; instead invite a user, and have that user in turn invite other users from their own *Account* section to join their respective team
 2. Avoid deleting user accounts, and this can cause referential integrity errors when auditing job history and other historical metrics; instead, unused user accounts should be locked or disabled
 
+## Configuring for MPI Applications
+
+JARVICE supports various MPI libraries and fabric providers/endpoints.  The platform detects fabrics and advises application environments, which in turn configure specific applications to use either JARVICE-provided OpenMPI libraries or their own packaged versions.
+
+### Enabling Cross Memory Attach (CMA)
+
+Cross Memory Attach (CMA) accelerates communication between MPI ranks on a given machine by allowing shared memory rather than network transport to be used for message passing between those ranks.  Many Linux systems and images disable a fundamental feature that allows processes to `PTRACE_ATTACH` in order to facilitate this.  JARVICE detects CMA capabilities automatically and informs applications about this at runtime.  While certain exploits are possible if this is enabled, it is also known to improve performance as well as reliability of MPI applications, particularly if using TCP endpoints (e.g. on Ethernet-only fabrics).
+
+To enable CMA, ensure the following command runs on each cluster worker node:
+```
+echo 0 > /proc/sys/kernel/yama/ptrace_scope || /bin/true
+```
+
+If it is not possible to affect node configuration directly, the `node_init` DaemonSet can be used.  Note that by default it does not explicitly run this command, but you can add it to the end of the `daemonsets.node_init.env.COMMAND` section in your `override.yaml` file, or insert the entire override for the `node_init` DaemonSet into your `terraform/override.auto.tfvars` file if using Terraform to deploy.
+
+Note that JARVICE runs job containers with `CAP_SYS_PTRACE` automatically, so only `/proc/sys/kernel/yama/ptrace_scope` set to 0 is required to enable CMA for MPI applications.
+
+For additional details on the general security implications, see [https://www.kernel.org/doc/Documentation/security/Yama.txt](https://www.kernel.org/doc/Documentation/security/Yama.txt)
+
+### Huge Pages
+
+Certain RDMA-style provider endpoints, such as Amazon EFA, require the use of Huge Pages to ensure page-aligned, contiguous memory for certain operations.  Please consult the documentation for the particular fabric endpoint you intend to use for details.  Huge pages must be reserved on nodes (or instances) before the Kubernetes kubelet starts in order to make this an allocatable resource, and should be enabled as early as possible in the boot sequence of a node or instance to reduce the effect of memory fragmentation.
+
+For example, for Amazon EFA, it is known that each MPI rank on a given node will require 2 endpoints of approximately 110MB of contiguous memory (or a total of approximately 220MB per rank).  On a 72 vCPU machine where each vCPU is used as an MPI rank (via the cores parameter in the JARVICE machine definition), this equates to 15840MB.  `c5n.18xlarge` instance types configured as node groups in Terraform reserve 15842MB of the `hugepages-2Mi` resource, which is enough to meet this requirement.
+
+To support this in JARVICE, it is both necessary for Kubernetes kubelets to report either `hugepages-1Gi` or `hugepages-2Mi` resources of the appropriate size as allocatable, and for the corresponding machine definition to request either `hugepages2mi` or `hugepages1gi` as described in the [Devices](#devices) section of [Configuring Machine Types](#configuring-machine-types) below.  Note that the availability of 2Mi versus 1Gi huge pages is system dependent.  In most cases, 2Mi huge pages will suffice.
+
 ## Configuring Machine Types
 Machine types in JARVICE are used to describe resources that a job requests along with metadata for workflow construction.  Machine types are configured in the *Machines* view in the *Administration* section of the web portal.
 
