@@ -27,7 +27,9 @@ If it is not possible to affect node configuration directly, the `node_init` Dae
 
 Note that JARVICE runs job containers with `CAP_SYS_PTRACE` automatically, so only `/proc/sys/kernel/yama/ptrace_scope` set to 0 is required to enable CMA for MPI applications.
 
-For additional details on the general security implications, see [https://www.kernel.org/doc/Documentation/security/Yama.txt](https://www.kernel.org/doc/Documentation/security/Yama.txt)
+For additional details on the general security implications, see [https://www.kernel.org/doc/Documentation/security/Yama.txt](https://www.kernel.org/doc/Documentation/security/Yama.txt).
+
+**WARNING:** It is possible for jobs running on machine definitions with the `privileged` pseudo-device to reset the value of `/proc/sys/kernel/yama/ptrace_scope`, effectively disabling CMA on the particular node(s) they run on for all subsequent jobs.  This is especially true if using a default *Server* endpoint for an application where an in-container `systemd` runs system initialization scripts that may reset kernel parameters.  As always, the use of `privileged` is not recommended on production systems, and should be used with extreme caution regardless.
 
 ### Huge Pages
 
@@ -36,6 +38,12 @@ Certain RDMA-style provider endpoints, such as Amazon EFA, require the use of Hu
 For example, for Amazon EFA, it is known that each MPI rank on a given node will require 2 endpoints of approximately 110MB of contiguous memory (or a total of approximately 220MB per rank).  On a 72 vCPU machine where each vCPU is used as an MPI rank (via the cores parameter in the JARVICE machine definition), this equates to 15840MB.  `c5n.18xlarge` instance types configured as node groups in Terraform reserve 15842MB of the `hugepages-2Mi` resource, which is enough to meet this requirement.
 
 To support this in JARVICE, it is both necessary for Kubernetes kubelets to report either `hugepages-1Gi` or `hugepages-2Mi` resources of the appropriate size as allocatable, and for the corresponding machine definition to request either `hugepages2mi` or `hugepages1gi` as described in the [Devices](#devices) section of [Configuring Machine Types](#configuring-machine-types) below.  Note that the availability of 2Mi versus 1Gi huge pages is system dependent.  In most cases, 2Mi huge pages will suffice.
+
+For additional details on huge pages in the Linux kernel, see [https://www.kernel.org/doc/Documentation/vm/hugetlbpage.txt](https://www.kernel.org/doc/Documentation/vm/hugetlbpage.txt).
+
+### Increasing available space in `/dev/shm`
+
+By default, JARVICE will run jobs with the Kubernetes default of 64Mi `tmpfs` attached to `/dev/shm`.  This is generally not sufficient for certain fabric providers and/or endpoints.  It is recommended that machine definitions used for MPI jobs have the `devshm` pseudo-device defined, which will allow up to half of physical RAM in `/dev/shm` (the default for a host-mounted `tmpfs` filesystem).
 
 ## Configuring Machine Types
 Machine types in JARVICE are used to describe resources that a job requests along with metadata for workflow construction.  Machine types are configured in the *Machines* view in the *Administration* section of the web portal.
