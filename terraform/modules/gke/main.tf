@@ -3,7 +3,11 @@
 terraform {
     required_providers {
         google = "~> 3.68.0"
-        google-beta = "~> 3.68.0"
+        #google-beta = "~> 3.68.0"
+        google-beta = {
+            version = "~> 3.68.0"
+            source = "registry.terraform.io/local/google-beta"
+        }
 
         helm = "~> 2.1.2"
         kubernetes = "~> 2.1.0"
@@ -37,6 +41,7 @@ locals {
     project_services = [
         "compute.googleapis.com",
         "container.googleapis.com",
+        "containerfilesystem.googleapis.com",
         "dns.googleapis.com"
     ]
 
@@ -68,7 +73,7 @@ locals {
 }
 
 resource "google_container_cluster" "jarvice" {
-    #provider = google-beta
+    provider = google-beta
 
     name = var.cluster.meta["cluster_name"]
     location = local.region
@@ -221,7 +226,7 @@ EOF
 resource "google_container_node_pool" "jarvice_compute" {
     for_each = var.cluster["compute_node_pools"]
 
-    #provider = google-beta
+    provider = google-beta
 
     name = each.key
     location = local.region
@@ -246,8 +251,10 @@ resource "google_container_node_pool" "jarvice_compute" {
         disk_size_gb = each.value["nodes_disk_size_gb"]
         disk_type = lookup(each.value.meta, "disk_type", "pd-standard")
 
-        #image_type = "UBUNTU_CONTAINERD"
-        image_type = "UBUNTU"
+        image_type = lower(lookup(each.value.meta, "enable_gcfs", "false")) == "true" ? "COS_CONTAINERD" : "UBUNTU"
+        gcfs_config {
+            enabled = lower(lookup(each.value.meta, "enable_gcfs", "false")) == "true" ? true : false
+        }
 
         #min_cpu_platform = "Intel Skylake"
         #disk_type = "pd-ssd"
@@ -270,7 +277,8 @@ EOF
         labels = {
             "node-role.jarvice.io/jarvice-compute" = "true"
             "node-pool.jarvice.io/jarvice-compute" = each.key
-            "node-pool.jarvice.io/disable-hyperthreading" = lookup(each.value.meta, "disable_hyperthreading", "false")
+            "node-pool.jarvice.io/disable-hyperthreading" = lower(lookup(each.value.meta, "disable_hyperthreading", "false")) == "true" ? "true" : "false"
+            "node-pool.jarvice.io/enable-gcfs" = lower(lookup(each.value.meta, "enable_gcfs", "false")) == "true" ? "true" : "false"
         }
         taint = [
             {

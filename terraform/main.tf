@@ -7,7 +7,11 @@ terraform {
     # Make sure all providers are downloaded with the initial init
     required_providers {
         google = "~> 3.68.0"
-        google-beta = "~> 3.68.0"
+        #google-beta = "~> 3.68.0"
+        google-beta = {
+            version = "~> 3.68.0"
+            source = "registry.terraform.io/local/google-beta"
+        }
         aws = "~> 3.44.0"
         azurerm = "~> 2.61.0"
 

@@ -355,6 +355,7 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
                 meta = {
                     disable_hyperthreading = "true"
                     disk_type = "pd-standard" # "pd-ssd" # "pd-balanced"
+                    #enable_gcfs = "true"
                     #zones = "us-west1-a,us-west1-b,us-west1-c"
 
                     # Visit the following link for GCP accelerator type specs:
@@ -373,6 +374,7 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
             #    meta = {
             #        disable_hyperthreading = "true"
             #        disk_type = "pd-standard" # "pd-ssd" # "pd-balanced"
+            #        #enable_gcfs = "true"
             #        #zones = "us-west1-a,us-west1-b,us-west1-c"
             #
             #        # Visit the following link for GCP accelerator type specs:
@@ -499,6 +501,7 @@ EOF
                 meta = {
                     disable_hyperthreading = "true"
                     disk_type = "pd-standard" # "pd-ssd" # "pd-balanced"
+                    #enable_gcfs = "true"
                     #zones = "us-west1-a,us-west1-b,us-west1-c"
 
                     # Visit the following link for GCP accelerator type specs:
@@ -517,6 +520,7 @@ EOF
             #    meta = {
             #        disable_hyperthreading = "true"
             #        disk_type = "pd-standard" # "pd-ssd" # "pd-balanced"
+            #        #enable_gcfs = "true"
             #        #zones = "us-west1-a,us-west1-b,us-west1-c"
             #
             #        # Visit the following link for GCP accelerator type specs:

@@ -23,6 +23,11 @@ jarvice:
   JARVICE_JOBS_DOMAIN: "lookup/job$"
   daemonsets:
     tolerations: '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}, {"key": "nvidia.com/gpu", "effect": "NoSchedule", "operator": "Exists"}]'
+    lxcfs:
+      enabled: true
+      env:
+        HOST_LXCFS_DIR: /var/lib/toolbox/jarvice/lxcfs
+        HOST_LXCFS_INSTALL_DIR: /var/lib/toolbox/jarvice/lxcfs-daemonset
     disable_hyper_threading:
       enabled: true
       nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-pool.jarvice.io/jarvice-compute", "operator": "In", "values": [${join(",", formatlist("\"%s\"", concat(local.disable_hyper_threading_pools, ["dummyXXX"])))}]}]} ] }}'
@@ -35,7 +40,7 @@ jarvice:
             echo "Disabling kernel check for hung tasks...done."
     nvidia_install:
       enabled: true
-      nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "cloud.google.com/gke-accelerator", "operator": "Exists"}]}] }}'
+      nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "cloud.google.com/gke-accelerator", "operator": "Exists"}, {"key": "cloud.google.com/gke-os-distribution", "operator": "In", "values": ["ubuntu"]}, {"key": "cloud.google.com/gke-container-runtime", "operator": "In", "values": ["docker"]}]}] }}'
     dri_optional:
       enabled: true
       env:
