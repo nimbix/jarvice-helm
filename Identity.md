@@ -98,3 +98,13 @@ Identity can be overridden downstream (whether single cluster or multi-cluster),
 
 The values `jarvice_k8s_scheduler.env.JARVICE_SCHED_JOB_UID` and `jarvice_k8s_scheduler.env.JARVICE_SCHED_JOB_GID` refer to a numeric UID and GID for all in-container identity run on that particular downstream cluster, respectively.  They may be used independently as well.  If not set, all other defaults and settings apply as explained above.
 
+# Advanced: Applying Multiple Group Membership to Users
+
+On clusters that have information about mapped users in their local `/etc/passwd` and `/etc/group` files (e.g. the worker nodes themselves can authenticate users), it is possible to augment group identity inside job containers.  For example, if `user1` is a member of `group1` and `group2` per the `/etc/group` file on all cluster worker nodes, `user1` in job containers can inherit this membership as well.  This requires binding the worker nodes' `/etc` directory to job containers in `/mnt/HOST/etc`.  To do this, add the following entry to the *devices* section of each corresponding machine definition in the JARVICE portal:
+```
+/etc=/mnt/HOST/etc:ro
+```
+(Be sure to comma-separate if using more than one device entry.  For more information about configuring machine definitions, see [Configuring Machine Types](Configuration.md#configuring-machine-types) in *JARVICE System Configuration Notes*.)
+
+The above instructs JARVICE to bind mount the `/etc` directory from each respective worker node a job runs on when selecting a given machine definition to `/mnt/HOST/etc`, as read-only.  If JARVICE's container environment setup process encounters this, it will automatically add all supplemental groups to the identity of jobs in the container where a given identity is used.
+Note that running the `id` command from inside a job container may give different group names than what is expected on a given host, but the group ID numbers should be consistent.  This will ensure that any interaction that user has with shared storage, for example, works with permissions properly as if accessing that storage directly on a worker node.  However, when JARVICE "merges" group membership rules it will prepend `_jarvice_host_` to groups merged from the host, to avoid duplication with existing containers' `/etc/group` rules.
