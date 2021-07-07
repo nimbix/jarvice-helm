@@ -115,6 +115,11 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.21.0-3.202107011959 (3.21.0 LTS SP3)
+
+* (JAR-96) Allow in-container identity to inherit multiple group membership from host-bound `/etc/group` file, if configured.  See [Advanced: Applying Multiple Group Membership to Users](Identity.md#advanced-applying-multiple-group-membership-to-users) in *In-container Identity Settings and Best Practices* for details.
+* (JAR-163) Fixed possible race condition in `jarvice-pod-scheduler` with pod binding, as well as recovery from legitimate pod binding failures not resulting in automatic job termination.
+
 ## 3.21.0-1.202104261600 (3.21.0 LTS SP2)
 
 * (JAR-108) Allow team administrators to optionally set per-user CPU limits rather than team-wide CPU limits in the *Account->Limits* view.
