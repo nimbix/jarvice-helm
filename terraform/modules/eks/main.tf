@@ -311,7 +311,7 @@ module "iam_assumable_role_admin_cluster_autoscaler" {
     version = "~> 4.1.0"
 
     create_role = true
-    role_name_prefix = "${var.cluster.meta["cluster_name"]}-cluster-autoscaler"
+    role_name_prefix = substr("${var.cluster.meta["cluster_name"]}-cluster-autoscaler", 0, 32)
     provider_url = replace(module.eks.cluster_oidc_issuer_url, "https://", "")
     role_policy_arns = [aws_iam_policy.cluster_autoscaler.arn]
     oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:cluster-autoscaler-aws-cluster-autoscaler"]
@@ -535,7 +535,7 @@ module "iam_assumable_role_admin_aws_load_balancer_controller" {
     version = "~> 4.1.0"
 
     create_role = true
-    role_name_prefix = "${var.cluster.meta["cluster_name"]}-aws-load-balancer-controller"
+    role_name_prefix = substr("${var.cluster.meta["cluster_name"]}-aws-load-balancer-controller", 0, 32)
     provider_url = replace(module.eks.cluster_oidc_issuer_url, "https://", "")
     role_policy_arns = [aws_iam_policy.aws_load_balancer_controller.arn]
     oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:aws-load-balancer-controller"]
@@ -576,7 +576,7 @@ module "iam_assumable_role_admin_external_dns" {
     version = "~> 4.1.0"
 
     create_role = true
-    role_name_prefix = "${var.cluster.meta["cluster_name"]}-external-dns"
+    role_name_prefix = substr("${var.cluster.meta["cluster_name"]}-external-dns", 0, 32)
     provider_url = replace(module.eks.cluster_oidc_issuer_url, "https://", "")
     role_policy_arns = [aws_iam_policy.external_dns.arn]
     oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:external-dns"]
