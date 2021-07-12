@@ -127,6 +127,10 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202107121913
+
+* (JAR-4385) Validated support for in-container MPI fabric detection and environment preparation, along with platform-provided Open MPI, `libfabric`, and `rdma-core` stack.  Please see [Configuring for MPI Applications](Configuration.md#configuring-for-mpi-applications) in *JARVICE System Configuration Notes* (for system administration), and [MPI Application Configuration Guide](https://jarvice.readthedocs.io/en/latest/mpi/) (for application development), for details.
+
 ## 3.21.9-1.202107071928 *(TECHNOLOGY PREVIEW RELEASE)*
 
 * (JAR-96) Allow in-container identity to inherit multiple group membership from host-bound `/etc/group` file, if configured. See [Advanced: Applying Multiple Group Membership to Users](Identity.md#advanced-applying-multiple-group-membership-to-users) in *In-container Identity Settings and Best Practices* for details.
