@@ -21,6 +21,8 @@ jarvice:
     nvidia:
       enabled: true
       nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "accelerator", "operator": "In", "values": ["nvidia"]}]}] }}'
+    rdma:
+      enabled: true
     flex_volume_plugin_nfs_nolock_install:
       enabled: true
       env:

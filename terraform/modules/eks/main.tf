@@ -193,7 +193,7 @@ EOF
                 "asg_max_size" = pool.nodes_max
                 "key_name" = ""
                 "instance_refresh_enabled" = true
-                "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-compute=true,node-pool.jarvice.io/jarvice-compute=${name},node-pool.jarvice.io/disable-hyperthreading=${lookup(pool.meta, "disable_hyperthreading", "false")}${length(regexall("^(p2|p3|p4|g3|g4|inf1)", pool.nodes_type)) > 0 ? ",accelerator=nvidia" : ""} --register-with-taints=node-role.jarvice.io/jarvice-compute=true:NoSchedule"
+                "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-compute=true,node-pool.jarvice.io/jarvice-compute=${name},node-pool.jarvice.io/disable-hyperthreading=${lookup(pool.meta, "disable_hyperthreading", "false")}${length(regexall("^(p2|p3|p4|g3|g4|inf1)", pool.nodes_type)) > 0 ? ",accelerator=nvidia" : ""}${lookup(pool.meta, "interface_type", null) == "efa" ? ",node-pool.jarvice.io/interface-type=efa" : ""} --register-with-taints=node-role.jarvice.io/jarvice-compute=true:NoSchedule"
                 "public_ip" = true
                 "interface_type" = lookup(pool.meta, "interface_type", null)
                 "subnets" = lookup(pool.meta, "interface_type", null) == "efa" ? [module.vpc.private_subnets[0]] : module.vpc.private_subnets
@@ -311,7 +311,7 @@ module "iam_assumable_role_admin_cluster_autoscaler" {
     version = "~> 4.1.0"
 
     create_role = true
-    role_name = "${var.cluster.meta["cluster_name"]}-cluster-autoscaler"
+    role_name_prefix = substr("${var.cluster.meta["cluster_name"]}-cluster-autoscaler", 0, 32)
     provider_url = replace(module.eks.cluster_oidc_issuer_url, "https://", "")
     role_policy_arns = [aws_iam_policy.cluster_autoscaler.arn]
     oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:cluster-autoscaler-aws-cluster-autoscaler"]
@@ -535,7 +535,7 @@ module "iam_assumable_role_admin_aws_load_balancer_controller" {
     version = "~> 4.1.0"
 
     create_role = true
-    role_name = "${var.cluster.meta["cluster_name"]}-aws-load-balancer-controller"
+    role_name_prefix = substr("${var.cluster.meta["cluster_name"]}-aws-load-balancer-controller", 0, 32)
     provider_url = replace(module.eks.cluster_oidc_issuer_url, "https://", "")
     role_policy_arns = [aws_iam_policy.aws_load_balancer_controller.arn]
     oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:aws-load-balancer-controller"]
@@ -576,7 +576,7 @@ module "iam_assumable_role_admin_external_dns" {
     version = "~> 4.1.0"
 
     create_role = true
-    role_name = "${var.cluster.meta["cluster_name"]}-external-dns"
+    role_name_prefix = substr("${var.cluster.meta["cluster_name"]}-external-dns", 0, 32)
     provider_url = replace(module.eks.cluster_oidc_issuer_url, "https://", "")
     role_policy_arns = [aws_iam_policy.external_dns.arn]
     oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:external-dns"]
