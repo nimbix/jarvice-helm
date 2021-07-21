@@ -11,6 +11,57 @@ spec:
 apiVersion: v1
 kind: Secret
 metadata:
+  name: tls-jarvice
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-system
+type: Opaque
+data:
+  tls.crt: {{ .Values.jarvice.ingress.tls.crt }}
+  tls.key: {{ .Values.jarvice.ingress.tls.key }}
+---
+{{- else }}
+{{- if not (empty .Values.jarvice.ingress.tls.issuer.name) }}
+{{- if or (eq "letsencrypt-prod" .Values.jarvice.ingress.tls.issuer.name) (eq "letsencrypt-staging" .Values.jarvice.ingress.tls.issuer.name) }}
+{{- if and (empty .Values.jarvice.ingress.tls.issuer.email) (empty .Values.jarvice.JARVICE_MAIL_ADMINS) }}
+{{- required "***** !!!!! A valid administrator email is required in order for Let's Encrypt to provide certificates.  Please provide a value for jarvice.ingress.tls.issuer.email or jarvice.JARVICE_MAIL_ADMINS.  !!!!! *****" .Values.jarvice.ingress.tls.issuer.email }}
+{{- else }}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ .Values.jarvice.ingress.tls.issuer.name }}
+spec:
+  acme:
+{{- if (eq "letsencrypt-prod" .Values.jarvice.ingress.tls.issuer.name) }}
+    server: 'https://acme-v02.api.letsencrypt.org/directory'
+{{- else }}
+    server: 'https://acme-staging-v02.api.letsencrypt.org/directory'
+{{- end }}
+{{- if not (empty .Values.jarvice.ingress.tls.issuer.email) }}
+    email: "{{- .Values.jarvice.ingress.tls.issuer.email -}}"
+{{- else }}
+    email: "{{- (split "," .Values.jarvice.JARVICE_MAIL_ADMINS)._0 -}}"
+{{- end }}
+    privateKeySecretRef:
+      name: "{{- .Values.jarvice.ingress.tls.issuer.name -}}"
+    solvers:
+    - http01:
+        ingress:
+          class: {{ .Values.jarvice.ingress.tls.class }}
+---
+{{- end }}
+{{- else if (eq "selfsigned" .Values.jarvice.ingress.tls.issuer.name) }}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ .Values.jarvice.ingress.tls.issuer.name }}
+spec:
+  selfSigned: {}
+---
+{{- else if (eq "ca" .Values.jarvice.ingress.tls.issuer.name) }}
+apiVersion: v1
+kind: Secret
+metadata:
   name: tls-jarvice-ca-key-pair
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
@@ -63,44 +114,6 @@ spec:
   secretName: tls-jarvice
   issuerRef:
     name: ca-issuer
----
-{{- else }}
-{{- if not (empty .Values.jarvice.ingress.tls.issuer.name) }}
-{{- if or (eq "letsencrypt-prod" .Values.jarvice.ingress.tls.issuer.name) (eq "letsencrypt-staging" .Values.jarvice.ingress.tls.issuer.name) }}
-{{- if and (empty .Values.jarvice.ingress.tls.issuer.email) (empty .Values.jarvice.JARVICE_MAIL_ADMINS) }}
-{{- required "***** !!!!! A valid administrator email is required in order for Let's Encrypt to provide certificates.  Please provide a value for jarvice.ingress.tls.issuer.email or jarvice.JARVICE_MAIL_ADMINS.  !!!!! *****" .Values.jarvice.ingress.tls.issuer.email }}
-{{- else }}
-apiVersion: cert-manager.io/v1
-kind: Issuer
-metadata:
-  name: {{ .Values.jarvice.ingress.tls.issuer.name }}
-spec:
-  acme:
-{{- if (eq "letsencrypt-prod" .Values.jarvice.ingress.tls.issuer.name) }}
-    server: 'https://acme-v02.api.letsencrypt.org/directory'
-{{- else }}
-    server: 'https://acme-staging-v02.api.letsencrypt.org/directory'
-{{- end }}
-{{- if not (empty .Values.jarvice.ingress.tls.issuer.email) }}
-    email: "{{- .Values.jarvice.ingress.tls.issuer.email -}}"
-{{- else }}
-    email: "{{- (split "," .Values.jarvice.JARVICE_MAIL_ADMINS)._0 -}}"
-{{- end }}
-    privateKeySecretRef:
-      name: "{{- .Values.jarvice.ingress.tls.issuer.name -}}"
-    solvers:
-    - http01:
-        ingress:
-          class: {{ .Values.jarvice.ingress.tls.class }}
----
-{{- end }}
-{{- else if (eq "selfsigned" .Values.jarvice.ingress.tls.issuer.name) }}
-apiVersion: cert-manager.io/v1
-kind: Issuer
-metadata:
-  name: {{ .Values.jarvice.ingress.tls.issuer.name }}
-spec:
-  selfSigned: {}
 ---
 {{- end }}
 {{- end }}
