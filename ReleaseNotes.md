@@ -127,6 +127,14 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202107211903
+
+* (JAR-87) Added support for system-wide notifications on user logins, using the *NOTIFICATIONS* button in the *Administration->Users* view.
+* (JAR-122) Added detailed file listing and sorting in the file picker for workflows with file inputs.
+* (JAR-4395) Fixed bug with SAML assertions and Ingress.
+* (JAR-4420) Made `/dev/infiniband/rdma_cm` optional for passthrough using the `jarvice-rdma-device-plugin` DaemonSet.
+* (JAR-4422) Added support for passing environment variables into application containers via machine definition, using the `$<key>=<value>` pseudo-device type.  See the [Devices](Configuration.md#devices) section in *JARVICE System Configuration Notes* for details.
+
 ## 3.21.9-1.202107121913
 
 * (JAR-4385) Validated support for in-container MPI fabric detection and environment preparation, along with platform-provided Open MPI, `libfabric`, and `rdma-core` stack.  Please see [Configuring for MPI Applications](Configuration.md#configuring-for-mpi-applications) in *JARVICE System Configuration Notes* (for system administration), and [MPI Application Configuration Guide](https://jarvice.readthedocs.io/en/latest/mpi/) (for application development), for details.
