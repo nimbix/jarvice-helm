@@ -1,0 +1,5 @@
+You have a long-running job
+The user {{username}} ({{nicename}}) started job {{number}} over {{hours}} ago.
+This job is still running and has consumed over {{cpuhours}} CPU hours, accruing an approximate cost of {{cost}} to date.
+
+If this job was left running unintentionally, please log in and shut it down to avoid any further charges.
