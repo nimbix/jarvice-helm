@@ -16,7 +16,7 @@ Parameter|Value|Notes
 `jarvice.JARVICE_LRJ_BATCH`|`"true"` if batch jobs should be counted as well|default: `"false"` (only interactive jobs considered for notifications)
 `jarvice.JARVICE_LRJ_PAYER_NOTIFY`|`"true"` if job "payer" should be notified as well as job "owner"|default: `"false"` (only job "owner" is notified)
 `jarvice.JARVICE_LRJ_OWNER_BLACKLIST`|comma-separated list of "owner" usernames to avoid sending notifications to|default: all "owners" notified if noticications enabled
-`jarvice.JARVICE_LRJ_PAYER_BLACKLIST`|comma-separated list of "payer" usernames to avoid sending notifications to|default: all "payers" notified if notifications enabled
+`jarvice.JARVICE_LRJ_PAYER_BLACKLIST`|comma-separated list of job "payer" usernames to avoid sending notifications to|default: all "payers" notified if notifications enabled; adding a payer to this blacklist will prevent any job for any user on that team from triggering notifications; to suppress notifications for a payer's personal jobs only, use `jarvice.JARVICE_LRJ_OWNER_BLACKLIST` instead
 `jarvice.JARVICE_LRJ_CURRENCY_FMT`|`printf`-style format string for currency, where value is a floating point number (`"%f"`)|default: `"$%.2f"`
 
 #### Notes
