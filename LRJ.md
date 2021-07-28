@@ -16,16 +16,17 @@ Parameter|Value|Notes
 `jarvice.JARVICE_LRJ_BATCH`|`"true"` if batch jobs should be counted as well|default: `"false"` (only interactive jobs considered for notifications)
 `jarvice.JARVICE_LRJ_PAYER_NOTIFY`|`"true"` if job "payer" should be notified as well as job "owner"|default: `"false"` (only job "owner" is notified)
 `jarvice.JARVICE_LRJ_OWNER_BLACKLIST`|comma-separated list of "owner" usernames to avoid sending notifications to|default: all "owners" notified if noticications enabled
-`jarvice.JARVICE_LRJ_PAYER_BLACKLIST`|comma-separated list of job "payer" usernames to avoid sending notifications to|default: all "payers" notified if notifications enabled; adding a payer to this blacklist will prevent any job for any user on that team from triggering notifications; to suppress notifications for a payer's personal jobs only, use `jarvice.JARVICE_LRJ_OWNER_BLACKLIST` instead
+`jarvice.JARVICE_LRJ_PAYER_BLACKLIST`|comma-separated list of job "payer" usernames to avoid sending notifications to|default: all "payers" notified if notifications enabled; adding a payer to this blacklist will prevent any job for any user on that team from triggering notifications
 `jarvice.JARVICE_LRJ_CURRENCY_FMT`|`printf`-style format string for currency, where value is a floating point number (`"%f"`)|default: `"$%.2f"`
 
 #### Notes
 
 1. Both `jarvice.JARVICE_LRJ_WALLTIME` and `jarvice.JARVICE_LRJ_PERIOD` must be set to non-zero values (in hours) in order to enable this functionality; if either parameter is unset or 0, notifications are disabled.
-2. Notification email addresses are based on what users have configured in their respective accounts, with their registration address being set by default.  Users may change, add, or remove notification email addresses at any time, which could affect this functionality.
-3. Settings are deployment-wide; if in the future additional self-service notification preferences are added to the platform, they would override deployment-wide settings.
-4. Notification email delivery is "best effort", and does not validate addresses or retry on errors.  These notifications flow through the same component that ordinary job status emails do.
-5. Settings can be changed via their corresponding environment variables dynamically in the `jarvice-scheduler` deployment, but this may change in the future.
+2. Use `jarvice.JARVICE_LRJ_PAYER_BLACKLIST` to suppress notifications for all jobs of all users on specific payers' teams; to suppress notifications only for jobs owned by the payer(s) themselves, list those payer(s) in `jarvice.JARVICE_LRJ_OWNER_BLACKLIST` instead.
+3. Notification email addresses are based on what users have configured in their respective accounts, with their registration address being set by default.  Users may change, add, or remove notification email addresses at any time, which could affect this functionality.
+4. Settings are deployment-wide; if in the future additional self-service notification preferences are added to the platform, they would override deployment-wide settings.
+5. Notification email delivery is "best effort", and does not validate addresses or retry on errors.  These notifications flow through the same component that ordinary job status emails do.
+6. Settings can be changed via their corresponding environment variables dynamically in the `jarvice-scheduler` deployment, but this may change in the future.
 
 ## Notification Email Template
 
