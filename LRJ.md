@@ -12,7 +12,7 @@ The following values can be set when deploying the Helm chart of Terraform overr
 Parameter|Value|Notes
 ---|---|---
 `jarvice.JARVICE_LRJ_WALLTIME`|wall time, in hours, before a job is considered "long-running"|default: 0 (notifications disabled)
-`jarvice.JARVICE_LRJ_PERIOD`|period between long-running job notifications, in hours|default: 0 (notifications disabled)
+`jarvice.JARVICE_LRJ_PERIOD`|period between long-running job notifications, in hours|default: 24 (if notifications enabled)
 `jarvice.JARVICE_LRJ_BATCH`|`"true"` if batch jobs should be counted as well|default: `"false"` (only interactive jobs considered for notifications)
 `jarvice.JARVICE_LRJ_PAYER_NOTIFY`|`"true"` if job "payer" should be notified as well as job "owner"|default: `"false"` (only job "owner" is notified)
 `jarvice.JARVICE_LRJ_OWNER_BLACKLIST`|comma-separated list of "owner" usernames to avoid sending notifications to|default: all "owners" notified if noticications enabled
