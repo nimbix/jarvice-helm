@@ -218,6 +218,20 @@ spec:
                 name: jarvice-license-manager
                 key: JARVICE_LICENSE_MANAGER_KEY
 {{- end }}
+          - name: JARVICE_LRJ_WALLTIME
+            value: "{{ .Values.jarvice.JARVICE_LRJ_WALLTIME }}"
+          - name: JARVICE_LRJ_PERIOD
+            value: "{{ .Values.jarvice.JARVICE_LRJ_PERIOD }}"
+          - name: JARVICE_LRJ_BATCH
+            value: "{{ .Values.jarvice.JARVICE_LRJ_BATCH }}"
+          - name: JARVICE_LRJ_PAYER_NOTIFY
+            value: "{{ .Values.jarvice.JARVICE_LRJ_PAYER_NOTIFY }}"
+          - name: JARVICE_LRJ_OWNER_BLACKLIST
+            value: "{{ .Values.jarvice.JARVICE_LRJ_OWNER_BLACKLIST }}"
+          - name: JARVICE_LRJ_PAYER_BLACKLIST
+            value: "{{ .Values.jarvice.JARVICE_LRJ_PAYER_BLACKLIST }}"
+          - name: JARVICE_LRJ_CURRENCY_FMT
+            value: "{{ .Values.jarvice.JARVICE_LRJ_CURRENCY_FMT }}"
         volumeMounts:
         - name: jarvice-settings
           mountPath: /etc/jarvice/settings
