@@ -88,6 +88,15 @@ jarvice:
   JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 
+  # Long-running job (LRJ) email notification settings; see LRJ.md for details
+  JARVICE_LRJ_WALLTIME:       # hours; must be >0 to enable LRJ notifications
+  JARVICE_LRJ_PERIOD: 24      # hours
+  JARVICE_LRJ_BATCH:  "false" # true|false
+  JARVICE_LRJ_PAYER_NOTIFY: "false" # true|false
+  JARVICE_LRJ_OWNER_BLACKLIST:  # comma-separated list
+  JARVICE_LRJ_PAYER_BLACKLIST:  # comma-separated list
+  JARVICE_LRJ_CURRENCY_FMT: "$%.2f" # printf-format, single %f value
+
   ingress:
     class: "traefik"
     tls:
