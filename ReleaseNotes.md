@@ -127,6 +127,14 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202108181638
+
+* (JAR-113) Improved object cleanup upon user deletion; note that deleting users **is not** considered a best practice.
+* (JAR-116) Added automatic "long-running job" notifications; see [Long-running Job Notification Configuration](LRJ.md) for details on how to enable and configure this feature.
+* (JAR-123) Added *About* page in portal with version information for ordinary users, and additional license information for system administrators.
+* (JAR-4484) Ensure all user account creation failures clean up any intermediate data.
+* (JAR-4496) Improved clarity for team admin project selection.
+
 ## 3.21.9-1.202107211903
 
 * (JAR-87) Added support for system-wide notifications on user logins, using the *NOTIFICATIONS* button in the *Administration->Users* view.
