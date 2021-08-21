@@ -163,8 +163,6 @@ provider "kubernetes" {
     client_certificate = base64decode(module.${key}.kube_config["client_certificate"])
     client_key = base64decode(module.${key}.kube_config["client_key"])
     token = module.${key}.kube_config["token"]
-    username = module.${key}.kube_config["username"]
-    password = module.${key}.kube_config["password"]
 }
 
 provider "helm" {
@@ -176,8 +174,6 @@ provider "helm" {
         client_certificate = base64decode(module.${key}.kube_config["client_certificate"])
         client_key = base64decode(module.${key}.kube_config["client_key"])
         token = module.${key}.kube_config["token"]
-        username = module.${key}.kube_config["username"]
-        password = module.${key}.kube_config["password"]
     }
 }
 %{ endfor }
@@ -221,8 +217,8 @@ provider "kubernetes" {
 
     host = module.${key}.kube_config["host"]
     cluster_ca_certificate = base64decode(module.${key}.kube_config["cluster_ca_certificate"])
-#    client_certificate = base64decode(module.${key}.kube_config["client_certificate"])
-#    client_key = base64decode(module.${key}.kube_config["client_key"])
+    client_certificate = base64decode(module.${key}.kube_config["client_certificate"])
+    client_key = base64decode(module.${key}.kube_config["client_key"])
     token = module.${key}.kube_config["token"]
 }
 
@@ -232,8 +228,8 @@ provider "helm" {
     kubernetes {
         host = module.${key}.kube_config["host"]
         cluster_ca_certificate = base64decode(module.${key}.kube_config["cluster_ca_certificate"])
-#        client_certificate = base64decode(module.${key}.kube_config["client_certificate"])
-#        client_key = base64decode(module.${key}.kube_config["client_key"])
+        client_certificate = base64decode(module.${key}.kube_config["client_certificate"])
+        client_key = base64decode(module.${key}.kube_config["client_key"])
         token = module.${key}.kube_config["token"]
     }
 }
@@ -278,7 +274,7 @@ provider "helm" {
         cluster_ca_certificate = base64decode(module.${key}.kube_config["cluster_ca_certificate"])
         client_certificate = base64decode(module.${key}.kube_config["client_certificate"])
         client_key = base64decode(module.${key}.kube_config["client_key"])
-        #token = module.${key}.kube_config["token"]
+        token = module.${key}.kube_config["token"]
     }
 }
 %{ endfor }
