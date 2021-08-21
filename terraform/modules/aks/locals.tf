@@ -7,9 +7,7 @@ locals {
         "cluster_ca_certificate" = azurerm_kubernetes_cluster.jarvice.kube_config[0].cluster_ca_certificate,
         "client_certificate" = azurerm_kubernetes_cluster.jarvice.kube_config[0].client_certificate,
         "client_key" = azurerm_kubernetes_cluster.jarvice.kube_config[0].client_key,
-        "token" = null,
-        "username" = null,
-        "password" = null
+        "token" = null
     }
 }
 
