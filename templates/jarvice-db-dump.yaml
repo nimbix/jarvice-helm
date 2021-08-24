@@ -40,7 +40,7 @@ spec:
   schedule: "{{ .Values.jarvice_db_dump.schedule }}"
   failedJobsHistoryLimit: {{ .Values.jarvice_db_dump.failedJobsHistoryLimit }}
   successfulJobsHistoryLimit: {{ .Values.jarvice_db_dump.successfulJobsHistoryLimit }}
-  concurrencyPolicy: Forbid
+  concurrencyPolicy: Allow
   jobTemplate:
     spec:
       backoffLimit: 1
