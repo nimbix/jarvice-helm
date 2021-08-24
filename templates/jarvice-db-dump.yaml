@@ -40,7 +40,7 @@ spec:
   schedule: "{{ .Values.jarvice_db_dump.schedule }}"
   failedJobsHistoryLimit: {{ .Values.jarvice_db_dump.failedJobsHistoryLimit }}
   successfulJobsHistoryLimit: {{ .Values.jarvice_db_dump.successfulJobsHistoryLimit }}
-  concurrencyPolicy: Allow
+  concurrencyPolicy: Forbid
   jobTemplate:
     spec:
       backoffLimit: 1
@@ -53,7 +53,7 @@ spec:
           annotations:
             deployment-date: {{ now | quote }}
         spec:
-          restartPolicy: Never
+          restartPolicy: OnFailure
 {{- if (not (empty .Values.jarvice_db_dump.tolerations)) }}
           tolerations: {{ .Values.jarvice_db_dump.tolerations }}
 {{- else if (not (empty .Values.jarvice.tolerations)) }}
