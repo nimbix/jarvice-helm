@@ -80,7 +80,7 @@ While the `jarvice-license-manager` component itself is stateless and can be res
 
 ## Configuration
 
-`jarvice-license-manager` is an optional component that must be explicitly enabled in the Helm chart, and configured by Kubernetes *ConfigMap*.  Additional configuration details follow...
+`jarvice-license-manager` is an optional component that must be explicitly enabled in the Helm chart, and configured either by Kubernetes *ConfigMap* (deprecated), or explicitly by API method.  The JARVICE web portal also provides a user interface in *Administration->License Manager*, which is considered best practice.  Additional configuration details follow...
 
 ### Service Configuration
 
@@ -114,7 +114,11 @@ For additional configuration parameters, see the `jarvice_license_manager` secti
 
 ### License Server Configuration
 
-#### ConfigMap
+#### Web Portal
+
+The best practice for configuring the license manager is to use the web portal's *Administration->License Manager* function.  Refer to the [Sample Configuration](#sample-configuration) below for additional details.
+
+#### ConfigMap (deprecated)
 
 A Kubernetes ConfigMap is needed in the "system" namespace called `jarvice-license-manager`.  To create this ConfigMap, create a directory called `etc`, with the file `servers.json` in it (see below for format).  Then run the following command:
 
@@ -125,6 +129,8 @@ kubectl create configmap -n jarvice-system --from-file=etc jarvice-license-manag
 (Replace `jarvice-system` with the "system" namespace if different.)
 
 Note that the `jarvice-license-manager` component must be restarted if the ConfigMap is changed; alternatively, it can be reloaded via the API's [/reload](#reload) method.
+
+**IMPORTANT NOTE**: Even if a ConfigMap is present, once the web portal method is used, it will migrate the configuration to the control plane database and ignore the ConfigMap from that point forward.
 
 #### Sample Configuration
 
@@ -223,9 +229,15 @@ Lists server configuration grouped by name/value pair for account variables - e.
 
 Lists server configuration for a specific name/value pair (specified in *config*).
 
+### /configure
+
+Without arguments, returns the current configuration in JSON format.  If the `config` argument contains valid JSON, it applies that configuration immediately and updates license server cache.
+
 ### /reload
 
 Reloads `servers.json` configuration; note that a failure (e.g. all license server configurations invalid) will cause the web service to terminate; use this endpoint to reload after applying changes to the `jarvice-license-manager` Kubernetes ConfigMap.  This endpoint also updates license counts for each configured server, even if performed outside the configured interval.
+
+**NOTE**: configuring via ConfigMap is deprecated; use the [/configure](#configure) method instead, which loads and stores configuration in the control plane database.
 
 ### /update
 

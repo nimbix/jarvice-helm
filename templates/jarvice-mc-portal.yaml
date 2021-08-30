@@ -281,6 +281,13 @@ spec:
 {{- else }}
                 key: JARVICE_PORTAL_DBPASSWD
 {{- end }}
+{{- if (not (empty .Values.jarvice.JARVICE_LICENSE_MANAGER_KEY)) }}
+          - name: JARVICE_LICENSE_MANAGER_KEY
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-license-manager
+                key: JARVICE_LICENSE_MANAGER_KEY
+{{- end }}
         volumeMounts:
         - name: jarvice-settings
           mountPath: /etc/jarvice/settings/jarvice-mc-portal
