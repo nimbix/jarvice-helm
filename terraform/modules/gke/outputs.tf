@@ -24,7 +24,14 @@ clusters:
 users:
 - name: ${google_container_cluster.jarvice.name}
   user:
-    token: ${local.kube_config["token"]}
+    auth-provider:
+      config:
+        access-token: ${local.kube_config["token"]}
+        cmd-args: config config-helper --format=json
+        cmd-path: gcloud
+        expiry-key: '{.credential.token_expiry}'
+        token-key: '{.credential.access_token}'
+      name: gcp
 EOF
 }
 
