@@ -115,6 +115,13 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.21.0-3.202109141641 (3.21.0 LTS SP4)
+
+* (JAR-102) Fixed bug where `jarvice-license-manager` was not taking existing project license requests into account when limiting license features by project.
+* (JAR-4496) Fixed verbiage in project selection for team admins to show blank entry rather than "no project".
+* (JAR-4500) Added configuration GUI for `jarvice-license-manager`, in the *Administration->License Manager* view.
+* (JAR-4501) Changed the best practice for configuring `jarvice-license-manager` to GUI from *configMap*.
+
 ## 3.21.0-3.202107011959 (3.21.0 LTS SP3)
 
 * (JAR-96) Allow in-container identity to inherit multiple group membership from host-bound `/etc/group` file, if configured.  See [Advanced: Applying Multiple Group Membership to Users](Identity.md#advanced-applying-multiple-group-membership-to-users) in *In-container Identity Settings and Best Practices* for details.
