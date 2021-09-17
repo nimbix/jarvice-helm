@@ -115,7 +115,7 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
-## 3.21.0-3.202109141641 (3.21.0 LTS SP4)
+## 3.21.0-4.202109171654 (3.21.0 LTS SP4)
 
 * (JAR-102) Fixed bug where `jarvice-license-manager` was not taking existing project license requests into account when limiting license features by project.
 * (JAR-4496) Fixed verbiage in project selection for team admins to show blank entry rather than "no project".
