@@ -221,7 +221,7 @@ EOF
                         "key" = "k8s.io/cluster-autoscaler/${var.cluster.meta["cluster_name"]}"
                         "propagate_at_launch" = "false"
                         "value" = "true"
-                    }
+                    },
                 ]
 
             }
@@ -317,6 +317,9 @@ module "iam_assumable_role_admin_cluster_autoscaler" {
     oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:cluster-autoscaler-aws-cluster-autoscaler"]
 }
 
+locals {
+    arn_partition = length(regexall("^us-gov-", var.cluster.location["region"])) > 0 ? "aws-us-gov" : "aws"
+}
 
 resource "aws_iam_policy" "aws_load_balancer_controller" {
     name_prefix = "${var.cluster.meta["cluster_name"]}-aws-load-balancer-controller"
@@ -396,7 +399,7 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
                 "Action": [
                     "ec2:CreateTags"
                 ],
-                "Resource": "arn:aws:ec2:*:*:security-group/*",
+                "Resource": "arn:${local.arn_partition}:ec2:*:*:security-group/*",
                 "Condition": {
                     "StringEquals": {
                         "ec2:CreateAction": "CreateSecurityGroup"
@@ -412,7 +415,7 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
                     "ec2:CreateTags",
                     "ec2:DeleteTags"
                 ],
-                "Resource": "arn:aws:ec2:*:*:security-group/*",
+                "Resource": "arn:${local.arn_partition}:ec2:*:*:security-group/*",
                 "Condition": {
                     "Null": {
                         "aws:RequestTag/elbv2.k8s.aws/cluster": "true",
@@ -464,9 +467,9 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
                     "elasticloadbalancing:RemoveTags"
                 ],
                 "Resource": [
-                    "arn:aws:elasticloadbalancing:*:*:targetgroup/*/*",
-                    "arn:aws:elasticloadbalancing:*:*:loadbalancer/net/*/*",
-                    "arn:aws:elasticloadbalancing:*:*:loadbalancer/app/*/*"
+                    "arn:${local.arn_partition}:elasticloadbalancing:*:*:targetgroup/*/*",
+                    "arn:${local.arn_partition}:elasticloadbalancing:*:*:loadbalancer/net/*/*",
+                    "arn:${local.arn_partition}:elasticloadbalancing:*:*:loadbalancer/app/*/*"
                 ],
                 "Condition": {
                     "Null": {
@@ -482,10 +485,10 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
                     "elasticloadbalancing:RemoveTags"
                 ],
                 "Resource": [
-                    "arn:aws:elasticloadbalancing:*:*:listener/net/*/*/*",
-                    "arn:aws:elasticloadbalancing:*:*:listener/app/*/*/*",
-                    "arn:aws:elasticloadbalancing:*:*:listener-rule/net/*/*/*",
-                    "arn:aws:elasticloadbalancing:*:*:listener-rule/app/*/*/*"
+                    "arn:${local.arn_partition}:elasticloadbalancing:*:*:listener/net/*/*/*",
+                    "arn:${local.arn_partition}:elasticloadbalancing:*:*:listener/app/*/*/*",
+                    "arn:${local.arn_partition}:elasticloadbalancing:*:*:listener-rule/net/*/*/*",
+                    "arn:${local.arn_partition}:elasticloadbalancing:*:*:listener-rule/app/*/*/*"
                 ]
             },
             {
@@ -513,7 +516,7 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
                     "elasticloadbalancing:RegisterTargets",
                     "elasticloadbalancing:DeregisterTargets"
                 ],
-                "Resource": "arn:aws:elasticloadbalancing:*:*:targetgroup/*/*"
+                "Resource": "arn:${local.arn_partition}:elasticloadbalancing:*:*:targetgroup/*/*"
             },
             {
                 "Effect": "Allow",
@@ -554,7 +557,7 @@ resource "aws_iam_policy" "external_dns" {
                     "route53:ChangeResourceRecordSets"
                 ],
                 "Resource": [
-                    "arn:aws:route53:::hostedzone/*"
+                    "arn:${local.arn_partition}:route53:::hostedzone/*"
                 ]
             },
             {

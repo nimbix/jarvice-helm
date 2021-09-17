@@ -50,7 +50,7 @@ spec:
         - name: jarvice-etc
           configMap:
             name: jarvice-license-manager
-            optional: false
+            optional: true
 {{- if (not (empty .Values.jarvice_license_manager.env.JARVICE_HOSTALIASES)) }}
       hostAliases: {{ .Values.jarvice_license_manager.env.JARVICE_HOSTALIASES }}
 {{- end }}
