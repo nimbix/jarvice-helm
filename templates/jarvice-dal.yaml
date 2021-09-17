@@ -169,7 +169,7 @@ spec:
 {{- else }}
             value: "{{ .Values.jarvice.JARVICE_DEFAULT_CLUSTER_URL }}"
 {{- end }}
-          - name: NODE_ENV
+          - name: JARVICE_NODE_ENV
             value: "{{ .Values.jarvice_dal.env.JARVICE_NODE_ENV }}"
           - name: JARVICE_SITE_DBHOST
 {{- if empty .Values.jarvice_dal.env.JARVICE_SITE_DBHOST }}
