@@ -127,6 +127,16 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202109171659
+
+* (JAR-102) Fixed bug where `jarvice-license-manager` was not taking existing project license requests into account when limiting license features by project.
+* (JAR-4482) Fixed bug where vault creation from *Administration->Users* left a stray comma on access modes when canceled.
+* (JAR-4496) Fixed verbiage in project selection for team admins to show blank entry rather than "no project".
+* (JAR-4500) Added configuration GUI for `jarvice-license-manager`, in the *Administration->License Manager* view.
+* (JAR-4501) Changed the best practice for configuring `jarvice-license-manager` to GUI from *configMap*.
+* (JAR-4541) Added the ability to report on users with access to specific zones via the *Administration->Users By Zone* view.
+* (JAR-4542) Added support for AWS GovCloud regions via TerraForm deployments.
+
 ## 3.21.9-1.202108181638
 
 * (JAR-113) Improved object cleanup upon user deletion; note that deleting users **is not** considered a best practice.
