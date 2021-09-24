@@ -211,19 +211,43 @@ EOF
                 "additional_userdata" = <<EOF
 # additional_userdata (executed after kubelet bootstrap and cluster join)
 EOF
-                "tags" = [
-                    {
-                        "key" = "k8s.io/cluster-autoscaler/enabled"
-                        "propagate_at_launch" = "false"
-                        "value" = "true"
-                    },
-                    {
-                        "key" = "k8s.io/cluster-autoscaler/${var.cluster.meta["cluster_name"]}"
-                        "propagate_at_launch" = "false"
-                        "value" = "true"
-                    },
-                ]
-
+                "tags" = concat(
+                    [
+                        {
+                            "key" = "k8s.io/cluster-autoscaler/enabled"
+                            "propagate_at_launch" = "false"
+                            "value" = "true"
+                        },
+                        {
+                            "key" = "k8s.io/cluster-autoscaler/${var.cluster.meta["cluster_name"]}"
+                            "propagate_at_launch" = "false"
+                            "value" = "owned"
+                        },
+                        {
+                            "key" = "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/instance-type"
+                            "propagate_at_launch" = "true"
+                            "value" = pool.nodes_type
+                        },
+                        {
+                            "key" = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/arch"
+                            "propagate_at_launch" = "true"
+                            "value" = lookup(var.cluster.meta, "arch", null) == "arm64" ? "arm64" : "amd64"
+                        }
+                    ],
+                    lookup(pool.meta, "interface_type", null) == "efa" ?
+                        [
+                            {
+                                "key" = "k8s.io/cluster-autoscaler/node-template/resources/vpc.amazonaws.com/efa"
+                                "propagate_at_launch" = "true"
+                                "value" = "1"
+                            },
+                            {
+                                "key" = "k8s.io/cluster-autoscaler/node-template/resources/hugepages-2Mi"
+                                "propagate_at_launch" = "true"
+                                "value" = "15842Mi"
+                            }
+                        ] : []
+                )
             }
     ]
 }
