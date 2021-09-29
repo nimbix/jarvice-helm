@@ -46,6 +46,11 @@ locals {
     charts = {
         "external-dns" = {
             "values" = <<EOF
+image:
+  registry: us.gcr.io
+  repository: k8s-artifacts-prod/external-dns/external-dns
+  tag: v0.8.0
+
 sources:
   - ingress
 

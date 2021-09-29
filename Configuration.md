@@ -10,6 +10,41 @@ JARVICE has a concept of teams, with team leaders known as "payers" - this conce
 1. Avoid using the ```root``` account to lead a team; instead invite a user, and have that user in turn invite other users from their own *Account* section to join their respective team
 2. Avoid deleting user accounts, and this can cause referential integrity errors when auditing job history and other historical metrics; instead, unused user accounts should be locked or disabled
 
+## Configuring for MPI Applications
+
+JARVICE supports various MPI libraries and fabric providers/endpoints.  The platform detects fabrics and advises application environments, which in turn configure specific applications to use either JARVICE-provided OpenMPI libraries or their own packaged versions.
+
+### Enabling Cross Memory Attach (CMA)
+
+Cross Memory Attach (CMA) accelerates communication between MPI ranks on a given machine by allowing shared memory rather than network transport to be used for message passing between those ranks.  Many Linux systems and images disable a fundamental feature that allows processes to `PTRACE_ATTACH` in order to facilitate this.  JARVICE detects CMA capabilities automatically and informs applications about this at runtime.  While certain exploits are possible if this is enabled, it is also known to improve performance as well as reliability of MPI applications, particularly if using TCP endpoints (e.g. on Ethernet-only fabrics).
+
+To enable CMA, ensure the following command runs on each cluster worker node:
+```
+echo 0 > /proc/sys/kernel/yama/ptrace_scope || /bin/true
+```
+
+If it is not possible to affect node configuration directly, the `node_init` DaemonSet can be used.  Note that by default it does not explicitly run this command, but you can add it to the end of the `daemonsets.node_init.env.COMMAND` section in your `override.yaml` file, or insert the entire override for the `node_init` DaemonSet into your `terraform/override.auto.tfvars` file if using Terraform to deploy.
+
+Note that JARVICE runs job containers with `CAP_SYS_PTRACE` automatically, so only `/proc/sys/kernel/yama/ptrace_scope` set to 0 is required to enable CMA for MPI applications.
+
+For additional details on the general security implications, see [https://www.kernel.org/doc/Documentation/security/Yama.txt](https://www.kernel.org/doc/Documentation/security/Yama.txt).
+
+**WARNING:** It is possible for jobs running on machine definitions with the `privileged` pseudo-device to reset the value of `/proc/sys/kernel/yama/ptrace_scope`, effectively disabling CMA on the particular node(s) they run on for all subsequent jobs.  This is especially true if using a default *Server* endpoint for an application where an in-container `systemd` runs system initialization scripts that may reset kernel parameters.  As always, the use of `privileged` is not recommended on production systems, and should be used with extreme caution regardless.
+
+### Huge Pages
+
+Certain RDMA-style provider endpoints, such as Amazon EFA, require the use of Huge Pages to ensure page-aligned, contiguous memory for certain operations.  Please consult the documentation for the particular fabric endpoint you intend to use for details.  Huge pages must be reserved on nodes (or instances) before the Kubernetes kubelet starts in order to make this an allocatable resource, and should be enabled as early as possible in the boot sequence of a node or instance to reduce the effect of memory fragmentation.
+
+For example, for Amazon EFA, it is known that each MPI rank on a given node will require 2 endpoints of approximately 110MB of contiguous memory (or a total of approximately 220MB per rank).  On a 72 vCPU machine where each vCPU is used as an MPI rank (via the cores parameter in the JARVICE machine definition), this equates to 15840MB.  `c5n.18xlarge` instance types configured as node groups in Terraform reserve 15842MB of the `hugepages-2Mi` resource, which is enough to meet this requirement.
+
+To support this in JARVICE, it is both necessary for Kubernetes kubelets to report either `hugepages-1Gi` or `hugepages-2Mi` resources of the appropriate size as allocatable, and for the corresponding machine definition to request either `hugepages2mi` or `hugepages1gi` as described in the [Devices](#devices) section of [Configuring Machine Types](#configuring-machine-types) below.  Note that the availability of 2Mi versus 1Gi huge pages is system dependent.  In most cases, 2Mi huge pages will suffice.
+
+For additional details on huge pages in the Linux kernel, see [https://www.kernel.org/doc/Documentation/vm/hugetlbpage.txt](https://www.kernel.org/doc/Documentation/vm/hugetlbpage.txt).
+
+### Increasing available space in `/dev/shm`
+
+By default, JARVICE will run jobs with the Kubernetes default of 64Mi `tmpfs` attached to `/dev/shm`.  This is generally not sufficient for certain fabric providers and/or endpoints.  It is recommended that machine definitions used for MPI jobs have the `devshm` pseudo-device defined, which will allow up to half of physical RAM in `/dev/shm` (the default for a host-mounted `tmpfs` filesystem).
+
 ## Configuring Machine Types
 Machine types in JARVICE are used to describe resources that a job requests along with metadata for workflow construction.  Machine types are configured in the *Machines* view in the *Administration* section of the web portal.
 
@@ -89,6 +124,7 @@ JARVICE|K8S Resource request/behavior|Notes
 ```lxcfs```|Applies ```lxcfs``` FUSE mounts in ```/proc``` for the container, to present ```cpuinfo```, ```meminfo```, etc. to reflect the ```cgroup``` values|Requires the [Kubernetes Initializer for LXCFS](https://github.com/nimbix/lxcfs-initializer) DaemonSet deployed on the cluster, or ```lxcfs``` installed and started on the host, and ```cpuinfo``` won't work correctly unless ```static``` CPU manger policy is used - but see above warning about this policy!
 ```fpga-xilinx-<*>[:n]```|```xilinx.com/fpga-xilinx-<*>[:n]```|Requests Xilinx FPGA of a specific type and DSA, where *<*>* defines the type and DSA (Xilinx-specific) and *n* specifies the number of devices to request, which defaults to 1 if not specified; requires a DaemonSet that deploys the [xilinxatg/xilinx_k8s_fpga_plugin](https://hub.docker.com/r/xilinxatg/xilinx_k8s_fpga_plugin/) container
 ```/<host-path>=<container-path>[:ro\|:rw]```|Applies *VolumeMount* to pod of a *HostPath* volume|Specifies an absolute path on the host (*host-path*) to bind into the container in *container-path* with either read/only (*:ro*) or read/write (*:rw*) permissions; if permissions are not specified, the default is read/only; note that commas cannot be used in either path
+```$<key>=<value>```|Sets the environment variable named *key* to the value of *value* for containers running on machines of this type|The environment setting is passed verbatim, but note that some common variables are overridden during container initialization; use only for specialized variables for applications rather than common ones such as `${HOME}`
 ```devshm```|N/A|Attaches a `tmpfs` filesystem to the `/dev/shm` of containers run on this machine type equal to approximately half the size of physical RAM of the underlying node; recommended use for MPI applications as the default 64Mi `/dev/shm` may be insufficient for correct operation
 ```hugepages2mi:<n>```|```hugepages-2Mi:<n>Mi```|Requests 2Mi huge pages to enable, where `n` is in megabytes; underlying nodes must be configured to provide at least this number of 2Mi huge pages in order for jobs to be schedulable on them; note that this may be required for certain forms of RDMA utilized by MPI
 ```hugepages1gi:<n>```|```hugepages-1Gi:<n>Gi```|Requests 1Gi huge pages to enable, where `n` is in gigabytes; underlying nodes must be configured to provide at least this number of 1Gi huge pages in order for jobs to be schedulable on them; note that this may be required for certain forms of RDMA utilized by MPI

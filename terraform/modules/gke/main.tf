@@ -56,8 +56,7 @@ resource "google_project_service" "project_services" {
     disable_on_destroy = false
 }
 
-resource "random_id" "password" {
-    byte_length = 18
+data "google_client_config" "jarvice" {
 }
 
 data "google_container_engine_versions" "kubernetes_version" {
@@ -136,15 +135,6 @@ EOF
     #        disabled = false
     #    }
     #}
-
-    master_auth {
-        username = local.username
-        password = random_id.password.hex
-
-        client_certificate_config {
-            issue_client_certificate = true
-        }
-    }
 
     resource_labels = {
         "cluster_name" = var.cluster.meta["cluster_name"]

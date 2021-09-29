@@ -88,6 +88,15 @@ jarvice:
   JARVICE_PORTAL_MAIL_FROM: "JARVICE Account Status <DoNotReply@localhost>"
   JARVICE_PORTAL_MAIL_SUBJECT: "Your JARVICE Account"
 
+  # Long-running job (LRJ) email notification settings; see LRJ.md for details
+  JARVICE_LRJ_WALLTIME:       # hours; must be >0 to enable LRJ notifications
+  JARVICE_LRJ_PERIOD: 24      # hours
+  JARVICE_LRJ_BATCH:  "false" # true|false
+  JARVICE_LRJ_PAYER_NOTIFY: "false" # true|false
+  JARVICE_LRJ_OWNER_BLACKLIST:  # comma-separated list
+  JARVICE_LRJ_PAYER_BLACKLIST:  # comma-separated list
+  JARVICE_LRJ_CURRENCY_FMT: "$%.2f" # printf-format, single %f value
+
   ingress:
     class: "traefik"
     tls:
@@ -215,7 +224,7 @@ jarvice:
       tolerations: # '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}, {"key": "jarvice.com/rdma", "operator": "Exists",  "effect": "NoSchedule"}]'
       nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
-      image: gcr.io/jarvice/k8s-rdma-device:1.0.1
+      image: gcr.io/jarvice/k8s-rdma-device:1.0.3
       imagePullPolicy: IfNotPresent
     dri_optional:
       enabled: true
