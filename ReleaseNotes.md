@@ -127,6 +127,15 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202109301638
+
+* (JAR-153) Fixed bug with `%VNAME%` substitution in AppDefs and shared vaults.
+* (JAR-160) Added average queue time granularity around infrastructure, limits, and licensing in the downloadable CSV report from the *Administration->Stats* view.
+* (JAR-4576) Fixed bug with size field when cancelling PVC vault creation for users in the *Administration->Users* view.
+* (JAR-4585) Fixed portal reload on version update.
+* (JAR-4587) Fixed bug with checkbox state for not encoding generated passwords as URLs in the *Account->Team* view.
+* (*contributed*) Added AWS AS tags for resources. When scaling from 0 the AS needs resources called out as tags to know they are present on the AS group. This should solve for that.
+
 ## 3.21.9-1.202109171659
 
 * (JAR-102) Fixed bug where `jarvice-license-manager` was not taking existing project license requests into account when limiting license features by project.
