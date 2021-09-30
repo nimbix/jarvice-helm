@@ -119,6 +119,12 @@ data "aws_ami" "eks_arm64" {
     owners = ["amazon"]
 }
 
+data "aws_ec2_instance_type" "jarvice_compute" {
+    for_each = var.cluster["compute_node_pools"]
+
+    instance_type = each.value["nodes_type"]
+}
+
 resource "aws_placement_group" "efa" {
     name = "${var.cluster.meta["cluster_name"]}-efa"
     strategy = "cluster"
@@ -144,6 +150,10 @@ cd /tmp/aws-efa-installer
 /opt/amazon/efa/bin/fi_info -p efa
 #sysctl -w kernel.yama.ptrace_scope=0
 EOF
+
+    # See /opt/amazon/bin/efa-hugepages-reserve.sh for reference
+    huge_pages_size = 2048  # TODO: may be different on arm64 nodes
+    efa_ep_huge_pages_memory = 110 * 1024
 
     default_nodes = [
         {
@@ -211,19 +221,43 @@ EOF
                 "additional_userdata" = <<EOF
 # additional_userdata (executed after kubelet bootstrap and cluster join)
 EOF
-                "tags" = [
-                    {
-                        "key" = "k8s.io/cluster-autoscaler/enabled"
-                        "propagate_at_launch" = "false"
-                        "value" = "true"
-                    },
-                    {
-                        "key" = "k8s.io/cluster-autoscaler/${var.cluster.meta["cluster_name"]}"
-                        "propagate_at_launch" = "false"
-                        "value" = "true"
-                    },
-                ]
-
+                "tags" = concat(
+                    [
+                        {
+                            "key" = "k8s.io/cluster-autoscaler/enabled"
+                            "propagate_at_launch" = "false"
+                            "value" = "true"
+                        },
+                        {
+                            "key" = "k8s.io/cluster-autoscaler/${var.cluster.meta["cluster_name"]}"
+                            "propagate_at_launch" = "false"
+                            "value" = "owned"
+                        },
+                        {
+                            "key" = "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/instance-type"
+                            "propagate_at_launch" = "true"
+                            "value" = pool.nodes_type
+                        },
+                        {
+                            "key" = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/arch"
+                            "propagate_at_launch" = "true"
+                            "value" = lookup(var.cluster.meta, "arch", null) == "arm64" ? "arm64" : "amd64"
+                        }
+                    ],
+                    lookup(pool.meta, "interface_type", null) == "efa" ?
+                        [
+                            {
+                                "key" = "k8s.io/cluster-autoscaler/node-template/resources/vpc.amazonaws.com/efa"
+                                "propagate_at_launch" = "true"
+                                "value" = "1"
+                            },
+                            {
+                                "key" = "k8s.io/cluster-autoscaler/node-template/resources/hugepages-2Mi"
+                                "propagate_at_launch" = "true"
+                                "value" = format("%sMi", tostring(((local.efa_ep_huge_pages_memory * data.aws_ec2_instance_type.jarvice_compute[name].default_vcpus * 2) / local.huge_pages_size + 1) * 2))
+                            }
+                        ] : []
+                )
             }
     ]
 }
