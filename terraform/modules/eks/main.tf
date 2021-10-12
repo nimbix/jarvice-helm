@@ -263,9 +263,8 @@ EOF
 }
 
 module "eks" {
-    #source = "terraform-aws-modules/eks/aws"
-    #version = "~> 17.1.0"
-    source = "github.com/nimbix/terraform-aws-eks"
+    source = "terraform-aws-modules/eks/aws"
+    version = "~> 17.21.0"
 
     cluster_name = var.cluster.meta["cluster_name"]
     cluster_version = var.cluster.meta["kubernetes_version"]
