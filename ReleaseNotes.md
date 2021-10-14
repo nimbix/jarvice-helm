@@ -127,6 +127,15 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202110141638
+
+* (JAR-130) Fixed minor failed login attempt lockout logic bug.
+* (JAR-158) Added maximum queue time column to the *Administration->Stats* view.
+* (JAR-159) Added the ability to calculate machine statistics within a time of day range in hours, in the *Administration->Stats* view.
+* (JAR-4645) Fixed bug where non-administrative team user was able to see the project editor in the *Account->Projects* view.
+* (JAR-4653) Fixed AWS EFA container address in GovCloud deployments to use the appropriate zone.
+* (JAR-4667) Fixed bug where portal *Dashboard* view was not updating when only job substatus changed.
+
 ## 3.21.9-1.202109301638
 
 * (JAR-153) Fixed bug with `%VNAME%` substitution in AppDefs and shared vaults.
