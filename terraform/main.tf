@@ -8,7 +8,7 @@ terraform {
     required_providers {
         google = "~> 3.68.0"
         google-beta = "~> 3.68.0"
-        aws = "~> 3.44.0"
+        aws = "~> 3.62.0"
         azurerm = "~> 2.61.0"
 
         helm = "~> 2.1.2"

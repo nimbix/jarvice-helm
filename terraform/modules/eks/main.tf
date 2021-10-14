@@ -2,7 +2,7 @@
 
 terraform {
     required_providers {
-        aws = "~> 3.44.0"
+        aws = "~> 3.62.0"
 
         helm = "~> 2.1.2"
         kubernetes = "~> 2.1.0"
@@ -29,7 +29,7 @@ data "aws_availability_zones" "available" {
 
 module "vpc" {
     source = "terraform-aws-modules/vpc/aws"
-    version = "~> 3.1.0"
+    version = "~> 3.7.0"
 
     name = "${var.cluster.meta["cluster_name"]}-vpc"
     cidr = "10.0.0.0/16"
@@ -263,9 +263,8 @@ EOF
 }
 
 module "eks" {
-    #source = "terraform-aws-modules/eks/aws"
-    #version = "~> 17.1.0"
-    source = "github.com/nimbix/terraform-aws-eks"
+    source = "terraform-aws-modules/eks/aws"
+    version = "~> 17.22.0"
 
     cluster_name = var.cluster.meta["cluster_name"]
     cluster_version = var.cluster.meta["kubernetes_version"]
@@ -342,7 +341,7 @@ resource "aws_iam_policy" "cluster_autoscaler" {
 
 module "iam_assumable_role_admin_cluster_autoscaler" {
     source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-    version = "~> 4.1.0"
+    version = "~> 4.7.0"
 
     create_role = true
     role_name_prefix = substr("${var.cluster.meta["cluster_name"]}-cluster-autoscaler", 0, 32)
@@ -569,7 +568,7 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
 
 module "iam_assumable_role_admin_aws_load_balancer_controller" {
     source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-    version = "~> 4.1.0"
+    version = "~> 4.7.0"
 
     create_role = true
     role_name_prefix = substr("${var.cluster.meta["cluster_name"]}-aws-load-balancer-controller", 0, 32)
@@ -610,7 +609,7 @@ resource "aws_iam_policy" "external_dns" {
 
 module "iam_assumable_role_admin_external_dns" {
     source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-    version = "~> 4.1.0"
+    version = "~> 4.7.0"
 
     create_role = true
     role_name_prefix = substr("${var.cluster.meta["cluster_name"]}-external-dns", 0, 32)
