@@ -223,7 +223,7 @@ resource "google_container_node_pool" "jarvice_dockerbuild" {
     }
 
     node_config {
-        machine_type = "n2-standard-4"
+        machine_type = "c2-standard-4"
 
         image_type = "UBUNTU_CONTAINERD"
 
