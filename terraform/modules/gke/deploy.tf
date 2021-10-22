@@ -9,6 +9,7 @@ module "common" {
     system_nodes_type_upstream = "n1-standard-8"
     system_nodes_type_downstream = "n1-standard-4"
     storage_class_provisioner = "kubernetes.io/gce-pd"
+    storage_class_provisioner_dockerbuild = "pd.csi.storage.gke.io"
 }
 
 resource "google_service_account" "external_dns" {

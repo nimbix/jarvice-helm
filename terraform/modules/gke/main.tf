@@ -199,6 +199,64 @@ EOF
     }
 }
 
+resource "google_container_node_pool" "jarvice_dockerbuild" {
+    count = module.common.jarvice_cluster_type == "downstream" ? 0 : 1
+
+    #provider = google-beta
+
+    name = "jxedockerbuild"
+    location = local.region
+    node_locations = local.zones
+
+    cluster = google_container_cluster.jarvice.name
+    version = local.node_version
+
+    initial_node_count = 1
+    autoscaling {
+        min_node_count = 0
+        max_node_count = 3
+    }
+
+    management {
+        auto_repair = true
+        auto_upgrade = false
+    }
+
+    node_config {
+        machine_type = "n2-standard-4"
+
+        image_type = "UBUNTU_CONTAINERD"
+
+        service_account = "default"
+        oauth_scopes = local.oauth_scopes
+
+        metadata = {
+            disable-legacy-endpoints = "true"
+            ssh-keys = <<EOF
+${local.username}:${module.common.ssh_public_key}
+EOF
+        }
+
+        labels = {
+            "node-role.jarvice.io/jarvice-dockerbuild" = "true"
+            "node-pool.jarvice.io/jarvice-dockerbuild" = "jxedockerbuild"
+        }
+        taint = [
+            {
+                key = "node-role.jarvice.io/jarvice-dockerbuild"
+                value = "true"
+                effect = "NO_SCHEDULE"
+            }
+        ]
+
+        tags = [google_container_cluster.jarvice.name, "jxedockerbuild"]
+    }
+
+    lifecycle {
+        ignore_changes = [version, initial_node_count]
+    }
+}
+
 #resource "google_compute_resource_policy" "jarvice_compute" {
 #    name = var.cluster.meta["cluster_name"]
 #    region = local.region

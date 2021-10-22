@@ -58,3 +58,8 @@ variable "storage_class_provisioner" {
     default = ""
 }
 
+variable "storage_class_provisioner_dockerbuild" {
+    type = string
+    default = ""
+}
+
