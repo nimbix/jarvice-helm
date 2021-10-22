@@ -218,12 +218,41 @@ spec:
           - name: JARVICE_BUILD_NODE_SELECTOR
             value: '{{ .Values.jarvice.nodeSelector }}'
 {{- end }}
+{{- if (not (empty .Values.jarvice_dockerbuild.nodeAffinity)) }}
+          - name: JARVICE_BUILD_NODE_AFFINITY
+            value: '{{ .Values.jarvice_dockerbuild.nodeAffinity }}'
+{{- else if (not (empty .Values.jarvice.nodeAffinity)) }}
+          - name: JARVICE_BUILD_NODE_AFFINITY
+            value: '{{ .Values.jarvice.nodeAffinity }}'
+{{- end }}
+{{- if .Values.jarvice_dockerbuild.persistence.enabled }}
+          - name: JARVICE_BUILD_PERSISTENCE_ENABLED
+            value: "true"
+          - name: JARVICE_BUILD_PERSISTENCE_SIZE
+            value: "{{ .Values.jarvice_dockerbuild.persistence.size }}"
+          - name: JARVICE_BUILD_PERSISTENCE_STORAGECLASS
+{{- if (eq "-" .Values.jarvice_dockerbuild.persistence.storageClass) }}
+            value: ""
+{{- else }}
+            value: "{{ .Values.jarvice_dockerbuild.persistence.storageClass }}"
+{{- end }}
+{{- else }}
+          - name: JARVICE_BUILD_PERSISTENCE_ENABLED
+            value: "false"
+{{- end }}
 {{- if (not (empty .Values.jarvice_dockerpull.nodeSelector)) }}
           - name: JARVICE_PULL_NODE_SELECTOR
             value: '{{ .Values.jarvice_dockerpull.nodeSelector }}'
 {{- else if (not (empty .Values.jarvice.nodeSelector)) }}
           - name: JARVICE_PULL_NODE_SELECTOR
             value: '{{ .Values.jarvice.nodeSelector }}'
+{{- end }}
+{{- if (not (empty .Values.jarvice_dockerpull.nodeAffinity)) }}
+          - name: JARVICE_PULL_NODE_AFFINITY
+            value: '{{ .Values.jarvice_dockerpull.nodeAffinity }}'
+{{- else if (not (empty .Values.jarvice.nodeAffinity)) }}
+          - name: JARVICE_PULL_NODE_AFFINITY
+            value: '{{ .Values.jarvice.nodeAffinity }}'
 {{- end }}
 {{- $smtpd := printf "jarvice-smtpd.%s:25" .Release.Namespace -}}
 {{- if (not (empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE)) }}

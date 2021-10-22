@@ -193,6 +193,15 @@ k8s = {  # Deploy JARVICE to pre-existing K8s clusters
   #  JARVICE_S3_SECRETKEY:
   #  JARVICE_S3_ENDPOINTURL: # https://s3.my-domain.com
 
+#jarvice_dockerbuild: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  #tolerations: # '[{"key": "node-role.jarvice.io/jarvice-dockerbuild", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-dockerbuild", "effect": "NoSchedule", "operator": "Exists"}]'
+  #nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-dockerbuild", "operator": "Exists"}]}] }}'
+  #persistence:  # Enable for build pods to use dynamically provisioned PVCs
+  #  enabled: false
+  #  # storageClass: "-"  # "-" uses cluster's default StorageClass/provisioner
+  #  storageClass: "jarvice-dockerbuild"
+  #  size: 250Gi
+
 #jarvice_api:
   #loadBalancerIP:
   #ingressHost: # jarvice-api.my-domain.com
@@ -446,6 +455,10 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
   #  JARVICE_S3_ACCESSKEY:
   #  JARVICE_S3_SECRETKEY:
   #  JARVICE_S3_ENDPOINTURL: # https://s3.my-domain.com
+
+#jarvice_dockerbuild: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  #persistence:
+  #  size: 250Gi
 
 #jarvice_api:
   #ingressHost: tf-jarvice.my-domain.com
@@ -718,6 +731,10 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
   #  JARVICE_S3_SECRETKEY:
   #  JARVICE_S3_ENDPOINTURL: # https://s3.my-domain.com
 
+#jarvice_dockerbuild: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  #persistence:
+  #  size: 250Gi
+
 #jarvice_api:
   #ingressHost: tf-jarvice.my-domain.com
   #ingressPath: "/api"
@@ -968,6 +985,10 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
   #  JARVICE_S3_ACCESSKEY:
   #  JARVICE_S3_SECRETKEY:
   #  JARVICE_S3_ENDPOINTURL: # https://s3.my-domain.com
+
+#jarvice_dockerbuild: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  #persistence:
+  #  size: 250Gi
 
 #jarvice_api:
   #ingressHost: tf-jarvice.my-domain.com

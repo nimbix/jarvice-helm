@@ -62,6 +62,8 @@ spec:
         {{- include "jarvice.release_labels" . | indent 8 }}
         component: jarvice-registry-proxy
         deployment: jarvice-registry-proxy
+      annotations:
+        checksum/config: {{ (printf "%s" .Values.jarvice.imagePullSecret) | sha256sum }}
     spec:
 {{- if (not (empty .Values.jarvice_registry_proxy.tolerations)) }}
       tolerations: {{ .Values.jarvice_registry_proxy.tolerations }}
