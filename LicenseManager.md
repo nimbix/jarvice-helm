@@ -17,6 +17,7 @@ A comprehensive mechanism for queuing jobs based on license token availability.
     * [Web Portal](#web-portal)
     * [JARVICE API](#jarvice-api)
 * [Troubleshooting](#troubleshooting)
+* [Advanced: Multiple License Server Addresses](#advanced-multiple-license-server-addresses)
 * [Best Practices, Anomalies, and Caveats](#best-practices-anomalies-and-caveats)
 
 ---
@@ -337,6 +338,14 @@ All errors are logged, and in DEBUG mode (log level 10), large amounts of intern
 In all cases the output of `jarvice-license-server`, in log level 10, is the suggested troubleshooting route.  This value can be set via the `jarvice.JARVICE_LICENSE_MANAGER_LOGLEVEL` variable.  The recommended production value is `20` (INFO).
 
 [Back to Contents](#contents)
+
+---
+
+## Advanced: Multiple License Server Addresses
+
+If a single application needs to consider multiple license server addresses for checkouts, the best practice is to consolidate these under a single entry and use the `address` key to specify the multiples, separated by a colon (`:`) character.  For example, if the `myservers` entry must consider multiple addresses, such as `1055@server1:1055@server2` (as would be passed to the `lmutil lmstat -c` command), you would specify the `port` as `1055` and the address as `server1:1055@server2`.  `jarvice-license-manager` would then concatenate this to `1055@server1:1055@server2` for the Flex `lmutil` client request to inspect the total and available feature counts.  The following rules apply:
+1. `jarvice-license-manager` will add the totals and consider them in aggregate for any reservations against the server entry with multiple addresses; it's expected the Flex license client in the solver will be able to do partial checkouts if all tokens are not available on one given address.  Note that `jarvice-license-manager` will consider the license request "available" if the total number of requested tokens for any given feature is less than or equal to the total number of available tokens across all daemon addresses queried for that server.  If the solver you are trying to use does not support this, you may end up with checkout failures even though `jarvice-license-manager` thinks there are enough tokens.  Check with your solver's software vendor if you are not sure how it considers availabilty of features across multiple servers.
+2. The best practice is to create server entries for each individual address as well as one for all addresses combined, so that the appropriate host resolution automation can take place.  Do this even if you don't plan on ever using the servers individually for best results.  For additional details, see [Flex server host name resolution](#flex-server-host-name-resolution).
 
 ---
 
