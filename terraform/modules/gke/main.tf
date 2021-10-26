@@ -200,7 +200,7 @@ EOF
 }
 
 resource "google_container_node_pool" "jarvice_dockerbuild" {
-    count = module.common.jarvice_cluster_type == "downstream" ? 0 : 1
+    count = module.common.jarvice_cluster_type == "downstream" || var.cluster.dockerbuild_node_pool["nodes_type"] == null ? 0 : 1
 
     #provider = google-beta
 
@@ -211,10 +211,10 @@ resource "google_container_node_pool" "jarvice_dockerbuild" {
     cluster = google_container_cluster.jarvice.name
     version = local.node_version
 
-    initial_node_count = 1
+    initial_node_count = var.cluster.dockerbuild_node_pool["nodes_num"]
     autoscaling {
-        min_node_count = 0
-        max_node_count = 3
+        min_node_count = var.cluster.dockerbuild_node_pool["nodes_min"]
+        max_node_count = var.cluster.dockerbuild_node_pool["nodes_max"]
     }
 
     management {
@@ -223,7 +223,7 @@ resource "google_container_node_pool" "jarvice_dockerbuild" {
     }
 
     node_config {
-        machine_type = "c2-standard-4"
+        machine_type = var.cluster.dockerbuild_node_pool["nodes_type"]
 
         image_type = "UBUNTU_CONTAINERD"
 

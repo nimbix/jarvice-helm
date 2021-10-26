@@ -360,6 +360,12 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
             nodes_type = null  # auto-set if null specified
             nodes_num = null   # auto-set if null specified
         }
+        dockerbuild_node_pool = {  # N/A for downstream clusters
+            nodes_type = "c2-standard-4"
+            nodes_num = 1
+            nodes_min = 0
+            nodes_max = 3
+        }
         compute_node_pools = {
             jxecompute00 = {
                 # n1 node_type is required for accelerator attachment
@@ -513,6 +519,12 @@ EOF
         system_node_pool = {
             nodes_type = null  # auto-set if null specified
             nodes_num = null   # auto-set if null specified
+        }
+        dockerbuild_node_pool = {  # N/A for downstream clusters
+            nodes_type = null
+            nodes_num = 0
+            nodes_min = 0
+            nodes_max = 0
         }
         compute_node_pools = {
             jxecompute00 = {
