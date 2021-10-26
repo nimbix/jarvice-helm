@@ -26,7 +26,6 @@ users:
   user:
     auth-provider:
       config:
-        access-token: ${local.kube_config["token"]}
         cmd-args: config config-helper --format=json
         cmd-path: gcloud
         expiry-key: '{.credential.token_expiry}'
