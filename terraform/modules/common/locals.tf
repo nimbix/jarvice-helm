@@ -82,6 +82,9 @@ jarvice_dockerbuild:
   persistence:
     enabled: true
     storageClassProvisioner: ${var.storage_class_provisioner_dockerbuild}
+
+jarvice_dockerbuild_pvc_gc:
+  enabled: true
 EOF
 }
 

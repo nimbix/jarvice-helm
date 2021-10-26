@@ -194,13 +194,20 @@ k8s = {  # Deploy JARVICE to pre-existing K8s clusters
   #  JARVICE_S3_ENDPOINTURL: # https://s3.my-domain.com
 
 #jarvice_dockerbuild: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
-  #tolerations: # '[{"key": "node-role.jarvice.io/jarvice-dockerbuild", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-dockerbuild", "effect": "NoSchedule", "operator": "Exists"}]'
-  #nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-dockerbuild", "operator": "Exists"}]}] }}'
-  #persistence:  # Enable for build pods to use dynamically provisioned PVCs
+  #persistence:  # Enable to execute builds on dynamically provisioned PVCs
   #  enabled: false
   #  # storageClass: "-"  # "-" uses cluster's default StorageClass/provisioner
   #  storageClass: "jarvice-dockerbuild"
   #  size: 250Gi
+
+# Enable to use a kubernetes CronJob to garbage collect dockerbuild PVCs
+# N/A if jarvice_dockerbuild.persistence.enabled is false
+#jarvice_dockerbuild_pvc_gc:
+  #enabled: false
+  #env:
+  #  JARVICE_BUILD_PVC_KEEP_SUCCESSFUL: 3600  # Default: 3600 (1 hour)
+  #  JARVICE_BUILD_PVC_KEEP_ABORTED: 7200  # Default: 7200 (2 hours)
+  #  JARVICE_BUILD_PVC_KEEP_FAILED: 14400  # Default: 14400 (4 hours)
 
 #jarvice_api:
   #loadBalancerIP:
@@ -459,6 +466,12 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
 #jarvice_dockerbuild: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   #persistence:
   #  size: 250Gi
+
+#jarvice_dockerbuild_pvc_gc:
+  #env:
+  #  JARVICE_BUILD_PVC_KEEP_SUCCESSFUL: 3600  # Default: 3600 (1 hour)
+  #  JARVICE_BUILD_PVC_KEEP_ABORTED: 7200  # Default: 7200 (2 hours)
+  #  JARVICE_BUILD_PVC_KEEP_FAILED: 14400  # Default: 14400 (4 hours)
 
 #jarvice_api:
   #ingressHost: tf-jarvice.my-domain.com
@@ -735,6 +748,12 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
   #persistence:
   #  size: 250Gi
 
+#jarvice_dockerbuild_pvc_gc:
+  #env:
+  #  JARVICE_BUILD_PVC_KEEP_SUCCESSFUL: 3600  # Default: 3600 (1 hour)
+  #  JARVICE_BUILD_PVC_KEEP_ABORTED: 7200  # Default: 7200 (2 hours)
+  #  JARVICE_BUILD_PVC_KEEP_FAILED: 14400  # Default: 14400 (4 hours)
+
 #jarvice_api:
   #ingressHost: tf-jarvice.my-domain.com
   #ingressPath: "/api"
@@ -989,6 +1008,12 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
 #jarvice_dockerbuild: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   #persistence:
   #  size: 250Gi
+
+#jarvice_dockerbuild_pvc_gc:
+  #env:
+  #  JARVICE_BUILD_PVC_KEEP_SUCCESSFUL: 3600  # Default: 3600 (1 hour)
+  #  JARVICE_BUILD_PVC_KEEP_ABORTED: 7200  # Default: 7200 (2 hours)
+  #  JARVICE_BUILD_PVC_KEEP_FAILED: 14400  # Default: 14400 (4 hours)
 
 #jarvice_api:
   #ingressHost: tf-jarvice.my-domain.com

@@ -1,0 +1,95 @@
+{{- if .Values.jarvice_api.enabled }}
+{{- if .Values.jarvice_dockerbuild.persistence.enabled }}
+{{- if .Values.jarvice_dockerbuild_pvc_gc.enabled }}
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: jarvice-dockerbuild-pvc-gc
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-dockerbuild-pvc-gc
+    cronjob: jarvice-dockerbuild-pvc-gc
+spec:
+  schedule: "{{ .Values.jarvice_dockerbuild_pvc_gc.schedule }}"
+  failedJobsHistoryLimit: {{ .Values.jarvice_dockerbuild_pvc_gc.failedJobsHistoryLimit }}
+  successfulJobsHistoryLimit: {{ .Values.jarvice_dockerbuild_pvc_gc.successfulJobsHistoryLimit }}
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        metadata:
+          labels:
+            {{- include "jarvice.release_labels" . | indent 12 }}
+            component: jarvice-dockerbuild-pvc-gc
+            cronjob: jarvice-dockerbuild-pvc-gc
+          annotations:
+            deployment-date: {{ now | quote }}
+        spec:
+          serviceAccountName: jarvice-system
+          restartPolicy: Never
+{{- if (not (empty .Values.jarvice_dockerbuild_pvc_gc.tolerations)) }}
+          tolerations: {{ .Values.jarvice_dockerbuild_pvc_gc.tolerations }}
+{{- else if (not (empty .Values.jarvice.tolerations)) }}
+          tolerations: {{ .Values.jarvice.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice_dockerbuild_pvc_gc.nodeSelector)) }}
+          nodeSelector: {{ .Values.jarvice_dockerbuild_pvc_gc.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.nodeSelector)) }}
+          nodeSelector: {{ .Values.jarvice.nodeSelector }}
+{{- end }}
+{{- if (not (empty .Values.jarvice_dockerbuild_pvc_gc.nodeAffinity)) }}
+          affinity:
+            nodeAffinity: {{ .Values.jarvice_dockerbuild_pvc_gc.nodeAffinity }}
+{{- else if (not (empty .Values.jarvice.nodeAffinity)) }}
+          affinity:
+            nodeAffinity: {{ .Values.jarvice.nodeAffinity }}
+{{- end }}
+          imagePullSecrets:
+          - name: jarvice-docker
+          volumes:
+            - name: jarvice-dockerbuild-pvc-gc
+              configMap:
+                name: jarvice-dockerbuild-pvc-gc
+                optional: false
+          containers:
+          - name: jarvice-dockerbuild-pvc-gc
+            image: {{ template "jarvice.registrysub" merge (dict "image" .Values.jarvice_dockerbuild_pvc_gc.image) . }}
+            imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice_dockerbuild_pvc_gc.imagePullPolicy }}
+            command:
+            - /bin/sh
+            - /opt/bin/jarvice-dockerbuild-pvc-gc
+            env:
+              - name: JARVICE_SYSTEM_NAMESPACE
+{{- if empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+                value: {{ .Release.Namespace }}
+{{- else }}
+                value: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+{{- end }}
+              - name: JARVICE_BUILDS_NAMESPACE
+{{- if empty .Values.jarvice.JARVICE_BUILDS_NAMESPACE }}
+                value: {{ .Release.Namespace }}-builds
+{{- else }}
+                value: {{ .Values.jarvice.JARVICE_BUILDS_NAMESPACE }}
+{{- end }}
+              - name: JARVICE_BUILD_PVC_KEEP_SUCCESSFUL
+                value: "{{ .Values.jarvice_dockerbuild_pvc_gc.env.JARVICE_BUILD_PVC_KEEP_SUCCESSFUL | int }}"
+              - name: JARVICE_BUILD_PVC_KEEP_ABORTED
+                value: "{{ .Values.jarvice_dockerbuild_pvc_gc.env.JARVICE_BUILD_PVC_KEEP_ABORTED | int }}"
+              - name: JARVICE_BUILD_PVC_KEEP_FAILED
+                value: "{{ .Values.jarvice_dockerbuild_pvc_gc.env.JARVICE_BUILD_PVC_KEEP_FAILED | int }}"
+            volumeMounts:
+            - name: jarvice-dockerbuild-pvc-gc
+              mountPath: /opt/bin
+              readOnly: true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jarvice-dockerbuild-pvc-gc
+data:
+  jarvice-dockerbuild-pvc-gc: |-
+{{ .Files.Get "files/jarvice-dockerbuild-pvc-gc" | indent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}
