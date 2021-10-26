@@ -1,0 +1,81 @@
+#!/bin/sh
+
+namespace=${JARVICE_BUILDS_NAMESPACE:-jarvice-system-builds}
+
+keep_successful=${JARVICE_BUILD_PVC_KEEP_SUCCESSFUL:-3600}
+keep_aborted=${JARVICE_BUILD_PVC_KEEP_ABORTED:-7200}
+keep_failed=${JARVICE_BUILD_PVC_KEEP_FAILED:-14400}
+
+KUBECTL=$(type -p kubectl)
+if [ -z "$KUBECTL" ]; then
+    cat <<EOF
+Could not find 'kubectl' in PATH.  It may not be installed.
+Run 'install-kubectl' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+function annotate_pvc {
+    name=$1
+    successful=$2
+    aborted=$3
+    failed=$4
+    echo "Annotating PVC: $name - successful=$successful aborted=$aborted failed=$failed"
+    $KUBECTL -n $namespace annotate --overwrite pvc $name jarvice-dockerbuild.jarvice.io/successful-build-gc-timestamp=$successful jarvice-dockerbuild.jarvice.io/aborted-build-gc-timestamp=$aborted jarvice-dockerbuild.jarvice.io/failed-build-gc-timestamp=$failed >/dev/null
+}
+
+function delete_pvc {
+    name=$1
+    echo "Deleting PVC: $name"
+    $KUBECTL -n $namespace delete pvc $name >/dev/null || /bin/true
+}
+
+function delete_pod {
+    name=$1
+    echo "Deleting pod: $name"
+    $KUBECTL -n $namespace delete pod $name >/dev/null || /bin/true
+}
+
+echo "Looking for PVCs in namespace: $namespace"
+now=$(date +%s)
+pvcs=$($KUBECTL -n $namespace get pvc -l jarvice-build=true -o jsonpath='{range .items[*]}{.metadata.name}:{.metadata.annotations.jarvice-dockerbuild\.jarvice\.io/successful-build-gc-timestamp}:{.metadata.annotations.jarvice-dockerbuild\.jarvice\.io/aborted-build-gc-timestamp}:{.metadata.annotations.jarvice-dockerbuild\.jarvice\.io/failed-build-gc-timestamp}{"\n"}{end}' 2>/dev/null)
+
+for pvc in $pvcs; do
+    name=$(echo $pvc | awk -F: '{print $1}')
+    successful=$(echo $pvc | awk -F: '{print $2}')
+    aborted=$(echo $pvc | awk -F: '{print $3}')
+    failed=$(echo $pvc | awk -F: '{print $4}')
+
+    echo "Found PVC: $name - successful=$successful aborted=$aborted failed=$failed"
+    echo "Looking for build pod: $name"
+    pod_phase=$($KUBECTL -n $namespace get pod $name -o jsonpath='{.status.phase}' 2>/dev/null)
+    if [ -n "$pod_phase" ]; then
+        echo "Found build pod phase: $pod_phase"
+    else
+        echo "Build pod was not found: $name"
+    fi
+    if [ "$pod_phase" == "Pending" -o "$pod_phase" == "Running" ]; then
+        if [ "$successful" != "0" -o "$aborted" != "0" -o "$failed" != "0" ]; then
+            annotate_pvc $name 0 0 0
+        fi
+        continue
+    fi
+    [ -z "$successful" ] && successful=0
+    [ -z "$aborted" ] && aborted=0
+    [ -z "$failed" ] && failed=0
+    if [ $(( successful + aborted + failed )) -gt 0 ]; then
+        if [ $successful -gt 0 -a $(( now - successful )) -gt $keep_successful -o $aborted -gt 0 -a $(( now - aborted )) -gt $keep_aborted -o $failed -gt 0 -a $(( now - failed )) -gt $keep_failed ]; then
+            [ -n "$pod_phase" ] && delete_pod $name
+            delete_pvc $name
+        fi
+        continue
+    fi
+    if [ "$pod_phase" == "Succeeded" ]; then
+        annotate_pvc $name $now 0 0
+    elif [ -z "$pod_phase" ]; then
+        annotate_pvc $name 0 $now 0
+    elif [ "$pod_phase" == "Failed" -o "$pod_phase" == "Unknown" ]; then
+        annotate_pvc $name 0 0 $now
+    fi
+done
+
