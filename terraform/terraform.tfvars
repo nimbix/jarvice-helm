@@ -198,7 +198,7 @@ k8s = {  # Deploy JARVICE to pre-existing K8s clusters
   #  enabled: false
   #  # storageClass: "-"  # "-" uses cluster's default StorageClass/provisioner
   #  storageClass: "jarvice-dockerbuild"
-  #  size: 250Gi
+  #  size: 300Gi
 
 # Enable to use a kubernetes CronJob to garbage collect dockerbuild PVCs
 # N/A if jarvice_dockerbuild.persistence.enabled is false
@@ -465,7 +465,7 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
 
 #jarvice_dockerbuild: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   #persistence:
-  #  size: 250Gi
+  #  size: 300Gi
 
 #jarvice_dockerbuild_pvc_gc:
   #env:
@@ -746,7 +746,7 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
 
 #jarvice_dockerbuild: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   #persistence:
-  #  size: 250Gi
+  #  size: 300Gi
 
 #jarvice_dockerbuild_pvc_gc:
   #env:
@@ -1007,7 +1007,7 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
 
 #jarvice_dockerbuild: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   #persistence:
-  #  size: 250Gi
+  #  size: 300Gi
 
 #jarvice_dockerbuild_pvc_gc:
   #env:
