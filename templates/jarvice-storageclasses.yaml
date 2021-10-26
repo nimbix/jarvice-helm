@@ -66,6 +66,7 @@ provisioner: {{ .Values.jarvice_dockerbuild.persistence.storageClassProvisioner 
 {{- if (eq "kubernetes.io/aws-ebs" .Values.jarvice_dockerbuild.persistence.storageClassProvisioner) }}
 parameters:
   type: gp3
+allowVolumeExpansion: true
 mountOptions:
   - debug
 {{- end }}
@@ -73,6 +74,7 @@ mountOptions:
 parameters:
   type: pd-standard
   replication-type: none
+allowVolumeExpansion: true
 mountOptions:
   - debug
 {{- end }}
@@ -80,6 +82,7 @@ mountOptions:
 parameters:
   type: pd-ssd
 volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
 {{- end }}
 {{- if (eq "kubernetes.io/azure-disk" .Values.jarvice_dockerbuild.persistence.storageClassProvisioner) }}
 parameters:
@@ -87,6 +90,7 @@ parameters:
   kind: Managed
   storageaccounttype: StandardSSD_LRS
 volumeBindingMode: Immediate
+allowVolumeExpansion: true
 {{- end }}
 ---
 {{- end }}
