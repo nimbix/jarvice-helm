@@ -127,6 +127,14 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202110271630
+
+* (JAR-4699) Increased job label character limit to 255 (from 50).
+* (JAR-4703) Support for multiple license daemons per server entry in JARVICE License Manager.  See [Advanced: Multiple License Server Addresses](LicenseManager.md#advanced-multiple-license-server-addresses) for additional details.
+* (JAR-4704) Allow omission of `job_project` key in the `/jarvice/submit` API payload if a non-administrative user is assigned to only 1 project.
+* (JAR-4710) Kubernetes 1.20 support.  See [Kubernetes Support](#kubernetes-support) for the latest list of supported Kubernetes versions.
+* (JAR-4744) Hide job project selection in task builder if a user is assigned to only 1 project.
+
 ## 3.21.9-1.202110141638
 
 * (JAR-130) Fixed minor failed login attempt lockout logic bug.
