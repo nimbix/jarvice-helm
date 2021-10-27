@@ -339,7 +339,7 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
 
         meta = {
             cluster_name = "tf-jarvice"
-            kubernetes_version = "1.18"
+            kubernetes_version = "1.20"
 
             # Sync ingress hosts to zones/domains managed w/ Google Cloud DNS
             #dns_manage_records = "true"
@@ -499,7 +499,7 @@ EOF
 
         meta = {
             cluster_name = "tf-jarvice-downstream"
-            kubernetes_version = "1.18"
+            kubernetes_version = "1.20"
 
             # Sync ingress hosts to zones/domains managed w/ Google Cloud DNS
             #dns_manage_records = "true"
@@ -641,7 +641,7 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
 
         meta = {
             cluster_name = "tf-jarvice"
-            kubernetes_version = "1.18"
+            kubernetes_version = "1.20"
             #arch = "arm64"  # Uncomment to deploy an arm64 cluster
 
             # Sync ingress hosts to zones/domains managed w/ AWS Route53 DNS
@@ -660,6 +660,12 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
         system_node_pool = {
             nodes_type = null  # auto-set if null specified
             nodes_num = null   # auto-set if null specified
+        }
+        dockerbuild_node_pool = {  # N/A for downstream clusters
+            nodes_type = "c5n.xlarge"  # "c6gn.xlarge"
+            nodes_num = 1
+            nodes_min = 0
+            nodes_max = 3
         }
         compute_node_pools = {
             jxecompute00 = {
@@ -786,7 +792,7 @@ EOF
 
         meta = {
             cluster_name = "tf-jarvice-downstream"
-            kubernetes_version = "1.18"
+            kubernetes_version = "1.20"
             #arch = "arm64"  # Uncomment to deploy an arm64 cluster
 
             # Sync ingress hosts to zones/domains managed w/ AWS Route53 DNS
@@ -805,6 +811,12 @@ EOF
         system_node_pool = {
             nodes_type = null  # auto-set if null specified
             nodes_num = null   # auto-set if null specified
+        }
+        dockerbuild_node_pool = {  # N/A for downstream clusters
+            nodes_type = null
+            nodes_num = 0
+            nodes_min = 0
+            nodes_max = 0
         }
         compute_node_pools = {
             jxecompute00 = {
@@ -911,7 +923,7 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
 
         meta = {
             cluster_name = "tf-jarvice"
-            kubernetes_version = "1.18"
+            kubernetes_version = "1.20"
 
             # Sync ingress hosts to zones/domains managed w/ Azure DNS
             #dns_manage_records = "true"
@@ -931,6 +943,12 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
         system_node_pool = {
             nodes_type = null  # auto-set if null specified
             nodes_num = null   # auto-set if null specified
+        }
+        dockerbuild_node_pool = {  # N/A for downstream clusters
+            nodes_type = "Standard_F4s_v2"
+            nodes_num = 1
+            nodes_min = 0
+            nodes_max = 3
         }
         compute_node_pools = {
             jxecompute00 = {
@@ -1045,7 +1063,7 @@ EOF
 
         meta = {
             cluster_name = "tf-jarvice-downstream"
-            kubernetes_version = "1.18"
+            kubernetes_version = "1.20"
 
             # Sync ingress hosts to zones/domains managed w/ Azure DNS
             #dns_manage_records = "true"
@@ -1065,6 +1083,12 @@ EOF
         system_node_pool = {
             nodes_type = null  # auto-set if null specified
             nodes_num = null   # auto-set if null specified
+        }
+        dockerbuild_node_pool = {  # N/A for downstream clusters
+            nodes_type = null
+            nodes_num = 0
+            nodes_min = 0
+            nodes_max = 0
         }
         compute_node_pools = {
             jxecompute00 = {

@@ -9,6 +9,7 @@ module "common" {
     system_nodes_type_upstream = "Standard_D5_v2"
     system_nodes_type_downstream = "Standard_D3_v2"
     storage_class_provisioner = "kubernetes.io/azure-disk"
+    storage_class_provisioner_dockerbuild = "kubernetes.io/azure-disk"
 }
 
 data "azurerm_subscription" "current" {

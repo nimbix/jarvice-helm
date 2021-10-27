@@ -96,6 +96,12 @@ variable "eks" {
             nodes_type = string
             nodes_num = number
         })
+        dockerbuild_node_pool = object({
+            nodes_type = string
+            nodes_num = number
+            nodes_min = number
+            nodes_max = number
+        })
         compute_node_pools = map(object({
             nodes_type = string
             nodes_disk_size_gb = number
@@ -128,6 +134,12 @@ variable "aks" {
         system_node_pool = object({
             nodes_type = string
             nodes_num = number
+        })
+        dockerbuild_node_pool = object({
+            nodes_type = string
+            nodes_num = number
+            nodes_min = number
+            nodes_max = number
         })
         compute_node_pools = map(object({
             nodes_type = string

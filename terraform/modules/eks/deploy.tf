@@ -9,6 +9,7 @@ module "common" {
     system_nodes_type_upstream = lookup(var.cluster.meta, "arch", "") == "arm64" ? "m6g.4xlarge" : "m5.4xlarge"
     system_nodes_type_downstream = lookup(var.cluster.meta, "arch", "") == "arm64" ? "m6g.xlarge" : "m5.xlarge"
     storage_class_provisioner = "kubernetes.io/aws-ebs"
+    storage_class_provisioner_dockerbuild = "kubernetes.io/aws-ebs"
 }
 
 resource "aws_eip" "jarvice" {

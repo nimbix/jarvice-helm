@@ -49,6 +49,7 @@ $ git clone https://github.com/nimbix/jarvice-helm.git
 * [JARVICE Configuration Values Reference](#jarvice-configuration-values-reference)
 * [JARVICE Post Installation](#jarvice-post-installation)
     - [Install recommended DaemonSets](#install-recommended-daemonsets)
+    - [Install dynamic storage provisioner](#install-dynamic-storage-provisioner)
     - [Set up database backups](#set-up-database-backups)
     - [Customize JARVICE files via a ConfigMap](#customize-jarvice-files-via-a-configmap)
     - [View status of the installed kubernetes objects](#view-status-of-the-installed-kubernetes-objects)
@@ -273,11 +274,9 @@ encompassing two essential types.  The first of which, `jarvice-system`, are
 used for running the JARVICE platform itself.  The second type,
 `jarvice-compute`, are used for running JARVICE application jobs.
 
-The `jarvice-system` pods could be broken down further into four basic types.
+The `jarvice-system` pods could be broken down further into two basic types.
 The base `jarvice-system` pods contain components related to the web portal,
-API endpoints, Data Abstraction Layer (DAL), etc.  JARVICE application
-builds use `jarvice-dockerbuild` and `jarvice-dockerpull` pod types
-(or the combined `jarvice-dockerbuildpull` type).  Lastly,
+API endpoints, Data Abstraction Layer (DAL), etc.  In addition,
 there are other non-JARVICE installed/controlled components.  These other
 components, such as ingress controllers, can be thought of as the
 `jarvice-other` type as they live outside of the JARVICE namespaces.
@@ -336,21 +335,16 @@ https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
 
 ##### Node label for `jarvice-dockerbuild` node
 
-In order to take advantage of docker layer caching when building
-application images with JARVICE, it would be advantageous to label a node in
-the kubernetes cluster for this operations specifically.
+In some instances, mostly for performance reasons related to CPU and/or disk
+speed, it may be advantageous to label a node in
+the kubernetes cluster for dockerbuild operations specifically.
 Use a command similar to the following to do so:
 ```bash
 $ kubectl label nodes <node_name> node-role.jarvice.io/jarvice-dockerbuild=true
 ```
 
-Or, it may be desirable to simply combine those into a single label:
-```bash
-$ kubectl label nodes <node_name> node-role.jarvice.io/jarvice-dockerbuildpull=true
-```
-
-To take advantage of such a setup, set `jarvice_dockerbuild.nodeSelector`
-in the JARVICE helm chart.
+To take advantage of such a setup, set `jarvice_dockerbuild.nodeAffinity` or
+`jarvice_dockerbuild.nodeSelector` in the JARVICE helm chart.
 
 ##### Utilizing `jarvice-compute` labels
 
@@ -967,6 +961,17 @@ $ kubectl --namespace <jarvice-system-daemonsets> create configmap \
 
 Please view the README.md for more detailed configuration information:
 https://github.com/nimbix/jarvice-cache-pull
+
+### Install dynamic storage provisioner
+
+If `jarvice_dockerbuild.persistence.enabled` is set to `true`, it will be
+necessary to have a dynamic storage provisioner install and an accompanying
+StorageClass created which uses it.  If deploying JARVICE on a cloud based
+managed kubernetes service, this should already be in place.  For on premisis
+cluster installations, please review the following documentation:
+
+- [Dynamic Volume Provisioning](https://kubernetes.io/docs/concepts/storage/dynamic-provisioning/)
+- [Storage Classes](https://kubernetes.io/docs/concepts/storage/storage-classes/)
 
 ### Set up database backups
 

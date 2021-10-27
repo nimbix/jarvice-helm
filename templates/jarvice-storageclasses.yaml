@@ -65,7 +65,9 @@ reclaimPolicy: Delete
 provisioner: {{ .Values.jarvice_dockerbuild.persistence.storageClassProvisioner }}
 {{- if (eq "kubernetes.io/aws-ebs" .Values.jarvice_dockerbuild.persistence.storageClassProvisioner) }}
 parameters:
-  type: gp3
+  type: io1
+  iopsPerGB: "50"
+volumeBindingMode: WaitForFirstConsumer
 allowVolumeExpansion: true
 mountOptions:
   - debug
@@ -74,6 +76,7 @@ mountOptions:
 parameters:
   type: pd-standard
   replication-type: none
+volumeBindingMode: WaitForFirstConsumer
 allowVolumeExpansion: true
 mountOptions:
   - debug
@@ -88,8 +91,8 @@ allowVolumeExpansion: true
 parameters:
   cachingmode: ReadOnly
   kind: Managed
-  storageaccounttype: StandardSSD_LRS
-volumeBindingMode: Immediate
+  storageaccounttype: Premium_LRS
+volumeBindingMode: WaitForFirstConsumer
 allowVolumeExpansion: true
 {{- end }}
 ---
