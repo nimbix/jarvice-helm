@@ -115,6 +115,13 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.21.0-4.202110251927 (3.21.0 LTS SP5)
+
+* (JAR-4699) Increased job label character limit to 255 (from 50).
+* (JAR-4703) Support for multiple license daemons per server entry in JARVICE License Manager.  See [Advanced: Multiple License Server Addresses](LicenseManager.md#advanced-multiple-license-server-addresses) for additional details.
+* (JAR-4704) Allow omission of `job_project` key in the `/jarvice/submit` API payload if a non-administrative user is assigned to only 1 project.
+* (JAR-4744) Hide job project selection in task builder if a user is assigned to only 1 project.
+
 ## 3.21.0-4.202109171654 (3.21.0 LTS SP4)
 
 * (JAR-102) Fixed bug where `jarvice-license-manager` was not taking existing project license requests into account when limiting license features by project.
