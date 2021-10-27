@@ -134,6 +134,35 @@ resource "azurerm_kubernetes_cluster_node_pool" "jarvice_system" {
     }
 }
 
+resource "azurerm_kubernetes_cluster_node_pool" "jarvice_dockerbuild" {
+    count = module.common.jarvice_cluster_type == "downstream" || var.cluster.dockerbuild_node_pool["nodes_type"] == null ? 0 : 1
+
+    name = "jxedockerbui"  # Azure limits name to 12 chars
+    availability_zones = azurerm_kubernetes_cluster.jarvice.default_node_pool[0].availability_zones
+    kubernetes_cluster_id = azurerm_kubernetes_cluster.jarvice.id
+
+    vm_size = var.cluster.dockerbuild_node_pool["nodes_type"]
+    os_type = "Linux"
+    enable_auto_scaling = true
+    node_count = var.cluster.dockerbuild_node_pool["nodes_num"]
+    min_count = var.cluster.dockerbuild_node_pool["nodes_min"]
+    max_count = var.cluster.dockerbuild_node_pool["nodes_max"]
+
+    node_labels = {
+        "node-role.jarvice.io/jarvice-dockerbuild" = "true"
+        "node-pool.jarvice.io/jarvice-dockerbuild" = "jxedockerbuild"
+    }
+    node_taints = ["node-role.jarvice.io/jarvice-dockerbuild=true:NoSchedule"]
+
+    tags = {
+        cluster_name = var.cluster.meta["cluster_name"]
+    }
+
+    lifecycle {
+        ignore_changes = [node_count]
+    }
+}
+
 resource "azurerm_kubernetes_cluster_node_pool" "jarvice_compute" {
     for_each = var.cluster["compute_node_pools"]
 
