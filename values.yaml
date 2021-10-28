@@ -1,6 +1,6 @@
 jarvice:
   # imagePullSecret is a base64 encoded string.
-  # e.g. - echo "_json_key:$(cat gcr.io.json)" | base64 -w 0
+  # e.g. on command line: echo "_json_key:$(cat gcr.io.json)" | base64 -w 0
   imagePullSecret:
   JARVICE_LICENSE_LIC:
 
@@ -287,7 +287,7 @@ jarvice_db: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     resourcePolicy: ""  # "keep"
     # Use empty existingClaimName for dynamic provisioning via storageClass
     existingClaimName: # "jarvice-db-pvc"
-    # storageClass: "-"
+    # storageClass: "-"  # "-" uses cluster's default StorageClass/provisioner
     storageClass: "jarvice-db"
     accessMode: ReadWriteOnce
     size: 8Gi
@@ -323,7 +323,7 @@ jarvice_db_dump: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     resourcePolicy: ""  # "keep"
     # Use empty existingClaimName for dynamic provisioning via storageClass
     existingClaimName: # "jarvice-db-dump-pvc"
-    # storageClass: "-"
+    # storageClass: "-"  # "-" uses cluster's default StorageClass/provisioner
     storageClass: "jarvice-db-dump"
     accessMode: ReadWriteOnce
     size: 50Gi
@@ -470,7 +470,7 @@ jarvice_registry_proxy:
     resourcePolicy: ""  # "keep"
     # Use empty existingClaimName for dynamic provisioning via storageClass
     existingClaimName: # "jarvice-registry-proxy-pvc"
-    # storageClass: "-"
+    # storageClass: "-"  # "-" uses cluster's default StorageClass/provisioner
     storageClass: "jarvice-registry-proxy"
     accessMode: ReadWriteOnce
     size: 500Gi
@@ -479,7 +479,7 @@ jarvice_registry_proxy:
     # to set the values for REGISTRY_PROXY_* unless overridden here
     REGISTRY_PROXY_REMOTEURL: # gcr.io  # (auto-prefixed with "https://")
     REGISTRY_PROXY_USERNAME: # _json_key
-    REGISTRY_PROXY_PASSWORD: # cat gcr.io.json | base64 -w 0
+    REGISTRY_PROXY_PASSWORD: # base64 encoded: cat gcr.io.json | base64 -w 0
 
 # Enable to use a kubernetes CronJob to schedule image garbage collection
 jarvice_registry_proxy_gc: # N/A if jarvice_registry_proxy.enabled is false
@@ -770,13 +770,37 @@ jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
 
-jarvice_dockerbuild: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
-  tolerations: # '[{"key": "node-role.jarvice.io/jarvice-dockerbuild", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-dockerbuild", "effect": "NoSchedule", "operator": "Exists"}]'
-  nodeSelector: # '{"node-role.jarvice.io/jarvice-dockerbuild": "true"}'
-
 jarvice_dockerpull: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   tolerations: # '[{"key": "node-role.jarvice.io/jarvice-dockerpull", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-dockerpull", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-dockerpull", "operator": "Exists"}]}] }}'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-dockerpull": "true"}'
+
+jarvice_dockerbuild: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  tolerations: # '[{"key": "node-role.jarvice.io/jarvice-dockerbuild", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-dockerbuild", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-dockerbuild", "operator": "Exists"}]}] }}'
+  nodeSelector: # '{"node-role.jarvice.io/jarvice-dockerbuild": "true"}'
+  persistence:  # Enable to execute builds on dynamically provisioned PVCs
+    enabled: false
+    # storageClass: "-"  # "-" uses cluster's default StorageClass/provisioner
+    storageClass: "jarvice-dockerbuild"
+    size: 300Gi
+
+# Enable to use a kubernetes CronJob to garbage collect dockerbuild PVCs
+# N/A if jarvice_dockerbuild.persistence.enabled is false
+jarvice_dockerbuild_pvc_gc:
+  enabled: false
+  schedule: "*/1 * * * *"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  tolerations: # '[{"key": "node-role.jarvice.io/jarvice-dockerbuild-pvc-gc", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-dockerbuild-pvc-gc", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-dockerbuild-pvc-gc", "operator": "Exists"}]}] }}'
+  nodeSelector: # '{"node-role.jarvice.io/jarvice-dockerbuild-pvc-gc": "true"}'
+  image: gcr.io/jarvice/jarvice-kubectl:v1.20.5
+  imagePullPolicy: IfNotPresent
+  env:
+    JARVICE_BUILD_PVC_KEEP_SUCCESSFUL: 3600  # Default: 3600 (1 hour)
+    JARVICE_BUILD_PVC_KEEP_ABORTED: 7200  # Default: 7200 (2 hours)
+    JARVICE_BUILD_PVC_KEEP_FAILED: 14400  # Default: 14400 (4 hours)
 
 jarvice_appsync: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true

@@ -75,6 +75,16 @@ jarvice_dal:
 jarvice_k8s_scheduler:
   env:
     JARVICE_UNFS_NODE_SELECTOR: '{"node-role.jarvice.io/jarvice-system": "true"}'
+
+jarvice_dockerbuild:
+  tolerations: '[{"key": "node-role.jarvice.io/jarvice-dockerbuild", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-dockerbuild", "operator": "Exists"}]}] }}'
+  persistence:
+    enabled: true
+    storageClassProvisioner: ${var.storage_class_provisioner_dockerbuild}
+
+jarvice_dockerbuild_pvc_gc:
+  enabled: true
 EOF
 }
 
