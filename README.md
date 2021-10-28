@@ -967,7 +967,7 @@ https://github.com/nimbix/jarvice-cache-pull
 If `jarvice_dockerbuild.persistence.enabled` is set to `true`, it will be
 necessary to have a dynamic storage provisioner install and an accompanying
 StorageClass created which uses it.  If deploying JARVICE on a cloud based
-managed kubernetes service, this should already be in place.  For on premisis
+managed kubernetes service, this should already be in place.  For on premise
 cluster installations, please review the following documentation:
 
 - [Dynamic Volume Provisioning](https://kubernetes.io/docs/concepts/storage/dynamic-provisioning/)
