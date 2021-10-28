@@ -218,7 +218,7 @@ resource "google_container_node_pool" "jarvice_dockerbuild" {
     }
 
     management {
-        auto_repair = true
+        auto_repair = false
         auto_upgrade = false
     }
 
