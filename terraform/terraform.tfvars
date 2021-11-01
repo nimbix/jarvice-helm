@@ -364,7 +364,7 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
             nodes_type = "c2-standard-4"
             nodes_num = 1
             nodes_min = 0
-            nodes_max = 3
+            nodes_max = 5
         }
         compute_node_pools = {
             jxecompute00 = {
@@ -665,7 +665,7 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
             nodes_type = "c5n.xlarge"  # "c6gn.xlarge"
             nodes_num = 1
             nodes_min = 0
-            nodes_max = 3
+            nodes_max = 5
         }
         compute_node_pools = {
             jxecompute00 = {
@@ -948,7 +948,7 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
             nodes_type = "Standard_F4s_v2"
             nodes_num = 1
             nodes_min = 0
-            nodes_max = 3
+            nodes_max = 5
         }
         compute_node_pools = {
             jxecompute00 = {
