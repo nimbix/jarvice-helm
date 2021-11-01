@@ -225,6 +225,14 @@ spec:
           - name: JARVICE_BUILD_NODE_AFFINITY
             value: '{{ .Values.jarvice.nodeAffinity }}'
 {{- end }}
+          - name: JARVICE_BUILD_RESOURCES_REQUESTS_CPU
+            value: "{{ .Values.jarvice_dockerbuild.resources.requests.cpu }}"
+          - name: JARVICE_BUILD_RESOURCES_REQUESTS_MEMORY
+            value: "{{ .Values.jarvice_dockerbuild.resources.requests.memory }}"
+          - name: JARVICE_BUILD_RESOURCES_LIMITS_CPU
+            value: "{{ .Values.jarvice_dockerbuild.resources.limits.cpu }}"
+          - name: JARVICE_BUILD_RESOURCES_LIMITS_MEMORY
+            value: "{{ .Values.jarvice_dockerbuild.resources.limits.memory }}"
 {{- if .Values.jarvice_dockerbuild.persistence.enabled }}
           - name: JARVICE_BUILD_PERSISTENCE_ENABLED
             value: "true"
