@@ -2,8 +2,7 @@
 
 terraform {
     required_providers {
-        google = "~> 3.68.0"
-        google-beta = "~> 3.68.0"
+        google = "~> 4.0"
 
         helm = "~> 2.1.2"
         kubernetes = "~> 2.1.0"
@@ -55,8 +54,6 @@ data "google_client_config" "jarvice" {
 }
 
 data "google_container_engine_versions" "kubernetes_version" {
-    #provider = google-beta
-
     location = local.region
     version_prefix = "${var.cluster.meta["kubernetes_version"]}."
 }
@@ -67,8 +64,6 @@ locals {
 }
 
 resource "google_container_cluster" "jarvice" {
-    #provider = google-beta
-
     name = var.cluster.meta["cluster_name"]
     location = local.region
     node_locations = local.zones
@@ -82,6 +77,7 @@ resource "google_container_cluster" "jarvice" {
 
     initial_node_count = 2
     remove_default_node_pool = false
+    enable_shielded_nodes = true
 
     node_config {
         machine_type = "n1-standard-1"
@@ -138,20 +134,18 @@ EOF
     depends_on = [google_project_service.project_services]
 
     lifecycle {
-        #ignore_changes = [min_master_version, node_version, node_config[0].workload_metadata_config, workload_identity_config]
-        ignore_changes = [min_master_version, node_version]
+        #ignore_changes = [min_master_version, node_version, enable_shielded_nodes, node_config[0].workload_metadata_config, workload_identity_config]
+        ignore_changes = [min_master_version, node_version, enable_shielded_nodes]
     }
 }
 
 resource "google_container_node_pool" "jarvice_system" {
-    #provider = google-beta
-
     name = "jxesystem"
     location = local.region
     node_locations = local.zones
 
     cluster = google_container_cluster.jarvice.name
-    version = local.node_version
+    version = google_container_cluster.jarvice.master_version
 
     initial_node_count = module.common.system_nodes_num
     autoscaling {
@@ -202,14 +196,12 @@ EOF
 resource "google_container_node_pool" "jarvice_dockerbuild" {
     count = module.common.jarvice_cluster_type == "downstream" || var.cluster.dockerbuild_node_pool["nodes_type"] == null ? 0 : 1
 
-    #provider = google-beta
-
     name = "jxedockerbuild"
     location = local.region
     node_locations = local.zones
 
     cluster = google_container_cluster.jarvice.name
-    version = local.node_version
+    version = google_container_cluster.jarvice.master_version
 
     initial_node_count = var.cluster.dockerbuild_node_pool["nodes_num"]
     autoscaling {
@@ -269,14 +261,12 @@ EOF
 resource "google_container_node_pool" "jarvice_compute" {
     for_each = var.cluster["compute_node_pools"]
 
-    #provider = google-beta
-
     name = each.key
     location = local.region
     node_locations = lookup(each.value.meta, "zones", null) != null ? split(",", each.value.meta["zones"]) : local.zones
 
     cluster = google_container_cluster.jarvice.name
-    version = local.node_version
+    version = google_container_cluster.jarvice.master_version
 
     initial_node_count = each.value["nodes_num"]
     autoscaling {

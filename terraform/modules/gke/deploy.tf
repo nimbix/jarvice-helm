@@ -21,7 +21,7 @@ resource "google_service_account" "external_dns" {
 resource "google_project_iam_member" "external_dns_admin" {
     role = "roles/dns.admin"
     member = "serviceAccount:${google_service_account.external_dns.email}"
-    project = lookup(var.cluster["meta"], "dns_zone_project", null)
+    project = lookup(var.cluster["meta"], "dns_zone_project", local.project)
 }
 
 resource "google_service_account_key" "external_dns" {
