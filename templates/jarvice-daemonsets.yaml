@@ -4,7 +4,7 @@
 {{- end }}
 {{- $daemonSetsItems := (lookup "apps/v1" "DaemonSet" "" "").items -}}
 {{- if or .Values.jarvice.daemonsets.cache_pull.enabled .Values.jarvice.daemonsets.lxcfs.enabled .Values.jarvice.daemonsets.nvidia.enabled .Values.jarvice.daemonsets.rdma.enabled .Values.jarvice.daemonsets.node_init.enabled .Values.jarvice.daemonsets.disable_hyper_threading.enabled .Values.jarvice.daemonsets.dri_optional.enabled .Values.jarvice.daemonsets.nvidia_install.enabled .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.enabled .Values.jarvice_registry_proxy.enabled }}
-apiVersion: {{ template "apiVersion.priorityClass" . }}
+apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
 {{- if empty .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
