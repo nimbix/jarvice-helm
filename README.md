@@ -337,7 +337,7 @@ For more information on assigning kubernetes node labels and using node
 affinity and/or selectors, please see the kubernetes documentation:
 https://kubernetes.io/docs/concepts/configuration/assign-pod-node/
 
-##### Node label for `jarvice-dockerbuild` node
+##### Node label for `jarvice-dockerbuild`
 
 In some instances, mostly for performance reasons related to CPU and/or disk
 speed, it may be advantageous to label a node in
