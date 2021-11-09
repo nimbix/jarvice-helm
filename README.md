@@ -458,12 +458,12 @@ is whether or not to use a persistent build cache to speed up
 application rebuilds when failures occur.  Using a persistent build cache will
 provide the most benefit to large application builds.
 
-In order to enable using a persistent build cache for application builds, set
+To enable the use of a persistent build cache for application builds, set
 `jarvice-dockerbuild.persistence.enabled` to `true` and then set
 `jarvice-dockerbuild.persistence.storageClass` to the appropriate
 `StorageClass` to use when requesting PVCs.  It will be necessary to
 [install dynamic storage provisioner](#install-dynamic-storage-provisioner)
-on the cluster, if one has not already been installed.
+on the cluster if one has not already been installed.
 
 The size of the dynamically provisioned PVCs can be set with
 `jarvice-dockerbuild.persistence.size`.  This defaults to `300Gi`.
@@ -488,8 +488,8 @@ builds.  These values can be configured under the
 If persistence has not been enabled for applications builds, it may be
 advantageous to run `jarvice-dockerbuild` pods on nodes with solid-state
 drives (SSDs).  It may also be beneficial to run the `jarvice-dockerbuild`
-pods on nodes with faster processors.  If this is desired, see the above
-section on setting a
+pods on nodes with faster processors.  If either of these is desired,
+see the above section on setting a
 [node label for jarvice-dockerbuild](#node-label-for-jarvice-dockerbuild)
 nodes.
 
@@ -1030,7 +1030,7 @@ https://github.com/nimbix/jarvice-cache-pull
 
 If `jarvice_dockerbuild.persistence.enabled` is set to `true`, it will be
 necessary to have a dynamic storage provisioner installed and an accompanying
-StorageClass created which uses it.  If deploying JARVICE on a cloud based
+`StorageClass` created which uses it.  If deploying JARVICE on a cloud based
 managed kubernetes service, this should already be in place.  For on-premises
 cluster installations, please review the following documentation:
 
