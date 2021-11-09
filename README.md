@@ -28,6 +28,10 @@ $ git clone https://github.com/nimbix/jarvice-helm.git
         - [Utilizing jarvice-compute labels](#utilizing-jarvice-compute-labels)
         - [Node taints and pod tolerations](#node-taints-and-pod-tolerations)
         - [jarvice-compute taints and pod tolerations](#jarvice-compute-taints-and-pod-tolerations)
+    - [PushToCompute (`jarvice-dockerbuild`) Configuration](#pushtocompute-jarvice-dockerbuild-configuration)
+        - [Build cache](#build-cache)
+            - [Garbage collection of build cache PVCs](#garbage-collection-of-build-cache-pvcs)
+        - [Build nodes](#build-nodes)
 * [JARVICE Quick Installation (Demo without persistence)](#jarvice-quick-installation-demo-without-persistence)
     - [Find the latest JARVICE helm chart release version](#find-the-latest-jarvice-helm-chart-release-version)
     - [Code repository of the JARVICE helm chart](#code-repository-of-the-jarvice-helm-chart)
@@ -346,6 +350,10 @@ $ kubectl label nodes <node_name> node-role.jarvice.io/jarvice-dockerbuild=true
 To take advantage of such a setup, set `jarvice_dockerbuild.nodeAffinity` or
 `jarvice_dockerbuild.nodeSelector` in the JARVICE helm chart.
 
+See the
+[PushToCompute (`jarvice-dockerbuild`) Configuration](#pushtocompute-jarvice-dockerbuild-configuration)
+section below for more details.
+
 ##### Utilizing `jarvice-compute` labels
 
 The following demonstrates how one might label nodes for `jarvice-compute`
@@ -428,6 +436,62 @@ and `node-role.kubernetes.io/jarvice-compute` taints.  This is currently not
 configurable.
 Tolerations for `jarvice-compute` will be made configurable in future
 releases of JARVICE.
+
+### PushToCompute (`jarvice-dockerbuild`) Configuration
+
+When deploying JARVICE to a managed kubernetes service with
+[terraform](Terraform.md), `jarvice-dockerbuild` will be automatically
+configured to use a build cache on persistent volume claims (PVCs)
+with dedicated build nodes.  PVC garbage collection will also be automatically
+configured.
+
+If deploying JARVICE to an on-premises kubernetes cluster, a persistent build
+cache and dedicated build nodes will not be enabled by default.  In this case,
+it may be desirable to customize the configuration.
+
+#### Build cache
+
+When building applications with PushToCompute, successful builds will push
+the build cache to the application's configured docker repository, but
+failed builds will not.  Thus, the first configuration consideration
+is whether or not to use a persistent build cache to speed up
+application rebuilds when failures occur.  Using a persistent build cache will
+provide the most benefit to large application builds.
+
+In order to enable using a persistent build cache for application builds, set
+`jarvice-dockerbuild.persistence.enabled` to `true` and then set
+`jarvice-dockerbuild.persistence.storageClass` to the appropriate
+`StorageClass` to use when requesting PVCs.  It will be necessary to
+[install dynamic storage provisioner](#install-dynamic-storage-provisioner)
+on the cluster, if one has not already been installed.
+
+The size of the dynamically provisioned PVCs can be set with
+`jarvice-dockerbuild.persistence.size`.  This defaults to `300Gi`.
+
+##### Garbage collection of build cache PVCs
+
+Build cache PVCs will not be automatically deleted unless
+`jarvice_dockerbuild_pvc_gc.enabled` is set to `true`.  PVCs can be configured
+to be kept for different amounts of time for successful, aborted, or failed
+builds.  These values can be configured under the
+`jarvice_dockerbuild_pvc_gc.env` settings:
+
+```bash
+  env:
+    JARVICE_BUILD_PVC_KEEP_SUCCESSFUL: 3600  # Default: 3600 (1 hour)
+    JARVICE_BUILD_PVC_KEEP_ABORTED: 7200  # Default: 7200 (2 hours)
+    JARVICE_BUILD_PVC_KEEP_FAILED: 14400  # Default: 14400 (4 hours)
+```
+
+#### Build nodes
+
+If persistence has not been enabled for applications builds, it may be
+advantageous to run `jarvice-dockerbuild` pods on nodes with solid-state
+drives (SSDs).  It may also be beneficial to run the `jarvice-dockerbuild`
+pods on nodes with faster processors.  If this is desired, see the above
+section on setting a
+[node label for jarvice-dockerbuild](#node-label-for-jarvice-dockerbuild)
+nodes.
 
 ------------------------------------------------------------------------------
 
@@ -967,7 +1031,7 @@ https://github.com/nimbix/jarvice-cache-pull
 If `jarvice_dockerbuild.persistence.enabled` is set to `true`, it will be
 necessary to have a dynamic storage provisioner installed and an accompanying
 StorageClass created which uses it.  If deploying JARVICE on a cloud based
-managed kubernetes service, this should already be in place.  For on premise
+managed kubernetes service, this should already be in place.  For on-premises
 cluster installations, please review the following documentation:
 
 - [Dynamic Volume Provisioning](https://kubernetes.io/docs/concepts/storage/dynamic-provisioning/)
