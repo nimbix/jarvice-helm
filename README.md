@@ -53,7 +53,7 @@ $ git clone https://github.com/nimbix/jarvice-helm.git
 * [JARVICE Configuration Values Reference](#jarvice-configuration-values-reference)
 * [JARVICE Post Installation](#jarvice-post-installation)
     - [Install recommended DaemonSets](#install-recommended-daemonsets)
-    - [Install dynamic storage provisioner](#install-dynamic-storage-provisioner)
+    - [Install a dynamic storage provisioner](#install-a-dynamic-storage-provisioner)
     - [Set up database backups](#set-up-database-backups)
     - [Customize JARVICE files via a ConfigMap](#customize-jarvice-files-via-a-configmap)
     - [View status of the installed kubernetes objects](#view-status-of-the-installed-kubernetes-objects)
@@ -455,14 +455,15 @@ When building applications with PushToCompute, successful builds will push
 the build cache to the application's configured docker repository, but
 failed builds will not.  Thus, the first configuration consideration
 is whether or not to use a persistent build cache to speed up
-application rebuilds when failures occur.  Using a persistent build cache will
-provide the most benefit to large application builds.
+application rebuilds when failures occur.  Using a persistent build cache may
+not be necessary when building small applications, but it will likely provide
+a benefit when doing large application builds.
 
 To enable the use of a persistent build cache for application builds, set
 `jarvice-dockerbuild.persistence.enabled` to `true` and then set
 `jarvice-dockerbuild.persistence.storageClass` to the appropriate
 `StorageClass` to use when requesting PVCs.  It will be necessary to
-[install dynamic storage provisioner](#install-dynamic-storage-provisioner)
+[install a dynamic storage provisioner](#install-a-dynamic-storage-provisioner)
 on the cluster if one has not already been installed.
 
 The size of the dynamically provisioned PVCs can be set with
@@ -472,7 +473,7 @@ The size of the dynamically provisioned PVCs can be set with
 
 Build cache PVCs will not be automatically deleted unless
 `jarvice_dockerbuild_pvc_gc.enabled` is set to `true`.  PVCs can be configured
-to be kept for different amounts of time for successful, aborted, or failed
+to be kept for different amounts of time for successful, aborted, and failed
 builds.  These values can be configured under the
 `jarvice_dockerbuild_pvc_gc.env` settings:
 
@@ -1026,7 +1027,7 @@ $ kubectl --namespace <jarvice-system-daemonsets> create configmap \
 Please view the README.md for more detailed configuration information:
 https://github.com/nimbix/jarvice-cache-pull
 
-### Install dynamic storage provisioner
+### Install a dynamic storage provisioner
 
 If `jarvice_dockerbuild.persistence.enabled` is set to `true`, it will be
 necessary to have a dynamic storage provisioner installed and an accompanying
