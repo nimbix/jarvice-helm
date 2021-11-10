@@ -191,7 +191,48 @@ echo "${module.common.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
 EOF
         }
     ]
-    compute_nodes = length(var.cluster["compute_node_pools"]) == 0 ? null : [
+    dockerbuild_nodes = module.common.jarvice_cluster_type == "downstream" || var.cluster.dockerbuild_node_pool["nodes_type"] == null ? [] : [
+        {
+            "name" = "jxedockerbuild",
+            "instance_type" = var.cluster.dockerbuild_node_pool["nodes_type"]
+            "ami_id" = lookup(var.cluster.meta, "arch", "") == "arm64" ? data.aws_ami.eks_arm64.id : data.aws_ami.eks_amd64.id
+            "asg_desired_capacity" = var.cluster.dockerbuild_node_pool["nodes_num"]
+            "asg_min_size" = var.cluster.dockerbuild_node_pool["nodes_min"]
+            "asg_max_size" = var.cluster.dockerbuild_node_pool["nodes_max"]
+            "key_name" = ""
+            "instance_refresh_enabled" = true
+            "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-dockerbuild=true,node-pool.jarvice.io/jarvice-dockerbuild=jxedockerbuild --register-with-taints=node-role.jarvice.io/jarvice-dockerbuild=true:NoSchedule"
+            "public_ip" = true
+            "pre_userdata" = <<EOF
+# pre_userdata (executed before kubelet bootstrap and cluster join)
+# Add authorized ssh key
+echo "${module.common.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
+EOF
+            "tags" = [
+                {
+                    "key" = "k8s.io/cluster-autoscaler/enabled"
+                    "propagate_at_launch" = "false"
+                    "value" = "true"
+                },
+                {
+                    "key" = "k8s.io/cluster-autoscaler/${var.cluster.meta["cluster_name"]}"
+                    "propagate_at_launch" = "false"
+                    "value" = "owned"
+                },
+                {
+                    "key" = "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/instance-type"
+                    "propagate_at_launch" = "true"
+                    "value" = var.cluster.dockerbuild_node_pool["nodes_type"]
+                },
+                {
+                    "key" = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/arch"
+                    "propagate_at_launch" = "true"
+                    "value" = lookup(var.cluster.meta, "arch", null) == "arm64" ? "arm64" : "amd64"
+                }
+            ]
+        }
+    ]
+    compute_nodes = length(var.cluster["compute_node_pools"]) == 0 ? [] : [
         for name, pool in var.cluster["compute_node_pools"]:
             {
                 "name" = name
@@ -279,7 +320,7 @@ module "eks" {
 
     wait_for_cluster_timeout = 600
 
-    worker_groups_launch_template = concat(local.default_nodes, local.system_nodes, local.compute_nodes)
+    worker_groups_launch_template = concat(local.default_nodes, local.system_nodes, local.dockerbuild_nodes, local.compute_nodes)
     worker_additional_security_group_ids = [aws_security_group.ssh.id]
     worker_ami_name_filter = lookup(var.cluster.meta, "arch", "") == "arm64" ? "amazon-eks-arm64-node-${var.cluster.meta["kubernetes_version"]}-*" : "amazon-eks-gpu-node-${var.cluster.meta["kubernetes_version"]}-v*"
 

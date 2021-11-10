@@ -56,3 +56,43 @@ volumeBindingMode: Immediate
 {{- end }}
 ---
 {{- end }}
+{{- if and .Values.jarvice_dockerbuild.persistence.enabled (not (empty .Values.jarvice_dockerbuild.persistence.storageClass)) (not (empty .Values.jarvice_dockerbuild.persistence.storageClassProvisioner)) }}
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: {{ .Values.jarvice_dockerbuild.persistence.storageClass }}
+reclaimPolicy: Delete
+provisioner: {{ .Values.jarvice_dockerbuild.persistence.storageClassProvisioner }}
+{{- if (eq "kubernetes.io/aws-ebs" .Values.jarvice_dockerbuild.persistence.storageClassProvisioner) }}
+parameters:
+  type: gp2
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+mountOptions:
+  - debug
+{{- end }}
+{{- if (eq "kubernetes.io/gce-pd" .Values.jarvice_dockerbuild.persistence.storageClassProvisioner) }}
+parameters:
+  type: pd-standard
+  replication-type: none
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+mountOptions:
+  - debug
+{{- end }}
+{{- if (eq "pd.csi.storage.gke.io" .Values.jarvice_dockerbuild.persistence.storageClassProvisioner) }}
+parameters:
+  type: pd-ssd
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+{{- end }}
+{{- if (eq "kubernetes.io/azure-disk" .Values.jarvice_dockerbuild.persistence.storageClassProvisioner) }}
+parameters:
+  cachingmode: ReadOnly
+  kind: Managed
+  storageaccounttype: Premium_LRS
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+{{- end }}
+---
+{{- end }}
