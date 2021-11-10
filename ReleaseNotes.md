@@ -127,6 +127,10 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202111101808
+
+* (JAR-4756) Improved PushToCompute build mechanism.  For details, please see [PushToCompute (`jarvice-dockerbuild`) Configuration](README.md#pushtocompute-jarvice-dockerbuild-configuration).
+
 ## 3.21.9-1.202110271630
 
 * (JAR-4699) Increased job label character limit to 255 (from 50).
