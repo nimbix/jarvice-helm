@@ -113,14 +113,3 @@ Return apiVersion for Ingress.
 {{- print "networking.k8s.io/v1beta1" -}}
 {{- end -}}
 {{- end -}}
-
-{{/*
-Return apiVersion for PriorityClass.
-*/}}
-{{- define "apiVersion.priorityClass" -}}
-{{- if semverCompare ">=1.14-0" .Capabilities.KubeVersion.GitVersion -}}
-{{- print "scheduling.k8s.io/v1" -}}
-{{- else -}}
-{{- print "scheduling.k8s.io/v1beta1" -}}
-{{- end -}}
-{{- end -}}

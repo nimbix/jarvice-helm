@@ -45,8 +45,10 @@ spec:
           affinity:
             nodeAffinity: {{ .Values.jarvice.nodeAffinity }}
 {{- end }}
+{{- if .Values.jarvice_registry_proxy.enabled }}
           imagePullSecrets:
           - name: jarvice-docker
+{{- end }}
           volumes:
             - name: jarvice-dockerbuild-pvc-gc
               configMap:
