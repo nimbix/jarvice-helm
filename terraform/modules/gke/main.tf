@@ -4,12 +4,12 @@ terraform {
     required_providers {
         google = "~> 4.0"
 
-        helm = "~> 2.1.2"
-        kubernetes = "~> 2.1.0"
+        helm = "~> 2.4"
+        kubernetes = "~> 2.6"
 
-        null = "~> 3.1.0"
-        local = "~> 2.1.0"
-        random = "~> 3.1.0"
+        null = "~> 3.1"
+        local = "~> 2.1"
+        random = "~> 3.1"
     }
 }
 
