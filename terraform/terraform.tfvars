@@ -676,6 +676,7 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
                 nodes_max = 16
                 meta = {
                     disable_hyperthreading = "true"
+                    #zones = "us-west-2a,us-west-2b,us-west-2c"
 
                     # EFA requires k8s ver >= 1.19.  Supported instance types:
                     # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
@@ -690,6 +691,7 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
             #    nodes_max = 16
             #    meta = {
             #        disable_hyperthreading = "true"
+            #        #zones = "us-west-2a,us-west-2b,us-west-2c"
             #
             #        # EFA requires k8s ver >= 1.19.  Supported instance types:
             #        # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
@@ -827,6 +829,7 @@ EOF
                 nodes_max = 16
                 meta = {
                     disable_hyperthreading = "true"
+                    #zones = "us-west-2a,us-west-2b,us-west-2c"
 
                     # EFA requires k8s ver >= 1.19.  Supported instance types:
                     # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
@@ -841,6 +844,7 @@ EOF
             #    nodes_max = 16
             #    meta = {
             #        disable_hyperthreading = "true"
+            #        #zones = "us-west-2a,us-west-2b,us-west-2c"
             #
             #        # EFA requires k8s ver >= 1.19.  Supported instance types:
             #        # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
@@ -935,7 +939,7 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
 
         location = {
             region = "southcentralus"  # "westus2"
-            zones = []  # ["1"]
+            zones = ["1"]
         }
 
         # Visit the following link for Azure node size specs:
@@ -958,6 +962,7 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
                 nodes_min = 1
                 nodes_max = 16
                 meta = {
+                    #zones = "1,2,3"
                 }
             },
             #jxecompute01 = {
@@ -967,6 +972,7 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
             #    nodes_min = 1
             #    nodes_max = 16
             #    meta = {
+            #        #zones = "1,2,3"
             #    }
             #},
         }
@@ -1075,7 +1081,7 @@ EOF
 
         location = {
             region = "southcentralus"  # "westus2"
-            zones = []  # ["1"]
+            zones = ["1"]
         }
 
         # Visit the following link for Azure node size specs:
@@ -1098,6 +1104,7 @@ EOF
                 nodes_min = 1
                 nodes_max = 16
                 meta = {
+                    #zones = "1,2,3"
                 }
             },
             #jxecompute01 = {
@@ -1107,6 +1114,7 @@ EOF
             #    nodes_min = 1
             #    nodes_max = 16
             #    meta = {
+            #        #zones = "1,2,3"
             #    }
             #},
         }

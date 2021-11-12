@@ -2,13 +2,14 @@
 
 terraform {
     required_providers {
-        azurerm = "~> 2.61.0"
+        azurerm = "~> 2.84"
 
-        helm = "~> 2.1.2"
-        kubernetes = "~> 2.1.0"
+        helm = "~> 2.4"
+        kubernetes = "~> 2.6"
 
-        local = "~> 2.1.0"
-        random = "~> 3.1.0"
+        null = "~> 3.1"
+        local = "~> 2.1"
+        random = "~> 3.1"
     }
 }
 
@@ -167,7 +168,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "jarvice_compute" {
     for_each = var.cluster["compute_node_pools"]
 
     name = each.key
-    availability_zones = azurerm_kubernetes_cluster.jarvice.default_node_pool[0].availability_zones
+    availability_zones = lookup(each.value.meta, "zones", null) != null ? split(",", each.value.meta["zones"]) : azurerm_kubernetes_cluster.jarvice.default_node_pool[0].availability_zones
     kubernetes_cluster_id = azurerm_kubernetes_cluster.jarvice.id
 
     vm_size = each.value["nodes_type"]

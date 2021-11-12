@@ -2,15 +2,14 @@
 
 terraform {
     required_providers {
-        aws = "~> 3.62.0"
+        aws = "~> 3.64"
 
-        helm = "~> 2.1.2"
-        kubernetes = "~> 2.1.0"
+        helm = "~> 2.4"
+        kubernetes = "~> 2.6"
 
-        null = "~> 3.1.0"
-        local = "~> 2.1.0"
-        template = "~> 2.2.0"
-        random = "~> 3.1.0"
+        null = "~> 3.1"
+        local = "~> 2.1"
+        random = "~> 3.1"
     }
 }
 
@@ -24,18 +23,22 @@ data "aws_eks_cluster_auth" "cluster" {
 }
 
 data "aws_availability_zones" "available" {
+    filter {
+        name = var.cluster.location["zones"] != null ? "zone-name" : "region-name"
+        values = var.cluster.location["zones"] != null ? var.cluster.location["zones"] : [var.cluster.location["region"]]
+    }
 }
 
 
 module "vpc" {
     source = "terraform-aws-modules/vpc/aws"
-    version = "~> 3.7.0"
+    version = "~> 3.11"
 
     name = "${var.cluster.meta["cluster_name"]}-vpc"
     cidr = "10.0.0.0/16"
-    azs = var.cluster.location["zones"] != null ? distinct(concat(var.cluster.location["zones"], data.aws_availability_zones.available.names)) : data.aws_availability_zones.available.names
-    public_subnets = var.cluster.location["zones"] == null ? ["10.0.0.0/18", "10.0.64.0/18"] : length(var.cluster.location["zones"]) > 2 ? ["10.0.0.0/19", "10.0.32.0/19", "10.0.64.0/19", "10.0.96.0/19"] : ["10.0.0.0/18", "10.0.64.0/18"]
-    private_subnets = var.cluster.location["zones"] == null ? ["10.0.128.0/18", "10.0.192.0/18"] : length(var.cluster.location["zones"]) > 2 ? ["10.0.128.0/19", "10.0.160.0/19", "10.0.192.0/19", "10.0.224.0/19"] : ["10.0.128.0/18", "10.0.192.0/18"]
+    azs = data.aws_availability_zones.available.names
+    public_subnets = length(data.aws_availability_zones.available.names) > 2 ? ["10.0.0.0/19", "10.0.32.0/19", "10.0.64.0/19", "10.0.96.0/19"] : ["10.0.0.0/18", "10.0.64.0/18"]
+    private_subnets = length(data.aws_availability_zones.available.names) > 2 ? ["10.0.128.0/19", "10.0.160.0/19", "10.0.192.0/19", "10.0.224.0/19"] : ["10.0.128.0/18", "10.0.192.0/18"]
     enable_dns_hostnames = true
     enable_dns_support = true
     enable_nat_gateway = true
@@ -131,8 +134,6 @@ resource "aws_placement_group" "efa" {
 }
 
 locals {
-    public_subnets = var.cluster.location["zones"] != null ? slice(module.vpc.public_subnets, 0, length(var.cluster.location["zones"])) : null
-    private_subnets = var.cluster.location["zones"] != null ? slice(module.vpc.private_subnets, 0, length(var.cluster.location["zones"])) : null
     disable_hyperthreading = <<EOF
 # Disable hyper-threading.  Visit the following link for details:
 # https://aws.amazon.com/blogs/compute/disabling-intel-hyper-threading-technology-on-amazon-linux/
@@ -247,7 +248,20 @@ EOF
                 "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-compute=true,node-pool.jarvice.io/jarvice-compute=${name},node-pool.jarvice.io/disable-hyperthreading=${lookup(pool.meta, "disable_hyperthreading", "false")}${length(regexall("^(p2|p3|p4|g3|g4|inf1)", pool.nodes_type)) > 0 ? ",accelerator=nvidia" : ""}${lookup(pool.meta, "interface_type", null) == "efa" ? ",node-pool.jarvice.io/interface-type=efa" : ""} --register-with-taints=node-role.jarvice.io/jarvice-compute=true:NoSchedule"
                 "public_ip" = true
                 "interface_type" = lookup(pool.meta, "interface_type", null)
-                "subnets" = lookup(pool.meta, "interface_type", null) == "efa" ? [module.vpc.private_subnets[0]] : module.vpc.private_subnets
+                "subnets" = lookup(pool.meta, "zones", null) == null ? (
+                    lookup(pool.meta, "interface_type", null) == "efa" ? [module.vpc.private_subnets[0]] : module.vpc.private_subnets
+                ) : (
+                    lookup(pool.meta, "interface_type", null) == "efa" ? (
+                        [
+                            module.vpc.private_subnets[index(module.vpc.azs, split(",", pool.meta["zones"])[0])]
+                        ]
+                    ) : (
+                        [
+                            for zone in split(",", pool.meta["zones"]):
+                                module.vpc.private_subnets[index(module.vpc.azs, zone)]
+                        ]
+                    )
+                )
                 "additional_security_group_ids" = lookup(pool.meta, "interface_type", null) == "efa" ? [aws_security_group.efa.id] : []
                 "placement_group" = lookup(pool.meta, "interface_type", null) == "efa" ? aws_placement_group.efa.id : null
                 "pre_userdata" = <<EOF
@@ -305,7 +319,7 @@ EOF
 
 module "eks" {
     source = "terraform-aws-modules/eks/aws"
-    version = "~> 17.22.0"
+    version = "~> 17.23"
 
     cluster_name = var.cluster.meta["cluster_name"]
     cluster_version = var.cluster.meta["kubernetes_version"]
@@ -382,7 +396,7 @@ resource "aws_iam_policy" "cluster_autoscaler" {
 
 module "iam_assumable_role_admin_cluster_autoscaler" {
     source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-    version = "~> 4.7.0"
+    version = "~> 4.7"
 
     create_role = true
     role_name_prefix = substr("${var.cluster.meta["cluster_name"]}-cluster-autoscaler", 0, 32)
@@ -609,7 +623,7 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
 
 module "iam_assumable_role_admin_aws_load_balancer_controller" {
     source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-    version = "~> 4.7.0"
+    version = "~> 4.7"
 
     create_role = true
     role_name_prefix = substr("${var.cluster.meta["cluster_name"]}-aws-load-balancer-controller", 0, 32)
@@ -650,7 +664,7 @@ resource "aws_iam_policy" "external_dns" {
 
 module "iam_assumable_role_admin_external_dns" {
     source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-    version = "~> 4.7.0"
+    version = "~> 4.7"
 
     create_role = true
     role_name_prefix = substr("${var.cluster.meta["cluster_name"]}-external-dns", 0, 32)
