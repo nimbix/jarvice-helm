@@ -29,6 +29,14 @@ data "aws_availability_zones" "available" {
     }
 }
 
+# Force update to data.aws_availability_zones.available with:
+# terraform apply -target=module.eks_cluster_00.null_resource.aws_availability_zones_available
+resource "null_resource" "aws_availability_zones_available" {
+    triggers = {
+        names = join(",", data.aws_availability_zones.available.names)
+    }
+}
+
 
 module "vpc" {
     source = "terraform-aws-modules/vpc/aws"
