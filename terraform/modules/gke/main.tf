@@ -36,6 +36,7 @@ locals {
     project_services = [
         "compute.googleapis.com",
         "container.googleapis.com",
+        "containerfilesystem.googleapis.com",
         "dns.googleapis.com"
     ]
 
@@ -249,6 +250,67 @@ EOF
     }
 }
 
+resource "google_container_node_pool" "jarvice_images_pull" {
+    count = local.enable_gcfs == true ? 1 : 0
+
+    name = "jxeimagespull"
+    location = local.region
+    node_locations = local.zones
+
+    cluster = google_container_cluster.jarvice.name
+    version = local.node_version
+
+    initial_node_count = 0
+    autoscaling {
+        min_node_count = 0
+        max_node_count = 1
+    }
+
+    management {
+        auto_repair = false
+        auto_upgrade = false
+    }
+
+    node_config {
+        machine_type = "n1-standard-8"
+        disk_size_gb = 500
+        disk_type = "pd-ssd"
+
+        image_type = "COS_CONTAINERD"
+        gcfs_config {
+            enabled = true
+        }
+
+        service_account = "default"
+        oauth_scopes = local.oauth_scopes
+
+        metadata = {
+            disable-legacy-endpoints = "true"
+            ssh-keys = <<EOF
+${local.username}:${module.common.ssh_public_key}
+EOF
+        }
+
+        labels = {
+            "node-role.jarvice.io/jarvice-images-pull" = "true"
+            "node-pool.jarvice.io/jarvice-images-pull" = "jxeimagespull"
+        }
+        taint = [
+            {
+                key = "node-role.jarvice.io/jarvice-images-pull"
+                value = "true"
+                effect = "NO_SCHEDULE"
+            }
+        ]
+
+        tags = [google_container_cluster.jarvice.name, "jxeimagespull"]
+    }
+
+    lifecycle {
+        ignore_changes = [version, initial_node_count]
+    }
+}
+
 #resource "google_compute_resource_policy" "jarvice_compute" {
 #    name = var.cluster.meta["cluster_name"]
 #    region = local.region
@@ -284,8 +346,10 @@ resource "google_container_node_pool" "jarvice_compute" {
         disk_size_gb = each.value["nodes_disk_size_gb"]
         disk_type = lookup(each.value.meta, "disk_type", "pd-standard")
 
-        #image_type = "UBUNTU_CONTAINERD"
-        image_type = "UBUNTU"
+        image_type = lower(lookup(each.value.meta, "enable_gcfs", "false")) == "true" ? "COS_CONTAINERD" : "UBUNTU"
+        gcfs_config {
+            enabled = lower(lookup(each.value.meta, "enable_gcfs", "false")) == "true" ? true : false
+        }
 
         #min_cpu_platform = "Intel Skylake"
         #disk_type = "pd-ssd"
@@ -308,7 +372,8 @@ EOF
         labels = {
             "node-role.jarvice.io/jarvice-compute" = "true"
             "node-pool.jarvice.io/jarvice-compute" = each.key
-            "node-pool.jarvice.io/disable-hyperthreading" = lookup(each.value.meta, "disable_hyperthreading", "false")
+            "node-pool.jarvice.io/disable-hyperthreading" = lower(lookup(each.value.meta, "disable_hyperthreading", "false")) == "true" ? "true" : "false"
+            "node-pool.jarvice.io/enable-gcfs" = lower(lookup(each.value.meta, "enable_gcfs", "false")) == "true" ? "true" : "false"
         }
         taint = [
             {

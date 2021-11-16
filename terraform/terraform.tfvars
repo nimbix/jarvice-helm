@@ -377,6 +377,7 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
                 meta = {
                     disable_hyperthreading = "true"
                     disk_type = "pd-standard" # "pd-ssd" # "pd-balanced"
+                    #enable_gcfs = "true"
                     #zones = "us-west1-a,us-west1-b,us-west1-c"
 
                     # Visit the following link for GCP accelerator type specs:
@@ -395,6 +396,7 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
             #    meta = {
             #        disable_hyperthreading = "true"
             #        disk_type = "pd-standard" # "pd-ssd" # "pd-balanced"
+            #        #enable_gcfs = "true"
             #        #zones = "us-west1-a,us-west1-b,us-west1-c"
             #
             #        # Visit the following link for GCP accelerator type specs:
@@ -479,6 +481,16 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
   #  JARVICE_BUILD_PVC_KEEP_ABORTED: 7200  # Default: 7200 (2 hours)
   #  JARVICE_BUILD_PVC_KEEP_FAILED: 14400  # Default: 14400 (4 hours)
 
+#jarvice_images_pull: # Auto-enabled on clusters with GCFS enabled node pool(s)
+  #enabled: true
+  #schedule: "0 4 * * *"
+  #scheduleNow: false  # Immediately schedule images pull job on install/upgrade
+  #images:
+  #  amd64:
+  #    - gcr.io/jarvice/app-filemanager:ocpassform
+  #    - gcr.io/jarvice/ubuntu-desktop:bionic
+  #    - gcr.io/jarvice/app-openfoam:8
+
 #jarvice_api:
   #ingressHost: tf-jarvice.my-domain.com
   #ingressPath: "/api"
@@ -537,6 +549,7 @@ EOF
                 meta = {
                     disable_hyperthreading = "true"
                     disk_type = "pd-standard" # "pd-ssd" # "pd-balanced"
+                    #enable_gcfs = "true"
                     #zones = "us-west1-a,us-west1-b,us-west1-c"
 
                     # Visit the following link for GCP accelerator type specs:
@@ -555,6 +568,7 @@ EOF
             #    meta = {
             #        disable_hyperthreading = "true"
             #        disk_type = "pd-standard" # "pd-ssd" # "pd-balanced"
+            #        #enable_gcfs = "true"
             #        #zones = "us-west1-a,us-west1-b,us-west1-c"
             #
             #        # Visit the following link for GCP accelerator type specs:
@@ -617,6 +631,16 @@ jarvice:
   #    # If crt and key values are provided, issuer settings will be ignored
   #    crt: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.pem
   #    key: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.key
+
+#jarvice_images_pull: # Auto-enabled on clusters with GCFS enabled node pool(s)
+  #enabled: true
+  #schedule: "0 4 * * *"
+  #scheduleNow: false  # Immediately schedule images pull job on install/upgrade
+  #images:
+  #  amd64:
+  #    - gcr.io/jarvice/app-filemanager:ocpassform
+  #    - gcr.io/jarvice/ubuntu-desktop:bionic
+  #    - gcr.io/jarvice/app-openfoam:8
 
 #jarvice_k8s_scheduler:
   #ingressHost: tf-jarvice-downstream.my-domain.com

@@ -159,7 +159,25 @@ jarvice:
     tolerations: '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
     nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}] }}'
     nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
-    cache_pull:
+    images_pull: # Obsoletes cache_pull Daemonset below
+      enabled: false
+      tolerations: # '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
+      nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}] }}'
+      nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
+      interval: 3600  # Default: 3600 (1 hour)
+      images:
+        amd64:
+          - gcr.io/jarvice/app-filemanager:ocpassform
+          - gcr.io/jarvice/ubuntu-desktop:bionic
+          - gcr.io/jarvice/app-openfoam:8
+        #arm64:
+        #  - gcr.io/jarvice/app-filemanager:ocpassform-arm
+        #  - gcr.io/jarvice/ubuntu-desktop:bionic-arm
+        #  - gcr.io/jarvice/app-openfoam:8-arm
+      #imagePullSecrets:  # additional imagePullSecrets to use
+      #  - name: my-image-pull-secret-0
+      #  - name: my-image-pull-secret-1
+    cache_pull: # DEPRECATED: Please use images_pull DaemonSet above
       enabled: false
       tolerations: # '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}] }}'
@@ -808,6 +826,25 @@ jarvice_dockerbuild_pvc_gc:
     JARVICE_BUILD_PVC_KEEP_SUCCESSFUL: 3600  # Default: 3600 (1 hour)
     JARVICE_BUILD_PVC_KEEP_ABORTED: 7200  # Default: 7200 (2 hours)
     JARVICE_BUILD_PVC_KEEP_FAILED: 14400  # Default: 14400 (4 hours)
+
+# Enable to use a kubernetes CronJob to pull/refresh app images
+jarvice_images_pull:
+  enabled: false
+  schedule: "0 4 * * *"
+  scheduleNow: false  # Immediately schedule images pull job on install/upgrade
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  tolerations: # '[{"key": "node-role.jarvice.io/jarvice-images-pull", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-images-pull", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-images-pull", "operator": "Exists"}]}] }}'
+  nodeSelector: # '{"node-role.jarvice.io/jarvice-images-pull": "true"}'
+  images:
+    amd64:
+      - gcr.io/jarvice/app-filemanager:ocpassform
+      - gcr.io/jarvice/ubuntu-desktop:bionic
+      - gcr.io/jarvice/app-openfoam:8
+  #imagePullSecrets:  # additional imagePullSecrets to use
+  #  - name: my-image-pull-secret-0
+  #  - name: my-image-pull-secret-1
 
 jarvice_appsync: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true

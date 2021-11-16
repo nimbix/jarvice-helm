@@ -16,11 +16,20 @@ locals {
         for name, pool in var.cluster["compute_node_pools"]:
             name if lower(lookup(pool.meta, "disable_hyperthreading", "false")) == "true"
     ]
+    enable_gcfs = anytrue([
+        for pool in values(var.cluster["compute_node_pools"]):
+            lookup(pool.meta, "enable_gcfs", "false") == "true" ? true : false
+    ])
     cluster_values_yaml = <<EOF
 jarvice:
   JARVICE_JOBS_DOMAIN: "lookup/job$"
   daemonsets:
     tolerations: '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}, {"key": "nvidia.com/gpu", "effect": "NoSchedule", "operator": "Exists"}]'
+    lxcfs:
+      enabled: true
+      env:
+        HOST_LXCFS_DIR: /var/lib/toolbox/jarvice/lxcfs
+        HOST_LXCFS_INSTALL_DIR: /var/lib/toolbox/jarvice/lxcfs-daemonset
     disable_hyper_threading:
       enabled: true
       nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-pool.jarvice.io/jarvice-compute", "operator": "In", "values": [${join(",", formatlist("\"%s\"", concat(local.disable_hyper_threading_pools, ["dummyXXX"])))}]}]} ] }}'
@@ -33,7 +42,7 @@ jarvice:
             echo "Disabling kernel check for hung tasks...done."
     nvidia_install:
       enabled: true
-      nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "cloud.google.com/gke-accelerator", "operator": "Exists"}]}] }}'
+      nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "cloud.google.com/gke-accelerator", "operator": "Exists"}, {"key": "cloud.google.com/gke-os-distribution", "operator": "In", "values": ["ubuntu"]}, {"key": "cloud.google.com/gke-container-runtime", "operator": "In", "values": ["docker"]}]}] }}'
     dri_optional:
       enabled: true
       env:
@@ -43,6 +52,11 @@ jarvice:
       enabled: true
       env:
         KUBELET_PLUGIN_DIR: /home/kubernetes/flexvolume
+
+jarvice_images_pull:
+  enabled: ${local.enable_gcfs == true ? "true" : "false"}
+  tolerations: '[{"key": "node-role.jarvice.io/jarvice-images-pull", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-images-pull", "operator": "Exists"}]}] }}'
 EOF
     jarvice_ingress_upstream = <<EOF
 ${local.cluster_values_yaml}
