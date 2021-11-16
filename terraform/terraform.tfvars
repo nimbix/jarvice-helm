@@ -449,6 +449,14 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
   #  JARVICE_S3_SECRETKEY:
   #  JARVICE_S3_ENDPOINTURL: # https://s3.my-domain.com
 
+#jarvice_images_pull: # Enable to refresh images for GCFS enabled node pools
+  #enabled: true
+  #images:
+  #  amd64:
+  #    - gcr.io/jarvice/app-filemanager:ocpassform
+  #    - gcr.io/jarvice/ubuntu-desktop:bionic
+  #    - gcr.io/jarvice/app-openfoam:8
+
 #jarvice_api:
   #ingressHost: tf-jarvice.my-domain.com
   #ingressPath: "/api"
@@ -583,6 +591,14 @@ jarvice:
   #    # If crt and key values are provided, issuer settings will be ignored
   #    crt: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.pem
   #    key: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.key
+
+#jarvice_images_pull: # Enable to refresh images for GCFS enabled node pools
+  #enabled: true
+  #images:
+  #  amd64:
+  #    - gcr.io/jarvice/app-filemanager:ocpassform
+  #    - gcr.io/jarvice/ubuntu-desktop:bionic
+  #    - gcr.io/jarvice/app-openfoam:8
 
 #jarvice_k8s_scheduler:
   #ingressHost: tf-jarvice-downstream.my-domain.com

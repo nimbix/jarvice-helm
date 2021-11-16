@@ -6,12 +6,7 @@ terraform {
 
     # Make sure all providers are downloaded with the initial init
     required_providers {
-        google = "~> 3.68.0"
-        #google-beta = "~> 3.68.0"
-        google-beta = {
-            version = "~> 3.68.0"
-            source = "registry.terraform.io/local/google-beta"
-        }
+        google = "~> 4.1"
         aws = "~> 3.44.0"
         azurerm = "~> 2.61.0"
 
@@ -53,7 +48,6 @@ terraform {
 #
 #    providers = {
 #        google = google[each.key]
-#        google-beta = google-beta[each.key]
 #        kubernetes = kubernetes[each.key]
 #        helm = helm[each.key]
 #    }
@@ -151,14 +145,6 @@ provider "google" {
     credentials = local.gke["${key}"].auth["credentials"]
 }
 
-provider "google-beta" {
-    alias = "${key}"
-
-    region = local.gke["${key}"].location["region"]
-    project = local.gke["${key}"].auth["project"]
-    credentials = local.gke["${key}"].auth["credentials"]
-}
-
 provider "kubernetes" {
     alias = "${key}"
 
@@ -192,7 +178,6 @@ module "${key}" {
 
     providers = {
         google = google.${key}
-        google-beta = google-beta.${key}
         kubernetes = kubernetes.${key}
         helm = helm.${key}
     }

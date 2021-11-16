@@ -16,6 +16,10 @@ locals {
         for name, pool in var.cluster["compute_node_pools"]:
             name if lower(lookup(pool.meta, "disable_hyperthreading", "false")) == "true"
     ]
+    enable_gcfs = anytrue([
+        for pool in values(var.cluster["compute_node_pools"]):
+            lookup(pool.meta, "enable_gcfs", "false") == "true" ? true : false
+    ])
     cluster_values_yaml = <<EOF
 jarvice:
   JARVICE_JOBS_DOMAIN: "lookup/job$"
@@ -48,6 +52,11 @@ jarvice:
       enabled: true
       env:
         KUBELET_PLUGIN_DIR: /home/kubernetes/flexvolume
+
+jarvice_images_pull:
+  #enabled: ${tostring(local.enable_gcfs)}
+  tolerations: '[{"key": "node-role.jarvice.io/jarvice-images-pull", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-images-pull", "operator": "Exists"}]}] }}'
 EOF
     jarvice_ingress_upstream = <<EOF
 ${local.cluster_values_yaml}

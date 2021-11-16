@@ -385,3 +385,28 @@ resource "kubernetes_daemonset" "nvidia_driver_installer_cos" {
     depends_on = [google_container_cluster.jarvice, local_file.kube_config]
 }
 
+resource "null_resource" "create_job_images_pull_amd64" {
+    count = module.helm.metadata["jarvice_images_pull"]["enabled"] == true ? 1 : 0
+
+    triggers = {
+        images_amd64 = join(",", module.helm.metadata["jarvice_images_pull"]["images"]["amd64"])
+    }
+
+    provisioner "local-exec" {
+        command = "kubectl -n $NAMESPACE delete job jarvice-images-pull-amd64-tf"
+        environment = {
+            KUBECONFIG = local_file.kube_config.filename
+            NAMESPACE = module.helm.metadata["jarvice"]["namespace"]
+        }
+        on_failure = continue
+    }
+
+    provisioner "local-exec" {
+        command = "kubectl -n $NAMESPACE create job --from=cronjob/jarvice-images-pull-amd64 jarvice-images-pull-amd64-tf"
+        environment = {
+            KUBECONFIG = local_file.kube_config.filename
+            NAMESPACE = module.helm.metadata["jarvice"]["namespace"]
+        }
+    }
+}
+
