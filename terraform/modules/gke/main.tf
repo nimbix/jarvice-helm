@@ -347,8 +347,11 @@ resource "google_container_node_pool" "jarvice_compute" {
         disk_type = lookup(each.value.meta, "disk_type", "pd-standard")
 
         image_type = lower(lookup(each.value.meta, "enable_gcfs", "false")) == "true" ? "COS_CONTAINERD" : "UBUNTU"
-        gcfs_config {
-            enabled = lower(lookup(each.value.meta, "enable_gcfs", "false")) == "true" ? true : false
+        dynamic "gcfs_config" {
+            for_each = lookup(each.value.meta, "enable_gcfs", null) != null ? [lower(each.value.meta["enable_gcfs"]) == "true" ? true : false] : []
+            content {
+                enabled = gcfs_config.value
+            }
         }
 
         #min_cpu_platform = "Intel Skylake"
@@ -369,12 +372,14 @@ ${local.username}:${module.common.ssh_public_key}
 EOF
         }
 
-        labels = {
-            "node-role.jarvice.io/jarvice-compute" = "true"
-            "node-pool.jarvice.io/jarvice-compute" = each.key
-            "node-pool.jarvice.io/disable-hyperthreading" = lower(lookup(each.value.meta, "disable_hyperthreading", "false")) == "true" ? "true" : "false"
-            "node-pool.jarvice.io/enable-gcfs" = lower(lookup(each.value.meta, "enable_gcfs", "false")) == "true" ? "true" : "false"
-        }
+        labels = merge(
+            {
+                "node-role.jarvice.io/jarvice-compute" = "true"
+                "node-pool.jarvice.io/jarvice-compute" = each.key
+                "node-pool.jarvice.io/disable-hyperthreading" = lower(lookup(each.value.meta, "disable_hyperthreading", "false")) == "true" ? "true" : "false"
+            },
+            lookup(each.value.meta, "enable_gcfs", null) != null ? {"node-pool.jarvice.io/enable-gcfs" = lower(each.value.meta["enable_gcfs"]) == "true" ? "true" : "false"} : {}
+        )
         taint = [
             {
                 key = "node-role.jarvice.io/jarvice-compute"
