@@ -831,6 +831,7 @@ jarvice_dockerbuild_pvc_gc:
 jarvice_images_pull:
   enabled: false
   schedule: "0 4 * * *"
+  scheduleNow: false  # Immediately schedule images pull job on install/upgrade
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 1
   tolerations: # '[{"key": "node-role.jarvice.io/jarvice-images-pull", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-images-pull", "effect": "NoSchedule", "operator": "Exists"}]'

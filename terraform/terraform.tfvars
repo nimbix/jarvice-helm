@@ -481,8 +481,10 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
   #  JARVICE_BUILD_PVC_KEEP_ABORTED: 7200  # Default: 7200 (2 hours)
   #  JARVICE_BUILD_PVC_KEEP_FAILED: 14400  # Default: 14400 (4 hours)
 
-#jarvice_images_pull: # Enable to refresh images for GCFS enabled node pools
+#jarvice_images_pull: # Auto-enabled on clusters with GCFS enabled node pool(s)
   #enabled: true
+  #schedule: "0 4 * * *"
+  #scheduleNow: false  # Immediately schedule images pull job on install/upgrade
   #images:
   #  amd64:
   #    - gcr.io/jarvice/app-filemanager:ocpassform
@@ -630,8 +632,10 @@ jarvice:
   #    crt: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.pem
   #    key: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.key
 
-#jarvice_images_pull: # Enable to refresh images for GCFS enabled node pools
+#jarvice_images_pull: # Auto-enabled on clusters with GCFS enabled node pool(s)
   #enabled: true
+  #schedule: "0 4 * * *"
+  #scheduleNow: false  # Immediately schedule images pull job on install/upgrade
   #images:
   #  amd64:
   #    - gcr.io/jarvice/app-filemanager:ocpassform

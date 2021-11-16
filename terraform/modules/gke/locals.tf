@@ -54,7 +54,7 @@ jarvice:
         KUBELET_PLUGIN_DIR: /home/kubernetes/flexvolume
 
 jarvice_images_pull:
-  #enabled: ${tostring(local.enable_gcfs)}
+  enabled: ${local.enable_gcfs == true ? "true" : "false"}
   tolerations: '[{"key": "node-role.jarvice.io/jarvice-images-pull", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-images-pull", "operator": "Exists"}]}] }}'
 EOF
