@@ -18,7 +18,7 @@ contexts:
   name: ${google_container_cluster.jarvice.name}
 clusters:
 - cluster:
-    server: https://${local.kube_config["host"]}
+    server: ${local.kube_config["host"]}
     certificate-authority-data: ${local.kube_config["cluster_ca_certificate"]}
   name: ${google_container_cluster.jarvice.name}
 users:

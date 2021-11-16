@@ -166,10 +166,10 @@ jarvice:
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
       interval: 3600  # Default: 3600 (1 hour)
       images:
-        amd64:
-          - gcr.io/jarvice/app-filemanager:ocpassform
-          - gcr.io/jarvice/ubuntu-desktop:bionic
-          - gcr.io/jarvice/app-openfoam:8
+        #amd64:
+        #  - gcr.io/jarvice/app-filemanager:ocpassform
+        #  - gcr.io/jarvice/ubuntu-desktop:bionic
+        #  - gcr.io/jarvice/app-openfoam:8
         #arm64:
         #  - gcr.io/jarvice/app-filemanager:ocpassform-arm
         #  - gcr.io/jarvice/ubuntu-desktop:bionic-arm
@@ -838,10 +838,10 @@ jarvice_images_pull:
   nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-images-pull", "operator": "Exists"}]}] }}'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-images-pull": "true"}'
   images:
-    amd64:
-      - gcr.io/jarvice/app-filemanager:ocpassform
-      - gcr.io/jarvice/ubuntu-desktop:bionic
-      - gcr.io/jarvice/app-openfoam:8
+    #amd64:
+    #  - gcr.io/jarvice/app-filemanager:ocpassform
+    #  - gcr.io/jarvice/ubuntu-desktop:bionic
+    #  - gcr.io/jarvice/app-openfoam:8
   #imagePullSecrets:  # additional imagePullSecrets to use
   #  - name: my-image-pull-secret-0
   #  - name: my-image-pull-secret-1
