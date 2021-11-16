@@ -482,7 +482,6 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
   #  JARVICE_BUILD_PVC_KEEP_FAILED: 14400  # Default: 14400 (4 hours)
 
 #jarvice_images_pull: # Auto-enabled on clusters with GCFS enabled node pool(s)
-  #enabled: true
   #schedule: "0 4 * * *"
   #scheduleNow: false  # Immediately schedule images pull job on install/upgrade
   #images:
@@ -633,7 +632,6 @@ jarvice:
   #    key: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.key
 
 #jarvice_images_pull: # Auto-enabled on clusters with GCFS enabled node pool(s)
-  #enabled: true
   #schedule: "0 4 * * *"
   #scheduleNow: false  # Immediately schedule images pull job on install/upgrade
   #images:
