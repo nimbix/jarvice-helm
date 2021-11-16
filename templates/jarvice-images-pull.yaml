@@ -1,0 +1,68 @@
+{{- if .Values.jarvice_images_pull.enabled }}
+{{- range $arch, $images := .Values.jarvice_images_pull.images }}
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: jarvice-images-pull-{{ $arch }}
+  labels:
+    {{- include "jarvice.release_labels" $ | indent 4 }}
+    component: jarvice-images-pull
+    cronjob: jarvice-images-pull
+spec:
+  schedule: "{{ $.Values.jarvice_images_pull.schedule }}"
+  failedJobsHistoryLimit: {{ $.Values.jarvice_images_pull.failedJobsHistoryLimit }}
+  successfulJobsHistoryLimit: {{ $.Values.jarvice_images_pull.successfulJobsHistoryLimit }}
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      backoffLimit: 6
+      template:
+        metadata:
+          labels:
+            {{- include "jarvice.release_labels" $ | indent 12 }}
+            component: jarvice-images-pull
+            cronjob: jarvice-images-pull
+          annotations:
+            deployment-date: {{ now | quote }}
+        spec:
+          serviceAccountName: jarvice-system
+          restartPolicy: OnFailure
+{{- if (not (empty $.Values.jarvice_images_pull.tolerations)) }}
+          tolerations: {{ $.Values.jarvice_images_pull.tolerations }}
+{{- else if (not (empty $.Values.jarvice.tolerations)) }}
+          tolerations: {{ $.Values.jarvice.tolerations }}
+{{- end }}
+          nodeSelector:
+            kubernetes.io/arch: {{ $arch }}
+{{- if (not (empty $.Values.jarvice_images_pull.nodeSelector)) }}
+{{- range $key, $value := (fromJson $.Values.jarvice_images_pull.nodeSelector) }}
+            "{{ $key }}": "{{ $value }}"
+{{- end }}
+{{- else if (not (empty $.Values.jarvice.nodeSelector)) }}
+{{- range $key, $value := (fromJson $.Values.jarvice.nodeSelector) }}
+            "{{ $key }}": "{{ $value }}"
+{{- end }}
+{{- end }}
+{{- if (not (empty $.Values.jarvice_images_pull.nodeAffinity)) }}
+          affinity:
+            nodeAffinity: {{ $.Values.jarvice_images_pull.nodeAffinity }}
+{{- else if (not (empty $.Values.jarvice.nodeAffinity)) }}
+          affinity:
+            nodeAffinity: {{ $.Values.jarvice.nodeAffinity }}
+{{- end }}
+          imagePullSecrets:
+          - name: jarvice-docker
+{{- if $.Values.jarvice_images_pull.imagePullSecrets }}
+{{ toYaml $.Values.jarvice_images_pull.imagePullSecrets | indent 10 }}
+{{- end }}
+          containers:
+{{- range $images }}
+          - name: {{ . | replace "/" "--" | replace ":" "--" | replace "." "-" | lower }}
+            image: {{ template "jarvice.registrysub" merge (dict "image" .) $ }}
+            imagePullPolicy: Always
+            command:
+            - /bin/true
+{{- end }}
+---
+{{- end }}
+{{- end }}
