@@ -2,15 +2,14 @@
 
 terraform {
     required_providers {
-        aws = "~> 3.44.0"
+        aws = "~> 3.64"
 
-        helm = "~> 2.1.2"
-        kubernetes = "~> 2.1.0"
+        helm = "~> 2.4"
+        kubernetes = "~> 2.6"
 
-        null = "~> 3.1.0"
-        local = "~> 2.1.0"
-        template = "~> 2.2.0"
-        random = "~> 3.1.0"
+        null = "~> 3.1"
+        local = "~> 2.1"
+        random = "~> 3.1"
     }
 }
 
@@ -24,18 +23,30 @@ data "aws_eks_cluster_auth" "cluster" {
 }
 
 data "aws_availability_zones" "available" {
+    filter {
+        name = var.cluster.location["zones"] != null ? "zone-name" : "region-name"
+        values = var.cluster.location["zones"] != null ? var.cluster.location["zones"] : [var.cluster.location["region"]]
+    }
+}
+
+# Force update to data.aws_availability_zones.available with:
+# terraform apply -target=module.<eks_cluster_XX>.null_resource.aws_availability_zones_available
+resource "null_resource" "aws_availability_zones_available" {
+    triggers = {
+        names = join(",", data.aws_availability_zones.available.names)
+    }
 }
 
 
 module "vpc" {
     source = "terraform-aws-modules/vpc/aws"
-    version = "~> 3.1.0"
+    version = "~> 3.11"
 
     name = "${var.cluster.meta["cluster_name"]}-vpc"
     cidr = "10.0.0.0/16"
-    azs = var.cluster.location["zones"] != null ? distinct(concat(var.cluster.location["zones"], data.aws_availability_zones.available.names)) : data.aws_availability_zones.available.names
-    public_subnets = var.cluster.location["zones"] == null ? ["10.0.0.0/18", "10.0.64.0/18"] : length(var.cluster.location["zones"]) > 2 ? ["10.0.0.0/19", "10.0.32.0/19", "10.0.64.0/19", "10.0.96.0/19"] : ["10.0.0.0/18", "10.0.64.0/18"]
-    private_subnets = var.cluster.location["zones"] == null ? ["10.0.128.0/18", "10.0.192.0/18"] : length(var.cluster.location["zones"]) > 2 ? ["10.0.128.0/19", "10.0.160.0/19", "10.0.192.0/19", "10.0.224.0/19"] : ["10.0.128.0/18", "10.0.192.0/18"]
+    azs = data.aws_availability_zones.available.names
+    public_subnets = length(data.aws_availability_zones.available.names) > 2 ? ["10.0.0.0/19", "10.0.32.0/19", "10.0.64.0/19", "10.0.96.0/19"] : ["10.0.0.0/18", "10.0.64.0/18"]
+    private_subnets = length(data.aws_availability_zones.available.names) > 2 ? ["10.0.128.0/19", "10.0.160.0/19", "10.0.192.0/19", "10.0.224.0/19"] : ["10.0.128.0/18", "10.0.192.0/18"]
     enable_dns_hostnames = true
     enable_dns_support = true
     enable_nat_gateway = true
@@ -119,14 +130,18 @@ data "aws_ami" "eks_arm64" {
     owners = ["amazon"]
 }
 
+data "aws_ec2_instance_type" "jarvice_compute" {
+    for_each = var.cluster["compute_node_pools"]
+
+    instance_type = each.value["nodes_type"]
+}
+
 resource "aws_placement_group" "efa" {
     name = "${var.cluster.meta["cluster_name"]}-efa"
     strategy = "cluster"
 }
 
 locals {
-    public_subnets = var.cluster.location["zones"] != null ? slice(module.vpc.public_subnets, 0, length(var.cluster.location["zones"])) : null
-    private_subnets = var.cluster.location["zones"] != null ? slice(module.vpc.private_subnets, 0, length(var.cluster.location["zones"])) : null
     disable_hyperthreading = <<EOF
 # Disable hyper-threading.  Visit the following link for details:
 # https://aws.amazon.com/blogs/compute/disabling-intel-hyper-threading-technology-on-amazon-linux/
@@ -144,6 +159,10 @@ cd /tmp/aws-efa-installer
 /opt/amazon/efa/bin/fi_info -p efa
 #sysctl -w kernel.yama.ptrace_scope=0
 EOF
+
+    # See /opt/amazon/bin/efa-hugepages-reserve.sh for reference
+    huge_pages_size = 2048  # TODO: may be different on arm64 nodes
+    efa_ep_huge_pages_memory = 110 * 1024
 
     default_nodes = [
         {
@@ -181,7 +200,48 @@ echo "${module.common.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
 EOF
         }
     ]
-    compute_nodes = length(var.cluster["compute_node_pools"]) == 0 ? null : [
+    dockerbuild_nodes = module.common.jarvice_cluster_type == "downstream" || var.cluster.dockerbuild_node_pool["nodes_type"] == null ? [] : [
+        {
+            "name" = "jxedockerbuild",
+            "instance_type" = var.cluster.dockerbuild_node_pool["nodes_type"]
+            "ami_id" = lookup(var.cluster.meta, "arch", "") == "arm64" ? data.aws_ami.eks_arm64.id : data.aws_ami.eks_amd64.id
+            "asg_desired_capacity" = var.cluster.dockerbuild_node_pool["nodes_num"]
+            "asg_min_size" = var.cluster.dockerbuild_node_pool["nodes_min"]
+            "asg_max_size" = var.cluster.dockerbuild_node_pool["nodes_max"]
+            "key_name" = ""
+            "instance_refresh_enabled" = true
+            "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-dockerbuild=true,node-pool.jarvice.io/jarvice-dockerbuild=jxedockerbuild --register-with-taints=node-role.jarvice.io/jarvice-dockerbuild=true:NoSchedule"
+            "public_ip" = true
+            "pre_userdata" = <<EOF
+# pre_userdata (executed before kubelet bootstrap and cluster join)
+# Add authorized ssh key
+echo "${module.common.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
+EOF
+            "tags" = [
+                {
+                    "key" = "k8s.io/cluster-autoscaler/enabled"
+                    "propagate_at_launch" = "false"
+                    "value" = "true"
+                },
+                {
+                    "key" = "k8s.io/cluster-autoscaler/${var.cluster.meta["cluster_name"]}"
+                    "propagate_at_launch" = "false"
+                    "value" = "owned"
+                },
+                {
+                    "key" = "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/instance-type"
+                    "propagate_at_launch" = "true"
+                    "value" = var.cluster.dockerbuild_node_pool["nodes_type"]
+                },
+                {
+                    "key" = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/arch"
+                    "propagate_at_launch" = "true"
+                    "value" = lookup(var.cluster.meta, "arch", null) == "arm64" ? "arm64" : "amd64"
+                }
+            ]
+        }
+    ]
+    compute_nodes = length(var.cluster["compute_node_pools"]) == 0 ? [] : [
         for name, pool in var.cluster["compute_node_pools"]:
             {
                 "name" = name
@@ -193,10 +253,23 @@ EOF
                 "asg_max_size" = pool.nodes_max
                 "key_name" = ""
                 "instance_refresh_enabled" = true
-                "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-compute=true,node-pool.jarvice.io/jarvice-compute=${name},node-pool.jarvice.io/disable-hyperthreading=${lookup(pool.meta, "disable_hyperthreading", "false")}${length(regexall("^(p2|p3|p4|g3|g4|inf1)", pool.nodes_type)) > 0 ? ",accelerator=nvidia" : ""} --register-with-taints=node-role.jarvice.io/jarvice-compute=true:NoSchedule"
+                "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-compute=true,node-pool.jarvice.io/jarvice-compute=${name},node-pool.jarvice.io/disable-hyperthreading=${lookup(pool.meta, "disable_hyperthreading", "false")}${length(regexall("^(p2|p3|p4|g3|g4|inf1)", pool.nodes_type)) > 0 ? ",accelerator=nvidia" : ""}${lookup(pool.meta, "interface_type", null) == "efa" ? ",node-pool.jarvice.io/interface-type=efa" : ""} --register-with-taints=node-role.jarvice.io/jarvice-compute=true:NoSchedule"
                 "public_ip" = true
                 "interface_type" = lookup(pool.meta, "interface_type", null)
-                "subnets" = lookup(pool.meta, "interface_type", null) == "efa" ? [module.vpc.private_subnets[0]] : module.vpc.private_subnets
+                "subnets" = lookup(pool.meta, "zones", null) == null ? (
+                    lookup(pool.meta, "interface_type", null) == "efa" ? [module.vpc.private_subnets[0]] : module.vpc.private_subnets
+                ) : (
+                    lookup(pool.meta, "interface_type", null) == "efa" ? (
+                        [
+                            module.vpc.private_subnets[index(module.vpc.azs, split(",", pool.meta["zones"])[0])]
+                        ]
+                    ) : (
+                        [
+                            for zone in split(",", pool.meta["zones"]):
+                                module.vpc.private_subnets[index(module.vpc.azs, zone)]
+                        ]
+                    )
+                )
                 "additional_security_group_ids" = lookup(pool.meta, "interface_type", null) == "efa" ? [aws_security_group.efa.id] : []
                 "placement_group" = lookup(pool.meta, "interface_type", null) == "efa" ? aws_placement_group.efa.id : null
                 "pre_userdata" = <<EOF
@@ -211,27 +284,50 @@ EOF
                 "additional_userdata" = <<EOF
 # additional_userdata (executed after kubelet bootstrap and cluster join)
 EOF
-                "tags" = [
-                    {
-                        "key" = "k8s.io/cluster-autoscaler/enabled"
-                        "propagate_at_launch" = "false"
-                        "value" = "true"
-                    },
-                    {
-                        "key" = "k8s.io/cluster-autoscaler/${var.cluster.meta["cluster_name"]}"
-                        "propagate_at_launch" = "false"
-                        "value" = "true"
-                    }
-                ]
-
+                "tags" = concat(
+                    [
+                        {
+                            "key" = "k8s.io/cluster-autoscaler/enabled"
+                            "propagate_at_launch" = "false"
+                            "value" = "true"
+                        },
+                        {
+                            "key" = "k8s.io/cluster-autoscaler/${var.cluster.meta["cluster_name"]}"
+                            "propagate_at_launch" = "false"
+                            "value" = "owned"
+                        },
+                        {
+                            "key" = "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/instance-type"
+                            "propagate_at_launch" = "true"
+                            "value" = pool.nodes_type
+                        },
+                        {
+                            "key" = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/arch"
+                            "propagate_at_launch" = "true"
+                            "value" = lookup(var.cluster.meta, "arch", null) == "arm64" ? "arm64" : "amd64"
+                        }
+                    ],
+                    lookup(pool.meta, "interface_type", null) == "efa" ?
+                        [
+                            {
+                                "key" = "k8s.io/cluster-autoscaler/node-template/resources/vpc.amazonaws.com/efa"
+                                "propagate_at_launch" = "true"
+                                "value" = "1"
+                            },
+                            {
+                                "key" = "k8s.io/cluster-autoscaler/node-template/resources/hugepages-2Mi"
+                                "propagate_at_launch" = "true"
+                                "value" = format("%sMi", tostring(((local.efa_ep_huge_pages_memory * data.aws_ec2_instance_type.jarvice_compute[name].default_vcpus * 2) / local.huge_pages_size + 1) * 2))
+                            }
+                        ] : []
+                )
             }
     ]
 }
 
 module "eks" {
-    #source = "terraform-aws-modules/eks/aws"
-    #version = "~> 17.1.0"
-    source = "github.com/nimbix/terraform-aws-eks"
+    source = "terraform-aws-modules/eks/aws"
+    version = "~> 17.23"
 
     cluster_name = var.cluster.meta["cluster_name"]
     cluster_version = var.cluster.meta["kubernetes_version"]
@@ -246,7 +342,7 @@ module "eks" {
 
     wait_for_cluster_timeout = 600
 
-    worker_groups_launch_template = concat(local.default_nodes, local.system_nodes, local.compute_nodes)
+    worker_groups_launch_template = concat(local.default_nodes, local.system_nodes, local.dockerbuild_nodes, local.compute_nodes)
     worker_additional_security_group_ids = [aws_security_group.ssh.id]
     worker_ami_name_filter = lookup(var.cluster.meta, "arch", "") == "arm64" ? "amazon-eks-arm64-node-${var.cluster.meta["kubernetes_version"]}-*" : "amazon-eks-gpu-node-${var.cluster.meta["kubernetes_version"]}-v*"
 
@@ -308,15 +404,18 @@ resource "aws_iam_policy" "cluster_autoscaler" {
 
 module "iam_assumable_role_admin_cluster_autoscaler" {
     source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-    version = "~> 4.1.0"
+    version = "~> 4.7"
 
     create_role = true
-    role_name_prefix = "${var.cluster.meta["cluster_name"]}-cluster-autoscaler"
+    role_name_prefix = substr("${var.cluster.meta["cluster_name"]}-cluster-autoscaler", 0, 32)
     provider_url = replace(module.eks.cluster_oidc_issuer_url, "https://", "")
     role_policy_arns = [aws_iam_policy.cluster_autoscaler.arn]
     oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:cluster-autoscaler-aws-cluster-autoscaler"]
 }
 
+locals {
+    arn_partition = length(regexall("^us-gov-", var.cluster.location["region"])) > 0 ? "aws-us-gov" : "aws"
+}
 
 resource "aws_iam_policy" "aws_load_balancer_controller" {
     name_prefix = "${var.cluster.meta["cluster_name"]}-aws-load-balancer-controller"
@@ -396,7 +495,7 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
                 "Action": [
                     "ec2:CreateTags"
                 ],
-                "Resource": "arn:aws:ec2:*:*:security-group/*",
+                "Resource": "arn:${local.arn_partition}:ec2:*:*:security-group/*",
                 "Condition": {
                     "StringEquals": {
                         "ec2:CreateAction": "CreateSecurityGroup"
@@ -412,7 +511,7 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
                     "ec2:CreateTags",
                     "ec2:DeleteTags"
                 ],
-                "Resource": "arn:aws:ec2:*:*:security-group/*",
+                "Resource": "arn:${local.arn_partition}:ec2:*:*:security-group/*",
                 "Condition": {
                     "Null": {
                         "aws:RequestTag/elbv2.k8s.aws/cluster": "true",
@@ -464,9 +563,9 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
                     "elasticloadbalancing:RemoveTags"
                 ],
                 "Resource": [
-                    "arn:aws:elasticloadbalancing:*:*:targetgroup/*/*",
-                    "arn:aws:elasticloadbalancing:*:*:loadbalancer/net/*/*",
-                    "arn:aws:elasticloadbalancing:*:*:loadbalancer/app/*/*"
+                    "arn:${local.arn_partition}:elasticloadbalancing:*:*:targetgroup/*/*",
+                    "arn:${local.arn_partition}:elasticloadbalancing:*:*:loadbalancer/net/*/*",
+                    "arn:${local.arn_partition}:elasticloadbalancing:*:*:loadbalancer/app/*/*"
                 ],
                 "Condition": {
                     "Null": {
@@ -482,10 +581,10 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
                     "elasticloadbalancing:RemoveTags"
                 ],
                 "Resource": [
-                    "arn:aws:elasticloadbalancing:*:*:listener/net/*/*/*",
-                    "arn:aws:elasticloadbalancing:*:*:listener/app/*/*/*",
-                    "arn:aws:elasticloadbalancing:*:*:listener-rule/net/*/*/*",
-                    "arn:aws:elasticloadbalancing:*:*:listener-rule/app/*/*/*"
+                    "arn:${local.arn_partition}:elasticloadbalancing:*:*:listener/net/*/*/*",
+                    "arn:${local.arn_partition}:elasticloadbalancing:*:*:listener/app/*/*/*",
+                    "arn:${local.arn_partition}:elasticloadbalancing:*:*:listener-rule/net/*/*/*",
+                    "arn:${local.arn_partition}:elasticloadbalancing:*:*:listener-rule/app/*/*/*"
                 ]
             },
             {
@@ -513,7 +612,7 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
                     "elasticloadbalancing:RegisterTargets",
                     "elasticloadbalancing:DeregisterTargets"
                 ],
-                "Resource": "arn:aws:elasticloadbalancing:*:*:targetgroup/*/*"
+                "Resource": "arn:${local.arn_partition}:elasticloadbalancing:*:*:targetgroup/*/*"
             },
             {
                 "Effect": "Allow",
@@ -532,10 +631,10 @@ resource "aws_iam_policy" "aws_load_balancer_controller" {
 
 module "iam_assumable_role_admin_aws_load_balancer_controller" {
     source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-    version = "~> 4.1.0"
+    version = "~> 4.7"
 
     create_role = true
-    role_name_prefix = "${var.cluster.meta["cluster_name"]}-aws-load-balancer-controller"
+    role_name_prefix = substr("${var.cluster.meta["cluster_name"]}-aws-load-balancer-controller", 0, 32)
     provider_url = replace(module.eks.cluster_oidc_issuer_url, "https://", "")
     role_policy_arns = [aws_iam_policy.aws_load_balancer_controller.arn]
     oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:aws-load-balancer-controller"]
@@ -554,7 +653,7 @@ resource "aws_iam_policy" "external_dns" {
                     "route53:ChangeResourceRecordSets"
                 ],
                 "Resource": [
-                    "arn:aws:route53:::hostedzone/*"
+                    "arn:${local.arn_partition}:route53:::hostedzone/*"
                 ]
             },
             {
@@ -573,10 +672,10 @@ resource "aws_iam_policy" "external_dns" {
 
 module "iam_assumable_role_admin_external_dns" {
     source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-    version = "~> 4.1.0"
+    version = "~> 4.7"
 
     create_role = true
-    role_name_prefix = "${var.cluster.meta["cluster_name"]}-external-dns"
+    role_name_prefix = substr("${var.cluster.meta["cluster_name"]}-external-dns", 0, 32)
     provider_url = replace(module.eks.cluster_oidc_issuer_url, "https://", "")
     role_policy_arns = [aws_iam_policy.external_dns.arn]
     oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:external-dns"]

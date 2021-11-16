@@ -17,15 +17,15 @@ The following assumes the latest version of JARVICE is in use; this version will
 
 #### Latest Version Supported
 
-Kubernetes **1.19**; newer versions are not explicitly supported.  Using the latest patch release of each version is recommended but not required.
+Kubernetes **1.20**; newer versions are not explicitly supported.  Using the latest patch release of each version is recommended but not required.
 
 #### Previous Version(s) Supported
 
 Up to 3 previous minor revisions (from the one indicated in [Latest Version Supported](#latest-version-supported)) will be supported at any given time, unless otherwise noted.  Currently this list is limited to:
 
+* Kubernetes **1.19**
 * Kubernetes **1.18**
 * Kubernetes **1.17**
-* Kubernetes **1.16**
 
 ### External S3-compatible Object Storage Service Compatibility
 
@@ -126,6 +126,52 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 
 # Changelog
+
+## 3.21.9-1.202108181638
+
+* (JAR-113) Improved object cleanup upon user deletion; note that deleting users **is not** considered a best practice.
+* (JAR-116) Added automatic "long-running job" notifications; see [Long-running Job Notification Configuration](LRJ.md) for details on how to enable and configure this feature.
+* (JAR-123) Added *About* page in portal with version information for ordinary users, and additional license information for system administrators.
+* (JAR-4484) Ensure all user account creation failures clean up any intermediate data.
+* (JAR-4496) Improved clarity for team admin project selection.
+
+## 3.21.9-1.202107211903
+
+* (JAR-87) Added support for system-wide notifications on user logins, using the *NOTIFICATIONS* button in the *Administration->Users* view.
+* (JAR-122) Added detailed file listing and sorting in the file picker for workflows with file inputs.
+* (JAR-4395) Fixed bug with SAML assertions and Ingress.
+* (JAR-4420) Made `/dev/infiniband/rdma_cm` optional for passthrough using the `jarvice-rdma-device-plugin` DaemonSet.
+* (JAR-4422) Added support for passing environment variables into application containers via machine definition, using the `$<key>=<value>` pseudo-device type.  See the [Devices](Configuration.md#devices) section in *JARVICE System Configuration Notes* for details.
+
+## 3.21.9-1.202107121913
+
+* (JAR-4385) Validated support for in-container MPI fabric detection and environment preparation, along with platform-provided Open MPI, `libfabric`, and `rdma-core` stack.  Please see [Configuring for MPI Applications](Configuration.md#configuring-for-mpi-applications) in *JARVICE System Configuration Notes* (for system administration), and [MPI Application Configuration Guide](https://jarvice.readthedocs.io/en/latest/mpi/) (for application development), for details.
+
+## 3.21.9-1.202107071928 *(TECHNOLOGY PREVIEW RELEASE)*
+
+* (JAR-96) Allow in-container identity to inherit multiple group membership from host-bound `/etc/group` file, if configured. See [Advanced: Applying Multiple Group Membership to Users](Identity.md#advanced-applying-multiple-group-membership-to-users) in *In-container Identity Settings and Best Practices* for details.
+* (JAR-4294) In-container MPI fabric detection and environment preparation, along with platform-provided Open MPI, `libfabric`, and `rdma-core` stack.  Please see [Configuring for MPI Applications](Configuration.md#configuring-for-mpi-applications) in *JARVICE System Configuration Notes* (for system administration), and [MPI Application Configuration Guide](https://jarvice.readthedocs.io/en/latest/mpi/) (for application development), for details.
+
+## 3.21.9-1.202106231923
+
+* (JAR-163) Fixed possible race condition in `jarvice-pod-scheduler` with pod binding, as well as recovery from legitimate pod binding failures not resulting in automatic job termination.
+* (JAR-4327) Fixed bug in portal that didn't show a user's default vault in the *Administration->Users* view's *VAULTS* dialog.
+* (JAR-4361) Fixed bug in portal with row selection not being shown properly in the *Administration->Metadata* view.
+
+## 3.21.9-1.202106161847
+
+* (JAR-214) Fixed bug where cloning a job after an application's AppDef changed could cause a browser hang.
+* (JAR-4279) Added automation for ingress using certificates and/or external DNS in Terraform deployments.  See [Ingress TLS certificate configuration](Terraform.md#ingress-tls-certificate-configuration) and [Ingress DNS configuration](Terraform.md#ingress-dns-configuration) for details on the available options.
+* (JAR-4292) Fixed inconsistent state bug in task builder optional checkbox to use the first file name parameter as the job label.
+* (JAR-4293) Added support for `devshm`, `hugepages2mi`, and `hugepages1gi` pseudo-devices, as well as `CAP_SYS_PTRACE` for running jobs in order to better support certain MPI fabrics and modes.  See [Devices](Configuration.md#devices) in *JARVICE System Configuration Notes* for details.
+* Amazon Elastic Fabric Adapter (EFA) support in the EKS provider for Terraform.  See example in the `eks` `compute_node_pools` section of [terraform.tfvars](terraform/terraform.tfvars) for details on how to enable.  Note that using EFA requires setting either `hugepages2mi` or `hugepages1gi` to take advantage of huge pages in the corresponding JARVICE machine definition.
+
+## 3.21.9-1.202104281919
+
+* (JAR-108) Allow team administrators to optionally set per-user CPU limits rather than team-wide CPU limits in the *Account->Limits* view.
+* (JAR-4205) Allow system administrators to edit ephemeral vaults in order to change zone in the *Administration->Users* view.
+* (JAR-4242) Added optional `vault` parameter to the `/jarvice/machines` public API call, in order to return lists of machines that are compatible (by zone) with specific vaults.  See [The JARVICE API](https://jarvice.readthedocs.io/en/latest/api/#jarvicemachines) for details.
+* (JAR-4245) Removed empty black box for jobs that are queued in the *Dashboard* view.
 
 ## 3.21.9-1.202104192100
 

@@ -7,7 +7,7 @@ Microsoft Azure Kubernetes Service (AKS) clusters is supported.
 Deploying JARVICE to previously provisioned Kubernetes clusters is also
 supported.
 
-See [README.md](README.md) in the top level of this repository for more
+See [README.md](https://github.com/nimbix/jarvice-helm/blob/master/README.md) in the top level of this repository for more
 in depth details on JARVICE Helm chart installations:
 https://github.com/nimbix/jarvice-helm
 
@@ -95,8 +95,7 @@ If installing on a different platform, visit the following link for the
 latest Terraform releases:
 https://www.terraform.io/downloads.html
 
-**Note:**  Terraform 0.14.0 or newer is required.
-The latest Terraform 1.x.x release is recommended.
+**Note:**  Terraform 1.0.0 or newer is required.
 
 ### Cloud provider command line interface (CLI)
 
@@ -241,7 +240,7 @@ $ curl https://raw.githubusercontent.com/nimbix/jarvice-helm/$version/values.yam
 Visit the JARVICE helm chart releases page ([https://github.com/nimbix/jarvice-helm/releases](https://github.com/nimbix/jarvice-helm/releases))
 to view the latest available release versions.
 
-See [README.md](README.md) in the top level of this repository for more
+See [README.md](https://github.com/nimbix/jarvice-helm/blob/master/README.md) in the top level of this repository for more
 in depth details on JARVICE Helm chart settings:
 https://github.com/nimbix/jarvice-helm
 
@@ -533,5 +532,5 @@ sure to backup any essential data from those volumes/disks before running
 
 ## Additional Resources
 
-- JARVICE cloud platform helm chart [README.md](README.md)
+- JARVICE cloud platform helm chart [README.md](https://github.com/nimbix/jarvice-helm/blob/master/README.md)
 

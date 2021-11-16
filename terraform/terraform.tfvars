@@ -69,7 +69,7 @@ global = {  # Global config options can be overridden in cluster configs
   #ingress:
   #  tls:
   #    issuer:
-  #      name: "letsencrypt-prod"  # "letsecrypt-staging" # "selfsigned"
+  #      name: "letsencrypt-prod"  # "letsencrypt-staging" # "selfsigned"
   #      # An admin email is required when letsencrypt issuer is set. The first
   #      # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
   #      email: # "admin@my-domain.com"
@@ -192,6 +192,22 @@ k8s = {  # Deploy JARVICE to pre-existing K8s clusters
   #  JARVICE_S3_ACCESSKEY:
   #  JARVICE_S3_SECRETKEY:
   #  JARVICE_S3_ENDPOINTURL: # https://s3.my-domain.com
+
+#jarvice_dockerbuild: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  #persistence:  # Enable to execute builds on dynamically provisioned PVCs
+  #  enabled: false
+  #  # storageClass: "-"  # "-" uses cluster's default StorageClass/provisioner
+  #  storageClass: "jarvice-dockerbuild"
+  #  size: 300Gi
+
+# Enable to use a kubernetes CronJob to garbage collect dockerbuild PVCs
+# N/A if jarvice_dockerbuild.persistence.enabled is false
+#jarvice_dockerbuild_pvc_gc:
+  #enabled: false
+  #env:
+  #  JARVICE_BUILD_PVC_KEEP_SUCCESSFUL: 3600  # Default: 3600 (1 hour)
+  #  JARVICE_BUILD_PVC_KEEP_ABORTED: 7200  # Default: 7200 (2 hours)
+  #  JARVICE_BUILD_PVC_KEEP_FAILED: 14400  # Default: 14400 (4 hours)
 
 #jarvice_api:
   #loadBalancerIP:
@@ -323,7 +339,7 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
 
         meta = {
             cluster_name = "tf-jarvice"
-            kubernetes_version = "1.18"
+            kubernetes_version = "1.20"
 
             # Sync ingress hosts to zones/domains managed w/ Google Cloud DNS
             #dns_manage_records = "true"
@@ -343,6 +359,12 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
         system_node_pool = {
             nodes_type = null  # auto-set if null specified
             nodes_num = null   # auto-set if null specified
+        }
+        dockerbuild_node_pool = {  # N/A for downstream clusters
+            nodes_type = "c2-standard-4"
+            nodes_num = 1
+            nodes_min = 0
+            nodes_max = 5
         }
         compute_node_pools = {
             jxecompute00 = {
@@ -449,6 +471,24 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
   #  JARVICE_S3_SECRETKEY:
   #  JARVICE_S3_ENDPOINTURL: # https://s3.my-domain.com
 
+#jarvice_dockerbuild: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  #persistence:
+  #  size: 300Gi
+
+#jarvice_dockerbuild_pvc_gc:
+  #env:
+  #  JARVICE_BUILD_PVC_KEEP_SUCCESSFUL: 3600  # Default: 3600 (1 hour)
+  #  JARVICE_BUILD_PVC_KEEP_ABORTED: 7200  # Default: 7200 (2 hours)
+  #  JARVICE_BUILD_PVC_KEEP_FAILED: 14400  # Default: 14400 (4 hours)
+
+#jarvice_images_pull: # Enable to refresh images for GCFS enabled node pools
+  #enabled: true
+  #images:
+  #  amd64:
+  #    - gcr.io/jarvice/app-filemanager:ocpassform
+  #    - gcr.io/jarvice/ubuntu-desktop:bionic
+  #    - gcr.io/jarvice/app-openfoam:8
+
 #jarvice_api:
   #ingressHost: tf-jarvice.my-domain.com
   #ingressPath: "/api"
@@ -469,7 +509,7 @@ EOF
 
         meta = {
             cluster_name = "tf-jarvice-downstream"
-            kubernetes_version = "1.18"
+            kubernetes_version = "1.20"
 
             # Sync ingress hosts to zones/domains managed w/ Google Cloud DNS
             #dns_manage_records = "true"
@@ -489,6 +529,12 @@ EOF
         system_node_pool = {
             nodes_type = null  # auto-set if null specified
             nodes_num = null   # auto-set if null specified
+        }
+        dockerbuild_node_pool = {  # N/A for downstream clusters
+            nodes_type = null
+            nodes_num = 0
+            nodes_min = 0
+            nodes_max = 0
         }
         compute_node_pools = {
             jxecompute00 = {
@@ -584,6 +630,14 @@ jarvice:
   #    crt: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.pem
   #    key: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.key
 
+#jarvice_images_pull: # Enable to refresh images for GCFS enabled node pools
+  #enabled: true
+  #images:
+  #  amd64:
+  #    - gcr.io/jarvice/app-filemanager:ocpassform
+  #    - gcr.io/jarvice/ubuntu-desktop:bionic
+  #    - gcr.io/jarvice/app-openfoam:8
+
 #jarvice_k8s_scheduler:
   #ingressHost: tf-jarvice-downstream.my-domain.com
 EOF
@@ -607,7 +661,7 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
 
         meta = {
             cluster_name = "tf-jarvice"
-            kubernetes_version = "1.18"
+            kubernetes_version = "1.20"
             #arch = "arm64"  # Uncomment to deploy an arm64 cluster
 
             # Sync ingress hosts to zones/domains managed w/ AWS Route53 DNS
@@ -627,6 +681,12 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
             nodes_type = null  # auto-set if null specified
             nodes_num = null   # auto-set if null specified
         }
+        dockerbuild_node_pool = {  # N/A for downstream clusters
+            nodes_type = "c5n.xlarge"  # "c6gn.xlarge"
+            nodes_num = 1
+            nodes_min = 0
+            nodes_max = 5
+        }
         compute_node_pools = {
             jxecompute00 = {
                 nodes_type = "c5.18xlarge"  # "c6g.16xlarge"
@@ -636,6 +696,7 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
                 nodes_max = 16
                 meta = {
                     disable_hyperthreading = "true"
+                    #zones = "us-west-2a,us-west-2b,us-west-2c"
 
                     # EFA requires k8s ver >= 1.19.  Supported instance types:
                     # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
@@ -650,6 +711,7 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
             #    nodes_max = 16
             #    meta = {
             #        disable_hyperthreading = "true"
+            #        #zones = "us-west-2a,us-west-2b,us-west-2c"
             #
             #        # EFA requires k8s ver >= 1.19.  Supported instance types:
             #        # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
@@ -722,6 +784,16 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
   #  JARVICE_S3_SECRETKEY:
   #  JARVICE_S3_ENDPOINTURL: # https://s3.my-domain.com
 
+#jarvice_dockerbuild: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  #persistence:
+  #  size: 300Gi
+
+#jarvice_dockerbuild_pvc_gc:
+  #env:
+  #  JARVICE_BUILD_PVC_KEEP_SUCCESSFUL: 3600  # Default: 3600 (1 hour)
+  #  JARVICE_BUILD_PVC_KEEP_ABORTED: 7200  # Default: 7200 (2 hours)
+  #  JARVICE_BUILD_PVC_KEEP_FAILED: 14400  # Default: 14400 (4 hours)
+
 #jarvice_api:
   #ingressHost: tf-jarvice.my-domain.com
   #ingressPath: "/api"
@@ -742,7 +814,7 @@ EOF
 
         meta = {
             cluster_name = "tf-jarvice-downstream"
-            kubernetes_version = "1.18"
+            kubernetes_version = "1.20"
             #arch = "arm64"  # Uncomment to deploy an arm64 cluster
 
             # Sync ingress hosts to zones/domains managed w/ AWS Route53 DNS
@@ -762,6 +834,12 @@ EOF
             nodes_type = null  # auto-set if null specified
             nodes_num = null   # auto-set if null specified
         }
+        dockerbuild_node_pool = {  # N/A for downstream clusters
+            nodes_type = null
+            nodes_num = 0
+            nodes_min = 0
+            nodes_max = 0
+        }
         compute_node_pools = {
             jxecompute00 = {
                 nodes_type = "c5.18xlarge"  # "c6g.16xlarge"
@@ -771,6 +849,7 @@ EOF
                 nodes_max = 16
                 meta = {
                     disable_hyperthreading = "true"
+                    #zones = "us-west-2a,us-west-2b,us-west-2c"
 
                     # EFA requires k8s ver >= 1.19.  Supported instance types:
                     # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
@@ -785,6 +864,7 @@ EOF
             #    nodes_max = 16
             #    meta = {
             #        disable_hyperthreading = "true"
+            #        #zones = "us-west-2a,us-west-2b,us-west-2c"
             #
             #        # EFA requires k8s ver >= 1.19.  Supported instance types:
             #        # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
@@ -867,7 +947,7 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
 
         meta = {
             cluster_name = "tf-jarvice"
-            kubernetes_version = "1.18"
+            kubernetes_version = "1.20"
 
             # Sync ingress hosts to zones/domains managed w/ Azure DNS
             #dns_manage_records = "true"
@@ -879,7 +959,7 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
 
         location = {
             region = "southcentralus"  # "westus2"
-            zones = []  # ["1"]
+            zones = ["1"]
         }
 
         # Visit the following link for Azure node size specs:
@@ -887,6 +967,12 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
         system_node_pool = {
             nodes_type = null  # auto-set if null specified
             nodes_num = null   # auto-set if null specified
+        }
+        dockerbuild_node_pool = {  # N/A for downstream clusters
+            nodes_type = "Standard_F4s_v2"
+            nodes_num = 1
+            nodes_min = 0
+            nodes_max = 5
         }
         compute_node_pools = {
             jxecompute00 = {
@@ -896,6 +982,7 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
                 nodes_min = 1
                 nodes_max = 16
                 meta = {
+                    #zones = "1,2,3"
                 }
             },
             #jxecompute01 = {
@@ -905,6 +992,7 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
             #    nodes_min = 1
             #    nodes_max = 16
             #    meta = {
+            #        #zones = "1,2,3"
             #    }
             #},
         }
@@ -973,6 +1061,16 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
   #  JARVICE_S3_SECRETKEY:
   #  JARVICE_S3_ENDPOINTURL: # https://s3.my-domain.com
 
+#jarvice_dockerbuild: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  #persistence:
+  #  size: 300Gi
+
+#jarvice_dockerbuild_pvc_gc:
+  #env:
+  #  JARVICE_BUILD_PVC_KEEP_SUCCESSFUL: 3600  # Default: 3600 (1 hour)
+  #  JARVICE_BUILD_PVC_KEEP_ABORTED: 7200  # Default: 7200 (2 hours)
+  #  JARVICE_BUILD_PVC_KEEP_FAILED: 14400  # Default: 14400 (4 hours)
+
 #jarvice_api:
   #ingressHost: tf-jarvice.my-domain.com
   #ingressPath: "/api"
@@ -991,7 +1089,7 @@ EOF
 
         meta = {
             cluster_name = "tf-jarvice-downstream"
-            kubernetes_version = "1.18"
+            kubernetes_version = "1.20"
 
             # Sync ingress hosts to zones/domains managed w/ Azure DNS
             #dns_manage_records = "true"
@@ -1003,7 +1101,7 @@ EOF
 
         location = {
             region = "southcentralus"  # "westus2"
-            zones = []  # ["1"]
+            zones = ["1"]
         }
 
         # Visit the following link for Azure node size specs:
@@ -1011,6 +1109,12 @@ EOF
         system_node_pool = {
             nodes_type = null  # auto-set if null specified
             nodes_num = null   # auto-set if null specified
+        }
+        dockerbuild_node_pool = {  # N/A for downstream clusters
+            nodes_type = null
+            nodes_num = 0
+            nodes_min = 0
+            nodes_max = 0
         }
         compute_node_pools = {
             jxecompute00 = {
@@ -1020,6 +1124,7 @@ EOF
                 nodes_min = 1
                 nodes_max = 16
                 meta = {
+                    #zones = "1,2,3"
                 }
             },
             #jxecompute01 = {
@@ -1029,6 +1134,7 @@ EOF
             #    nodes_min = 1
             #    nodes_max = 16
             #    meta = {
+            #        #zones = "1,2,3"
             #    }
             #},
         }

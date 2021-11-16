@@ -1,27 +1,21 @@
 # main.tf - root module
 
 terraform {
-    required_version = ">= 0.14.0, < 2.0.0"
+    required_version = "~> 1.0"
     #backend "local" {}
 
     # Make sure all providers are downloaded with the initial init
     required_providers {
-        google = "~> 3.68.0"
-        #google-beta = "~> 3.68.0"
-        google-beta = {
-            version = "~> 3.68.0"
-            source = "registry.terraform.io/local/google-beta"
-        }
-        aws = "~> 3.44.0"
-        azurerm = "~> 2.61.0"
+        google = "~> 4.1"
+        aws = "~> 3.64"
+        azurerm = "~> 2.84"
 
-        helm = "~> 2.1.2"
-        kubernetes = "~> 2.1.0"
+        helm = "~> 2.4"
+        kubernetes = "~> 2.6"
 
-        null = "~> 3.1.0"
-        local = "~> 2.1.0"
-        template = "~> 2.2.0"
-        random = "~> 3.1.0"
+        null = "~> 3.1"
+        local = "~> 2.1"
+        random = "~> 3.1"
     }
 }
 
@@ -53,7 +47,6 @@ terraform {
 #
 #    providers = {
 #        google = google[each.key]
-#        google-beta = google-beta[each.key]
 #        kubernetes = kubernetes[each.key]
 #        helm = helm[each.key]
 #    }
@@ -151,14 +144,6 @@ provider "google" {
     credentials = local.gke["${key}"].auth["credentials"]
 }
 
-provider "google-beta" {
-    alias = "${key}"
-
-    region = local.gke["${key}"].location["region"]
-    project = local.gke["${key}"].auth["project"]
-    credentials = local.gke["${key}"].auth["credentials"]
-}
-
 provider "kubernetes" {
     alias = "${key}"
 
@@ -167,8 +152,6 @@ provider "kubernetes" {
     client_certificate = base64decode(module.${key}.kube_config["client_certificate"])
     client_key = base64decode(module.${key}.kube_config["client_key"])
     token = module.${key}.kube_config["token"]
-    username = module.${key}.kube_config["username"]
-    password = module.${key}.kube_config["password"]
 }
 
 provider "helm" {
@@ -180,8 +163,6 @@ provider "helm" {
         client_certificate = base64decode(module.${key}.kube_config["client_certificate"])
         client_key = base64decode(module.${key}.kube_config["client_key"])
         token = module.${key}.kube_config["token"]
-        username = module.${key}.kube_config["username"]
-        password = module.${key}.kube_config["password"]
     }
 }
 %{ endfor }
@@ -196,7 +177,6 @@ module "${key}" {
 
     providers = {
         google = google.${key}
-        google-beta = google-beta.${key}
         kubernetes = kubernetes.${key}
         helm = helm.${key}
     }
@@ -225,8 +205,8 @@ provider "kubernetes" {
 
     host = module.${key}.kube_config["host"]
     cluster_ca_certificate = base64decode(module.${key}.kube_config["cluster_ca_certificate"])
-#    client_certificate = base64decode(module.${key}.kube_config["client_certificate"])
-#    client_key = base64decode(module.${key}.kube_config["client_key"])
+    client_certificate = base64decode(module.${key}.kube_config["client_certificate"])
+    client_key = base64decode(module.${key}.kube_config["client_key"])
     token = module.${key}.kube_config["token"]
 }
 
@@ -236,8 +216,8 @@ provider "helm" {
     kubernetes {
         host = module.${key}.kube_config["host"]
         cluster_ca_certificate = base64decode(module.${key}.kube_config["cluster_ca_certificate"])
-#        client_certificate = base64decode(module.${key}.kube_config["client_certificate"])
-#        client_key = base64decode(module.${key}.kube_config["client_key"])
+        client_certificate = base64decode(module.${key}.kube_config["client_certificate"])
+        client_key = base64decode(module.${key}.kube_config["client_key"])
         token = module.${key}.kube_config["token"]
     }
 }
@@ -282,7 +262,7 @@ provider "helm" {
         cluster_ca_certificate = base64decode(module.${key}.kube_config["cluster_ca_certificate"])
         client_certificate = base64decode(module.${key}.kube_config["client_certificate"])
         client_key = base64decode(module.${key}.kube_config["client_key"])
-        #token = module.${key}.kube_config["token"]
+        token = module.${key}.kube_config["token"]
     }
 }
 %{ endfor }

@@ -3,13 +3,11 @@
 locals {
     kube_config = {
         "config_path" = "~/.kube/config-tf.eks.${var.cluster.location["region"]}.${var.cluster.meta["cluster_name"]}",
-        "host" = data.aws_eks_cluster.cluster.endpoint,
-        "cluster_ca_certificate" = data.aws_eks_cluster.cluster.certificate_authority.0.data,
-        "client_certificate" = null,
-        "client_key" = null,
-        "token" = data.aws_eks_cluster_auth.cluster.token,
-        "username" = null,
-        "password" = null
+        "host" = module.eks.cluster_endpoint,
+        "cluster_ca_certificate" = module.eks.cluster_certificate_authority_data,
+        "client_certificate" = "",
+        "client_key" = "",
+        "token" = data.aws_eks_cluster_auth.cluster.token
     }
 }
 

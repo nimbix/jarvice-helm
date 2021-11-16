@@ -9,6 +9,7 @@ module "common" {
     system_nodes_type_upstream = lookup(var.cluster.meta, "arch", "") == "arm64" ? "m6g.4xlarge" : "m5.4xlarge"
     system_nodes_type_downstream = lookup(var.cluster.meta, "arch", "") == "arm64" ? "m6g.xlarge" : "m5.xlarge"
     storage_class_provisioner = "kubernetes.io/aws-ebs"
+    storage_class_provisioner_dockerbuild = "kubernetes.io/aws-ebs"
 }
 
 resource "aws_eip" "jarvice" {
@@ -25,9 +26,42 @@ resource "aws_eip" "jarvice" {
 }
 
 locals {
+    eks_registries = {
+        "af-south-1" = "877085696533.dkr.ecr.af-south-1.amazonaws.com"
+        "ap-east-1" = "800184023465.dkr.ecr.ap-east-1.amazonaws.com"
+        "ap-northeast-1" = "602401143452.dkr.ecr.ap-northeast-1.amazonaws.com"
+        "ap-northeast-2" = "602401143452.dkr.ecr.ap-northeast-2.amazonaws.com"
+        "ap-northeast-3" = "602401143452.dkr.ecr.ap-northeast-3.amazonaws.com"
+        "ap-south-1" = "602401143452.dkr.ecr.ap-south-1.amazonaws.com"
+        "ap-southeast-1" = "602401143452.dkr.ecr.ap-southeast-1.amazonaws.com"
+        "ap-southeast-2" = "602401143452.dkr.ecr.ap-southeast-2.amazonaws.com"
+        "ca-central-1" = "602401143452.dkr.ecr.ca-central-1.amazonaws.com"
+        "cn-north-1" = "918309763551.dkr.ecr.cn-north-1.amazonaws.com.cn"
+        "cn-northwest-1" = "961992271922.dkr.ecr.cn-northwest-1.amazonaws.com.cn"
+        "eu-central-1" = "602401143452.dkr.ecr.eu-central-1.amazonaws.com"
+        "eu-north-1" = "602401143452.dkr.ecr.eu-north-1.amazonaws.com"
+        "eu-south-1" = "590381155156.dkr.ecr.eu-south-1.amazonaws.com"
+        "eu-west-1" = "602401143452.dkr.ecr.eu-west-1.amazonaws.com"
+        "eu-west-2" = "602401143452.dkr.ecr.eu-west-2.amazonaws.com"
+        "eu-west-3" = "602401143452.dkr.ecr.eu-west-3.amazonaws.com"
+        "me-south-1" = "558608220178.dkr.ecr.me-south-1.amazonaws.com"
+        "sa-east-1" = "602401143452.dkr.ecr.sa-east-1.amazonaws.com"
+        "us-east-1" = "602401143452.dkr.ecr.us-east-1.amazonaws.com"
+        "us-east-2" = "602401143452.dkr.ecr.us-east-2.amazonaws.com"
+        "us-gov-east-1" = "151742754352.dkr.ecr.us-gov-east-1.amazonaws.com"
+        "us-gov-west-1" = "013241004608.dkr.ecr.us-gov-west-1.amazonaws.com"
+        "us-west-1" = "602401143452.dkr.ecr.us-west-1.amazonaws.com"
+        "us-west-2" = "602401143452.dkr.ecr.us-west-2.amazonaws.com"
+    }
+}
+
+locals {
     charts = {
         "aws-load-balancer-controller" = {
             "values" = <<EOF
+image:
+  repository: ${lookup(local.eks_registries, var.cluster.location["region"], local.eks_registries["us-west-2"])}/amazon/aws-load-balancer-controller
+
 clusterName: ${var.cluster.meta["cluster_name"]}
 
 serviceAccount:
@@ -142,6 +176,11 @@ EOF
         },
         "external-dns" = {
             "values" = <<EOF
+image:
+  registry: us.gcr.io
+  repository: k8s-artifacts-prod/external-dns/external-dns
+  tag: v0.8.0
+
 sources:
   - ingress
 
@@ -149,7 +188,7 @@ provider: aws
 
 aws:
   region: "${var.cluster.location["region"]}"
-  zoneType: "public"
+  zoneType: "${length(regexall("^us-gov-", var.cluster.location["region"])) > 0 ? "private" : "public"}"
   #evaluateTargetHealth: "true"
 
 dryRun: ${lookup(var.cluster["meta"], "dns_manage_records", "false") != "true" ? "true" : "false" }
@@ -428,7 +467,7 @@ resource "kubernetes_daemonset" "aws_efa_k8s_device_plugin" {
                     }
                 }
                 container {
-                    image = "602401143452.dkr.ecr.us-west-2.amazonaws.com/eks/aws-efa-k8s-device-plugin:v0.3.3"
+                    image = "${lookup(local.eks_registries, var.cluster.location["region"], local.eks_registries["us-west-2"])}/eks/aws-efa-k8s-device-plugin:v0.3.3"
                     image_pull_policy = "Always"
                     name = "aws-efa-k8s-device-plugin"
                     security_context {

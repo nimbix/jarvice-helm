@@ -9,6 +9,7 @@ module "common" {
     system_nodes_type_upstream = "n1-standard-8"
     system_nodes_type_downstream = "n1-standard-4"
     storage_class_provisioner = "kubernetes.io/gce-pd"
+    storage_class_provisioner_dockerbuild = "pd.csi.storage.gke.io"
 }
 
 resource "google_service_account" "external_dns" {
@@ -20,7 +21,7 @@ resource "google_service_account" "external_dns" {
 resource "google_project_iam_member" "external_dns_admin" {
     role = "roles/dns.admin"
     member = "serviceAccount:${google_service_account.external_dns.email}"
-    project = lookup(var.cluster["meta"], "dns_zone_project", null)
+    project = lookup(var.cluster["meta"], "dns_zone_project", local.project)
 }
 
 resource "google_service_account_key" "external_dns" {
@@ -46,6 +47,11 @@ locals {
     charts = {
         "external-dns" = {
             "values" = <<EOF
+image:
+  registry: us.gcr.io
+  repository: k8s-artifacts-prod/external-dns/external-dns
+  tag: v0.8.0
+
 sources:
   - ingress
 
@@ -378,5 +384,30 @@ resource "kubernetes_daemonset" "nvidia_driver_installer_cos" {
     }
 
     depends_on = [google_container_cluster.jarvice, local_file.kube_config]
+}
+
+resource "null_resource" "create_job_images_pull_amd64" {
+    count = module.helm.metadata["jarvice_images_pull"]["enabled"] == true ? 1 : 0
+
+    triggers = {
+        images_amd64 = join(",", module.helm.metadata["jarvice_images_pull"]["images"]["amd64"])
+    }
+
+    provisioner "local-exec" {
+        command = "kubectl -n $NAMESPACE delete job jarvice-images-pull-amd64-tf"
+        environment = {
+            KUBECONFIG = local_file.kube_config.filename
+            NAMESPACE = module.helm.metadata["jarvice"]["namespace"]
+        }
+        on_failure = continue
+    }
+
+    provisioner "local-exec" {
+        command = "kubectl -n $NAMESPACE create job --from=cronjob/jarvice-images-pull-amd64 jarvice-images-pull-amd64-tf"
+        environment = {
+            KUBECONFIG = local_file.kube_config.filename
+            NAMESPACE = module.helm.metadata["jarvice"]["namespace"]
+        }
+    }
 }
 

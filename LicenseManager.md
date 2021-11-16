@@ -17,6 +17,7 @@ A comprehensive mechanism for queuing jobs based on license token availability.
     * [Web Portal](#web-portal)
     * [JARVICE API](#jarvice-api)
 * [Troubleshooting](#troubleshooting)
+* [Advanced: Multiple License Server Addresses](#advanced-multiple-license-server-addresses)
 * [Best Practices, Anomalies, and Caveats](#best-practices-anomalies-and-caveats)
 
 ---
@@ -80,7 +81,7 @@ While the `jarvice-license-manager` component itself is stateless and can be res
 
 ## Configuration
 
-`jarvice-license-manager` is an optional component that must be explicitly enabled in the Helm chart, and configured by Kubernetes *ConfigMap*.  Additional configuration details follow...
+`jarvice-license-manager` is an optional component that must be explicitly enabled in the Helm chart, and configured either by Kubernetes *ConfigMap* (deprecated), or explicitly by API method.  The JARVICE web portal also provides a user interface in *Administration->License Manager*, which is considered best practice.  Additional configuration details follow...
 
 ### Service Configuration
 
@@ -114,7 +115,11 @@ For additional configuration parameters, see the `jarvice_license_manager` secti
 
 ### License Server Configuration
 
-#### ConfigMap
+#### Web Portal
+
+The best practice for configuring the license manager is to use the web portal's *Administration->License Manager* function.  Refer to the [Sample Configuration](#sample-configuration) below for additional details.
+
+#### ConfigMap (deprecated)
 
 A Kubernetes ConfigMap is needed in the "system" namespace called `jarvice-license-manager`.  To create this ConfigMap, create a directory called `etc`, with the file `servers.json` in it (see below for format).  Then run the following command:
 
@@ -125,6 +130,8 @@ kubectl create configmap -n jarvice-system --from-file=etc jarvice-license-manag
 (Replace `jarvice-system` with the "system" namespace if different.)
 
 Note that the `jarvice-license-manager` component must be restarted if the ConfigMap is changed; alternatively, it can be reloaded via the API's [/reload](#reload) method.
+
+**IMPORTANT NOTE**: Even if a ConfigMap is present, once the web portal method is used, it will migrate the configuration to the control plane database and ignore the ConfigMap from that point forward.
 
 #### Sample Configuration
 
@@ -223,9 +230,15 @@ Lists server configuration grouped by name/value pair for account variables - e.
 
 Lists server configuration for a specific name/value pair (specified in *config*).
 
+### /configure
+
+Without arguments, returns the current configuration in JSON format.  If the `config` argument contains valid JSON, it applies that configuration immediately and updates license server cache.
+
 ### /reload
 
 Reloads `servers.json` configuration; note that a failure (e.g. all license server configurations invalid) will cause the web service to terminate; use this endpoint to reload after applying changes to the `jarvice-license-manager` Kubernetes ConfigMap.  This endpoint also updates license counts for each configured server, even if performed outside the configured interval.
+
+**NOTE**: configuring via ConfigMap is deprecated; use the [/configure](#configure) method instead, which loads and stores configuration in the control plane database.
 
 ### /update
 
@@ -325,6 +338,14 @@ All errors are logged, and in DEBUG mode (log level 10), large amounts of intern
 In all cases the output of `jarvice-license-server`, in log level 10, is the suggested troubleshooting route.  This value can be set via the `jarvice.JARVICE_LICENSE_MANAGER_LOGLEVEL` variable.  The recommended production value is `20` (INFO).
 
 [Back to Contents](#contents)
+
+---
+
+## Advanced: Multiple License Server Addresses
+
+If a single application needs to consider multiple license server addresses for checkouts, the best practice is to consolidate these under a single entry and use the `address` key to specify the multiples, separated by a colon (`:`) character.  For example, if the `myservers` entry must consider multiple addresses, such as `1055@server1:1055@server2` (as would be passed to the `lmutil lmstat -c` command), you would specify the `port` as `1055` and the address as `server1:1055@server2`.  `jarvice-license-manager` would then concatenate this to `1055@server1:1055@server2` for the Flex `lmutil` client request to inspect the total and available feature counts.  The following rules apply:
+1. `jarvice-license-manager` will add the totals and consider them in aggregate for any reservations against the server entry with multiple addresses; it's expected the Flex license client in the solver will be able to do partial checkouts if all tokens are not available on one given address.  Note that `jarvice-license-manager` will consider the license request "available" if the total number of requested tokens for any given feature is less than or equal to the total number of available tokens across all daemon addresses queried for that server.  If the solver you are trying to use does not support this, you may end up with checkout failures even though `jarvice-license-manager` thinks there are enough tokens.  Check with your solver's software vendor if you are not sure how it considers availabilty of features across multiple servers.
+2. The best practice is to create server entries for each individual address as well as one for all addresses combined, so that the appropriate host resolution automation can take place.  Do this even if you don't plan on ever using the servers individually for best results.  For additional details, see [Flex server host name resolution](#flex-server-host-name-resolution).
 
 ---
 

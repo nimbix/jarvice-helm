@@ -7,9 +7,7 @@ locals {
         "cluster_ca_certificate" = azurerm_kubernetes_cluster.jarvice.kube_config[0].cluster_ca_certificate,
         "client_certificate" = azurerm_kubernetes_cluster.jarvice.kube_config[0].client_certificate,
         "client_key" = azurerm_kubernetes_cluster.jarvice.kube_config[0].client_key,
-        "token" = null,
-        "username" = null,
-        "password" = null
+        "token" = null
     }
 }
 
@@ -21,6 +19,8 @@ jarvice:
     nvidia:
       enabled: true
       nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "accelerator", "operator": "In", "values": ["nvidia"]}]}] }}'
+    rdma:
+      enabled: true
     flex_volume_plugin_nfs_nolock_install:
       enabled: true
       env:

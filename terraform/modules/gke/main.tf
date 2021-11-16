@@ -2,19 +2,14 @@
 
 terraform {
     required_providers {
-        google = "~> 3.68.0"
-        #google-beta = "~> 3.68.0"
-        google-beta = {
-            version = "~> 3.68.0"
-            source = "registry.terraform.io/local/google-beta"
-        }
+        google = "~> 4.1"
 
-        helm = "~> 2.1.2"
-        kubernetes = "~> 2.1.0"
+        helm = "~> 2.4"
+        kubernetes = "~> 2.6"
 
-        null = "~> 3.1.0"
-        local = "~> 2.1.0"
-        random = "~> 3.1.0"
+        null = "~> 3.1"
+        local = "~> 2.1"
+        random = "~> 3.1"
     }
 }
 
@@ -56,13 +51,10 @@ resource "google_project_service" "project_services" {
     disable_on_destroy = false
 }
 
-resource "random_id" "password" {
-    byte_length = 18
+data "google_client_config" "jarvice" {
 }
 
 data "google_container_engine_versions" "kubernetes_version" {
-    #provider = google-beta
-
     location = local.region
     version_prefix = "${var.cluster.meta["kubernetes_version"]}."
 }
@@ -73,8 +65,6 @@ locals {
 }
 
 resource "google_container_cluster" "jarvice" {
-    provider = google-beta
-
     name = var.cluster.meta["cluster_name"]
     location = local.region
     node_locations = local.zones
@@ -88,6 +78,7 @@ resource "google_container_cluster" "jarvice" {
 
     initial_node_count = 2
     remove_default_node_pool = false
+    enable_shielded_nodes = true
 
     node_config {
         machine_type = "n1-standard-1"
@@ -137,15 +128,6 @@ EOF
     #    }
     #}
 
-    master_auth {
-        username = local.username
-        password = random_id.password.hex
-
-        client_certificate_config {
-            issue_client_certificate = true
-        }
-    }
-
     resource_labels = {
         "cluster_name" = var.cluster.meta["cluster_name"]
     }
@@ -153,20 +135,18 @@ EOF
     depends_on = [google_project_service.project_services]
 
     lifecycle {
-        #ignore_changes = [min_master_version, node_version, node_config[0].workload_metadata_config, workload_identity_config]
-        ignore_changes = [min_master_version, node_version]
+        #ignore_changes = [min_master_version, node_version, enable_shielded_nodes, node_config[0].workload_metadata_config, workload_identity_config]
+        ignore_changes = [min_master_version, node_version, enable_shielded_nodes]
     }
 }
 
 resource "google_container_node_pool" "jarvice_system" {
-    #provider = google-beta
-
     name = "jxesystem"
     location = local.region
     node_locations = local.zones
 
     cluster = google_container_cluster.jarvice.name
-    version = local.node_version
+    version = google_container_cluster.jarvice.master_version
 
     initial_node_count = module.common.system_nodes_num
     autoscaling {
@@ -214,6 +194,123 @@ EOF
     }
 }
 
+resource "google_container_node_pool" "jarvice_dockerbuild" {
+    count = module.common.jarvice_cluster_type == "downstream" || var.cluster.dockerbuild_node_pool["nodes_type"] == null ? 0 : 1
+
+    name = "jxedockerbuild"
+    location = local.region
+    node_locations = local.zones
+
+    cluster = google_container_cluster.jarvice.name
+    version = google_container_cluster.jarvice.master_version
+
+    initial_node_count = var.cluster.dockerbuild_node_pool["nodes_num"]
+    autoscaling {
+        min_node_count = var.cluster.dockerbuild_node_pool["nodes_min"]
+        max_node_count = var.cluster.dockerbuild_node_pool["nodes_max"]
+    }
+
+    management {
+        auto_repair = false
+        auto_upgrade = false
+    }
+
+    node_config {
+        machine_type = var.cluster.dockerbuild_node_pool["nodes_type"]
+
+        image_type = "UBUNTU_CONTAINERD"
+
+        service_account = "default"
+        oauth_scopes = local.oauth_scopes
+
+        metadata = {
+            disable-legacy-endpoints = "true"
+            ssh-keys = <<EOF
+${local.username}:${module.common.ssh_public_key}
+EOF
+        }
+
+        labels = {
+            "node-role.jarvice.io/jarvice-dockerbuild" = "true"
+            "node-pool.jarvice.io/jarvice-dockerbuild" = "jxedockerbuild"
+        }
+        taint = [
+            {
+                key = "node-role.jarvice.io/jarvice-dockerbuild"
+                value = "true"
+                effect = "NO_SCHEDULE"
+            }
+        ]
+
+        tags = [google_container_cluster.jarvice.name, "jxedockerbuild"]
+    }
+
+    lifecycle {
+        ignore_changes = [version, initial_node_count]
+    }
+}
+
+resource "google_container_node_pool" "jarvice_images_pull" {
+    count = local.enable_gcfs == true ? 1 : 0
+
+    name = "jxeimagespull"
+    location = local.region
+    node_locations = local.zones
+
+    cluster = google_container_cluster.jarvice.name
+    version = local.node_version
+
+    initial_node_count = 0
+    autoscaling {
+        min_node_count = 0
+        max_node_count = 1
+    }
+
+    management {
+        auto_repair = false
+        auto_upgrade = false
+    }
+
+    node_config {
+        machine_type = "n1-standard-8"
+        disk_size_gb = 500
+        disk_type = "pd-ssd"
+
+        image_type = "COS_CONTAINERD"
+        gcfs_config {
+            enabled = true
+        }
+
+        service_account = "default"
+        oauth_scopes = local.oauth_scopes
+
+        metadata = {
+            disable-legacy-endpoints = "true"
+            ssh-keys = <<EOF
+${local.username}:${module.common.ssh_public_key}
+EOF
+        }
+
+        labels = {
+            "node-role.jarvice.io/jarvice-images-pull" = "true"
+            "node-pool.jarvice.io/jarvice-images-pull" = "jxeimagespull"
+        }
+        taint = [
+            {
+                key = "node-role.jarvice.io/jarvice-images-pull"
+                value = "true"
+                effect = "NO_SCHEDULE"
+            }
+        ]
+
+        tags = [google_container_cluster.jarvice.name, "jxeimagespull"]
+    }
+
+    lifecycle {
+        ignore_changes = [version, initial_node_count]
+    }
+}
+
 #resource "google_compute_resource_policy" "jarvice_compute" {
 #    name = var.cluster.meta["cluster_name"]
 #    region = local.region
@@ -226,14 +323,12 @@ EOF
 resource "google_container_node_pool" "jarvice_compute" {
     for_each = var.cluster["compute_node_pools"]
 
-    provider = google-beta
-
     name = each.key
     location = local.region
     node_locations = lookup(each.value.meta, "zones", null) != null ? split(",", each.value.meta["zones"]) : local.zones
 
     cluster = google_container_cluster.jarvice.name
-    version = local.node_version
+    version = google_container_cluster.jarvice.master_version
 
     initial_node_count = each.value["nodes_num"]
     autoscaling {

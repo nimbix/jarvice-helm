@@ -14,7 +14,7 @@ contexts:
 - context:
     cluster: ${google_container_cluster.jarvice.name}
     namespace: default
-    user: ${local.kube_config["username"]}
+    user: ${google_container_cluster.jarvice.name}
   name: ${google_container_cluster.jarvice.name}
 clusters:
 - cluster:
@@ -22,12 +22,15 @@ clusters:
     certificate-authority-data: ${local.kube_config["cluster_ca_certificate"]}
   name: ${google_container_cluster.jarvice.name}
 users:
-- name: ${local.kube_config["username"]}
+- name: ${google_container_cluster.jarvice.name}
   user:
-    username: ${local.kube_config["username"]}
-    password: ${local.kube_config["password"]}
-    client-certificate-data: ${local.kube_config["client_certificate"]}
-    client-key-data: ${local.kube_config["client_key"]}
+    auth-provider:
+      config:
+        cmd-args: config config-helper --format=json
+        cmd-path: gcloud
+        expiry-key: '{.credential.token_expiry}'
+        token-key: '{.credential.access_token}'
+      name: gcp
 EOF
 }
 
