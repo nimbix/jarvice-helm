@@ -7,16 +7,15 @@ terraform {
     # Make sure all providers are downloaded with the initial init
     required_providers {
         google = "~> 4.1"
-        aws = "~> 3.44.0"
-        azurerm = "~> 2.61.0"
+        aws = "~> 3.64"
+        azurerm = "~> 2.84"
 
-        helm = "~> 2.1.2"
-        kubernetes = "~> 2.1.0"
+        helm = "~> 2.4"
+        kubernetes = "~> 2.6"
 
-        null = "~> 3.1.0"
-        local = "~> 2.1.0"
-        template = "~> 2.2.0"
-        random = "~> 3.1.0"
+        null = "~> 3.1"
+        local = "~> 2.1"
+        random = "~> 3.1"
     }
 }
 

@@ -9,6 +9,7 @@ module "common" {
     system_nodes_type_upstream = "n1-standard-8"
     system_nodes_type_downstream = "n1-standard-4"
     storage_class_provisioner = "kubernetes.io/gce-pd"
+    storage_class_provisioner_dockerbuild = "pd.csi.storage.gke.io"
 }
 
 resource "google_service_account" "external_dns" {
@@ -20,7 +21,7 @@ resource "google_service_account" "external_dns" {
 resource "google_project_iam_member" "external_dns_admin" {
     role = "roles/dns.admin"
     member = "serviceAccount:${google_service_account.external_dns.email}"
-    project = lookup(var.cluster["meta"], "dns_zone_project", null)
+    project = lookup(var.cluster["meta"], "dns_zone_project", local.project)
 }
 
 resource "google_service_account_key" "external_dns" {
