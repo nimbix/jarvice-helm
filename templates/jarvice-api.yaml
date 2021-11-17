@@ -225,6 +225,12 @@ spec:
           - name: JARVICE_BUILD_NODE_AFFINITY
             value: '{{ .Values.jarvice.nodeAffinity }}'
 {{- end }}
+          - name: JARVICE_BUILD_IMAGE_PULL_POLICY
+{{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
+            value: "Always"
+{{- else }}
+            value: "IfNotPresent"
+{{- end }}
           - name: JARVICE_BUILD_RESOURCES_REQUESTS_CPU
             value: "{{ .Values.jarvice_dockerbuild.resources.requests.cpu }}"
           - name: JARVICE_BUILD_RESOURCES_REQUESTS_MEMORY
@@ -261,6 +267,12 @@ spec:
 {{- else if (not (empty .Values.jarvice.nodeAffinity)) }}
           - name: JARVICE_PULL_NODE_AFFINITY
             value: '{{ .Values.jarvice.nodeAffinity }}'
+{{- end }}
+          - name: JARVICE_PULL_IMAGE_PULL_POLICY
+{{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
+            value: "Always"
+{{- else }}
+            value: "IfNotPresent"
 {{- end }}
 {{- $smtpd := printf "jarvice-smtpd.%s:25" .Release.Namespace -}}
 {{- if (not (empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE)) }}
