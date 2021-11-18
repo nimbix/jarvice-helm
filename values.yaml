@@ -874,8 +874,6 @@ jarvice_appsync: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     JARVICE_SYSTEM_REGISTRY: # gcr.io
     JARVICE_SYSTEM_REPO_BASE: jarvice-apps
     JARVICE_APPSYNC_INTERVAL: 3600
-  livenessProbe:
-    periodSeconds: 900
 
 jarvice_mc_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
