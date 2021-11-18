@@ -76,9 +76,9 @@ spec:
 {{ toYaml $.Values.jarvice.daemonsets.images_pull.imagePullSecrets | indent 6 }}
 {{- end }}
       containers:
-{{- range $images }}
-      - name: {{ . | replace "/" "--" | replace ":" "--" | replace "." "-" | lower }}
-        image: {{ template "jarvice.registrysub" merge (dict "image" .) $ }}
+{{- range $index, $image := $images }}
+      - name: jarvice-images-pull-{{ $arch }}-{{ $index }}
+        image: {{ template "jarvice.registrysub" merge (dict "image" $image) $ }}
         imagePullPolicy: Always
         command: ['sleep', '{{ $.Values.jarvice.daemonsets.images_pull.interval }}']
 {{- end }}
