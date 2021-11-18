@@ -42,7 +42,7 @@ global = {  # Global config options can be overridden in cluster configs
 
 #jarvice:
   # imagePullSecret is a base64 encoded string.
-  # e.g. - echo "_json_key:$(cat gcr.io.json)" | base64 -w 0
+  # e.g. - echo "_json_key:$(cat key.json)" | base64 -w 0
   #imagePullSecret:
   #JARVICE_LICENSE_LIC:
 
