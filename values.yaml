@@ -167,13 +167,13 @@ jarvice:
       interval: 3600  # Default: 3600 (1 hour)
       images:
         #amd64:
-        #  - gcr.io/jarvice/app-filemanager:ocpassform
-        #  - gcr.io/jarvice/ubuntu-desktop:bionic
-        #  - gcr.io/jarvice/app-openfoam:8
+        #  - us-docker.pkg.dev/jarvice/images/app-filemanager:ocpassform
+        #  - us-docker.pkg.dev/jarvice/images/ubuntu-desktop:bionic
+        #  - us-docker.pkg.dev/jarvice/images/app-openfoam:8
         #arm64:
-        #  - gcr.io/jarvice/app-filemanager:ocpassform-arm
-        #  - gcr.io/jarvice/ubuntu-desktop:bionic-arm
-        #  - gcr.io/jarvice/app-openfoam:8-arm
+        #  - us-docker.pkg.dev/jarvice/images/app-filemanager:ocpassform-arm
+        #  - us-docker.pkg.dev/jarvice/images/ubuntu-desktop:bionic-arm
+        #  - us-docker.pkg.dev/jarvice/images/app-openfoam:8-arm
       #imagePullSecrets:  # additional imagePullSecrets to use
       #  - name: my-image-pull-secret-0
       #  - name: my-image-pull-secret-1
@@ -839,9 +839,9 @@ jarvice_images_pull:
   nodeSelector: # '{"node-role.jarvice.io/jarvice-images-pull": "true"}'
   images:
     #amd64:
-    #  - gcr.io/jarvice/app-filemanager:ocpassform
-    #  - gcr.io/jarvice/ubuntu-desktop:bionic
-    #  - gcr.io/jarvice/app-openfoam:8
+    #  - us-docker.pkg.dev/jarvice/images/app-filemanager:ocpassform
+    #  - us-docker.pkg.dev/jarvice/images/ubuntu-desktop:bionic
+    #  - us-docker.pkg.dev/jarvice/images/app-openfoam:8
   #imagePullSecrets:  # additional imagePullSecrets to use
   #  - name: my-image-pull-secret-0
   #  - name: my-image-pull-secret-1
