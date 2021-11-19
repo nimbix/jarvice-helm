@@ -25,6 +25,17 @@ If release name contains chart name it will be used as a full name.
 {{- end -}}
 
 {{/*
+JARVICE registry auths
+*/}}
+{{- define "jarvice.dockerconfigjson" -}}
+{{- if .Values.jarvice.JARVICE_SYSTEM_REGISTRY_ALT -}}
+{{- printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"},\"%s\": {\"auth\": \"%s\"}}}" .Values.jarvice.JARVICE_SYSTEM_REGISTRY .Values.jarvice.imagePullSecret .Values.jarvice.JARVICE_SYSTEM_REGISTRY_ALT .Values.jarvice.imagePullSecret | b64enc -}}
+{{- else -}}
+{{ printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" .Values.jarvice.JARVICE_SYSTEM_REGISTRY .Values.jarvice.imagePullSecret | b64enc }}
+{{- end -}}
+{{- end -}}
+
+{{/*
 JARVICE tag for images
 */}}
 {{- define "jarvice.tag" -}}
