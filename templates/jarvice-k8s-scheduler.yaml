@@ -168,6 +168,18 @@ spec:
             value: "{{ .Values.jarvice_k8s_scheduler.env.JARVICE_K8S_ADMIN_CONF }}"
           - name: JARVICE_SCHED_PLUGIN_USE
             value: "true"
+{{- if (not (empty .Values.jarvice.JARVICE_HTTP_PROXY)) }}
+          - name: HTTP_PROXY
+            value: "{{ .Values.jarvice.JARVICE_HTTP_PROXY }}"
+{{- end }}
+{{- if (not (empty .Values.jarvice.JARVICE_HTTPS_PROXY)) }}
+          - name: HTTPS_PROXY
+            value: "{{ .Values.jarvice.JARVICE_HTTPS_PROXY }}"
+{{- end }}
+{{- if (not (empty .Values.jarvice.JARVICE_NO_PROXY)) }}
+          - name: NO_PROXY
+            value: "{{ .Values.jarvice.JARVICE_NO_PROXY }}"
+{{- end }}
           - name: JARVICE_UNFS_REQUEST_MEM
 {{- if (not (empty .Values.jarvice_scheduler.env.JARVICE_UNFS_REQUEST_MEM)) }}
             value: "{{ .Values.jarvice_scheduler.env.JARVICE_UNFS_REQUEST_MEM }}"
