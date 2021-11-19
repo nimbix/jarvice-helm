@@ -19,6 +19,7 @@ jarvice:
   JARVICE_SYSTEM_REPO_BASE: jarvice-system/images
   JARVICE_IMAGES_TAG: jarvice-master
   JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
+  JARVICE_SYSTEM_REGISTRY_ALT: gcr.io
 
   # Optionally, run jobs on a "downstream" cluster by default
   JARVICE_DEFAULT_CLUSTER_URL: # "https://jarvice.downstream-domain.com"
