@@ -1,6 +1,6 @@
 jarvice:
   # imagePullSecret is a base64 encoded string.
-  # e.g. - echo "_json_key:$(cat gcr.io.json)" | base64 -w 0
+  # e.g. - echo "_json_key:$(cat key.json)" | base64 -w 0
   imagePullSecret:
   JARVICE_LICENSE_LIC:
 
@@ -13,8 +13,8 @@ jarvice:
   JARVICE_LOCAL_REGISTRY: # jarvice-registry:5000
   JARVICE_LOCAL_REPO_BASE: jarvice
 
-  JARVICE_SYSTEM_REGISTRY: gcr.io
-  JARVICE_SYSTEM_REPO_BASE: jarvice-system
+  JARVICE_SYSTEM_REGISTRY: us-docker.pkg.dev
+  JARVICE_SYSTEM_REPO_BASE: jarvice-system/images
   JARVICE_IMAGES_TAG: jarvice-master
   JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
 
@@ -731,8 +731,8 @@ jarvice_appsync: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   # If JARVICE_SYSTEM_REGISTRY and/or JARVICE_SYSTEM_REPO_BASE are not set in
   # jarvice_appsync.env, they will be set via the global jarvice stanza above.
   env:
-    JARVICE_SYSTEM_REGISTRY: # gcr.io
-    JARVICE_SYSTEM_REPO_BASE: jarvice-apps
+    JARVICE_SYSTEM_REGISTRY: # us-docker.pkg.dev
+    JARVICE_SYSTEM_REPO_BASE: jarvice-apps/images
     JARVICE_APPSYNC_INTERVAL: 3600
   livenessProbe:
     periodSeconds: 900
