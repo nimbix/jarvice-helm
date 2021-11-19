@@ -107,7 +107,7 @@ awsRegion: "${var.cluster.location["region"]}"
 cloudProvider: aws
 
 image:
-  repository: gcr.io/jarvice/cluster-autoscaler
+  repository: us-docker.pkg.dev/jarvice/images/cluster-autoscaler
   tag: v1.17.4
   pullPolicy: IfNotPresent
 
