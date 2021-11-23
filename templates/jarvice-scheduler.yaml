@@ -182,11 +182,11 @@ spec:
           - name: JARVICE_SCHED_PASS_LOGLEVEL
             value: "{{ .Values.jarvice.JARVICE_SCHED_PASS_LOGLEVEL }}"
 {{- if (not (empty .Values.jarvice.JARVICE_HTTP_PROXY)) }}
-          - name: HTTP_PROXY
+          - name: http_proxy
             value: "{{ .Values.jarvice.JARVICE_HTTP_PROXY }}"
 {{- end }}
 {{- if (not (empty .Values.jarvice.JARVICE_HTTPS_PROXY)) }}
-          - name: HTTPS_PROXY
+          - name: https_proxy
             value: "{{ .Values.jarvice.JARVICE_HTTPS_PROXY }}"
 {{- end }}
 {{- if or .Values.jarvice.JARVICE_HTTPS_PROXY .Values.jarvice.JARVICE_HTTP_PROXY .Values.jarvice.JARVICE_NO_PROXY }}
