@@ -107,7 +107,7 @@ awsRegion: "${var.cluster.location["region"]}"
 cloudProvider: aws
 
 image:
-  repository: gcr.io/jarvice/cluster-autoscaler
+  repository: us-docker.pkg.dev/jarvice/images/cluster-autoscaler
   tag: v1.17.4
   pullPolicy: IfNotPresent
 
@@ -140,7 +140,7 @@ EOF
             "values" = <<EOF
 image:
   repository: gcr.io/k8s-staging-metrics-server/metrics-server
-  tag: v0.4.1
+  tag: v0.4.5
   pullPolicy: IfNotPresent
 
 tolerations:

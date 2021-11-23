@@ -1,6 +1,6 @@
 jarvice:
   # imagePullSecret is a base64 encoded string.
-  # e.g. on command line: echo "_json_key:$(cat gcr.io.json)" | base64 -w 0
+  # e.g. on command line: echo "_json_key:$(cat key.json)" | base64 -w 0
   imagePullSecret:
   JARVICE_LICENSE_LIC:
 
@@ -13,12 +13,13 @@ jarvice:
   JARVICE_LOCAL_REGISTRY: # jarvice-registry:5000
   JARVICE_LOCAL_REPO_BASE: jarvice
 
-  JARVICE_REGISTRY_PROXY_REPOS: "gcr.io/jarvice,gcr.io/jarvice-system,gcr.io/jarvice-apps"
+  JARVICE_REGISTRY_PROXY_REPOS: "us-docker.pkg.dev/jarvice,us-docker.pkg.dev/jarvice-system,us-docker.pkg.dev/jarvice-apps"
 
-  JARVICE_SYSTEM_REGISTRY: gcr.io
-  JARVICE_SYSTEM_REPO_BASE: jarvice-system
+  JARVICE_SYSTEM_REGISTRY: us-docker.pkg.dev
+  JARVICE_SYSTEM_REPO_BASE: jarvice-system/images
   JARVICE_IMAGES_TAG: jarvice-master
   JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
+  JARVICE_SYSTEM_REGISTRY_ALT: gcr.io
 
   # Optionally, run jobs on a "downstream" cluster by default
   JARVICE_DEFAULT_CLUSTER_URL: # "https://jarvice.downstream-domain.com"
@@ -172,13 +173,13 @@ jarvice:
       interval: 3600  # Default: 3600 (1 hour)
       images:
         #amd64:
-        #  - gcr.io/jarvice/app-filemanager:ocpassform
-        #  - gcr.io/jarvice/ubuntu-desktop:bionic
-        #  - gcr.io/jarvice/app-openfoam:8
+        #  - us-docker.pkg.dev/jarvice/images/app-filemanager:ocpassform
+        #  - us-docker.pkg.dev/jarvice/images/ubuntu-desktop:bionic
+        #  - us-docker.pkg.dev/jarvice/images/app-openfoam:8
         #arm64:
-        #  - gcr.io/jarvice/app-filemanager:ocpassform-arm
-        #  - gcr.io/jarvice/ubuntu-desktop:bionic-arm
-        #  - gcr.io/jarvice/app-openfoam:8-arm
+        #  - us-docker.pkg.dev/jarvice/images/app-filemanager:ocpassform-arm
+        #  - us-docker.pkg.dev/jarvice/images/ubuntu-desktop:bionic-arm
+        #  - us-docker.pkg.dev/jarvice/images/app-openfoam:8-arm
       #imagePullSecrets:  # additional imagePullSecrets to use
       #  - name: my-image-pull-secret-0
       #  - name: my-image-pull-secret-1
@@ -187,14 +188,14 @@ jarvice:
       tolerations: # '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
-      image: gcr.io/jarvice/jarvice-cache-pull:20201116
+      image: us-docker.pkg.dev/jarvice/images/jarvice-cache-pull:20201116
       imagePullPolicy: IfNotPresent
     lxcfs:
       enabled: false
       tolerations: # '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
-      image: gcr.io/jarvice/lxcfs:3.0.3-4
+      image: us-docker.pkg.dev/jarvice/images/lxcfs:3.0.3-4
       imagePullPolicy: IfNotPresent
       env:
         HOST_LXCFS_DIR: /var/lib/lxcfs
@@ -204,14 +205,14 @@ jarvice:
       tolerations: #'[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64"]}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64"]}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true", "kubernetes.io/arch": "amd64"}'
-      image: gcr.io/jarvice/busybox:latest
+      image: us-docker.pkg.dev/jarvice/images/busybox:latest
       imagePullPolicy: IfNotPresent
     node_init:
       enabled: false
       tolerations: # '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
-      image: gcr.io/jarvice/busybox:latest
+      image: us-docker.pkg.dev/jarvice/images/busybox:latest
       imagePullPolicy: IfNotPresent
       env:
         COMMAND: |
@@ -223,14 +224,14 @@ jarvice:
       tolerations: # '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64", "ppc64le"]}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64", "ppc64le"]}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true", "kubernetes.io/arch": "amd64"}'
-      image: gcr.io/jarvice/nvidia-k8s-device-plugin:1.11
+      image: us-docker.pkg.dev/jarvice/images/nvidia-k8s-device-plugin:1.11
       imagePullPolicy: IfNotPresent
     nvidia_install:
       enabled: false
       tolerations: # '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64", "ppc64le"]}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64", "ppc64le"]}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true", "kubernetes.io/arch": "amd64"}'
-      image: gcr.io/jarvice/busybox:latest
+      image: us-docker.pkg.dev/jarvice/images/busybox:latest
       imagePullPolicy: IfNotPresent
       env:
         NVIDIA_DRIVER_VERSION: 450.102.04-1
@@ -240,21 +241,21 @@ jarvice:
       # Xilinx FPGA only supports amd64 arch
       nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64"]}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64"]}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true", "kubernetes.io/arch": "amd64"}'
-      image: gcr.io/jarvice/xilinx_k8s_fpga_plugin:2020.11.24
+      image: us-docker.pkg.dev/jarvice/images/xilinx_k8s_fpga_plugin:2020.11.24
       imagePullPolicy: IfNotPresent
     rdma:
       enabled: false
       tolerations: # '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}, {"key": "jarvice.com/rdma", "operator": "Exists",  "effect": "NoSchedule"}]'
       nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
-      image: gcr.io/jarvice/k8s-rdma-device:1.0.3
+      image: us-docker.pkg.dev/jarvice/images/k8s-rdma-device:1.0.3
       imagePullPolicy: IfNotPresent
     dri_optional:
       enabled: true
       tolerations: # '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
-      image: gcr.io/jarvice/k8s-dri-optional-device:1.0.2
+      image: us-docker.pkg.dev/jarvice/images/k8s-dri-optional-device:1.0.2
       imagePullPolicy: IfNotPresent
       env:
         DRI_INIT_DELAY: 1
@@ -264,7 +265,7 @@ jarvice:
       tolerations: '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.jarvice.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.jarvice.io/jarvice-storage", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-storage", "effect": "NoSchedule", "operator": "Exists"}]'
       nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-system", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-storage", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-storage", "operator": "Exists"}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true", "kubernetes.io/arch": "amd64"}'
-      image: gcr.io/jarvice/busybox:latest
+      image: us-docker.pkg.dev/jarvice/images/busybox:latest
       imagePullPolicy: IfNotPresent
       env:
         KUBELET_PLUGIN_DIR: /usr/libexec/kubernetes/kubelet-plugins/volume/exec
@@ -274,7 +275,7 @@ jarvice:
       tolerations: '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.jarvice.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-system", "operator": "Exists"}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}' # '{"node-role.jarvice.io/jarvice-system": "true"}'
-      image: gcr.io/jarvice/busybox:latest
+      image: us-docker.pkg.dev/jarvice/images/busybox:latest
       imagePullPolicy: IfNotPresent
       env:
         DOCKER_CERTS_DIR: /etc/docker/certs.d
@@ -302,7 +303,7 @@ jarvice_db: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   nodeSelector: # '{"node-role.jarvice.io/jarvice-db": "true"}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
-  image: gcr.io/jarvice/mariadb:10.5
+  image: us-docker.pkg.dev/jarvice/images/mariadb:10.5
   imagePullPolicy: IfNotPresent
   persistence:
     enabled: false
@@ -380,7 +381,7 @@ jarvice_smtpd: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   nodeSelector: # '{"node-role.jarvice.io/jarvice-smtpd": "true"}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
-  image: gcr.io/jarvice/postfix:3.11_3.4.12-r0
+  image: us-docker.pkg.dev/jarvice/images/postfix:3.11_3.4.12-r0
   imagePullPolicy: IfNotPresent
 
 # Web service to map a username to full Linux identity based on inspection
@@ -417,7 +418,7 @@ jarvice_idmapper: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   nodeSelector: # '{"node-role.jarvice.io/jarvice-idmapper": "true"}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
-  image: gcr.io/jarvice/idmapper:20201116
+  image: us-docker.pkg.dev/jarvice/images/idmapper:20201116
   imagePullPolicy: IfNotPresent
   # Shared filesystem settings.  Defaults to hostPath if NFS server is not set
   filesystem:
@@ -454,7 +455,7 @@ jarvice_memcached: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   nodeSelector: # '{"node-role.jarvice.io/jarvice-memcached": "true"}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
-  image: gcr.io/jarvice/memcached:1.5
+  image: us-docker.pkg.dev/jarvice/images/memcached:1.5
   imagePullPolicy: IfNotPresent
   maxItemMemory: 64
   verbosity: v
@@ -485,7 +486,7 @@ jarvice_registry_proxy:
   tolerations: # '[{"key": "node-role.jarvice.io/jarvice-registry-proxy", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-registry-proxy", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-registry-proxy", "operator": "Exists"}]}] }}'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-registry-proxy": "true"}'
-  image: gcr.io/jarvice/registry:2
+  image: us-docker.pkg.dev/jarvice/images/registry:2
   imagePullPolicy: IfNotPresent
   persistence:
     enabled: false
@@ -500,9 +501,9 @@ jarvice_registry_proxy:
   env:
     # jarvice.JARVICE_SYSTEM_REGISTRY and jarvice.imagePullSecret will be used
     # to set the values for REGISTRY_PROXY_* unless overridden here
-    REGISTRY_PROXY_REMOTEURL: # gcr.io  # (auto-prefixed with "https://")
+    REGISTRY_PROXY_REMOTEURL: # us-docker.pkg.dev  # (auto-prefixed with "https://")
     REGISTRY_PROXY_USERNAME: # _json_key
-    REGISTRY_PROXY_PASSWORD: # base64 encoded: cat gcr.io.json | base64 -w 0
+    REGISTRY_PROXY_PASSWORD: # base64 encoded: cat key.json | base64 -w 0
 
 # Enable to use a kubernetes CronJob to schedule image garbage collection
 jarvice_registry_proxy_gc: # N/A if jarvice_registry_proxy.enabled is false
@@ -513,7 +514,7 @@ jarvice_registry_proxy_gc: # N/A if jarvice_registry_proxy.enabled is false
   tolerations: # '[{"key": "node-role.jarvice.io/jarvice-registry-proxy", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-registry-proxy", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-registry-proxy", "operator": "Exists"}]}] }}'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-registry-proxy": "true"}'
-  image: gcr.io/jarvice/jarvice-kubectl:v1.20.5
+  image: us-docker.pkg.dev/jarvice/images/jarvice-kubectl:v1.20.5
   imagePullPolicy: IfNotPresent
   env:
     IMAGE_LAST_ACCESS_SECONDS: 2592000  # Default: 2592000 (30 days)
@@ -675,7 +676,7 @@ jarvice_k8s_scheduler:
     JARVICE_UNFS_REQUEST_CPU: 1
     JARVICE_UNFS_EXPIRE_SECS: 90
     JARVICE_UNFS_NODE_SELECTOR: # '{"node-role.jarvice.io/jarvice-storage": "true"}' # '{"node-role.kubernetes.io/jarvice-storage": "true"}'
-    JARVICE_UNFS3_IMAGE: # gcr.io/jarvice/unfs3:20190318-1 - change if mirroring locally
+    JARVICE_UNFS3_IMAGE: # us-docker.pkg.dev/jarvice/images/unfs3:20190318-1 - change if mirroring locally
     JARVICE_PVCLS_IMAGE: # alpine:3.8 - change if mirroring locally
     JARVICE_SCHED_JOB_UID:  # set to numeric value to override UID for jobs
     JARVICE_SCHED_JOB_GID:  # set to numeric value to override GID for jobs
@@ -825,7 +826,7 @@ jarvice_dockerbuild_pvc_gc:
   tolerations: # '[{"key": "node-role.jarvice.io/jarvice-dockerbuild-pvc-gc", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-dockerbuild-pvc-gc", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-dockerbuild-pvc-gc", "operator": "Exists"}]}] }}'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-dockerbuild-pvc-gc": "true"}'
-  image: gcr.io/jarvice/jarvice-kubectl:v1.20.5
+  image: us-docker.pkg.dev/jarvice/images/jarvice-kubectl:v1.20.5
   imagePullPolicy: IfNotPresent
   env:
     JARVICE_BUILD_PVC_KEEP_SUCCESSFUL: 3600  # Default: 3600 (1 hour)
@@ -844,9 +845,9 @@ jarvice_images_pull:
   nodeSelector: # '{"node-role.jarvice.io/jarvice-images-pull": "true"}'
   images:
     #amd64:
-    #  - gcr.io/jarvice/app-filemanager:ocpassform
-    #  - gcr.io/jarvice/ubuntu-desktop:bionic
-    #  - gcr.io/jarvice/app-openfoam:8
+    #  - us-docker.pkg.dev/jarvice/images/app-filemanager:ocpassform
+    #  - us-docker.pkg.dev/jarvice/images/ubuntu-desktop:bionic
+    #  - us-docker.pkg.dev/jarvice/images/app-openfoam:8
   #imagePullSecrets:  # additional imagePullSecrets to use
   #  - name: my-image-pull-secret-0
   #  - name: my-image-pull-secret-1
@@ -876,11 +877,9 @@ jarvice_appsync: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   # If JARVICE_SYSTEM_REGISTRY and/or JARVICE_SYSTEM_REPO_BASE are not set in
   # jarvice_appsync.env, they will be set via the global jarvice stanza above.
   env:
-    JARVICE_SYSTEM_REGISTRY: # gcr.io
+    JARVICE_SYSTEM_REGISTRY: # us-docker.pkg.dev
     JARVICE_SYSTEM_REPO_BASE: jarvice-apps
     JARVICE_APPSYNC_INTERVAL: 3600
-  livenessProbe:
-    periodSeconds: 900
 
 jarvice_mc_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true

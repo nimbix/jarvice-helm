@@ -1,3 +1,4 @@
+{{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if .Values.jarvice_api.enabled }}
 {{- if .Values.jarvice_dockerbuild.persistence.enabled }}
 {{- if .Values.jarvice_dockerbuild_pvc_gc.enabled }}
@@ -92,6 +93,7 @@ metadata:
 data:
   jarvice-dockerbuild-pvc-gc: |-
 {{ .Files.Get "files/jarvice-dockerbuild-pvc-gc" | indent 4 }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- end }}

@@ -42,7 +42,7 @@ global = {  # Global config options can be overridden in cluster configs
 
 #jarvice:
   # imagePullSecret is a base64 encoded string.
-  # e.g. - echo "_json_key:$(cat gcr.io.json)" | base64 -w 0
+  # e.g. - echo "_json_key:$(cat key.json)" | base64 -w 0
   #imagePullSecret:
   #JARVICE_LICENSE_LIC:
 
@@ -486,9 +486,9 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
   #scheduleNow: false  # Immediately schedule images pull job on install/upgrade
   #images:
   #  amd64:
-  #    - gcr.io/jarvice/app-filemanager:ocpassform
-  #    - gcr.io/jarvice/ubuntu-desktop:bionic
-  #    - gcr.io/jarvice/app-openfoam:8
+  #    - us-docker.pkg.dev/jarvice/images/app-filemanager:ocpassform
+  #    - us-docker.pkg.dev/jarvice/images/ubuntu-desktop:bionic
+  #    - us-docker.pkg.dev/jarvice/images/app-openfoam:8
 
 #jarvice_api:
   #ingressHost: tf-jarvice.my-domain.com
@@ -636,9 +636,9 @@ jarvice:
   #scheduleNow: false  # Immediately schedule images pull job on install/upgrade
   #images:
   #  amd64:
-  #    - gcr.io/jarvice/app-filemanager:ocpassform
-  #    - gcr.io/jarvice/ubuntu-desktop:bionic
-  #    - gcr.io/jarvice/app-openfoam:8
+  #    - us-docker.pkg.dev/jarvice/images/app-filemanager:ocpassform
+  #    - us-docker.pkg.dev/jarvice/images/ubuntu-desktop:bionic
+  #    - us-docker.pkg.dev/jarvice/images/app-openfoam:8
 
 #jarvice_k8s_scheduler:
   #ingressHost: tf-jarvice-downstream.my-domain.com

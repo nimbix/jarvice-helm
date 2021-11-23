@@ -376,7 +376,7 @@ resource "kubernetes_daemonset" "nvidia_driver_installer_cos" {
                     }
                 }
                 container {
-                    image = "gcr.io/google-containers/pause:2.0"
+                    image = "gcr.io/google-containers/pause:3.2"
                     name  = "pause"
                 }
             }
