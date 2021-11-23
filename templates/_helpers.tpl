@@ -31,7 +31,7 @@ JARVICE registry auths
 {{- if .Values.jarvice.JARVICE_SYSTEM_REGISTRY_ALT -}}
 {{- printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"},\"%s\": {\"auth\": \"%s\"}}}" .Values.jarvice.JARVICE_SYSTEM_REGISTRY .Values.jarvice.imagePullSecret .Values.jarvice.JARVICE_SYSTEM_REGISTRY_ALT .Values.jarvice.imagePullSecret | b64enc -}}
 {{- else -}}
-{{ printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" .Values.jarvice.JARVICE_SYSTEM_REGISTRY .Values.jarvice.imagePullSecret | b64enc }}
+{{- printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" .Values.jarvice.JARVICE_SYSTEM_REGISTRY .Values.jarvice.imagePullSecret | b64enc -}}
 {{- end -}}
 {{- end -}}
 
