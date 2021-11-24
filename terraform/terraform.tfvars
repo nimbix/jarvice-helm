@@ -339,7 +339,7 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
 
         meta = {
             cluster_name = "tf-jarvice"
-            kubernetes_version = "1.20"
+            kubernetes_version = "1.21"
 
             # Sync ingress hosts to zones/domains managed w/ Google Cloud DNS
             #dns_manage_records = "true"
@@ -510,7 +510,7 @@ EOF
 
         meta = {
             cluster_name = "tf-jarvice-downstream"
-            kubernetes_version = "1.20"
+            kubernetes_version = "1.21"
 
             # Sync ingress hosts to zones/domains managed w/ Google Cloud DNS
             #dns_manage_records = "true"
