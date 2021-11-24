@@ -860,7 +860,7 @@ line with:
 
 Repositories listed in `JARVICE_REGISTRY_PROXY_REPOS` will utilize the proxy
 for application containers. This comma separated list defaults to
-`gcr.io/jarvice,gcr.io/jarvice-system,gcr.io/jarvice-apps` and can be
+`us-docker.pkg.dev/jarvice,us-docker.pkg.dev/jarvice-system,us-docker.pkg.dev/jarvice-apps` and can be
 customized within `override.yaml` file or via the command line with:
 
 `--set jarvice.JARVICE_REGISTRY_PROXY_REPOS="<repo_lists_served_by_proxy>"`
@@ -991,34 +991,33 @@ $ kubectl --namespace <jarvice-system-daemonsets> delete configmap \
 $ cat >image.config <<EOF
 [
     {
-        "ref": "ubuntu:xenial",
-        "registry": "docker.io",
+        "ref": "app-filemanager",
+        "registry": "us-docker.pkg.dev",
         "private": false,
-        "config": "jarvice-docker",
         "arch": {
-            "amd64": "docker.io/library/ubuntu:xenial",
-            "ppc64le": "docker.io/ppc64le/ubuntu:xenial"
+            "amd64": "us-docker.pkg.dev/jarvice/images/app-filemanager:ocpassform",
+            "arm64": "us-docker.pkg.dev/jarvice/images/app-filemanager:ocpassform-arm"
         }
     },
     {
-        "ref": "centos:latest",
-        "registry": "docker.io",
+        "ref": "ubuntu-desktop",
+        "registry": "us-docker.pkg.dev",
         "private": false,
-        "config": "jarvice-docker",
         "arch": {
-            "amd64": "docker.io/library/centos:7",
-            "ppc64le": "docker.io/ppc64le/centos:7"
+            "amd64": "us-docker.pkg.dev/jarvice/images/ubuntu-desktop:bionic",
+            "arm64": "us-docker.pkg.dev/jarvice/images/ubuntu-desktop:bionic-arm"
         }
     },
     {
-        "ref": "base-centos7-realvnc",
-        "registry": "quay.io",
-        "private": true,
-        "config": "jarvice-docker",
+        "ref": "app-openfoam",
+        "registry": "us-docker.pkg.dev",
+        "private": false,
         "arch": {
-            "amd64": "gcr.io/nimbix/base-centos7-realvnc:7.5"
+            "amd64": "us-docker.pkg.dev/jarvice/images/app-openfoam:8",
+            "arm64": "us-docker.pkg.dev/jarvice/images/app-openfoam:8-arm"
         }
     }
+]
 EOF
 $ kubectl --namespace <jarvice-system-daemonsets> create configmap \
     jarvice-cache-pull --from-literal interval=300 --from-file image.config

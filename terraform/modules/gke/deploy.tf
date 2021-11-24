@@ -235,20 +235,18 @@ EOF
 }
 
 resource "kubernetes_daemonset" "nvidia_driver_installer_cos" {
-    count = 0
-
     metadata {
-        name = "nvidia-driver-installer"
+        name = "nvidia-driver-installer-cos"
         namespace = "kube-system"
         labels = {
-            k8s-app = "nvidia-driver-installer"
+            k8s-app = "nvidia-driver-installer-cos"
         }
     }
 
     spec {
         selector {
             match_labels = {
-                k8s-app = "nvidia-driver-installer"
+                k8s-app = "nvidia-driver-installer-cos"
             }
         }
         strategy {
@@ -258,8 +256,8 @@ resource "kubernetes_daemonset" "nvidia_driver_installer_cos" {
         template {
             metadata {
                 labels = {
-                    name = "nvidia-driver-installer"
-                    k8s-app = "nvidia-driver-installer"
+                    name = "nvidia-driver-installer-cos"
+                    k8s-app = "nvidia-driver-installer-cos"
                 }
             }
 
@@ -271,6 +269,11 @@ resource "kubernetes_daemonset" "nvidia_driver_installer_cos" {
                                 match_expressions {
                                     key = "cloud.google.com/gke-accelerator"
                                     operator = "Exists"
+                                }
+                                match_expressions {
+                                    key = "cloud.google.com/gke-os-distribution"
+                                    operator = "In"
+                                    values = ["cos"]
                                 }
                             }
                         }
@@ -314,7 +317,7 @@ resource "kubernetes_daemonset" "nvidia_driver_installer_cos" {
                 init_container {
                     image = "cos-nvidia-installer:fixed"
                     image_pull_policy = "Never"
-                    name = "nvidia-driver-installer"
+                    name = "nvidia-driver-installer-cos"
                     resources {
                         requests = {
                             cpu = "0.15"
@@ -351,13 +354,35 @@ resource "kubernetes_daemonset" "nvidia_driver_installer_cos" {
                         name = "COS_TOOLS_DIR_CONTAINER"
                         value = "/build/cos-tools"
                     }
+                    volume_mount {
+                        name = "nvidia-install-dir-host"
+                        mount_path = "/use/local/nvidia"
+                    }
+                    volume_mount {
+                        name = "vulkan-icd-mount"
+                        mount_path = "/etc/vulkan/idc.d"
+                    }
+                    volume_mount {
+                        name = "dev"
+                        mount_path = "/dev"
+                    }
+                    volume_mount {
+                        name = "root-mount"
+                        mount_path = "/root"
+                    }
+                    volume_mount {
+                        name = "cos-tools"
+                        mount_path = "/build/cos-tools"
+                    }
                 }
                 container {
-                    image = "gcr.io/google-containers/pause:2.0"
+                    image = "gcr.io/google-containers/pause:3.2"
                     name  = "pause"
                 }
             }
         }
     }
+
+    depends_on = [google_container_cluster.jarvice, local_file.kube_config]
 }
 

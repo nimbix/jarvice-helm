@@ -3,7 +3,7 @@
 {{- $daemonSetsNamespace = .Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE -}}
 {{- end }}
 {{- $daemonSetsItems := (lookup "apps/v1" "DaemonSet" "" "").items -}}
-{{- if or .Values.jarvice.daemonsets.cache_pull.enabled .Values.jarvice.daemonsets.lxcfs.enabled .Values.jarvice.daemonsets.nvidia.enabled .Values.jarvice.daemonsets.rdma.enabled .Values.jarvice.daemonsets.node_init.enabled .Values.jarvice.daemonsets.disable_hyper_threading.enabled .Values.jarvice.daemonsets.dri_optional.enabled .Values.jarvice.daemonsets.nvidia_install.enabled .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.enabled .Values.jarvice_registry_proxy.enabled }}
+{{- if or .Values.jarvice.daemonsets.images_pull.enabled .Values.jarvice.daemonsets.cache_pull.enabled .Values.jarvice.daemonsets.lxcfs.enabled .Values.jarvice.daemonsets.nvidia.enabled .Values.jarvice.daemonsets.rdma.enabled .Values.jarvice.daemonsets.node_init.enabled .Values.jarvice.daemonsets.disable_hyper_threading.enabled .Values.jarvice.daemonsets.dri_optional.enabled .Values.jarvice.daemonsets.nvidia_install.enabled .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.enabled .Values.jarvice_registry_proxy.enabled }}
 apiVersion: scheduling.k8s.io/v1
 kind: PriorityClass
 metadata:
@@ -21,6 +21,74 @@ value: 1000000000
 globalDefault: false
 description: "This priority class is for JARVICE DaemonSet pods."
 ---
+{{- end }}
+{{- if .Values.jarvice.daemonsets.images_pull.enabled }}
+{{- range $arch, $images := .Values.jarvice.daemonsets.images_pull.images }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: jarvice-images-pull-{{ $arch }}
+{{- if empty $.Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+  namespace: {{ $.Release.Namespace }}-daemonsets
+{{- else }}
+  namespace: {{ $.Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
+  labels:
+    {{- include "jarvice.release_labels" $ | indent 4 }}
+    component: jarvice-images-pull
+spec:
+  selector:
+    matchLabels:
+      component: jarvice-images-pull
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" $ | indent 8 }}
+        component: jarvice-images-pull
+    spec:
+{{- if (not (empty $.Values.jarvice.daemonsets.images_pull.tolerations)) }}
+      tolerations: {{ $.Values.jarvice.daemonsets.images_pull.tolerations }}
+{{- else if (not (empty $.Values.jarvice.daemonsets.tolerations)) }}
+      tolerations: {{ $.Values.jarvice.daemonsets.tolerations }}
+{{- end }}
+{{- if (not (empty $.Values.jarvice.daemonsets.images_pull.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ $.Values.jarvice.daemonsets.images_pull.nodeAffinity  }}
+{{- else if (not (empty $.Values.jarvice.daemonsets.nodeAffinity)) }}
+      affinity:
+        nodeAffinity: {{ $.Values.jarvice.daemonsets.nodeAffinity }}
+{{- end }}
+      nodeSelector:
+        kubernetes.io/arch: {{ $arch }}
+{{- if (not (empty $.Values.jarvice.daemonsets.images_pull.nodeSelector)) }}
+{{- range $key, $value := (fromJson $.Values.jarvice.daemonsets.images_pull.nodeSelector) }}
+        "{{ $key }}": "{{ $value }}"
+{{- end }}
+{{- else if (not (empty $.Values.jarvice.daemonsets.nodeSelector)) }}
+      nodeSelector: {{ $.Values.jarvice.daemonsets.nodeSelector }}
+{{- range $key, $value := (fromJson $.Values.jarvice.daemonsets.nodeSelector) }}
+        "{{ $key }}": "{{ $value }}"
+{{- end }}
+{{- end }}
+      imagePullSecrets:
+      - name: jarvice-docker
+{{- if $.Values.jarvice.daemonsets.images_pull.imagePullSecrets }}
+{{ toYaml $.Values.jarvice.daemonsets.images_pull.imagePullSecrets | indent 6 }}
+{{- end }}
+      containers:
+{{- range $index, $image := $images }}
+      - name: jarvice-images-pull-{{ $arch }}-{{ $index }}
+        image: {{ template "jarvice.registrysub" merge (dict "image" $image) $ }}
+        imagePullPolicy: Always
+        command: ['sleep', '{{ $.Values.jarvice.daemonsets.images_pull.interval }}']
+{{- end }}
+{{- if empty $.Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+      priorityClassName: {{ $.Release.Namespace }}-daemonsets
+{{- else }}
+      priorityClassName: {{ $.Values.jarvice.JARVICE_DAEMONSETS_NAMESPACE }}
+{{- end }}
+---
+{{- end }}
 {{- end }}
 {{- if .Values.jarvice.daemonsets.cache_pull.enabled }}
 apiVersion: apps/v1
@@ -127,65 +195,30 @@ data:
   image.config: |
     [
         {
-            "ref": "base-centos7-realvnc:7.5",
-            "registry": "gcr.io",
-            "private": true,
-            "config": "jarvice-docker",
-            "arch": {
-                "amd64": "gcr.io/jarvice-apps/base-centos7-realvnc:7.5"
-            }
-        },
-        {
-            "ref": "base-centos7-realvnc:7.4",
-            "registry": "gcr.io",
-            "private": true,
-            "config": "jarvice-docker",
-            "arch": {
-                "amd64": "gcr.io/jarvice-apps/base-centos7-realvnc:7.4"
-            }
-        },
-        {
             "ref": "app-filemanager",
-            "registry": "docker.io",
+            "registry": "us-docker.pkg.dev",
             "private": false,
             "arch": {
-                "amd64": "docker.io/jarvice/app-filemanager:latest"
+                "amd64": "us-docker.pkg.dev/jarvice/images/app-filemanager:ocpassform",
+                "arm64": "us-docker.pkg.dev/jarvice/images/app-filemanager:ocpassform-arm"
             }
         },
         {
-            "ref": "ubuntu:bionic",
-            "registry": "docker.io",
+            "ref": "ubuntu-desktop",
+            "registry": "us-docker.pkg.dev",
             "private": false,
             "arch": {
-                "amd64": "docker.io/ubuntu:bionic",
-                "ppc64le": "docker.io/ubuntu:bionic"
+                "amd64": "us-docker.pkg.dev/jarvice/images/ubuntu-desktop:bionic",
+                "arm64": "us-docker.pkg.dev/jarvice/images/ubuntu-desktop:bionic-arm"
             }
         },
         {
-            "ref": "ubuntu:xenial",
-            "registry": "docker.io",
+            "ref": "app-openfoam",
+            "registry": "us-docker.pkg.dev",
             "private": false,
             "arch": {
-                "amd64": "docker.io/ubuntu:xenial",
-                "ppc64le": "docker.io/ubuntu:xenial"
-            }
-        },
-        {
-            "ref": "centos:8",
-            "registry": "docker.io",
-            "private": false,
-            "arch": {
-                "amd64": "docker.io/centos:8",
-                "ppc64le": "docker.io/centos:8"
-            }
-        },
-        {
-            "ref": "centos:7",
-            "registry": "docker.io",
-            "private": false,
-            "arch": {
-                "amd64": "docker.io/centos:7",
-                "ppc64le": "docker.io/centos:7"
+                "amd64": "us-docker.pkg.dev/jarvice/images/app-openfoam:8",
+                "arm64": "us-docker.pkg.dev/jarvice/images/app-openfoam:8-arm"
             }
         }
     ]

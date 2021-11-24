@@ -42,7 +42,7 @@ global = {  # Global config options can be overridden in cluster configs
 
 #jarvice:
   # imagePullSecret is a base64 encoded string.
-  # e.g. - echo "_json_key:$(cat gcr.io.json)" | base64 -w 0
+  # e.g. - echo "_json_key:$(cat key.json)" | base64 -w 0
   #imagePullSecret:
   #JARVICE_LICENSE_LIC:
 
@@ -377,6 +377,7 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
                 meta = {
                     disable_hyperthreading = "true"
                     disk_type = "pd-standard" # "pd-ssd" # "pd-balanced"
+                    #enable_gcfs = "true"
                     #zones = "us-west1-a,us-west1-b,us-west1-c"
 
                     # Visit the following link for GCP accelerator type specs:
@@ -395,6 +396,7 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
             #    meta = {
             #        disable_hyperthreading = "true"
             #        disk_type = "pd-standard" # "pd-ssd" # "pd-balanced"
+            #        #enable_gcfs = "true"
             #        #zones = "us-west1-a,us-west1-b,us-west1-c"
             #
             #        # Visit the following link for GCP accelerator type specs:
@@ -479,6 +481,15 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
   #  JARVICE_BUILD_PVC_KEEP_ABORTED: 7200  # Default: 7200 (2 hours)
   #  JARVICE_BUILD_PVC_KEEP_FAILED: 14400  # Default: 14400 (4 hours)
 
+#jarvice_images_pull: # Auto-enabled on clusters with GCFS enabled node pool(s)
+  #schedule: "0 4 * * *"
+  #scheduleNow: false  # Immediately schedule images pull job on install/upgrade
+  #images:
+  #  amd64:
+  #    - us-docker.pkg.dev/jarvice/images/app-filemanager:ocpassform
+  #    - us-docker.pkg.dev/jarvice/images/ubuntu-desktop:bionic
+  #    - us-docker.pkg.dev/jarvice/images/app-openfoam:8
+
 #jarvice_api:
   #ingressHost: tf-jarvice.my-domain.com
   #ingressPath: "/api"
@@ -537,6 +548,7 @@ EOF
                 meta = {
                     disable_hyperthreading = "true"
                     disk_type = "pd-standard" # "pd-ssd" # "pd-balanced"
+                    #enable_gcfs = "true"
                     #zones = "us-west1-a,us-west1-b,us-west1-c"
 
                     # Visit the following link for GCP accelerator type specs:
@@ -555,6 +567,7 @@ EOF
             #    meta = {
             #        disable_hyperthreading = "true"
             #        disk_type = "pd-standard" # "pd-ssd" # "pd-balanced"
+            #        #enable_gcfs = "true"
             #        #zones = "us-west1-a,us-west1-b,us-west1-c"
             #
             #        # Visit the following link for GCP accelerator type specs:
@@ -618,6 +631,15 @@ jarvice:
   #    crt: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.pem
   #    key: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.key
 
+#jarvice_images_pull: # Auto-enabled on clusters with GCFS enabled node pool(s)
+  #schedule: "0 4 * * *"
+  #scheduleNow: false  # Immediately schedule images pull job on install/upgrade
+  #images:
+  #  amd64:
+  #    - us-docker.pkg.dev/jarvice/images/app-filemanager:ocpassform
+  #    - us-docker.pkg.dev/jarvice/images/ubuntu-desktop:bionic
+  #    - us-docker.pkg.dev/jarvice/images/app-openfoam:8
+
 #jarvice_k8s_scheduler:
   #ingressHost: tf-jarvice-downstream.my-domain.com
 EOF
@@ -676,6 +698,7 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
                 nodes_max = 16
                 meta = {
                     disable_hyperthreading = "true"
+                    #zones = "us-west-2a,us-west-2b,us-west-2c"
 
                     # EFA requires k8s ver >= 1.19.  Supported instance types:
                     # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
@@ -690,6 +713,7 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
             #    nodes_max = 16
             #    meta = {
             #        disable_hyperthreading = "true"
+            #        #zones = "us-west-2a,us-west-2b,us-west-2c"
             #
             #        # EFA requires k8s ver >= 1.19.  Supported instance types:
             #        # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
@@ -827,6 +851,7 @@ EOF
                 nodes_max = 16
                 meta = {
                     disable_hyperthreading = "true"
+                    #zones = "us-west-2a,us-west-2b,us-west-2c"
 
                     # EFA requires k8s ver >= 1.19.  Supported instance types:
                     # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
@@ -841,6 +866,7 @@ EOF
             #    nodes_max = 16
             #    meta = {
             #        disable_hyperthreading = "true"
+            #        #zones = "us-west-2a,us-west-2b,us-west-2c"
             #
             #        # EFA requires k8s ver >= 1.19.  Supported instance types:
             #        # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
@@ -935,7 +961,7 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
 
         location = {
             region = "southcentralus"  # "westus2"
-            zones = []  # ["1"]
+            zones = ["1"]
         }
 
         # Visit the following link for Azure node size specs:
@@ -958,6 +984,7 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
                 nodes_min = 1
                 nodes_max = 16
                 meta = {
+                    #zones = "1,2,3"
                 }
             },
             #jxecompute01 = {
@@ -967,6 +994,7 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
             #    nodes_min = 1
             #    nodes_max = 16
             #    meta = {
+            #        #zones = "1,2,3"
             #    }
             #},
         }
@@ -1075,7 +1103,7 @@ EOF
 
         location = {
             region = "southcentralus"  # "westus2"
-            zones = []  # ["1"]
+            zones = ["1"]
         }
 
         # Visit the following link for Azure node size specs:
@@ -1098,6 +1126,7 @@ EOF
                 nodes_min = 1
                 nodes_max = 16
                 meta = {
+                    #zones = "1,2,3"
                 }
             },
             #jxecompute01 = {
@@ -1107,6 +1136,7 @@ EOF
             #    nodes_min = 1
             #    nodes_max = 16
             #    meta = {
+            #        #zones = "1,2,3"
             #    }
             #},
         }

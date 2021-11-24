@@ -1,7 +1,7 @@
 #!/bin/bash
 
-JARVICE_REGISTRY=gcr.io
-JARVICE_REPOSITORY=jarvice-system
+JARVICE_REGISTRY=us-docker.pkg.dev
+JARVICE_REPOSITORY=jarvice-system/images
 JARVICE_VERSION=
 
 PUSH_REGISTRY=
