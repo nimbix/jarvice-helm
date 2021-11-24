@@ -222,10 +222,10 @@ spec:
 {{- if or .Values.jarvice.JARVICE_HTTPS_PROXY .Values.jarvice.JARVICE_HTTP_PROXY .Values.jarvice.JARVICE_NO_PROXY }}
 {{- if (not (empty .Values.jarvice.JARVICE_NO_PROXY)) }}
           - name: no_proxy
-            value: {{ include "jarvice.no_proxy" . }},{{ .Values.jarvice.JARVICE_NO_PROXY }}
+            value: '{{ include "jarvice.no_proxy" . }},{{ .Values.jarvice.JARVICE_NO_PROXY }}'
 {{- else }}
           - name: no_proxy
-            value: {{ include "jarvice.no_proxy" . }}
+            value: '{{ include "jarvice.no_proxy" . }}'
 {{- end }}
 {{- end }}
           - name: JARVICE_PORTAL_MAIL_FROM
