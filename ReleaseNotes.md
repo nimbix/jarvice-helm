@@ -127,6 +127,14 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202111241749
+
+* (JAR-4654) Added the ability to specify availability zones for node groups separately from the control plane on EKS and AKS deployments.  Use the `zones` key in the respective node group Terraform configuration to specify a different value than that of the system nodes.
+* (JAR-4805) Added suspended job substatuses for future functionality.
+* (JAR-4808) Fixed bug where invalid AppDef was preventing the ability to retrive a PushToCompute log.
+* (JAR-4810) Migration of JARVICE system containers to Google Artifact Repository (AR) due to deprecation of gcr.io
+* (JAR-4824) Added `hostbatch` pseudo-device in machine definitions to allow non-interactive batch jobs to run in host network namespace.  This feature should only be used as part of a support recommendation.
+
 ## 3.21.9-1.202111101808
 
 * (JAR-4756) Improved PushToCompute build mechanism.  For details, please see [PushToCompute (`jarvice-dockerbuild`) Configuration](README.md#pushtocompute-jarvice-dockerbuild-configuration).
