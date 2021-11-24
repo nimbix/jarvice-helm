@@ -113,14 +113,3 @@ Create release labels for metadata.
 app: {{ template "jarvice.name" . }}
 heritage: {{ .Release.Service }}
 {{- end }}
-
-{{/*
-Return apiVersion for Ingress.
-*/}}
-{{- define "apiVersion.ingress" -}}
-{{- if and false (semverCompare ">=1.19-0" .Capabilities.KubeVersion.GitVersion) -}}
-{{- print "networking.k8s.io/v1" -}}
-{{- else -}}
-{{- print "networking.k8s.io/v1beta1" -}}
-{{- end -}}
-{{- end -}}

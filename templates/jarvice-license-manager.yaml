@@ -215,7 +215,11 @@ spec:
     deployment: jarvice-license-manager
 ---
 {{- else }}
-apiVersion: {{ template "apiVersion.ingress" . }}
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+apiVersion: networking.k8s.io/v1
+{{- else }}
+apiVersion: networking.k8s.io/v1beta1
+{{- end }}
 kind: Ingress
 metadata:
   name: jarvice-license-manager
@@ -223,8 +227,10 @@ metadata:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-license-manager
   annotations:
+{{- if (not (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion)) }}
 {{- if (not (empty .Values.jarvice.ingress.class)) }}
     kubernetes.io/ingress.class: {{ .Values.jarvice.ingress.class }}
+{{- end }}
 {{- end }}
 {{- if and (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (empty .Values.jarvice.ingress.tls.crt) (empty .Values.jarvice.ingress.tls.key)) }}
     cert-manager.io/issuer: {{ .Values.jarvice.ingress.tls.issuer.name }}
@@ -233,9 +239,43 @@ metadata:
 {{ toYaml .Values.jarvice_license_manager.ingressAnnotations | indent 4 }}
 {{- end }}
 spec:
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+{{- if (not (empty .Values.jarvice.ingress.class)) }}
+  ingressClassName: {{ .Values.jarvice.ingress.class }}
+{{- end }}
+{{- end }}
   rules:
   - http:
       paths:
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+{{- if (not (empty .Values.jarvice_license_manager.ingressPath)) }}
+{{- if (eq "/license-manager" .Values.jarvice_license_manager.ingressPath) }}
+      - backend:
+          service:
+            name: jarvice-license-manager
+            port:
+              name: http
+        pathType: Prefix
+        path: /license-manager
+{{- else }}
+      - backend:
+          service:
+            name: jarvice-license-manager
+            port:
+              name: http
+        pathType: Prefix
+        path: /
+{{- end }}
+{{- else }}
+      - backend:
+          service:
+            name: jarvice-license-manager
+            port:
+              name: http
+        pathType: Prefix
+        path: /
+{{- end }}
+{{- else }}
 {{- if (not (empty .Values.jarvice_license_manager.ingressPath)) }}
 {{- if (eq "/license-manager" .Values.jarvice_license_manager.ingressPath) }}
       - backend:
@@ -253,6 +293,7 @@ spec:
           serviceName: jarvice-license-manager
           servicePort: http
         path: /
+{{- end }}
 {{- end }}
 {{- if ne "-" .Values.jarvice_license_manager.ingressHost }}
     host: '{{- .Values.jarvice_license_manager.ingressHost -}}'
