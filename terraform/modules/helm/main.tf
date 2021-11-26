@@ -26,7 +26,7 @@ resource "helm_release" "cluster_autoscaler" {
     count = contains(keys(var.charts), "cluster-autoscaler") ? 1 : 0
 
     name = "cluster-autoscaler"
-    repository = "https://charts.helm.sh/stable"
+    repository = "https://kubernetes.github.io/autoscaler"
     chart = "cluster-autoscaler"
     namespace = "kube-system"
     reuse_values = false
@@ -42,7 +42,7 @@ resource "helm_release" "metrics_server" {
     count = contains(keys(var.charts), "metrics-server") ? 1 : 0
 
     name = "metrics-server"
-    repository = "https://charts.helm.sh/stable"
+    repository = "https://kubernetes-sigs.github.io/metrics-server"
     chart = "metrics-server"
     namespace = "kube-system"
     reuse_values = false

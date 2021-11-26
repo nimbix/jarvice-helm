@@ -100,16 +100,15 @@ EOF
             "values" = <<EOF
 autoDiscovery:
   clusterName: ${var.cluster.meta["cluster_name"]}
-  enabled: true
 
 awsRegion: "${var.cluster.location["region"]}"
 
 cloudProvider: aws
 
-image:
-  repository: us-docker.pkg.dev/jarvice/images/cluster-autoscaler
-  tag: v1.17.4
-  pullPolicy: IfNotPresent
+#image:
+#  repository: us-docker.pkg.dev/jarvice/images/cluster-autoscaler
+#  tag: v1.17.4
+#  pullPolicy: IfNotPresent
 
 tolerations:
   - key: node-role.jarvice.io/jarvice-system
@@ -132,16 +131,17 @@ affinity:
 
 rbac:
   create: true
-  serviceAccountAnnotations:
-    eks.amazonaws.com/role-arn: "${module.iam_assumable_role_admin_cluster_autoscaler.iam_role_arn}"
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: "${module.iam_assumable_role_admin_cluster_autoscaler.iam_role_arn}"
 EOF
         },
         "metrics-server" = {
             "values" = <<EOF
-image:
-  repository: gcr.io/k8s-staging-metrics-server/metrics-server
-  tag: v0.4.5
-  pullPolicy: IfNotPresent
+#image:
+#  repository: gcr.io/k8s-staging-metrics-server/metrics-server
+#  tag: v0.4.5
+#  pullPolicy: IfNotPresent
 
 tolerations:
   - key: node-role.jarvice.io/jarvice-system

@@ -663,7 +663,7 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
 
         meta = {
             cluster_name = "tf-jarvice"
-            kubernetes_version = "1.20"
+            kubernetes_version = "1.21"
             #arch = "arm64"  # Uncomment to deploy an arm64 cluster
 
             # Sync ingress hosts to zones/domains managed w/ AWS Route53 DNS
@@ -816,7 +816,7 @@ EOF
 
         meta = {
             cluster_name = "tf-jarvice-downstream"
-            kubernetes_version = "1.20"
+            kubernetes_version = "1.21"
             #arch = "arm64"  # Uncomment to deploy an arm64 cluster
 
             # Sync ingress hosts to zones/domains managed w/ AWS Route53 DNS
@@ -949,7 +949,7 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
 
         meta = {
             cluster_name = "tf-jarvice"
-            kubernetes_version = "1.20"
+            kubernetes_version = "1.21"
 
             # Sync ingress hosts to zones/domains managed w/ Azure DNS
             #dns_manage_records = "true"
@@ -1091,7 +1091,7 @@ EOF
 
         meta = {
             cluster_name = "tf-jarvice-downstream"
-            kubernetes_version = "1.20"
+            kubernetes_version = "1.21"
 
             # Sync ingress hosts to zones/domains managed w/ Azure DNS
             #dns_manage_records = "true"
