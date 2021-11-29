@@ -181,11 +181,11 @@ section of the
 If a more complex configuration is needed for your cluster,
 it will be necessary to adjust the `deploy2k8s-traefik` script included in
 the `jarvice-helm` git repository or execute `helm` manually.
-Please visit https://github.com/helm/charts/tree/master/stable/traefik and/or
+Please visit https://traefik.github.io/traefik-helm-chart/ and/or
 execute the following to get more details on Traefik configuration and
 installation via helm:
 ```bash
-$ helm inspect all traefik --repo https://charts.helm.sh/stable
+$ helm inspect all traefik --repo https://helm.traefik.io/traefik
 ```
 
 **Note:** If not using a `NodePort` service for `traefik`, it will be
@@ -809,7 +809,7 @@ If there is not an existing MariaDB installation, but wish to maintain the
 database in kubernetes, but outside of the JARVICE helm chart, execute the
 following to get more details on using helm to perform the installation:
 ```bash
-$ helm inspect all mariadb --repo https://charts.helm.sh/stable
+$ helm inspect all mariadb --repo https://charts.bitnami.com/bitnami
 ```
 
 When using a database outside of the JARVICE helm chart, it will be necessary
@@ -833,7 +833,7 @@ If there is not an existing Memcached installation, but wish to maintain the
 one in kubernetes, but outside of the JARVICE helm chart, execute the
 following to get more details on using helm to perform the installation:
 ```bash
-$ helm inspect all memcached --repo https://charts.helm.sh/stable
+$ helm inspect all memcached --repo https://charts.bitnami.com/bitnami
 ```
 
 When using Memcached outside of the JARVICE helm chart, it will be necessary

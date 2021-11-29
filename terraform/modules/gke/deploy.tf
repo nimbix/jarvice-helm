@@ -166,14 +166,42 @@ EOF
         },
         "traefik" = {
             "values" = <<EOF
-imageTag: "1.7"
+deployment:
+  replicas: 2
 
-${local.load_balancer_ip}
-replicas: 2
-memoryRequest: 1Gi
-memoryLimit: 1Gi
-cpuRequest: 1
-cpuLimit: 1
+ingressClass:
+  enabled: true
+
+ingressRoute:
+  dashboard:
+    enabled: false
+
+providers:
+  kubernetesIngress:
+    publishedService:
+      enabled: true
+
+additionalArguments:
+  - "--serverstransport.insecureskipverify=true"
+
+ports:
+  web:
+    redirectTo: websecure
+  websecure:
+    tls:
+      enabled: true
+
+service:
+  spec:
+    ${local.load_balancer_ip}
+
+resources:
+  requests:
+    cpu: "1"
+    memory: "1Gi"
+  limits:
+    cpu: "1"
+    memory: "1Gi"
 
 affinity:
   nodeAffinity:
@@ -193,23 +221,6 @@ tolerations:
   - key: node-role.kubernetes.io/jarvice-system
     effect: NoSchedule
     operator: Exists
-
-kubernetes:
-  ingressEndpoint:
-    useDefaultPublishedService: true
-
-ssl:
-  enabled: true
-  enforced: true
-  permanentRedirect: true
-  insecureSkipVerify: true
-  generateTLS: true
-
-dashboard:
-  enabled: false
-
-rbac:
-  enabled: true
 EOF
         }
     }

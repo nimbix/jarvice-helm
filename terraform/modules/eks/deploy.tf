@@ -302,13 +302,49 @@ EOF
         },
         "traefik" =  {
             "values" = <<EOF
-imageTag: "1.7"
+deployment:
+  replicas: 2
 
-replicas: 2
-memoryRequest: 1Gi
-memoryLimit: 1Gi
-cpuRequest: 1
-cpuLimit: 1
+ingressClass:
+  enabled: true
+
+ingressRoute:
+  dashboard:
+    enabled: false
+
+providers:
+  kubernetesIngress:
+    publishedService:
+      enabled: true
+
+additionalArguments:
+  - "--serverstransport.insecureskipverify=true"
+
+ports:
+  web:
+    redirectTo: websecure
+  websecure:
+    tls:
+      enabled: true
+
+service:
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: external
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+    service.beta.kubernetes.io/aws-load-balancer-eip-allocations: ${join(",", aws_eip.jarvice.*.id)}
+    service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags: cluster=${var.cluster.meta["cluster_name"]},traefik=true
+    #service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    #service.beta.kubernetes.io/load-balancer-name: "${var.cluster.meta["cluster_name"]}"
+    #service.beta.kubernetes.io/aws-load-balancer-subnets: "${join(",", module.vpc.public_subnets)}"
+
+resources:
+  requests:
+    cpu: "1"
+    memory: "1Gi"
+  limits:
+    cpu: "1"
+    memory: "1Gi"
 
 affinity:
   nodeAffinity:
@@ -328,34 +364,6 @@ tolerations:
   - key: node-role.kubernetes.io/jarvice-system
     effect: NoSchedule
     operator: Exists
-
-kubernetes:
-  ingressEndpoint:
-    useDefaultPublishedService: true
-
-ssl:
-  enabled: true
-  enforced: true
-  permanentRedirect: true
-  insecureSkipVerify: true
-  generateTLS: true
-
-dashboard:
-  enabled: false
-
-service:
-  annotations:
-    service.beta.kubernetes.io/aws-load-balancer-type: external
-    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
-    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
-    service.beta.kubernetes.io/aws-load-balancer-eip-allocations: ${join(",", aws_eip.jarvice.*.id)}
-    service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags: cluster=${var.cluster.meta["cluster_name"]},traefik=true
-    #service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
-    #service.beta.kubernetes.io/load-balancer-name: "${var.cluster.meta["cluster_name"]}"
-    #service.beta.kubernetes.io/aws-load-balancer-subnets: "${join(",", module.vpc.public_subnets)}"
-
-rbac:
-  enabled: true
 EOF
         }
     }

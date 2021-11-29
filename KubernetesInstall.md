@@ -881,9 +881,7 @@ Execute `./jarvice-helm/scripts/deploy2k8s-traefik --help` to see it's usage.
 For our example cluster, execute the following from the client machine which
 has `helm` and `kubectl` installed:
 ```bash
-$ ./jarvice-helm/scripts/deploy2k8s-traefik --load-balancer-ip 10.20.0.1 \
-    --default-cert-file my-domain.com.pem \
-    --default-key-file my-domain.com.key
+$ ./jarvice-helm/scripts/deploy2k8s-traefik --load-balancer-ip 10.20.0.1
 ```
 
 The above command uses an IP address from the range configured during the

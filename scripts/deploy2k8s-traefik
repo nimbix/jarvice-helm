@@ -1,12 +1,8 @@
 #!/bin/bash
 
-image=traefik
-version_tag=1.7.26
+version_tag=
 load_balancer_ip=
 node_port=
-generate_tls=true
-default_cert_file=
-default_key_file=
 replicas=3
 memory_request=1Gi
 memory_limit=1Gi
@@ -23,8 +19,6 @@ Options:
     --load-balancer-ip <ip_addr>    Static IP for ingress controller service*
     --node-port <node_port>         NodePort for ingress controller service*
                                     (Valid port range: 30000-32767)
-    --default-cert-file <filename>  TLS default certificate file
-    --default-key-file <filename>   TLS default key file
     --replicas <replicas>           Number of pod replicas to run
                                     (Default: $replicas)
     --memory-request <memory>       Memory request for each pod
@@ -74,14 +68,6 @@ while [ $# -gt 0 ]; do
             usage
             exit 0
             ;;
-        --default-cert-file)
-            default_cert_file=$2
-            shift; shift
-            ;;
-        --default-key-file)
-            default_key_file=$2
-            shift; shift
-            ;;
         --load-balancer-ip)
             load_balancer_ip=$2
             shift; shift
@@ -128,48 +114,23 @@ done
 [ -z "$load_balancer_ip" -a -z "$node_port" ] && usage && exit 1
 [ -n "$load_balancer_ip" -a -n "$node_port" ] && usage && exit 1
 
-[ -n "$default_cert_file" ] && default_cert="$(cat $default_cert_file | base64 -w 0)"
-[ -n "$default_key_file" ] && default_key="$(cat $default_key_file | base64 -w 0)"
-[ -n "$default_cert_file" -a -n "$default_key_file" ] && generate_tls=false
-
 set -e
-
-#helm_stable_repo_url=https://charts.helm.sh/stable
-#helm_stable_repo=$($HELM repo list 2>/dev/null | grep ^stable || /bin/true)
-#if [ -z "$helm_stable_repo" ]; then
-#    echo
-#    echo "* Adding helm chart repository for stable..."
-#    $HELM repo add stable $helm_stable_repo_url
-#fi
-
-#echo
-#echo "* Updating helm chart repositories..."
-#$HELM repo update
 
 echo
 echo "* Creating namespace: $namespace"
 $KUBECTL create namespace $namespace 2>/dev/null || /bin/true
 
 echo
-if [ "$generate_tls" = "true" ]; then
-    echo "* Deploying with self signed certificate..."
-else
-    echo "* Deploying with the provided certificate files..."
-fi
-echo
 if [ -n "$node_port" ]; then
-    ip_args="--set serviceType=NodePort --set service.nodePorts.https=$node_port"
+    ip_args="--set service.type=NodePort --set ports.traefik.expose=true --set ports.traefik.nodePort=$node_port"
 else
-    ip_args="--set serviceType=LoadBalancer --set loadBalancerIP=$load_balancer_ip"
+    ip_args="--set service.type=LoadBalancer --set service.spec.loadBalancerIP=$load_balancer_ip"
 fi
-repo=https://charts.helm.sh/stable
+repo=https://helm.traefik.io/traefik
 $HELM upgrade traefik traefik --repo $repo \
     --namespace $namespace --install --reset-values \
     \
-    --set image=$image \
-    --set imageTag=$version_tag \
-    \
-    --set rbac.enabled=true \
+    --set image.tag="$version_tag" \
     \
     --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key="node-role\.jarvice\.io/jarvice-system" \
     --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator="Exists" \
@@ -197,19 +158,18 @@ $HELM upgrade traefik traefik --repo $repo \
     \
     $ip_args \
     \
-    --set ssl.enabled=true \
-    --set ssl.enforced=true \
-    --set ssl.permanentRedirect=true \
-    --set ssl.insecureSkipVerify=true \
-    --set ssl.generateTLS=$generate_tls \
-    --set ssl.defaultCert="$default_cert" \
-    --set ssl.defaultKey="$default_key" \
+    --set ingressClass.enabled=true \
+    --set ingressRoute.dashboard.enabled=false \
     \
-    --set replicas=$replicas \
-    --set memoryRequest=$memory_request \
-    --set memoryLimit=$memory_limit \
-    --set cpuRequest=$cpu_request \
-    --set cpuLimit=$cpu_limit
+    --set ports.web.redirectTo="websecure" \
+    --set ports.websecure.tls.enabled=true \
+    --set "additionalArguments={--serverstransport.insecureskipverify=true}" \
+    \
+    --set deployment.replicas=$replicas \
+    --set resources.requests.memory=$memory_request \
+    --set resources.limits.memory=$memory_limit \
+    --set resources.requests.cpu=$cpu_request \
+    --set resources.limits.cpu=$cpu_limit
 
 echo
 echo "* Deployment successful..."

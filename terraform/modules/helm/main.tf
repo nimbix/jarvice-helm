@@ -95,7 +95,7 @@ resource "helm_release" "traefik" {
     count = contains(keys(var.charts), "traefik") ? 1 : 0
 
     name = "traefik"
-    repository = "https://charts.helm.sh/stable"
+    repository = "https://helm.traefik.io/traefik"
     chart = "traefik"
     namespace = "kube-system"
     reuse_values = false
