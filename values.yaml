@@ -1,4 +1,9 @@
 jarvice:
+  imagePullRegistries:
+    - us-docker.pkg.dev
+    - europe-docker.pkg.dev
+    - asia-docker.pkg.dev
+    - gcr.io
   # imagePullSecret is a base64 encoded string.
   # e.g. on command line: echo "_json_key:$(cat key.json)" | base64 -w 0
   imagePullSecret:
@@ -19,7 +24,6 @@ jarvice:
   JARVICE_SYSTEM_REPO_BASE: jarvice-system/images
   JARVICE_IMAGES_TAG: jarvice-master
   JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
-  JARVICE_SYSTEM_REGISTRY_ALT: gcr.io
 
   # Optionally, run jobs on a "downstream" cluster by default
   JARVICE_DEFAULT_CLUSTER_URL: # "https://jarvice.downstream-domain.com"
@@ -250,6 +254,7 @@ jarvice:
       tolerations: # '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
+      initImage: us-docker.pkg.dev/jarvice/images/busybox:latest
       image: us-docker.pkg.dev/jarvice/images/k8s-dri-optional-device:1.0.2
       imagePullPolicy: IfNotPresent
       env:

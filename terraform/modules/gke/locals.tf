@@ -20,6 +20,10 @@ locals {
         for pool in values(var.cluster["compute_node_pools"]):
             lookup(pool.meta, "enable_gcfs", "false") == "true" ? true : false
     ])
+    enable_gcfs_all_with_accelerator = alltrue(compact([
+        for pool in values(var.cluster["compute_node_pools"]):
+            lookup(pool.meta, "accelerator_type", null) == null && lookup(pool.meta, "accelerator_count", null) == null ? "" : lookup(pool.meta, "enable_gcfs", "false") == "true" ? "true" : "false"
+    ]))
     cluster_values_yaml = <<EOF
 jarvice:
   JARVICE_JOBS_DOMAIN: "lookup/job$"
@@ -46,7 +50,7 @@ jarvice:
     dri_optional:
       enabled: true
       env:
-        DRI_INIT_DELAY: 180
+        DRI_INIT_DELAY: ${local.enable_gcfs_all_with_accelerator == true ? "90" : "180"}
         DRI_DEFAULT_CAPACITY: 1
     flex_volume_plugin_nfs_nolock_install:
       enabled: true

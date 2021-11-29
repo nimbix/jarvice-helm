@@ -575,8 +575,8 @@ spec:
 {{- end }}
       initContainers:
       - name: init-delay
-        image: {{ include "jarvice.registry" . }}/jarvice/busybox:latest
-        imagePullPolicy: "IfNotPresent"
+        image: {{ template "jarvice.registrysub" merge (dict "image" .Values.jarvice.daemonsets.dri_optional.initImage) . }}
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.dri_optional.imagePullPolicy }}
         command: ['sh', '-c', 'sleep ${DRI_INIT_DELAY}']
         env:
         - name: DRI_INIT_DELAY
