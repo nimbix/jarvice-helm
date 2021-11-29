@@ -204,6 +204,7 @@ jarvice:
       tolerations: #'[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64"]}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64"]}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true", "kubernetes.io/arch": "amd64"}'
+      pauseImage: gcr.io/google-containers/pause:3.2
       image: us-docker.pkg.dev/jarvice/images/busybox:latest
       imagePullPolicy: IfNotPresent
     node_init:
@@ -211,6 +212,7 @@ jarvice:
       tolerations: # '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
+      pauseImage: gcr.io/google-containers/pause:3.2
       image: us-docker.pkg.dev/jarvice/images/busybox:latest
       imagePullPolicy: IfNotPresent
       env:
@@ -230,6 +232,7 @@ jarvice:
       tolerations: # '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64", "ppc64le"]}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}, {"key": "kubernetes.io/arch", "operator": "In", "values": ["amd64", "ppc64le"]}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true", "kubernetes.io/arch": "amd64"}'
+      pauseImage: gcr.io/google-containers/pause:3.2
       image: us-docker.pkg.dev/jarvice/images/busybox:latest
       imagePullPolicy: IfNotPresent
       env:
@@ -265,6 +268,7 @@ jarvice:
       tolerations: '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.jarvice.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.jarvice.io/jarvice-storage", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-storage", "effect": "NoSchedule", "operator": "Exists"}]'
       nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-system", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-storage", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-storage", "operator": "Exists"}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true", "kubernetes.io/arch": "amd64"}'
+      pauseImage: gcr.io/google-containers/pause:3.2
       image: us-docker.pkg.dev/jarvice/images/busybox:latest
       imagePullPolicy: IfNotPresent
       env:
@@ -275,6 +279,7 @@ jarvice:
       tolerations: '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.jarvice.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-system", "operator": "Exists"}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}' # '{"node-role.jarvice.io/jarvice-system": "true"}'
+      pauseImage: gcr.io/google-containers/pause:3.2
       image: us-docker.pkg.dev/jarvice/images/busybox:latest
       imagePullPolicy: IfNotPresent
       env:
