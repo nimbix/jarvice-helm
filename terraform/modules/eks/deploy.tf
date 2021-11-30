@@ -169,7 +169,7 @@ EOF
 image:
   registry: us.gcr.io
   repository: k8s-artifacts-prod/external-dns/external-dns
-  tag: v0.8.0
+  tag: v0.10.1
 
 sources:
   - ingress

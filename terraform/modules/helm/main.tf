@@ -12,6 +12,7 @@ resource "helm_release" "aws_load_balancer_controller" {
     name = "aws-load-balancer-controller"
     repository = "https://aws.github.io/eks-charts"
     chart = "aws-load-balancer-controller"
+    version = "1.3.2"
     namespace = "kube-system"
     reuse_values = false
     reset_values = true
@@ -62,6 +63,7 @@ resource "helm_release" "external_dns" {
     name = "external-dns"
     repository = "https://charts.bitnami.com/bitnami"
     chart = "external-dns"
+    version = "5.5.2"
     namespace = "kube-system"
     reuse_values = false
     reset_values = true
@@ -80,6 +82,7 @@ resource "helm_release" "cert_manager" {
     name = "cert-manager"
     repository = "https://charts.jetstack.io"
     chart = "cert-manager"
+    version = "v1.6.1"
     namespace = "cert-manager"
     create_namespace = true
     reuse_values = false
