@@ -53,7 +53,7 @@ JARVICE registry auths
 {{- if .Values.jarvice.JARVICE_SYSTEM_REGISTRY_ALT -}}
 {{- printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"},\"%s\": {\"auth\": \"%s\"}}}" (include "jarvice.registry" .) .Values.jarvice.imagePullSecret .Values.jarvice.JARVICE_SYSTEM_REGISTRY_ALT .Values.jarvice.imagePullSecret | b64enc -}}
 {{- else -}}
-{{ printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" (include "jarvice.registry" .) .Values.jarvice.imagePullSecret | b64enc }}
+{{- printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" (include "jarvice.registry" .) .Values.jarvice.imagePullSecret | b64enc -}}
 {{- end -}}
 {{- end -}}
 
@@ -135,5 +135,5 @@ JARVICE no_proxy
 {{- if (not (empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE)) -}}
 {{- $jarvice_system_ns = .Values.jarvice.JARVICE_SYSTEM_NAMESPACE -}}
 {{- end -}}
-{{- printf "%s,%s,%s.%s,%s.%s.svc,%s.%s.svc.cluster.local,svc,svc.cluster.local" $k8s_cluster_ip ($jxe_services | join ",") ($jxe_services | join (printf ".%s," $jarvice_system_ns)) $jarvice_system_ns ($jxe_services | join (printf ".%s.svc," $jarvice_system_ns)) $jarvice_system_ns ($jxe_services | join (printf ".%s.svc.cluster.local," $jarvice_system_ns)) $jarvice_system_ns -}}
+{{- printf "%s,%s,%s.%s,%s.%s.svc,%s.%s.svc.cluster.local,svc,svc.cluster.local,localhost,127.0.0.1" $k8s_cluster_ip ($jxe_services | join ",") ($jxe_services | join (printf ".%s," $jarvice_system_ns)) $jarvice_system_ns ($jxe_services | join (printf ".%s.svc," $jarvice_system_ns)) $jarvice_system_ns ($jxe_services | join (printf ".%s.svc.cluster.local," $jarvice_system_ns)) $jarvice_system_ns -}}
 {{- end -}}
