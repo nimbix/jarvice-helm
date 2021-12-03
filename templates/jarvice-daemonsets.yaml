@@ -575,8 +575,8 @@ spec:
 {{- end }}
       initContainers:
       - name: init-delay
-        image: {{ include "jarvice.registry" . }}/jarvice/busybox:latest
-        imagePullPolicy: "IfNotPresent"
+        image: {{ template "jarvice.registrysub" merge (dict "image" .Values.jarvice.daemonsets.dri_optional.initImage) . }}
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.dri_optional.imagePullPolicy }}
         command: ['sh', '-c', 'sleep ${DRI_INIT_DELAY}']
         env:
         - name: DRI_INIT_DELAY
@@ -650,8 +650,8 @@ spec:
 {{- end }}
       containers:
       - name: pause
-        image: "gcr.io/google-containers/pause:3.2"
-        imagePullPolicy: "IfNotPresent"
+        image: {{ .Values.jarvice.daemonsets.disable_hyper_threading.pauseImage }}
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.disable_hyper_threading.imagePullPolicy }}
       initContainers:
       - name: jarvice-disable-hyper-threading
         image: {{ template "jarvice.registrysub" merge (dict "image" .Values.jarvice.daemonsets.disable_hyper_threading.image) . }}
@@ -722,8 +722,8 @@ spec:
 {{- end }}
       containers:
       - name: pause
-        image: "gcr.io/google-containers/pause:3.2"
-        imagePullPolicy: "IfNotPresent"
+        image: {{ .Values.jarvice.daemonsets.jarvice_registry_proxy.pauseImage }}
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.jarvice_registry_proxy.imagePullPolicy }}
       initContainers:
       - name: jarvice-registry-proxy-ds
         image: {{ .Values.jarvice.daemonsets.jarvice_registry_proxy.image }}
@@ -799,8 +799,8 @@ spec:
 {{- end }}
       containers:
       - name: pause
-        image: "gcr.io/google-containers/pause:3.2"
-        imagePullPolicy: "IfNotPresent"
+        image: {{ .Values.jarvice.daemonsets.node_init.pauseImage }}
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.node_init.imagePullPolicy }}
       initContainers:
       - name: jarvice-node-init
         image: {{ template "jarvice.registrysub" merge (dict "image" .Values.jarvice.daemonsets.node_init.image) . }}
@@ -868,8 +868,8 @@ spec:
 {{- end }}
       containers:
       - name: pause
-        image: "gcr.io/google-containers/pause:3.2"
-        imagePullPolicy: "IfNotPresent"
+        image: {{ .Values.jarvice.daemonsets.nvidia_install.pauseImage }}
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.nvidia_install.imagePullPolicy }}
       initContainers:
       - name: jarvice-nvidia-install
         image: {{ template "jarvice.registrysub" merge (dict "image" .Values.jarvice.daemonsets.nvidia_install.image) . }}
@@ -947,8 +947,8 @@ spec:
 {{- end }}
       containers:
       - name: pause
-        image: "gcr.io/google-containers/pause:3.2"
-        imagePullPolicy: "IfNotPresent"
+        image: {{ .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.pauseImage }}
+        imagePullPolicy: {{ default "IfNotPresent" .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.imagePullPolicy }}
       initContainers:
       - name: jarvice-flex-volume-plugin-nfs-nolock-install
         image: {{ template "jarvice.registrysub" merge (dict "image" .Values.jarvice.daemonsets.flex_volume_plugin_nfs_nolock_install.image) . }}

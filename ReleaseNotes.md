@@ -127,6 +127,54 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202111241749
+
+* (JAR-4654) Added the ability to specify availability zones for node groups separately from the control plane on EKS and AKS deployments.  Use the `zones` key in the respective node group Terraform configuration to specify a different value than that of the system nodes.
+* (JAR-4805) Added suspended job substatuses for future functionality.
+* (JAR-4808) Fixed bug where invalid AppDef was preventing the ability to retrive a PushToCompute log.
+* (JAR-4810) Migration of JARVICE system containers to Google Artifact Repository (AR) due to deprecation of gcr.io
+* (JAR-4824) Added `hostbatch` pseudo-device in machine definitions to allow non-interactive batch jobs to run in host network namespace.  This feature should only be used as part of a support recommendation.
+
+## 3.21.9-1.202111101808
+
+* (JAR-4756) Improved PushToCompute build mechanism.  For details, please see [PushToCompute (`jarvice-dockerbuild`) Configuration](README.md#pushtocompute-jarvice-dockerbuild-configuration).
+
+## 3.21.9-1.202110271630
+
+* (JAR-4699) Increased job label character limit to 255 (from 50).
+* (JAR-4703) Support for multiple license daemons per server entry in JARVICE License Manager.  See [Advanced: Multiple License Server Addresses](LicenseManager.md#advanced-multiple-license-server-addresses) for additional details.
+* (JAR-4704) Allow omission of `job_project` key in the `/jarvice/submit` API payload if a non-administrative user is assigned to only 1 project.
+* (JAR-4710) Kubernetes 1.20 support.  See [Kubernetes Support](#kubernetes-support) for the latest list of supported Kubernetes versions.
+* (JAR-4744) Hide job project selection in task builder if a user is assigned to only 1 project.
+
+## 3.21.9-1.202110141638
+
+* (JAR-130) Fixed minor failed login attempt lockout logic bug.
+* (JAR-158) Added maximum queue time column to the *Administration->Stats* view.
+* (JAR-159) Added the ability to calculate machine statistics within a time of day range in hours, in the *Administration->Stats* view.
+* (JAR-4645) Fixed bug where non-administrative team user was able to see the project editor in the *Account->Projects* view.
+* (JAR-4653) Fixed AWS EFA container address in GovCloud deployments to use the appropriate zone.
+* (JAR-4667) Fixed bug where portal *Dashboard* view was not updating when only job substatus changed.
+
+## 3.21.9-1.202109301638
+
+* (JAR-153) Fixed bug with `%VNAME%` substitution in AppDefs and shared vaults.
+* (JAR-160) Added average queue time granularity around infrastructure, limits, and licensing in the downloadable CSV report from the *Administration->Stats* view.
+* (JAR-4576) Fixed bug with size field when cancelling PVC vault creation for users in the *Administration->Users* view.
+* (JAR-4585) Fixed portal reload on version update.
+* (JAR-4587) Fixed bug with checkbox state for not encoding generated passwords as URLs in the *Account->Team* view.
+* (*contributed*) Added AWS AS tags for resources. When scaling from 0 the AS needs resources called out as tags to know they are present on the AS group. This should solve for that.
+
+## 3.21.9-1.202109171659
+
+* (JAR-102) Fixed bug where `jarvice-license-manager` was not taking existing project license requests into account when limiting license features by project.
+* (JAR-4482) Fixed bug where vault creation from *Administration->Users* left a stray comma on access modes when canceled.
+* (JAR-4496) Fixed verbiage in project selection for team admins to show blank entry rather than "no project".
+* (JAR-4500) Added configuration GUI for `jarvice-license-manager`, in the *Administration->License Manager* view.
+* (JAR-4501) Changed the best practice for configuring `jarvice-license-manager` to GUI from *configMap*.
+* (JAR-4541) Added the ability to report on users with access to specific zones via the *Administration->Users By Zone* view.
+* (JAR-4542) Added support for AWS GovCloud regions via TerraForm deployments.
+
 ## 3.21.9-1.202108181638
 
 * (JAR-113) Improved object cleanup upon user deletion; note that deleting users **is not** considered a best practice.
