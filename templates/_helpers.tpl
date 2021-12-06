@@ -50,10 +50,18 @@ JARVICE registry substitution for images
 JARVICE registry auths
 */}}
 {{- define "jarvice.dockerconfigjson" -}}
+{{- if .Values.jarvice.imagePullRegistries -}}
+{{- $auths := (list) -}}
+{{- range .Values.jarvice.imagePullRegistries -}}
+{{- $auths = append $auths (printf "\"%s\": {\"auth\": \"%s\"}" . $.Values.jarvice.imagePullSecret) -}}
+{{- end -}}
+{{- printf "{\"auths\": {%s}}" ($auths | join ",") | b64enc -}}
+{{- else -}}
 {{- if .Values.jarvice.JARVICE_SYSTEM_REGISTRY_ALT -}}
 {{- printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"},\"%s\": {\"auth\": \"%s\"}}}" (include "jarvice.registry" .) .Values.jarvice.imagePullSecret .Values.jarvice.JARVICE_SYSTEM_REGISTRY_ALT .Values.jarvice.imagePullSecret | b64enc -}}
 {{- else -}}
 {{- printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" (include "jarvice.registry" .) .Values.jarvice.imagePullSecret | b64enc -}}
+{{- end -}}
 {{- end -}}
 {{- end -}}
 
