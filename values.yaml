@@ -88,7 +88,7 @@ jarvice:
   # HTTP/S Proxy settings, no_proxy is set for services
   JARVICE_HTTP_PROXY:   # "http://proxy.my-domain.com:8080"
   JARVICE_HTTPS_PROXY:  # "https://proxy.my-domain.com:8080"
-  JARVICE_NO_PROXY:     # "my-other-domain.com, 192.168.1.10, domain.com:8080"
+  JARVICE_NO_PROXY:     # "my-other-domain.com,192.168.1.10,domain.com:8080"
 
   JARVICE_MAIL_SERVER: jarvice-smtpd:25
   JARVICE_MAIL_USERNAME: # "mail-username"
