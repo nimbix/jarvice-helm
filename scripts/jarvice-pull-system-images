@@ -13,7 +13,7 @@ PUSH_REPOSITORY=$JARVICE_REPOSITORY
 DOCKER=docker
 
 JARVICE_IMAGES="jarvice-dal jarvice-scheduler jarvice-k8s-scheduler jarvice-pod-scheduler jarvice-api jarvice-mc-portal init jarvice-appsync jarvice-dockerbuild jarvice-dockerpull"
-EXTRA_IMAGES=$(grep -i image: $values_yaml 2>/dev/null | awk '{print $2}')
+EXTRA_IMAGES=$(grep -i image: $values_yaml 2>/dev/null | sed 's/#.*//' | awk '{print $2}')
 
 function usage {
     cat <<EOF
