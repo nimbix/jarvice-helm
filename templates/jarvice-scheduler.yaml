@@ -78,6 +78,7 @@ spec:
           configMap:
             name: {{ .Values.jarvice.settings.configMap }}
             optional: true
+            defaultMode: 0555
       containers:
       - name: jarvice-scheduler
         image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-scheduler:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
@@ -181,6 +182,23 @@ spec:
             value: "{{ .Values.jarvice.JARVICE_SCHED_LOGLEVEL }}"
           - name: JARVICE_SCHED_PASS_LOGLEVEL
             value: "{{ .Values.jarvice.JARVICE_SCHED_PASS_LOGLEVEL }}"
+{{- if (not (empty .Values.jarvice.JARVICE_HTTP_PROXY)) }}
+          - name: http_proxy
+            value: "{{ .Values.jarvice.JARVICE_HTTP_PROXY }}"
+{{- end }}
+{{- if (not (empty .Values.jarvice.JARVICE_HTTPS_PROXY)) }}
+          - name: https_proxy
+            value: "{{ .Values.jarvice.JARVICE_HTTPS_PROXY }}"
+{{- end }}
+{{- if or .Values.jarvice.JARVICE_HTTPS_PROXY .Values.jarvice.JARVICE_HTTP_PROXY .Values.jarvice.JARVICE_NO_PROXY }}
+{{- if (not (empty .Values.jarvice.JARVICE_NO_PROXY)) }}
+          - name: no_proxy
+            value: '{{ include "jarvice.no_proxy" . }},{{ .Values.jarvice.JARVICE_NO_PROXY }}'
+{{- else }}
+          - name: no_proxy
+            value: '{{ include "jarvice.no_proxy" . }}'
+{{- end }}
+{{- end }}
           - name: JARVICE_MAIL_FROM
             value: {{ toYaml .Values.jarvice.JARVICE_MAIL_FROM | indent 12 }}
           - name: JARVICE_MAIL_ADMINS

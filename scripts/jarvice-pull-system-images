@@ -1,5 +1,8 @@
 #!/bin/bash
 
+jarvice_chart_dir=$(realpath --relative-to=$(pwd) $(dirname $0)/..)
+values_yaml=$jarvice_chart_dir/values.yaml
+
 JARVICE_REGISTRY=us-docker.pkg.dev
 JARVICE_REPOSITORY=jarvice-system/images
 JARVICE_VERSION=
@@ -7,7 +10,10 @@ JARVICE_VERSION=
 PUSH_REGISTRY=
 PUSH_REPOSITORY=$JARVICE_REPOSITORY
 
+DOCKER=docker
+
 JARVICE_IMAGES="jarvice-dal jarvice-scheduler jarvice-k8s-scheduler jarvice-pod-scheduler jarvice-api jarvice-mc-portal init jarvice-appsync jarvice-dockerbuild jarvice-dockerpull"
+EXTRA_IMAGES=$(grep -i image: $values_yaml 2>/dev/null | sed 's/#.*//' | awk '{print $2}' | sort | uniq)
 
 function usage {
     cat <<EOF
@@ -20,6 +26,7 @@ Options:
     --push-repository <repository>  Repository/namespace to push images to
                                     (Default: $PUSH_REPOSITORY)
     --push-and-remove               Remove local images after successful push
+    --docker <executable>           Docker executable (Default: $DOCKER)
 
 Example:
 $0 \\
@@ -28,18 +35,6 @@ $0 \\
     --push-repository $PUSH_REPOSITORY
 EOF
 }
-
-DOCKER=$(type -p docker)
-if [ -z "$DOCKER" ]; then
-    cat <<EOF
-Could not find 'docker' in PATH.  It may not be installed.
-Run 'install-docker' from the 'jarvice-helm/scripts' directory to install it.
-EOF
-    exit 1
-fi
-
-$DOCKER info >/dev/null 2>&1
-[ "$?" != "0" ] && echo "User '$USER' is not able to communicate with the docker daemon" && exit 1
 
 while [ $# -gt 0 ]; do
     case $1 in
@@ -63,12 +58,28 @@ while [ $# -gt 0 ]; do
             PUSH_AND_REMOVE=1
             shift;
             ;;
+        --docker)
+            DOCKER=$2
+            shift; shift
+            ;;
         *)
             usage
             exit 1
             ;;
     esac
 done
+
+DOCKER=$(type -p $DOCKER)
+if [ -z "$DOCKER" ]; then
+    cat <<EOF
+Could not find 'docker' in PATH.  It may not be installed.
+Run 'install-docker' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+$DOCKER info >/dev/null 2>&1
+[ "$?" != "0" ] && echo "User '$USER' is not able to communicate with the docker daemon" && exit 1
 
 [ -z "$JARVICE_VERSION" ] && usage && exit 1
 
@@ -83,6 +94,16 @@ for i in $JARVICE_IMAGES; do
         $DOCKER tag $JARVICE_REG_REPO/$i:$JARVICE_VERSION $PUSH_REG_REPO/$i:$JARVICE_VERSION
         $DOCKER push $PUSH_REG_REPO/$i:$JARVICE_VERSION
         [ -n "$PUSH_AND_REMOVE" ] && $DOCKER rmi $PUSH_REG_REPO/$i:$JARVICE_VERSION $JARVICE_REG_REPO/$i:$JARVICE_VERSION
+    fi
+done
+
+for i in $EXTRA_IMAGES; do
+    $DOCKER pull $i
+    if [ -n "$PUSH_REGISTRY" ]; then
+        push_image=$PUSH_REGISTRY/$(echo ${i#*/})
+        $DOCKER tag $i $push_image
+        $DOCKER push $push_image
+        [ -n "$PUSH_AND_REMOVE" ] && $DOCKER rmi $push_image $i
     fi
 done
 
