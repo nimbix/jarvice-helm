@@ -7,6 +7,7 @@ JARVICE_REGISTRY=us-docker.pkg.dev
 JARVICE_REPOSITORY=jarvice-system/images
 JARVICE_VERSION=
 
+SAVE_DIR=
 PUSH_REGISTRY=
 PUSH_REPOSITORY=$JARVICE_REPOSITORY
 
@@ -22,10 +23,11 @@ Usage:
 
 Options:
     --jarvice-version <version>     JARVICE version to pull (required)
+    --save <directory>              $DOCKER save images to dir after pull
     --push-registry <registry>      Registry to push images to
-    --push-repository <repository>  Repository/namespace to push images to
-                                    (Default: $PUSH_REPOSITORY)
-    --push-and-remove               Remove local images after successful push
+    --push-repository <repository>  Repository/namespace to push JARVICE system
+                                    images to (Default: $PUSH_REPOSITORY)
+    --remove                        Remove local images after successful push
     --docker <executable>           Docker executable (Default: $DOCKER)
 
 Example:
@@ -46,6 +48,10 @@ while [ $# -gt 0 ]; do
             JARVICE_VERSION=$2
             shift; shift
             ;;
+        --save)
+            SAVE_DIR=$2
+            shift; shift
+            ;;
         --push-registry)
             PUSH_REGISTRY=$2
             shift; shift
@@ -54,8 +60,8 @@ while [ $# -gt 0 ]; do
             PUSH_REPOSITORY=$2
             shift; shift
             ;;
-        --push-and-remove)
-            PUSH_AND_REMOVE=1
+        --remove)
+            REMOVE=1
             shift;
             ;;
         --docker)
@@ -90,20 +96,22 @@ PUSH_REG_REPO=
 [ -n "$PUSH_REGISTRY" ] && PUSH_REG_REPO=$PUSH_REGISTRY/$PUSH_REPOSITORY
 for i in $JARVICE_IMAGES; do
     $DOCKER pull $JARVICE_REG_REPO/$i:$JARVICE_VERSION
+    [ -n "$SAVE_DIR" ] && $DOCKER save $JARVICE_REG_REPO/$i:$JARVICE_VERSION | gzip >$SAVE_DIR/$(echo $JARVICE_REG_REPO/$i:$JARVICE_VERSION | sed -e 's|/|~|g').tar.gz
     if [ -n "$PUSH_REG_REPO" ]; then
         $DOCKER tag $JARVICE_REG_REPO/$i:$JARVICE_VERSION $PUSH_REG_REPO/$i:$JARVICE_VERSION
         $DOCKER push $PUSH_REG_REPO/$i:$JARVICE_VERSION
-        [ -n "$PUSH_AND_REMOVE" ] && $DOCKER rmi $PUSH_REG_REPO/$i:$JARVICE_VERSION $JARVICE_REG_REPO/$i:$JARVICE_VERSION
+        [ -n "$REMOVE" ] && $DOCKER rmi $PUSH_REG_REPO/$i:$JARVICE_VERSION $JARVICE_REG_REPO/$i:$JARVICE_VERSION
     fi
 done
 
 for i in $EXTRA_IMAGES; do
     $DOCKER pull $i
+    [ -n "$SAVE_DIR" ] && $DOCKER save $i | gzip >$SAVE_DIR/$(echo $i | sed -e 's|/|~|g').tar.gz
     if [ -n "$PUSH_REGISTRY" ]; then
         push_image=$PUSH_REGISTRY/$(echo ${i#*/})
         $DOCKER tag $i $push_image
         $DOCKER push $push_image
-        [ -n "$PUSH_AND_REMOVE" ] && $DOCKER rmi $push_image $i
+        [ -n "$REMOVE" ] && $DOCKER rmi $push_image $i
     fi
 done
 
