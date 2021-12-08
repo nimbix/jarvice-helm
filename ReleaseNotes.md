@@ -127,6 +127,14 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202112081812
+
+* (JAR-4795) Support for automated license feature computation on job submission via hook script; see [Advanced: Automatic License Feature Computation](LicenseManager.md#advanced-automatic-license-feature-computation) for details.
+* (JAR-4804) Support for signaling processes in running jobs (e.g. to suspend or resume jobs) via the JARVICE API; see the [/jarvice/signal](https://jarvice.readthedocs.io/en/latest/api/#jarvicesignal) API documentation for details.
+* (JAR-4809) Support for deploying JARVICE clusters behind HTTP(s) proxy servers; see the values `jarvice.JARVICE_HTTP_PROXY`, `jarvice.JARVICE_HTTPS_PROXY`, and `jarvice.JARVICE_NO_PROXY` in [values.yaml](values.yaml) for details; note that proxy configuration may be set independently for upstream and downstream clusters in multi-cluster configuration.
+* (JAR-4838) Preemptible license feature configuration in *Administration->License Manager* view; **note that this feature is currently incomplete and will not impact scheduling until a future release**.
+
+
 ## 3.21.9-1.202111241749
 
 * (JAR-4654) Added the ability to specify availability zones for node groups separately from the control plane on EKS and AKS deployments.  Use the `zones` key in the respective node group Terraform configuration to specify a different value than that of the system nodes.
