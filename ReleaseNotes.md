@@ -115,6 +115,15 @@ Up to 3 previous minor revisions (from the one indicated in [Latest Version Supp
 
 # Changelog
 
+## 3.21.0-4.202112081735 (3.21.0 LTS SP6)
+
+* (JAR-4795) Support for automated license feature computation on job submission via hook script; see [Advanced: Automatic License Feature Computation](LicenseManager.md#advanced-automatic-license-feature-computation) for details.
+* (JAR-4804) (JAR-4805) Support for signaling processes in running jobs (e.g. to suspend or resume jobs) via the JARVICE API; see the [/jarvice/signal](https://jarvice.readthedocs.io/en/latest/api/#jarvicesignal) API documentation for details.
+* (JAR-4808) Fixed bug where invalid AppDef was preventing the ability to retrive a PushToCompute log.
+* (JAR-4810) Migration of JARVICE system containers to Google Artifact Repository (AR) due to deprecation of gcr.io
+* (JAR-4824) Added `hostbatch` pseudo-device in machine definitions to allow non-interactive batch jobs to run in host network namespace. This feature should only be used as part of a support recommendation.
+* (JAR-4838) Preemptible license feature configuration in *Administration->License Manager* view; **note that this feature is currently incomplete and will not impact scheduling until a future release.**
+
 ## 3.21.0-4.202110251927 (3.21.0 LTS SP5)
 
 * (JAR-4699) Increased job label character limit to 255 (from 50).
