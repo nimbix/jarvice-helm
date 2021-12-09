@@ -58,6 +58,11 @@ global = {  # Global config options can be overridden in cluster configs
   #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
   #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
 
+  # HTTP/S Proxy settings, no_proxy is set for services
+  #JARVICE_HTTP_PROXY:   # "http://proxy.my-domain.com:8080"
+  #JARVICE_HTTPS_PROXY:  # "https://proxy.my-domain.com:8080"
+  #JARVICE_NO_PROXY:     # "my-other-domain.com,192.168.1.10,domain.com:8080"
+
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
   #JARVICE_MAIL_PASSWORD: # "Pass1234"
@@ -137,6 +142,11 @@ k8s = {  # Deploy JARVICE to pre-existing K8s clusters
   #JARVICE_LICENSE_MANAGER_URL: # "https://jarvice-license-manager.my-domain.com"
   #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
   #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
+
+  # HTTP/S Proxy settings, no_proxy is set for services
+  #JARVICE_HTTP_PROXY:   # "http://proxy.my-domain.com:8080"
+  #JARVICE_HTTPS_PROXY:  # "https://proxy.my-domain.com:8080"
+  #JARVICE_NO_PROXY:     # "my-other-domain.com,192.168.1.10,domain.com:8080"
 
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
@@ -274,6 +284,11 @@ jarvice:
   #JARVICE_LICENSE_MANAGER_URL: # "https://jarvice-license-manager.my-domain.com"
   #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
   #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
+
+  # HTTP/S Proxy settings, no_proxy is set for services
+  #JARVICE_HTTP_PROXY:   # "http://proxy.my-domain.com:8080"
+  #JARVICE_HTTPS_PROXY:  # "https://proxy.my-domain.com:8080"
+  #JARVICE_NO_PROXY:     # "my-other-domain.com,192.168.1.10,domain.com:8080"
 
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
@@ -440,6 +455,11 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
   #JARVICE_LICENSE_MANAGER_URL: # "https://jarvice-license-manager.my-domain.com"
   #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
   #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
+
+  # HTTP/S Proxy settings, no_proxy is set for services
+  #JARVICE_HTTP_PROXY:   # "http://proxy.my-domain.com:8080"
+  #JARVICE_HTTPS_PROXY:  # "https://proxy.my-domain.com:8080"
+  #JARVICE_NO_PROXY:     # "my-other-domain.com,192.168.1.10,domain.com:8080"
 
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
@@ -612,6 +632,11 @@ jarvice:
   #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
   #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
 
+  # HTTP/S Proxy settings, no_proxy is set for services
+  #JARVICE_HTTP_PROXY:   # "http://proxy.my-domain.com:8080"
+  #JARVICE_HTTPS_PROXY:  # "https://proxy.my-domain.com:8080"
+  #JARVICE_NO_PROXY:     # "my-other-domain.com,192.168.1.10,domain.com:8080"
+
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
   #JARVICE_MAIL_PASSWORD: # "Pass1234"
@@ -755,6 +780,11 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
   #JARVICE_LICENSE_MANAGER_URL: # "https://jarvice-license-manager.my-domain.com"
   #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
   #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
+
+  # HTTP/S Proxy settings, no_proxy is set for services
+  #JARVICE_HTTP_PROXY:   # "http://proxy.my-domain.com:8080"
+  #JARVICE_HTTPS_PROXY:  # "https://proxy.my-domain.com:8080"
+  #JARVICE_NO_PROXY:     # "my-other-domain.com,192.168.1.10,domain.com:8080"
 
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
@@ -909,6 +939,11 @@ jarvice:
   #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
   #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
 
+  # HTTP/S Proxy settings, no_proxy is set for services
+  #JARVICE_HTTP_PROXY:   # "http://proxy.my-domain.com:8080"
+  #JARVICE_HTTPS_PROXY:  # "https://proxy.my-domain.com:8080"
+  #JARVICE_NO_PROXY:     # "my-other-domain.com,192.168.1.10,domain.com:8080"
+
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
   #JARVICE_MAIL_PASSWORD: # "Pass1234"
@@ -1032,6 +1067,11 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
   #JARVICE_LICENSE_MANAGER_URL: # "https://jarvice-license-manager.my-domain.com"
   #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
   #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
+
+  # HTTP/S Proxy settings, no_proxy is set for services
+  #JARVICE_HTTP_PROXY:   # "http://proxy.my-domain.com:8080"
+  #JARVICE_HTTPS_PROXY:  # "https://proxy.my-domain.com:8080"
+  #JARVICE_NO_PROXY:     # "my-other-domain.com,192.168.1.10,domain.com:8080"
 
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"
@@ -1174,6 +1214,11 @@ jarvice:
   #JARVICE_LICENSE_MANAGER_URL: # "https://jarvice-license-manager.my-domain.com"
   #JARVICE_LICENSE_MANAGER_SSL_VERIFY: "true"
   #JARVICE_LICENSE_MANAGER_KEY: "jarvice-license-manager:Pass1234"
+
+  # HTTP/S Proxy settings, no_proxy is set for services
+  #JARVICE_HTTP_PROXY:   # "http://proxy.my-domain.com:8080"
+  #JARVICE_HTTPS_PROXY:  # "https://proxy.my-domain.com:8080"
+  #JARVICE_NO_PROXY:     # "my-other-domain.com,192.168.1.10,domain.com:8080"
 
   #JARVICE_MAIL_SERVER: jarvice-smtpd:25
   #JARVICE_MAIL_USERNAME: # "mail-username"

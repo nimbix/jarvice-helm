@@ -18,6 +18,7 @@ A comprehensive mechanism for queuing jobs based on license token availability.
     * [JARVICE API](#jarvice-api)
 * [Troubleshooting](#troubleshooting)
 * [Advanced: Multiple License Server Addresses](#advanced-multiple-license-server-addresses)
+* [Advanced: Automatic License Feature Computation](#advanced-automatic-license-feature-computation)
 * [Best Practices, Anomalies, and Caveats](#best-practices-anomalies-and-caveats)
 
 ---
@@ -346,6 +347,110 @@ In all cases the output of `jarvice-license-server`, in log level 10, is the sug
 If a single application needs to consider multiple license server addresses for checkouts, the best practice is to consolidate these under a single entry and use the `address` key to specify the multiples, separated by a colon (`:`) character.  For example, if the `myservers` entry must consider multiple addresses, such as `1055@server1:1055@server2` (as would be passed to the `lmutil lmstat -c` command), you would specify the `port` as `1055` and the address as `server1:1055@server2`.  `jarvice-license-manager` would then concatenate this to `1055@server1:1055@server2` for the Flex `lmutil` client request to inspect the total and available feature counts.  The following rules apply:
 1. `jarvice-license-manager` will add the totals and consider them in aggregate for any reservations against the server entry with multiple addresses; it's expected the Flex license client in the solver will be able to do partial checkouts if all tokens are not available on one given address.  Note that `jarvice-license-manager` will consider the license request "available" if the total number of requested tokens for any given feature is less than or equal to the total number of available tokens across all daemon addresses queried for that server.  If the solver you are trying to use does not support this, you may end up with checkout failures even though `jarvice-license-manager` thinks there are enough tokens.  Check with your solver's software vendor if you are not sure how it considers availabilty of features across multiple servers.
 2. The best practice is to create server entries for each individual address as well as one for all addresses combined, so that the appropriate host resolution automation can take place.  Do this even if you don't plan on ever using the servers individually for best results.  For additional details, see [Flex server host name resolution](#flex-server-host-name-resolution).
+
+---
+
+## Advanced: Automatic License Feature Computation
+
+The JARVICE scheduler provides a mechanism to hook a custom script before job submission in order to compute appropriate license feature requests.  This can be used to enforce license queuing policies even if users omit or mistake features when submitting jobs.
+
+The JARVICE scheduler supports `bash`, `tcsh`, or `python3` scripts for this mechanism.  Scripts are executable and must refer to the appropriate shell in the first line, such as `#!/bin/tcsh`, `#!/bin/bash`, or `#!/usr/bin/python3`.  The hook mechanism passes information into the script during job submission identifying various attributes such as user, application, command line arguments, and scale, and expects the script to output the appropriate license features to use, in the *feature:count* format (e.g. `mmsim:4`).  JARVICE then patches the request into the job before completing the submission.  The hook script may also fail submission by simply returning a non-zero value.
+
+Hook scripts are connected to the JARVICE scheduler service (upstream) via the `jarvice-settings` *ConfigMap*, using a file called `licfeatures`.  Both the *ConfigMap* and the script itself are optional and are only called if found.  It is possible to create (or re-create) the *ConfigMap* without restarting the service to make updates, but please note it may take Kubernetes a few seconds (typically up to a minute) to apply the changes.  Also note that this *ConfigMap* may include other files for other parts of the system, as described in [Customize JARVICE files via a ConfigMap](README.md#customize-jarvice-files-via-a-configmap).
+
+Finally, note that the script will run as `root` within the `jarvice-scheduler` container, but will not have access to any filesystem(s) outside the container unless the deployment is specifically patched to provide them.  As a best practice, keep the filesystem interaction in this script to a minimum.  It should mainly include conditional logic based on string/environment parsing, and arithmetic.
+
+### Example `licfeatures` Script and `jarvice-settings` *ConfigMap*
+
+The following sample script demonstrates patching feature requests as well as invalidating job submissions.  Please note that it is for illustration purposes only.  The script file should be named `licfeatures`.
+
+```bash
+#!/bin/bash
+
+echo "-- entered licfeatures --" >&2
+env |grep ^JOB_ >&2
+echo "command line: $@" >&2
+if [ "$JOB_LICENSES" = "badlic:1" ]; then
+    echo "Invalid license specified!" >&2
+    exit 1
+elif [ "$JOB_LICENSES" = "normal:1" ]; then
+    JOB_LICENSES="normal:$JOB_CORES"
+fi
+echo $JOB_LICENSES
+exit 0
+```
+
+Note that all informational/debug messages are logged to `&2` (`stderr`), as JARVICE interprets anything written to `stdout` as actual license features and counts.  Anything written to `stderr` can be found in the `jarvice-scheduler` component logs, and easily tailed with the `kubectl` command as:
+```
+kubectl logs -n jarvice-system -l component=jarvice-scheduler -f
+```
+
+If the script returns 0, JARVICE expects `stdout` to contain the license feature request to patch the job submission with, which will in turn be visible to `jarvice-license-manager` if that user account is connected to a license server under its watch.  The script may output nothing to `stdout`, which tells JARVICE to remove all license feature requests that may have been specified.
+
+Finally, if the script returns non-zero, JARVICE will fail the job submission informing the user that it was not able to compute license features.  The script should log the actual problem to `stderr` (`&2`) so system administrators may inspect the logs as described above.
+
+To "connect" this script to the scheduler, simply create (or re-create) the `jarvice-settings` *ConfigMap* from a directory containing the script (`jarvice-settings` in the example below), which should be named `licfeatures` - e.g.:
+```
+kubectl create configmap jarvice-settings --from-file=jarvice-settings -n jarvice-system
+```
+Note that the above fails if the *ConfigMap* already exists.  Delete it first if necessary with:
+```
+kubectl delete configmap jarvice-settings -n jarvice-system
+```
+
+To test the example, submit a job with the string `badlic:1` populated in the *License Features* field in the *OPTIONAL* tab of the task builder.  The submission will fail.  Next, submit a job on a multi-CPU machine or set of machines with the license feature string `normal:1`.  If you later clone this job, you will see the *License Feature* value was patched with the total number of CPUs selected for the job.
+
+The following log snippet from the `jarvice-scheduler` component demonstrates execution of the sample script:
+
+```
+[jarvice-scheduler-86dcf54f7f-26z9j] -- entered licfeatures --
+[jarvice-scheduler-86dcf54f7f-26z9j] JOB_NODES=2
+[jarvice-scheduler-86dcf54f7f-26z9j] JOB_GPUS=0
+[jarvice-scheduler-86dcf54f7f-26z9j] JOB_RAM=8
+[jarvice-scheduler-86dcf54f7f-26z9j] JOB_RAMPER=4
+[jarvice-scheduler-86dcf54f7f-26z9j] JOB_CORES=2
+[jarvice-scheduler-86dcf54f7f-26z9j] JOB_APP=jarvice-ubuntu
+[jarvice-scheduler-86dcf54f7f-26z9j] JOB_USER=test1
+[jarvice-scheduler-86dcf54f7f-26z9j] JOB_CORESPER=1
+[jarvice-scheduler-86dcf54f7f-26z9j] JOB_LICENSES=normal:1
+[jarvice-scheduler-86dcf54f7f-26z9j] JOB_GPUSPER=0
+[jarvice-scheduler-86dcf54f7f-26z9j] JOB_IDUSER=test1
+[jarvice-scheduler-86dcf54f7f-26z9j] JOB_PROJECT=
+[jarvice-scheduler-86dcf54f7f-26z9j] JOB_SCHED_ID=0
+[jarvice-scheduler-86dcf54f7f-26z9j] JOB_MACHINE=n0
+[jarvice-scheduler-86dcf54f7f-26z9j] command line: /bin/bash -c -l true
+```
+
+If running `jarvice-scheduler` in log level 10, you will also see it log the new (computed) license feature request as `normal:2` immediately after the script exits.
+
+### `licfeatures` Script Environment
+
+The following table explains the environment the JARVICE scheduler passes to the `licfeatures` script which it can then use to compute the appropriate license features to request for a given job.  Note that all environment variables are set, even if to empty values where appropriate.
+
+Variable|Description
+---|---
+`"$@"` (`bash`) or `"$*"`|command-line arguments passed to the job, including the executable entry point to run; useful to deduce the specific solver being executed along with its parameters, in order to determine appropriate features
+`${JOB_USER}`|the JARVICE user name of the user submitting the job
+`${JOB_IDUSER}`|the mapped or identity policy affected user name; note that this may be the same as `${JOB_USER}` unless `jarvice-idmapper` is in use or the account's administrator(s) defined an explicit setting in the *Account->Identity* view
+`${JOB_PROJECT}`|the job's selected project name, if any; note that this will contain the "payer" account's prefix (e.g. if a user is part of a team owned by payer `hpcgroup`, and they select project `cfd1`, this value will be `hpcgroup-cfd1`)
+`${JOB_LICENSES}`|the requested license feature(s) and count(s), if any
+`${JOB_APP}`|the JARVICE application ID for the job being submitted; this is the same as the `app` key in the job submission JSON, and can be inspected in the task builder before submitting a job
+`${JOB_NODES}`|the number of nodes the job is requesting
+`${JOB_CORESPER}`|the number of cores per node the job is requesting (typically as defined in the machine definition for the respective machine request)
+`${JOB_CORES}`|the total number of cores the job is requesting, across all node(s)
+`${JOB_GPUSPER}`|the number of GPUs the job is requesting; note that this may be 0 if no GPUs are defined in the respective machine definition
+`${JOB_GPUS}`|the total number of GPUs the job is requesting, across all node(s)
+`${JOB_RAMPER}`|the RAM per node (in gigabytes) the job is requesting, as defined in the machine definition
+`${JOB_RAM}`|the total amount of RAM (in gigabytes) the job is requesting, across all node(s)
+`${JOB_MACHINE}`|the name of the machine type the job is requesting
+`${JOB_SCHED_ID}`|the numeric "scheduler ID" the job is requesting; this number is found in the *Administration->Clusters* view; this may be useful to prevent certain solver features from running on certain clusters due to license restrictions
+
+### Additional Notes for the `licfeatures` Script
+
+1. `licfeatures` is not executed in a critical section, meaning multiple instances may be running concurrently within a given `jarvice-scheduler` pod or across multiple ones; for this reason, `licfeatures` should be stateless and "single pass"
+2. As described above, great care should be taken not to output anything to `stdout` other than the final license feature(s) and count(s); JARVICE will error check the value and job submission may fail otherwise
+3. To "learn" the mechanism it is recommended that you connect a sample script similar to the one described above, which dumps the environment to `stderr` (`&2`); you can then inspect the `jarvice-scheduler` logs to see the values
+4. do not attempt to make license server queries within this script; first, binaries such as `lmutil` and their required LSB dependencies are not available in the environment; second, `jarvice-license-manager` already provides the mechanisms needed to queue jobs based on licensing, at the appropriate time in the job lifecycle
 
 ---
 

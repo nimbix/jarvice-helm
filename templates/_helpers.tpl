@@ -121,3 +121,16 @@ Create release labels for metadata.
 app: {{ template "jarvice.name" . }}
 heritage: {{ .Release.Service }}
 {{- end }}
+
+{{/*
+JARVICE no_proxy
+*/}}
+{{- define "jarvice.no_proxy" -}}
+{{- $k8s_cluster_ip := (lookup "v1" "Service" "default" "kubernetes").spec.clusterIP -}}
+{{- $jxe_services := (list "jarvice-api" "jarvice-dal" "jarvice-db" "jarvice-idmapper" "jarvice-k8s-scheduler" "jarvice-license-manager" "jarvice-mc-portal" "jarvice-scheduler" "jarvice-smtpd") -}}
+{{- $jarvice_system_ns := .Release.Namespace -}}
+{{- if (not (empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE)) -}}
+{{- $jarvice_system_ns = .Values.jarvice.JARVICE_SYSTEM_NAMESPACE -}}
+{{- end -}}
+{{- printf "%s,%s,%s.%s,%s.%s.svc,%s.%s.svc.cluster.local,svc,svc.cluster.local,localhost,127.0.0.1" $k8s_cluster_ip ($jxe_services | join ",") ($jxe_services | join (printf ".%s," $jarvice_system_ns)) $jarvice_system_ns ($jxe_services | join (printf ".%s.svc," $jarvice_system_ns)) $jarvice_system_ns ($jxe_services | join (printf ".%s.svc.cluster.local," $jarvice_system_ns)) $jarvice_system_ns -}}
+{{- end -}}
