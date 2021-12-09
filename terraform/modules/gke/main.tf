@@ -72,9 +72,9 @@ resource "google_container_cluster" "jarvice" {
     min_master_version = local.master_version
     node_version = local.node_version
 
-    #release_channel {
-    #    channel = "STABLE"
-    #}
+    release_channel {
+        channel = "UNSPECIFIED"
+    }
 
     initial_node_count = 2
     remove_default_node_pool = false
