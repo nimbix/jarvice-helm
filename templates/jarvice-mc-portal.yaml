@@ -405,6 +405,8 @@ metadata:
 {{- end }}
 {{- if and (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (empty .Values.jarvice.ingress.tls.crt) (empty .Values.jarvice.ingress.tls.key)) }}
     cert-manager.io/issuer: {{ .Values.jarvice.ingress.tls.issuer.name }}
+{{- else if and (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) (and (empty .Values.jarvice.ingress.tls.crt) (empty .Values.jarvice.ingress.tls.key)) }}
+    cert-manager.io/cluster-issuer: {{ .Values.jarvice.ingress.tls.cluster_issuer.name }}
 {{- end }}
 {{- if .Values.jarvice_mc_portal.ingressAnnotations }}
 {{ toYaml .Values.jarvice_mc_portal.ingressAnnotations | indent 4 }}
@@ -473,7 +475,7 @@ spec:
 {{- end }}
 {{- if ne "-" .Values.jarvice_mc_portal.ingressHost }}
     host: '{{- .Values.jarvice_mc_portal.ingressHost -}}'
-{{- if or (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}
+{{- if or (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}
   tls:
   - hosts:
     - '{{- .Values.jarvice_mc_portal.ingressHost -}}'
