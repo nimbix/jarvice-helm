@@ -1,7 +1,11 @@
 {{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if .Values.jarvice_scheduler.enabled }}
 {{- if gt (.Values.jarvice_scheduler.replicaCount | int) 1 }}
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+apiVersion: policy/v1
+{{- else }}
 apiVersion: policy/v1beta1
+{{- end }}
 kind: PodDisruptionBudget
 metadata:
   name: jarvice-scheduler
@@ -315,7 +319,11 @@ WARNING: Enabling ingressHost for this service is dangerous.
 DO NOT enable it here without understanding the security implications!
 */}}
 {{- if (not (empty .Values.jarvice_scheduler.ingressHost)) }}
-apiVersion: {{ template "apiVersion.ingress" . }}
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+apiVersion: networking.k8s.io/v1
+{{- else }}
+apiVersion: networking.k8s.io/v1beta1
+{{- end }}
 kind: Ingress
 metadata:
   name: jarvice-scheduler
@@ -323,8 +331,10 @@ metadata:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-scheduler
   annotations:
+{{- if (not (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion)) }}
 {{- if (not (empty .Values.jarvice.ingress.class)) }}
     kubernetes.io/ingress.class: {{ .Values.jarvice.ingress.class }}
+{{- end }}
 {{- end }}
 {{- if and (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (empty .Values.jarvice.ingress.tls.crt) (empty .Values.jarvice.ingress.tls.key)) }}
     cert-manager.io/issuer: {{ .Values.jarvice.ingress.tls.issuer.name }}
@@ -333,13 +343,28 @@ metadata:
 {{ toYaml .Values.jarvice_scheduler.ingressAnnotations | indent 4 }}
 {{- end }}
 spec:
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+{{- if (not (empty .Values.jarvice.ingress.class)) }}
+  ingressClassName: {{ .Values.jarvice.ingress.class }}
+{{- end }}
+{{- end }}
   rules:
   - host: {{ .Values.jarvice_scheduler.ingressHost }}
     http:
       paths:
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+      - backend:
+          service:
+            name: jarvice-scheduler
+            port:
+              name: https
+        pathType: Prefix
+        path: /
+{{- else }}
       - backend:
           serviceName: jarvice-scheduler
           servicePort: https
+{{- end }}
 {{- if or (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}
   tls:
   - hosts:

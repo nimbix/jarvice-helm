@@ -1,6 +1,10 @@
 {{- if .Values.jarvice_k8s_scheduler.enabled }}
 {{- if gt (.Values.jarvice_k8s_scheduler.replicaCount | int) 1 }}
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+apiVersion: policy/v1
+{{- else }}
 apiVersion: policy/v1beta1
+{{- end }}
 kind: PodDisruptionBudget
 metadata:
   name: jarvice-k8s-scheduler
@@ -395,7 +399,11 @@ spec:
     deployment: jarvice-k8s-scheduler
 ---
 {{- else }}
-apiVersion: {{ template "apiVersion.ingress" . }}
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+apiVersion: networking.k8s.io/v1
+{{- else }}
+apiVersion: networking.k8s.io/v1beta1
+{{- end }}
 kind: Ingress
 metadata:
   name: jarvice-k8s-scheduler
@@ -403,8 +411,10 @@ metadata:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-k8s-scheduler
   annotations:
+{{- if (not (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion)) }}
 {{- if (not (empty .Values.jarvice.ingress.class)) }}
     kubernetes.io/ingress.class: {{ .Values.jarvice.ingress.class }}
+{{- end }}
 {{- end }}
 {{- if and (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (empty .Values.jarvice.ingress.tls.crt) (empty .Values.jarvice.ingress.tls.key)) }}
     cert-manager.io/issuer: {{ .Values.jarvice.ingress.tls.issuer.name }}
@@ -413,12 +423,27 @@ metadata:
 {{ toYaml .Values.jarvice_k8s_scheduler.ingressAnnotations | indent 4 }}
 {{- end }}
 spec:
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+{{- if (not (empty .Values.jarvice.ingress.class)) }}
+  ingressClassName: {{ .Values.jarvice.ingress.class }}
+{{- end }}
+{{- end }}
   rules:
   - http:
       paths:
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+      - backend:
+          service:
+            name: jarvice-k8s-scheduler
+            port:
+              name: http
+        pathType: Prefix
+        path: /
+{{- else }}
       - backend:
           serviceName: jarvice-k8s-scheduler
           servicePort: http
+{{- end }}
 {{- if ne "-" .Values.jarvice_k8s_scheduler.ingressHost }}
     host: '{{- .Values.jarvice_k8s_scheduler.ingressHost -}}'
 {{- if or (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}

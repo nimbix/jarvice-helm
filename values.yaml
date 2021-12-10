@@ -524,7 +524,7 @@ jarvice_registry_proxy_gc: # N/A if jarvice_registry_proxy.enabled is false
   tolerations: # '[{"key": "node-role.jarvice.io/jarvice-registry-proxy", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-registry-proxy", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-registry-proxy", "operator": "Exists"}]}] }}'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-registry-proxy": "true"}'
-  image: us-docker.pkg.dev/jarvice/images/jarvice-kubectl:v1.20.5
+  image: us-docker.pkg.dev/jarvice/images/jarvice-kubectl:v1.21.7
   imagePullPolicy: IfNotPresent
   env:
     IMAGE_LAST_ACCESS_SECONDS: 2592000  # Default: 2592000 (30 days)
@@ -836,7 +836,7 @@ jarvice_dockerbuild_pvc_gc:
   tolerations: # '[{"key": "node-role.jarvice.io/jarvice-dockerbuild-pvc-gc", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-dockerbuild-pvc-gc", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-dockerbuild-pvc-gc", "operator": "Exists"}]}] }}'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-dockerbuild-pvc-gc": "true"}'
-  image: us-docker.pkg.dev/jarvice/images/jarvice-kubectl:v1.20.5
+  image: us-docker.pkg.dev/jarvice/images/jarvice-kubectl:v1.21.7
   imagePullPolicy: IfNotPresent
   env:
     JARVICE_BUILD_PVC_KEEP_SUCCESSFUL: 3600  # Default: 3600 (1 hour)

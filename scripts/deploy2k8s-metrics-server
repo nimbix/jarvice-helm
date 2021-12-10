@@ -59,18 +59,6 @@ done
 
 set -e
 
-#helm_stable_repo_url=https://charts.helm.sh/stable
-#helm_stable_repo=$($HELM repo list 2>/dev/null | grep ^stable || /bin/true)
-#if [ -z "$helm_stable_repo" ]; then
-#    echo
-#    echo "* Adding helm chart repository for stable..."
-#    $HELM repo add stable $helm_stable_repo_url
-#fi
-
-#echo
-#echo "* Updating helm chart repositories..."
-#$HELM repo update
-
 if [ "$namespace" != "kube-system" ]; then
     echo
     echo "* Creating namespace: $namespace"
@@ -79,7 +67,7 @@ fi
 
 echo
 echo "* Deploying..."
-repo=https://charts.helm.sh/stable
+repo=https://kubernetes-sigs.github.io/metrics-server
 $HELM upgrade metrics-server metrics-server --repo $repo \
     --namespace $namespace --install --reset-values \
     \
