@@ -108,9 +108,12 @@ jarvice:
   JARVICE_LRJ_CURRENCY_FMT: "$%.2f" # printf-format, single %f value
 
   ingress:
-    class: "traefik"
+    class: "traefik"  # "nginx"
     tls:
       # cert-manager must be deployed in order to use certificate issuers
+      # issuer.name takes precedence over cluster_issuer.name, do not set both
+      cluster_issuer:
+        name: # "my-cluster-issuer"
       issuer:
         name: # "letsencrypt-prod" # "letsecrypt-staging" # "selfsigned"
         # An admin email is required when letsencrypt issuer is set. The first
