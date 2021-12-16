@@ -39,6 +39,7 @@ jarvice:
 
   # JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
   JARVICE_JOBS_DOMAIN: # my-domain.com  # (host based ingress)
+  JARVICE_JOBS_INGRESS_ANNOTATIONS: # '{"nginx.org/mergeable-ingress-type": "minion", "nginx.org/client-max-body-size": "0", "nginx.org/proxy-read-timeout": "3600", "nginx.org/proxy-send-timeout": "3600"}'
   JARVICE_JOBS_LB_SERVICE: "false"
   JARVICE_JOBS_LB_ANNOTATIONS: # '{}'
   JARVICE_JOBS_MULTI_TENANT: "false"
@@ -783,6 +784,7 @@ jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   loadBalancerIP:
   ingressHost: # jarvice-api.my-domain.com
   ingressPath: "/"  # Valid values are "/" (default) or "/api"
+  ingressAnnotations: # '{"nginx.org/client-max-body-size": "0", "nginx.org/proxy-read-timeout": "3600", "nginx.org/proxy-send-timeout": "3600"}'
   resources:
     limits:
       cpu: 1
@@ -922,6 +924,7 @@ jarvice_mc_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   loadBalancerIP:
   ingressHost: # jarvice.my-domain.com
   ingressPath: "/"  # Valid values are "/" (default) or "/portal"
+  ingressAnnotations: # '{"nginx.org/client-max-body-size": "0", "nginx.org/proxy-read-timeout": "3600", "nginx.org/proxy-send-timeout": "3600"}'
   resources:
     limits:
       cpu: 1

@@ -20,6 +20,23 @@ data:
   tls.crt: {{ .Values.jarvice.ingress.tls.crt }}
   tls.key: {{ .Values.jarvice.ingress.tls.key }}
 ---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tls-jarvice
+{{- if empty .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
+  namespace: {{ .Release.Namespace }}-jobs
+{{- else }}
+  namespace: {{ .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
+{{- end }}
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-system
+type: Opaque
+data:
+  tls.crt: {{ .Values.jarvice.ingress.tls.crt }}
+  tls.key: {{ .Values.jarvice.ingress.tls.key }}
+---
 {{- else }}
 {{- if not (empty .Values.jarvice.ingress.tls.issuer.name) }}
 {{- if or (eq "letsencrypt-prod" .Values.jarvice.ingress.tls.issuer.name) (eq "letsencrypt-staging" .Values.jarvice.ingress.tls.issuer.name) }}
@@ -49,6 +66,34 @@ spec:
         ingress:
           class: {{ .Values.jarvice.ingress.tls.class }}
 ---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ .Values.jarvice.ingress.tls.issuer.name }}
+{{- if empty .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
+  namespace: {{ .Release.Namespace }}-jobs
+{{- else }}
+  namespace: {{ .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
+{{- end }}
+spec:
+  acme:
+{{- if (eq "letsencrypt-prod" .Values.jarvice.ingress.tls.issuer.name) }}
+    server: 'https://acme-v02.api.letsencrypt.org/directory'
+{{- else }}
+    server: 'https://acme-staging-v02.api.letsencrypt.org/directory'
+{{- end }}
+{{- if not (empty .Values.jarvice.ingress.tls.issuer.email) }}
+    email: "{{- .Values.jarvice.ingress.tls.issuer.email -}}"
+{{- else }}
+    email: "{{- (split "," .Values.jarvice.JARVICE_MAIL_ADMINS)._0 -}}"
+{{- end }}
+    privateKeySecretRef:
+      name: "{{- .Values.jarvice.ingress.tls.issuer.name -}}"
+    solvers:
+    - http01:
+        ingress:
+          class: {{ .Values.jarvice.ingress.tls.class }}
+---
 {{- end }}
 {{- else if (eq "selfsigned" .Values.jarvice.ingress.tls.issuer.name) }}
 apiVersion: cert-manager.io/v1
@@ -58,7 +103,22 @@ metadata:
 spec:
   selfSigned: {}
 ---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ .Values.jarvice.ingress.tls.issuer.name }}
+{{- if empty .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
+  namespace: {{ .Release.Namespace }}-jobs
+{{- else }}
+  namespace: {{ .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
+{{- end }}
+spec:
+  selfSigned: {}
+---
 {{- else if (eq "ca" .Values.jarvice.ingress.tls.issuer.name) }}
+{{/*
+NOTE: "ca" issuer is not currently supported
+*/}}
 apiVersion: v1
 kind: Secret
 metadata:
