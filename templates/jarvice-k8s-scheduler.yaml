@@ -256,6 +256,22 @@ spec:
             value: "{{ .Values.jarvice.JARVICE_JOBS_DOMAIN }}"
 {{- end }}
 {{- end }}
+          - name: JARVICE_JOBS_INGRESS_CLASS
+            value: "{{ .Values.jarvice.ingress.class }}"
+          - name: JARVICE_JOBS_INGRESS_ANNOTATIONS
+            value: '{{ .Values.jarvice.JARVICE_JOBS_INGRESS_ANNOTATIONS }}'
+{{- if and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key)) }}
+          - name: JARVICE_JOBS_INGRESS_CERT_SECRET_NAME
+            value: 'tls-jarvice'
+{{- else }}
+{{- if (not (empty .Values.jarvice.ingress.tls.issuer.name)) }}
+          - name: JARVICE_JOBS_INGRESS_CERT_ISSUER
+            value: '{{ .Values.jarvice.ingress.tls.issuer.name }}'
+{{- else if (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) }}
+          - name: JARVICE_JOBS_INGRESS_CERT_CLUSTER_ISSUER
+            value: '{{ .Values.jarvice.ingress.tls.cluster_issuer.name }}'
+{{- end }}
+{{- end }}
           - name: JARVICE_JOBS_LB_SERVICE
             value: "{{ .Values.jarvice.JARVICE_JOBS_LB_SERVICE }}"
           - name: JARVICE_JOBS_LB_ANNOTATIONS
@@ -422,7 +438,11 @@ metadata:
     cert-manager.io/cluster-issuer: {{ .Values.jarvice.ingress.tls.cluster_issuer.name }}
 {{- end }}
 {{- if .Values.jarvice_k8s_scheduler.ingressAnnotations }}
+{{- if (kindIs "string" .Values.jarvice_k8s_scheduler.ingressAnnotations) }}
+{{ toYaml (fromJson .Values.jarvice_k8s_scheduler.ingressAnnotations) | indent 4 }}
+{{- else }}
 {{ toYaml .Values.jarvice_k8s_scheduler.ingressAnnotations | indent 4 }}
+{{- end }}
 {{- end }}
 spec:
 {{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
