@@ -679,6 +679,9 @@ of name/value pairs as needed.
 `nginx.org/websocket-services` annotation will automatically be set to the
 value of the jobs' kubernetes Service.
 
+**Note:**  Additional information on using ingress with JARVICE, can be found
+in the [Ingress Patterns and Configuration](Ingress.md) documentation.
+
 ### PushToCompute (`jarvice-dockerbuild`) Configuration
 
 When deploying JARVICE to a managed kubernetes service with
