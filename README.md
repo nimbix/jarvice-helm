@@ -18,6 +18,7 @@ $ git clone https://github.com/nimbix/jarvice-helm.git
     - [Kubernetes network plugin](#kubernetes-network-plugin)
     - [Kubernetes load balancer](#kubernetes-load-balancer)
     - [Kubernetes ingress controller](#kubernetes-ingress-controller)
+        - [Ingress controller installation](#ingress-controller-installation)
     - [Kubernetes device plugins](#kubernetes-device-plugins)
     - [Kubernetes persistent volumes (for non-demo installation)](#kubernetes-persistent-volumes-for-non-demo-installation)
     - [JARVICE license and credentials](#jarvice-license-and-credentials)
@@ -28,10 +29,6 @@ $ git clone https://github.com/nimbix/jarvice-helm.git
         - [Utilizing jarvice-compute labels](#utilizing-jarvice-compute-labels)
         - [Node taints and pod tolerations](#node-taints-and-pod-tolerations)
         - [jarvice-compute taints and pod tolerations](#jarvice-compute-taints-and-pod-tolerations)
-    - [PushToCompute (`jarvice-dockerbuild`) Configuration](#pushtocompute-jarvice-dockerbuild-configuration)
-        - [Build cache](#build-cache)
-            - [Garbage collection of build cache PVCs](#garbage-collection-of-build-cache-pvcs)
-        - [Build nodes](#build-nodes)
 * [JARVICE Quick Installation (Demo without persistence)](#jarvice-quick-installation-demo-without-persistence)
     - [Find the latest JARVICE helm chart release version](#find-the-latest-jarvice-helm-chart-release-version)
     - [Code repository of the JARVICE helm chart](#code-repository-of-the-jarvice-helm-chart)
@@ -39,8 +36,18 @@ $ git clone https://github.com/nimbix/jarvice-helm.git
     - [Deployment to managed kubernetes services with `terraform`](#deployment-to-managed-kubernetes-services-with-terraform)
 * [JARVICE Standard Installation](#jarvice-standard-installation)
     - [Persistent volumes](#persistent-volumes)
-    - [Selecting external, load balancer IP addresses](#selecting-external-load-balancer-ip-addresses)
+    - [Using a load balancer for jobs](#using-a-load-balancer-for-jobs)
+        - [Selecting external, load balancer IP addresses](#selecting-external-load-balancer-ip-addresses)
+        - [Possible settings for `jarvice.JARVICE_JOBS_LB_SERVICE`](#possible-settings-for-jarvicejarvice_jobs_lb_service)
+        - [Additional LoadBalancer service annotation for jobs](#additional-loadbalancer-service-annotation-for-jobs)
+        - [Example: using an internal LoadBalancer on AWS](#example-using-an-internal-loadbalancer-on-aws)
     - [Using an Ingress controller for jobs](#using-an-ingress-controller-for-jobs)
+        - [Enable path based ingress](#enable-path-based-ingress)
+        - [Additional Ingress annotation for jobs](#additional-ingress-annotation-for-jobs)
+    - [PushToCompute (`jarvice-dockerbuild`) Configuration](#pushtocompute-jarvice-dockerbuild-configuration)
+        - [Build cache](#build-cache)
+            - [Garbage collection of build cache PVCs](#garbage-collection-of-build-cache-pvcs)
+        - [Build nodes](#build-nodes)
     - [Site specific configuration](#site-specific-configuration)
         - [JARVICE helm deployment script](#jarvice-helm-deployment-script)
     - [Updating configuration (or upgrading to newer JARVICE chart version)](#updating-configuration-or-upgrading-to-newer-jarvice-chart-version)
@@ -171,7 +178,13 @@ An ingress controller is required for making the JARVICE services and jobs
 available and accessible from outside of the kubernetes cluster via
 DNS host names.
 [Traefik](https://traefik.io/) is the ingress controller solution that is
-supported by JARVICE.
+recommended for JARVICE.
+
+For more information on using an ingress controller with JARVICE, please review
+[Using an Ingress controller for jobs](#using-an-ingress-controller-for-jobs)
+and [Ingress Patterns and Configuration](Ingress.md).
+
+#### Ingress controller installation
 
 If your cluster does not already have an ingress controller deployed, see the
 [Kubernetes ingress controller](KubernetesInstall.md#kubernetes-ingress-controller)
@@ -437,63 +450,6 @@ configurable.
 Tolerations for `jarvice-compute` will be made configurable in future
 releases of JARVICE.
 
-### PushToCompute (`jarvice-dockerbuild`) Configuration
-
-When deploying JARVICE to a managed kubernetes service with
-[terraform](Terraform.md), `jarvice-dockerbuild` will be automatically
-configured to use a build cache on persistent volume claims (PVCs)
-with dedicated build nodes.  PVC garbage collection will also be automatically
-configured.
-
-If deploying JARVICE to an on-premises kubernetes cluster, a persistent build
-cache and dedicated build nodes will not be enabled by default.  In this case,
-it may be desirable to customize the configuration.
-
-#### Build cache
-
-When building applications with PushToCompute, successful builds will push
-the build cache to the application's configured docker repository, but
-failed builds will not.  Thus, the first configuration consideration
-is whether or not to use a persistent build cache to speed up
-application rebuilds when failures occur.  Using a persistent build cache may
-not be necessary when building small applications, but it will likely provide
-a benefit when doing large application builds.
-
-To enable the use of a persistent build cache for application builds, set
-`jarvice-dockerbuild.persistence.enabled` to `true` and then set
-`jarvice-dockerbuild.persistence.storageClass` to the appropriate
-`StorageClass` to use when requesting PVCs.  It will be necessary to
-[install a dynamic storage provisioner](#install-a-dynamic-storage-provisioner)
-on the cluster if one has not already been installed.
-
-The size of the dynamically provisioned PVCs can be set with
-`jarvice-dockerbuild.persistence.size`.  This defaults to `300Gi`.
-
-##### Garbage collection of build cache PVCs
-
-Build cache PVCs will not be automatically deleted unless
-`jarvice_dockerbuild_pvc_gc.enabled` is set to `true`.  PVCs can be configured
-to be kept for different amounts of time for successful, aborted, and failed
-builds.  These values can be configured under the
-`jarvice_dockerbuild_pvc_gc.env` settings:
-
-```bash
-  env:
-    JARVICE_BUILD_PVC_KEEP_SUCCESSFUL: 3600  # Default: 3600 (1 hour)
-    JARVICE_BUILD_PVC_KEEP_ABORTED: 7200  # Default: 7200 (2 hours)
-    JARVICE_BUILD_PVC_KEEP_FAILED: 14400  # Default: 14400 (4 hours)
-```
-
-#### Build nodes
-
-If persistence has not been enabled for applications builds, it may be
-advantageous to run `jarvice-dockerbuild` pods on nodes with solid-state
-drives (SSDs).  It may also be beneficial to run the `jarvice-dockerbuild`
-pods on nodes with faster processors.  If either of these is desired,
-see the above section on setting a
-[node label for jarvice-dockerbuild](#node-label-for-jarvice-dockerbuild)
-nodes.
-
 ------------------------------------------------------------------------------
 
 ## JARVICE Quick Installation (Demo without persistence)
@@ -640,7 +596,13 @@ match the persistent volume storage classes that you wish to use:
 - `jarvice_db.persistence.storageClass`
 - `jarvice_registry.persistence.storageClass`
 
-### Selecting external, load balancer IP addresses
+### Using a load balancer for jobs
+
+If using a load balancer is desired, but not already deployed for the
+kubernetes cluster, please review the documentation on deploying a
+[kubernetes load balancer](KubernetesInstall.md#kubernetes-load-balancer).
+
+#### Selecting external, load balancer IP addresses
 
 By default, the load balancer installed for the target kubernetes cluster will
 likely select random IP addresses from the IP range it was configured to use.
@@ -654,16 +616,6 @@ to the JARVICE services, here are the settings to use:
 - `jarvice_mc_portal.loadBalancerIP`
 - `jarvice_api.loadBalancerIP`
 
-### Using an Ingress controller for jobs
-
-By default, interactive JARVICE jobs request LoadBalancer addresses; to use
-an Ingress controller, set the parameter `jarvice.JARVICE_JOBS_DOMAIN` to the
-FQDN of the Ingress controller; JARVICE will create `*.${JARVICE_JOBS_DOMAIN}`
-address for accessing interactive jobs over HTTPS.  To assign LoadBalancer
-addresses even if Ingress is used, set `jarvice.JARVICE_JOBS_LB_SERVICE=always`,
-in which case JARVICE will create both Ingress as well as LoadBalancer service
-IPs for interactive jobs.
-
 #### Possible settings for `jarvice.JARVICE_JOBS_LB_SERVICE`
 
 Value|Behavior w/Ingress|Behavior w/out Ingress
@@ -672,17 +624,7 @@ Value|Behavior w/Ingress|Behavior w/out Ingress
 `never`|Jobs never request a LoadBalancer service address even if interactive and their AppDef or API submission requests one; use if there is no load balancer on the cluster to avoid certain jobs queuing indefinitely|This is setting is invalid without Ingress and should not be used
 `"false"` (legacy/default)|Interactive jobs get (and wait for) a LoadBalancer service address if the application or job submission requests it; otherwise only Ingress is used|Ignored, as the default behavior is to request a LoadBalancer service address
 
-#### Enable path based ingress
-
-Set the parameter `jarvice.JARVICE_JOBS_DOMAIN` to the FQDN of the Ingress
-controller and add the desired path for jobs to use terminated by `$`.
-
-e.g. `JARVICE_JOBS_DOMAIN=my-domain.com/path/to/jobs$`
-
-JARVICE will replace `$` with the job number to enable access to interactive
-jobs over HTTPS.
-
-### Additional LoadBalancer service annotation for jobs
+#### Additional LoadBalancer service annotation for jobs
 
 On some platforms/deployments, the LoadBalancer service type must be annotated
 for it to properly assign an address.  The value for
@@ -702,6 +644,97 @@ See [https://docs.aws.amazon.com/eks/latest/userguide/load-balancing.html](https
 Please note that this parameter is ignored when Ingress is used unless the
 application specifically requests a LoadBalancer address via its configuration.
 
+### Using an Ingress controller for jobs
+
+By default, interactive JARVICE jobs request LoadBalancer addresses; to use
+an Ingress controller, set the parameter `jarvice.JARVICE_JOBS_DOMAIN` to the
+FQDN of the Ingress controller; JARVICE will create `*.${JARVICE_JOBS_DOMAIN}`
+address for accessing interactive jobs over HTTPS.  To assign LoadBalancer
+addresses even if Ingress is used, set `jarvice.JARVICE_JOBS_LB_SERVICE=always`,
+in which case JARVICE will create both Ingress as well as LoadBalancer service
+IPs for interactive jobs.
+
+If using an ingress controller is desired, but not already deployed for the
+kubernetes cluster, please review the documentation on deploying a
+[kubernetes ingress controller](KubernetesInstall.md#kubernetes-ingress-controller).
+
+#### Enable path based ingress
+
+Set the parameter `jarvice.JARVICE_JOBS_DOMAIN` to the FQDN of the Ingress
+controller and add the desired path for jobs to use terminated by `$`.
+
+e.g. `JARVICE_JOBS_DOMAIN=my-domain.com/path/to/jobs$`
+
+JARVICE will replace `$` with the job number to enable access to interactive
+jobs over HTTPS.
+
+#### Additional Ingress annotation for jobs
+
+On some platforms/deployments, the Ingress for jobs may need to be annotated
+for it to function properly.  The value for
+`jarvice.JARVICE_JOBS_INGRESS_ANNOTATIONS` should be set to a JSON dictionary
+of name/value pairs as needed.
+
+**Note:**  When `jarvice.ingress.class` contains `nginx`, the
+`nginx.org/websocket-services` annotation will automatically be set to the
+value of the jobs' kubernetes Service.
+
+### PushToCompute (`jarvice-dockerbuild`) Configuration
+
+When deploying JARVICE to a managed kubernetes service with
+[terraform](Terraform.md), `jarvice-dockerbuild` will be automatically
+configured to use a build cache on persistent volume claims (PVCs)
+with dedicated build nodes.  PVC garbage collection will also be automatically
+configured.
+
+If deploying JARVICE to an on-premises kubernetes cluster, a persistent build
+cache and dedicated build nodes will not be enabled by default.  In this case,
+it may be desirable to customize the configuration.
+
+#### Build cache
+
+When building applications with PushToCompute, successful builds will push
+the build cache to the application's configured docker repository, but
+failed builds will not.  Thus, the first configuration consideration
+is whether or not to use a persistent build cache to speed up
+application rebuilds when failures occur.  Using a persistent build cache may
+not be necessary when building small applications, but it will likely provide
+a benefit when doing large application builds.
+
+To enable the use of a persistent build cache for application builds, set
+`jarvice-dockerbuild.persistence.enabled` to `true` and then set
+`jarvice-dockerbuild.persistence.storageClass` to the appropriate
+`StorageClass` to use when requesting PVCs.  It will be necessary to
+[install a dynamic storage provisioner](#install-a-dynamic-storage-provisioner)
+on the cluster if one has not already been installed.
+
+The size of the dynamically provisioned PVCs can be set with
+`jarvice-dockerbuild.persistence.size`.  This defaults to `300Gi`.
+
+##### Garbage collection of build cache PVCs
+
+Build cache PVCs will not be automatically deleted unless
+`jarvice_dockerbuild_pvc_gc.enabled` is set to `true`.  PVCs can be configured
+to be kept for different amounts of time for successful, aborted, and failed
+builds.  These values can be configured under the
+`jarvice_dockerbuild_pvc_gc.env` settings:
+
+```bash
+  env:
+    JARVICE_BUILD_PVC_KEEP_SUCCESSFUL: 3600  # Default: 3600 (1 hour)
+    JARVICE_BUILD_PVC_KEEP_ABORTED: 7200  # Default: 7200 (2 hours)
+    JARVICE_BUILD_PVC_KEEP_FAILED: 14400  # Default: 14400 (4 hours)
+```
+
+#### Build nodes
+
+If persistence has not been enabled for applications builds, it may be
+advantageous to run `jarvice-dockerbuild` pods on nodes with solid-state
+drives (SSDs).  It may also be beneficial to run the `jarvice-dockerbuild`
+pods on nodes with faster processors.  If either of these is desired,
+see the above section on setting a
+[node label for jarvice-dockerbuild](#node-label-for-jarvice-dockerbuild)
+nodes.
 
 ### Site specific configuration
 

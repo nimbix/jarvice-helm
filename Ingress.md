@@ -4,6 +4,11 @@ JARVICE supports 3 forms of ingress into the cluster.  Ingress applies both to t
 
 * [Host-based Ingress](#host-based-ingress)
 * [Path-based Ingress](#path-based-ingress)
+* [Ingress Class and TLS Certificates](#ingress-class-and-tls-certificates)
+    - [Ingress class](#ingress-class)
+    - [TLS certificates](#tls-certificates)
+        - [Bring your own certificate](#bring-your-own-certificate)
+        - [Dynamic certificate issuance with cert-manager](#dynamic-certificate-issuance-with-cert-manager)
 * [Load Balancer Only](#load-balancer)
 * [Summary](#summary)
 
@@ -49,6 +54,84 @@ A DNS "A" record for `mydomain.com` should be configured to resolve to the ingre
 ### Notes
 * `jarvice_api.ingressPath` and `jarvice_api.ingressHost` values should either be set to only `/api` and `/portal`, respectively.  Other values are not supported.  For host-based ingress they should both be set to `/`, which the default.  See [values.yaml](#values.yaml) for details.
 * The path in the `jarvice.JARVICE_JOBS_DOMAIN` should not contain multiple `/`'s.  For example, use `mydomain.com/jarvice-job$` rather than `mydomain.com/jarvice/job$`
+
+## Ingress Class and TLS Certificates
+
+### Ingress class
+
+Traefik is the recommended ingress controller for JARVICE.  As such, the
+default setting for `jarvice.ingress.class` is `traefik`.  This ingress class
+setting will be used for the JARVICE portal and API service ingresses as well
+as for JARVICE job ingresses.  If using an ingress controller other than
+Traefik, `jarvice.ingress.class` should be updated to match the ingress class
+for that ingress controller.
+
+### TLS Certificates
+
+By default, JARVICE deployments do not enable any TLS settings.  So ingresses
+will use whichever certificate the ingress controller may provide.  However,
+it is highly recommended that the settings under `jarvice.ingress.tls` be
+used in order to ensure a properly secured JARVICE deployment.
+
+#### Bring your own certificate
+
+In order to use an existing certificate and key which may have been issued by
+a certificate authority (CA), it will be necessary to `base64` encode the
+certificate and key.  Example:
+
+```bash
+$ base64 -w 0 <site-domain>.crt
+$ base64 -w 0 <site-domain>.key
+```
+
+The `base64` outputs should then be used for the `jarvice.ingress.tls.crt`
+and `jarvice.ingress.tls.key` settings.
+
+**Note:** If `jarvice.ingress.tls.crt` and `jarvice.ingress.tls.key` are set,
+The `jarvice.ingress.tls.cluster_issuer` and `jarvice.ingress.tls.issuer`
+settings will be ignored.
+
+#### Dynamic certificate issuance with cert-manager
+
+In order to dynamically issue TLS certificates and keys for ingresses,
+[cert-manager](https://cert-manager.io/) must be deployed.  This is done
+automatically when doing a [JARVICE deployment with Terraform](Terraform.md).
+When not using Terraform,
+the `deploy2k8s-cert-manager` shell script included in the `scripts`
+directory of this helm chart can be used to deploy `cert-manager`.
+
+##### JARVICE certificate issuers
+
+When `jarvice.ingress.tls.issuer.email` is set to a valid email address and
+`jarvice.ingress.tls.issuer.name` is set to one of `letsencrypt-prod`,
+`letsencrypt-staging`, or `selfsigned`, the JARVICE helm chart will
+automatically create an appropriate certificate issuer that will dynamically
+create certificates for ingresses.
+
+If [Let's Encrypt](https://letsencrypt.org/) certificates are desired,
+set `jarvice.ingress.tls.issuer.name` to `letsencrypt-prod` or
+`letsencrypt-staging`.  For production deployments of JARVICE,
+`letsencrypt-prod` should be used.  For experimental or testing deployments,
+it may be desirable to use `letsencrypt-staging`.  In the latter case, it is
+recommended that the root certificates for the
+[Let's Encrypt Staging Environment](https://letsencrypt.org/docs/staging-environment/)
+be imported into your web browser.
+
+**Note:**  In order to use the [Let's Encrypt](https://letsencrypt.org/)
+issuers, the JARVICE ingresses must be accessible from the internet.
+
+##### Custom certificate issuers
+
+If the use of a custom cluster issuer is desired, set
+`jarvice.ingress.tls.cluster_issuer.name` to the name of that issuer.
+Manually creating and using custom issuers is beyond the scope of this
+document.  Please view the
+[issuer concept](https://cert-manager.io/docs/concepts/issuer/) page and
+[configuration documentation](https://cert-manager.io/docs/configuration/).
+
+**Note:**  If `jarvice.ingress.tls.issuer.email` and
+`jarvice.ingress.tls.issuer.name` are set,
+`jarvice.ingress.tls.cluster_issuer.name` will be ignored.
 
 ## Load Balancer Only
 
