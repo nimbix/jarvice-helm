@@ -1,8 +1,8 @@
 #!/bin/bash
 
 TF=$(type -p terraform)
-TF_VER_REQ=0.14.0
-TF_VER_INSTALL=1.0
+TF_VER_REQ=1.0
+TF_VER_INSTALL=1.1
 
 function strict_version {
     ver=$1
