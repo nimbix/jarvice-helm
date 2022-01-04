@@ -12,6 +12,7 @@ resource "helm_release" "aws_load_balancer_controller" {
     name = "aws-load-balancer-controller"
     repository = "https://aws.github.io/eks-charts"
     chart = "aws-load-balancer-controller"
+    version = "1.3.2"
     namespace = "kube-system"
     reuse_values = false
     reset_values = true
@@ -26,8 +27,9 @@ resource "helm_release" "cluster_autoscaler" {
     count = contains(keys(var.charts), "cluster-autoscaler") ? 1 : 0
 
     name = "cluster-autoscaler"
-    repository = "https://charts.helm.sh/stable"
+    repository = "https://kubernetes.github.io/autoscaler"
     chart = "cluster-autoscaler"
+    version = "9.10.8"
     namespace = "kube-system"
     reuse_values = false
     reset_values = true
@@ -42,8 +44,9 @@ resource "helm_release" "metrics_server" {
     count = contains(keys(var.charts), "metrics-server") ? 1 : 0
 
     name = "metrics-server"
-    repository = "https://charts.helm.sh/stable"
+    repository = "https://kubernetes-sigs.github.io/metrics-server"
     chart = "metrics-server"
+    version = "3.7.0"
     namespace = "kube-system"
     reuse_values = false
     reset_values = true
@@ -60,6 +63,7 @@ resource "helm_release" "external_dns" {
     name = "external-dns"
     repository = "https://charts.bitnami.com/bitnami"
     chart = "external-dns"
+    version = "5.5.2"
     namespace = "kube-system"
     reuse_values = false
     reset_values = true
@@ -78,6 +82,7 @@ resource "helm_release" "cert_manager" {
     name = "cert-manager"
     repository = "https://charts.jetstack.io"
     chart = "cert-manager"
+    version = "v1.6.1"
     namespace = "cert-manager"
     create_namespace = true
     reuse_values = false
@@ -95,8 +100,9 @@ resource "helm_release" "traefik" {
     count = contains(keys(var.charts), "traefik") ? 1 : 0
 
     name = "traefik"
-    repository = "https://charts.helm.sh/stable"
+    repository = "https://helm.traefik.io/traefik"
     chart = "traefik"
+    version = "10.7.1"
     namespace = "kube-system"
     reuse_values = false
     reset_values = true

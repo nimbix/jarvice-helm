@@ -67,18 +67,6 @@ done
 
 set -e
 
-#helm_stable_repo_url=https://charts.helm.sh/stable
-#helm_stable_repo=$($HELM repo list 2>/dev/null | grep ^stable || /bin/true)
-#if [ -z "$helm_stable_repo" ]; then
-#    echo
-#    echo "* Adding helm chart repository for stable..."
-#    $HELM repo add stable $helm_stable_repo_url
-#fi
-
-#echo
-#echo "* Updating helm chart repositories..."
-#$HELM repo update
-
 set_addr=
 i=0
 for addr in $addresses; do
@@ -92,7 +80,7 @@ $KUBECTL create namespace $namespace 2>/dev/null || /bin/true
 
 echo
 echo "* Deploying..."
-repo=https://charts.helm.sh/stable
+repo=https://metallb.github.io/metallb
 $HELM upgrade metallb metallb --repo $repo \
     --namespace $namespace --install --reset-values \
     \

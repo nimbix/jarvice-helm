@@ -1,7 +1,11 @@
 {{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if .Values.jarvice_dal.enabled }}
 {{- if gt (.Values.jarvice_dal.replicaCount | int) 1 }}
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+apiVersion: policy/v1
+{{- else }}
 apiVersion: policy/v1beta1
+{{- end }}
 kind: PodDisruptionBudget
 metadata:
   name: jarvice-dal
@@ -371,7 +375,11 @@ WARNING: Enabling ingressHost for this service is dangerous.
 DO NOT enable it here without understanding the security implications!
 */}}
 {{- if (not (empty .Values.jarvice_dal.ingressHost)) }}
-apiVersion: {{ template "apiVersion.ingress" . }}
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+apiVersion: networking.k8s.io/v1
+{{- else }}
+apiVersion: networking.k8s.io/v1beta1
+{{- end }}
 kind: Ingress
 metadata:
   name: jarvice-dal
@@ -379,24 +387,47 @@ metadata:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-dal
   annotations:
+{{- if (not (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion)) }}
 {{- if (not (empty .Values.jarvice.ingress.class)) }}
     kubernetes.io/ingress.class: {{ .Values.jarvice.ingress.class }}
 {{- end }}
+{{- end }}
 {{- if and (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (empty .Values.jarvice.ingress.tls.crt) (empty .Values.jarvice.ingress.tls.key)) }}
     cert-manager.io/issuer: {{ .Values.jarvice.ingress.tls.issuer.name }}
+{{- else if and (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) (and (empty .Values.jarvice.ingress.tls.crt) (empty .Values.jarvice.ingress.tls.key)) }}
+    cert-manager.io/cluster-issuer: {{ .Values.jarvice.ingress.tls.cluster_issuer.name }}
 {{- end }}
 {{- if .Values.jarvice_dal.ingressAnnotations }}
+{{- if (kindIs "string" .Values.jarvice_dal.ingressAnnotations) }}
+{{ toYaml (fromJson .Values.jarvice_dal.ingressAnnotations) | indent 4 }}
+{{- else }}
 {{ toYaml .Values.jarvice_dal.ingressAnnotations | indent 4 }}
 {{- end }}
+{{- end }}
 spec:
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+{{- if (not (empty .Values.jarvice.ingress.class)) }}
+  ingressClassName: {{ .Values.jarvice.ingress.class }}
+{{- end }}
+{{- end }}
   rules:
   - host: {{ .Values.jarvice_dal.ingressHost }}
     http:
       paths:
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+      - backend:
+          service:
+            name: jarvice-dal
+            port:
+              name: http
+        pathType: Prefix
+        path: /
+{{- else }}
       - backend:
           serviceName: jarvice-dal
           servicePort: http
-{{- if or (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}
+{{- end }}
+{{- if or (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}
   tls:
   - hosts:
     - {{ .Values.jarvice_dal.ingressHost }}

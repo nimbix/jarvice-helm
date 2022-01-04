@@ -1,6 +1,10 @@
 {{- if .Values.jarvice_registry_proxy.enabled }}
 {{- if and (gt (.Values.jarvice_registry_proxy.replicaCount | int) 1) (eq .Values.jarvice_registry_proxy.persistence.accessMode "ReadWriteMany") }}
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+apiVersion: policy/v1
+{{- else }}
 apiVersion: policy/v1beta1
+{{- end }}
 kind: PodDisruptionBudget
 metadata:
   name: jarvice-registry-proxy
@@ -276,7 +280,11 @@ spec:
     name: jarvice-issuer-selfsigned
 ---
 {{- if .Values.jarvice_registry_proxy_gc.enabled }}
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+apiVersion: batch/v1
+{{- else }}
 apiVersion: batch/v1beta1
+{{- end }}
 kind: CronJob
 metadata:
   name: jarvice-registry-proxy-gc

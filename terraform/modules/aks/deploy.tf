@@ -58,7 +58,7 @@ locals {
 image:
   registry: us.gcr.io
   repository: k8s-artifacts-prod/external-dns/external-dns
-  tag: v0.8.0
+  tag: v0.10.1
 
 sources:
   - ingress
@@ -173,14 +173,36 @@ EOF
         },
         "traefik" = {
             "values" = <<EOF
-imageTag: "1.7"
+deployment:
+  replicas: 2
 
-loadBalancerIP: ${azurerm_public_ip.jarvice.ip_address}
-replicas: 2
-memoryRequest: 1Gi
-memoryLimit: 1Gi
-cpuRequest: 1
-cpuLimit: 1
+ingressClass:
+  enabled: true
+
+ingressRoute:
+  dashboard:
+    enabled: false
+
+providers:
+  kubernetesIngress:
+    publishedService:
+      enabled: true
+
+additionalArguments:
+  - "--serverstransport.insecureskipverify=true"
+
+ports:
+  web:
+    redirectTo: websecure
+  websecure:
+    tls:
+      enabled: true
+
+service:
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-resource-group: ${azurerm_resource_group.jarvice.name}
+  spec:
+    loadBalancerIP: ${azurerm_public_ip.jarvice.ip_address}
 
 affinity:
   nodeAffinity:
@@ -200,24 +222,6 @@ tolerations:
   - key: node-role.kubernetes.io/jarvice-system
     effect: NoSchedule
     operator: Exists
-
-kubernetes:
-  ingressEndpoint:
-    useDefaultPublishedService: true
-
-ssl:
-  enabled: true
-  enforced: true
-  permanentRedirect: true
-  insecureSkipVerify: true
-  generateTLS: true
-
-service:
-  annotations:
-    service.beta.kubernetes.io/azure-load-balancer-resource-group: ${azurerm_resource_group.jarvice.name}
-
-rbac:
-  enabled: true
 EOF
         }
     }
