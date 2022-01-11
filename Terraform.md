@@ -258,7 +258,7 @@ configured in the global and/or individual cluster configurations:
   #ingress:
   #  tls:
   #    issuer:
-  #      name: "letsencrypt-prod"  # "letsecrypt-staging" # "selfsigned"
+  #      name: "letsencrypt-prod"  # "letsencrypt-staging" # "selfsigned"
   #      # An admin email is required when letsencrypt issuer is set. The first
   #      # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
   #      email: # "admin@my-domain.com"
@@ -276,7 +276,7 @@ for you.  A valid email address is all that is needed for this:
   ingress:
     tls:
       issuer:
-        name: "letsencrypt-prod"  # "letsecrypt-staging" # "selfsigned"
+        name: "letsencrypt-prod"  # "letsencrypt-staging" # "selfsigned"
         # An admin email is required when letsencrypt issuer is set. The first
         # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
         email: "my-email@my-domain.com"
@@ -292,7 +292,7 @@ aware that Let's Encrypt does have
 [rate limits](https://letsencrypt.org/docs/rate-limits/).  This should not
 present any issues unless you will be deploying and tearing down many JARVICE
 deployments within a short time period.  In that case, you will want to use
-the `letsecrypt-staging` issuer instead of `letsencrypt-prod`.
+the `letsencrypt-staging` issuer instead of `letsencrypt-prod`.
 
 #### Using certificates issued by other certificate authorities
 
@@ -308,7 +308,7 @@ The encoded strings must then be used for the `tls.crt` and `tls.key` values:
   ingress:
     tls:
   #    issuer:
-  #      name: "letsencrypt-prod"  # "letsecrypt-staging" # "selfsigned"
+  #      name: "letsencrypt-prod"  # "letsencrypt-staging" # "selfsigned"
   #      # An admin email is required when letsencrypt issuer is set. The first
   #      # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
   #      email: # "admin@my-domain.com"
