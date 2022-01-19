@@ -1,7 +1,11 @@
 {{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if .Values.jarvice_api.enabled }}
 {{- if gt (.Values.jarvice_api.replicaCount | int) 1 }}
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+apiVersion: policy/v1
+{{- else }}
 apiVersion: policy/v1beta1
+{{- end }}
 kind: PodDisruptionBudget
 metadata:
   name: jarvice-api
@@ -382,7 +386,11 @@ spec:
     deployment: jarvice-api
 ---
 {{- else }}
-apiVersion: {{ template "apiVersion.ingress" . }}
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+apiVersion: networking.k8s.io/v1
+{{- else }}
+apiVersion: networking.k8s.io/v1beta1
+{{- end }}
 kind: Ingress
 metadata:
   name: jarvice-api
@@ -390,19 +398,51 @@ metadata:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-api
   annotations:
+{{- if (not (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion)) }}
 {{- if (not (empty .Values.jarvice.ingress.class)) }}
     kubernetes.io/ingress.class: {{ .Values.jarvice.ingress.class }}
 {{- end }}
+{{- end }}
 {{- if and (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (empty .Values.jarvice.ingress.tls.crt) (empty .Values.jarvice.ingress.tls.key)) }}
     cert-manager.io/issuer: {{ .Values.jarvice.ingress.tls.issuer.name }}
+{{- else if and (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) (and (empty .Values.jarvice.ingress.tls.crt) (empty .Values.jarvice.ingress.tls.key)) }}
+    cert-manager.io/cluster-issuer: {{ .Values.jarvice.ingress.tls.cluster_issuer.name }}
 {{- end }}
 {{- if .Values.jarvice_api.ingressAnnotations }}
+{{- if (kindIs "string" .Values.jarvice_api.ingressAnnotations) }}
+{{ toYaml (fromJson .Values.jarvice_api.ingressAnnotations) | indent 4 }}
+{{- else }}
 {{ toYaml .Values.jarvice_api.ingressAnnotations | indent 4 }}
 {{- end }}
+{{- end }}
 spec:
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+{{- if (not (empty .Values.jarvice.ingress.class)) }}
+  ingressClassName: {{ .Values.jarvice.ingress.class }}
+{{- end }}
+{{- end }}
   rules:
   - http:
       paths:
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+{{- if (eq "/api" .Values.jarvice_api.ingressPath) }}
+      - backend:
+          service:
+            name: jarvice-api
+            port:
+              name: http
+        pathType: Prefix
+        path: /api
+{{- else }}
+      - backend:
+          service:
+            name: jarvice-api
+            port:
+              name: http
+        pathType: Prefix
+        path: /
+{{- end }}
+{{- else }}
 {{- if (eq "/api" .Values.jarvice_api.ingressPath) }}
       - backend:
           serviceName: jarvice-api
@@ -414,9 +454,10 @@ spec:
           servicePort: http
         path: /
 {{- end }}
+{{- end }}
 {{- if ne "-" .Values.jarvice_api.ingressHost }}
     host: '{{- .Values.jarvice_api.ingressHost -}}'
-{{- if or (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}
+{{- if or (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}
   tls:
   - hosts:
     - '{{- .Values.jarvice_api.ingressHost -}}'

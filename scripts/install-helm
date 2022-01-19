@@ -52,15 +52,5 @@ curl --silent https://raw.githubusercontent.com/kubernetes/helm/master/scripts/g
 $SUDO bash /tmp/get_helm.sh # --version $DESIRED_VERSION #>/dev/null
 rm -f /tmp/get_helm.sh
 
-#helm_stable_repo_url=https://charts.helm.sh/stable
-#helm_stable_repo=$($HELM repo list 2>/dev/null | grep ^stable || /bin/true)
-#if [ -z "$helm_stable_repo" ]; then
-#    echo; echo "* Adding helm chart repository for stable..."
-#    $HELM repo add stable $helm_stable_repo_url
-#fi
-
-#echo; echo "* Updating helm chart repositories..."
-#$HELM repo update
-
 echo; echo "* Helm is ready for use..."
 

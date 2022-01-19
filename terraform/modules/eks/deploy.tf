@@ -100,16 +100,10 @@ EOF
             "values" = <<EOF
 autoDiscovery:
   clusterName: ${var.cluster.meta["cluster_name"]}
-  enabled: true
 
 awsRegion: "${var.cluster.location["region"]}"
 
 cloudProvider: aws
-
-image:
-  repository: us-docker.pkg.dev/jarvice/images/cluster-autoscaler
-  tag: v1.17.4
-  pullPolicy: IfNotPresent
 
 tolerations:
   - key: node-role.jarvice.io/jarvice-system
@@ -132,17 +126,13 @@ affinity:
 
 rbac:
   create: true
-  serviceAccountAnnotations:
-    eks.amazonaws.com/role-arn: "${module.iam_assumable_role_admin_cluster_autoscaler.iam_role_arn}"
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: "${module.iam_assumable_role_admin_cluster_autoscaler.iam_role_arn}"
 EOF
         },
         "metrics-server" = {
             "values" = <<EOF
-image:
-  repository: gcr.io/k8s-staging-metrics-server/metrics-server
-  tag: v0.4.5
-  pullPolicy: IfNotPresent
-
 tolerations:
   - key: node-role.jarvice.io/jarvice-system
     effect: NoSchedule
@@ -179,7 +169,7 @@ EOF
 image:
   registry: us.gcr.io
   repository: k8s-artifacts-prod/external-dns/external-dns
-  tag: v0.8.0
+  tag: v0.10.1
 
 sources:
   - ingress
@@ -302,13 +292,49 @@ EOF
         },
         "traefik" =  {
             "values" = <<EOF
-imageTag: "1.7"
+deployment:
+  replicas: 2
 
-replicas: 2
-memoryRequest: 1Gi
-memoryLimit: 1Gi
-cpuRequest: 1
-cpuLimit: 1
+ingressClass:
+  enabled: true
+
+ingressRoute:
+  dashboard:
+    enabled: false
+
+providers:
+  kubernetesIngress:
+    publishedService:
+      enabled: true
+
+additionalArguments:
+  - "--serverstransport.insecureskipverify=true"
+
+ports:
+  web:
+    redirectTo: websecure
+  websecure:
+    tls:
+      enabled: true
+
+service:
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: external
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+    service.beta.kubernetes.io/aws-load-balancer-eip-allocations: ${join(",", aws_eip.jarvice.*.id)}
+    service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags: cluster=${var.cluster.meta["cluster_name"]},traefik=true
+    #service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    #service.beta.kubernetes.io/load-balancer-name: "${var.cluster.meta["cluster_name"]}"
+    #service.beta.kubernetes.io/aws-load-balancer-subnets: "${join(",", module.vpc.public_subnets)}"
+
+resources:
+  requests:
+    cpu: "1"
+    memory: "1Gi"
+  limits:
+    cpu: "1"
+    memory: "1Gi"
 
 affinity:
   nodeAffinity:
@@ -328,34 +354,6 @@ tolerations:
   - key: node-role.kubernetes.io/jarvice-system
     effect: NoSchedule
     operator: Exists
-
-kubernetes:
-  ingressEndpoint:
-    useDefaultPublishedService: true
-
-ssl:
-  enabled: true
-  enforced: true
-  permanentRedirect: true
-  insecureSkipVerify: true
-  generateTLS: true
-
-dashboard:
-  enabled: false
-
-service:
-  annotations:
-    service.beta.kubernetes.io/aws-load-balancer-type: external
-    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
-    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
-    service.beta.kubernetes.io/aws-load-balancer-eip-allocations: ${join(",", aws_eip.jarvice.*.id)}
-    service.beta.kubernetes.io/aws-load-balancer-additional-resource-tags: cluster=${var.cluster.meta["cluster_name"]},traefik=true
-    #service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
-    #service.beta.kubernetes.io/load-balancer-name: "${var.cluster.meta["cluster_name"]}"
-    #service.beta.kubernetes.io/aws-load-balancer-subnets: "${join(",", module.vpc.public_subnets)}"
-
-rbac:
-  enabled: true
 EOF
         }
     }

@@ -39,6 +39,7 @@ jarvice:
 
   # JARVICE_JOBS_DOMAIN: # jarvice.my-domain.com/job$   # (path based ingress)
   JARVICE_JOBS_DOMAIN: # my-domain.com  # (host based ingress)
+  JARVICE_JOBS_INGRESS_ANNOTATIONS: # '{"nginx.org/mergeable-ingress-type": "minion", "nginx.org/client-max-body-size": "0", "nginx.org/proxy-read-timeout": "3600", "nginx.org/proxy-send-timeout": "3600"}'
   JARVICE_JOBS_LB_SERVICE: "false"
   JARVICE_JOBS_LB_ANNOTATIONS: # '{}'
   JARVICE_JOBS_MULTI_TENANT: "false"
@@ -108,11 +109,14 @@ jarvice:
   JARVICE_LRJ_CURRENCY_FMT: "$%.2f" # printf-format, single %f value
 
   ingress:
-    class: "traefik"
+    class: "traefik"  # "nginx"
     tls:
       # cert-manager must be deployed in order to use certificate issuers
+      # issuer.name takes precedence over cluster_issuer.name, do not set both
+      cluster_issuer:
+        name: # "my-cluster-issuer"
       issuer:
-        name: # "letsencrypt-prod" # "letsecrypt-staging" # "selfsigned"
+        name: # "letsencrypt-prod" # "letsencrypt-staging" # "selfsigned"
         # An admin email is required when letsencrypt issuer is set. The first
         # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
         email: # "admin@my-domain.com"
@@ -524,7 +528,7 @@ jarvice_registry_proxy_gc: # N/A if jarvice_registry_proxy.enabled is false
   tolerations: # '[{"key": "node-role.jarvice.io/jarvice-registry-proxy", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-registry-proxy", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-registry-proxy", "operator": "Exists"}]}] }}'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-registry-proxy": "true"}'
-  image: us-docker.pkg.dev/jarvice/images/jarvice-kubectl:v1.20.5
+  image: us-docker.pkg.dev/jarvice/images/jarvice-kubectl:v1.21.7
   imagePullPolicy: IfNotPresent
   env:
     IMAGE_LAST_ACCESS_SECONDS: 2592000  # Default: 2592000 (30 days)
@@ -780,6 +784,7 @@ jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   loadBalancerIP:
   ingressHost: # jarvice-api.my-domain.com
   ingressPath: "/"  # Valid values are "/" (default) or "/api"
+  ingressAnnotations: # '{"nginx.org/client-max-body-size": "0", "nginx.org/proxy-read-timeout": "3600", "nginx.org/proxy-send-timeout": "3600"}'
   resources:
     limits:
       cpu: 1
@@ -836,7 +841,7 @@ jarvice_dockerbuild_pvc_gc:
   tolerations: # '[{"key": "node-role.jarvice.io/jarvice-dockerbuild-pvc-gc", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-dockerbuild-pvc-gc", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-dockerbuild-pvc-gc", "operator": "Exists"}]}] }}'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-dockerbuild-pvc-gc": "true"}'
-  image: us-docker.pkg.dev/jarvice/images/jarvice-kubectl:v1.20.5
+  image: us-docker.pkg.dev/jarvice/images/jarvice-kubectl:v1.21.7
   imagePullPolicy: IfNotPresent
   env:
     JARVICE_BUILD_PVC_KEEP_SUCCESSFUL: 3600  # Default: 3600 (1 hour)
@@ -919,6 +924,7 @@ jarvice_mc_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   loadBalancerIP:
   ingressHost: # jarvice.my-domain.com
   ingressPath: "/"  # Valid values are "/" (default) or "/portal"
+  ingressAnnotations: # '{"nginx.org/client-max-body-size": "0", "nginx.org/proxy-read-timeout": "3600", "nginx.org/proxy-send-timeout": "3600"}'
   resources:
     limits:
       cpu: 1
