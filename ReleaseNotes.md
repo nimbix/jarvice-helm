@@ -17,15 +17,15 @@ The following assumes the latest version of JARVICE is in use; this version will
 
 #### Latest Version Supported
 
-Kubernetes **1.20**; newer versions are not explicitly supported.  Using the latest patch release of each version is recommended but not required.
+Kubernetes **1.21**; newer versions are not explicitly supported.  Using the latest patch release of each version is recommended but not required.
 
 #### Previous Version(s) Supported
 
 Up to 3 previous minor revisions (from the one indicated in [Latest Version Supported](#latest-version-supported)) will be supported at any given time, unless otherwise noted.  Currently this list is limited to:
 
+* Kubernetes **1.20**
 * Kubernetes **1.19**
 * Kubernetes **1.18**
-* Kubernetes **1.17**
 
 ### External S3-compatible Object Storage Service Compatibility
 
@@ -126,6 +126,12 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 
 # Changelog
+
+## 3.21.9-1.202201191724
+
+* (JAR-4866) Added support for adding ingress annotations for jobs; see [Additional Ingress annotation for jobs](README.md#additional-ingress-annotation-for-jobs) for details.
+* (JAR-4882) Added suggestion box in addition to dropdown for selecting users to add to projects in *Account->Projects* view.
+* (JAR-4888) Improved performance of the `/jarvice/events` API endpoint, in addition to the "Active Jobs" detail in the portal's *Administrator->Jobs* view.
 
 ## 3.21.9-1.202112081812
 
