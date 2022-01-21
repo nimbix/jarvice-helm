@@ -163,61 +163,162 @@ EOF
     # See /opt/amazon/bin/efa-hugepages-reserve.sh for reference
     huge_pages_size = 2048  # TODO: may be different on arm64 nodes
     efa_ep_huge_pages_memory = 110 * 1024
+}
 
-    default_nodes = [
-        {
-            "name" = "default",
-            "instance_type" = lookup(var.cluster.meta, "arch", "") == "arm64" ? "t4g.small" : "t2.small"
-            "ami_id" = lookup(var.cluster.meta, "arch", "") == "arm64" ? data.aws_ami.eks_arm64.id : data.aws_ami.eks_amd64.id
-            "asg_desired_capacity" = 2
-            "asg_min_size" = 2
-            "asg_max_size" = 2
-            "key_name" = ""
-            "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/default=true"
-            "public_ip" = true
-            "pre_userdata" = <<EOF
+module "eks" {
+    source = "terraform-aws-modules/eks/aws"
+    version = "~> 18.2"
+
+    cluster_name = var.cluster.meta["cluster_name"]
+    cluster_version = var.cluster.meta["kubernetes_version"]
+
+    vpc_id = module.vpc.vpc_id
+    enable_irsa = true
+    subnet_ids = module.vpc.private_subnets
+
+    cluster_security_group_additional_rules = {
+        egress_internet_all = {
+            description = "Allow cluster egress access to the Internet."
+            protocol = "-1"
+            from_port = 0
+            to_port = 65535
+            type = "egress"
+            cidr_blocks = ["0.0.0.0/0"]
+        }
+        ingress_internet_all = {
+            description = "Allow cluster ingress access from the Internet."
+            protocol = "-1"
+            from_port = 0
+            to_port = 65535
+            type = "ingress"
+            cidr_blocks = ["0.0.0.0/0"]
+        }
+        egress_nodes_all = {
+            description = "Allow cluster egress access to the nodes."
+            protocol = "-1"
+            from_port = 0
+            to_port = 65535
+            type = "egress"
+            source_node_security_group = true
+        }
+        ingress_nodes_all = {
+            description = "Allow cluster ingress access from the nodes."
+            protocol = "-1"
+            from_port = 0
+            to_port = 65535
+            type = "ingress"
+            source_node_security_group = true
+        }
+    }
+
+    node_security_group_additional_rules = {
+        egress_internet_all = {
+            description = "Allow nodes all egress to the Internet."
+            protocol = "-1"
+            from_port = 0
+            to_port = 65535
+            type = "egress"
+            cidr_blocks = ["0.0.0.0/0"]
+        }
+        ingress_internet_all = {
+            description = "Allow nodes all ingress from the Internet."
+            protocol = "-1"
+            from_port = 0
+            to_port = 65535
+            type = "ingress"
+            cidr_blocks = ["0.0.0.0/0"]
+        }
+        egress_cluster_all = {
+            description = "Allow workers pods to communicate wth the cluster control plane."
+            protocol = "-1"
+            from_port = 0
+            to_port = 65535
+            type = "egress"
+            source_cluster_security_group = true
+        }
+        ingress_cluster_all = {
+            description = "Allow workers pods to receive communication from the cluster control plane."
+            protocol = "-1"
+            from_port = 0
+            to_port = 65535
+            type = "ingress"
+            source_cluster_security_group = true
+        }
+        egress_self_all = {
+            description = "Allow nodes to communicate with each other."
+            protocol = "-1"
+            from_port = 0
+            to_port = 65535
+            type = "egress"
+            self = true
+        }
+        ingress_self_all = {
+            description = "Allow nodes to communicate with each other."
+            protocol = "-1"
+            from_port = 0
+            to_port = 65535
+            type = "ingress"
+            self = true
+        }
+    }
+
+    self_managed_node_group_defaults = {
+        vpc_security_group_ids = [aws_security_group.ssh.id]
+        #iam_role_additional_policies = ["arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"]
+    }
+
+    self_managed_node_groups = merge({
+        default = {
+            name = "default"
+            instance_type = lookup(var.cluster.meta, "arch", "") == "arm64" ? "t4g.small" : "t2.small"
+            ami_id = lookup(var.cluster.meta, "arch", "") == "arm64" ? data.aws_ami.eks_arm64.id : data.aws_ami.eks_amd64.id
+            desired_size = 2
+            min_size = 2
+            max_size = 2
+            key_name = ""
+            bootstrap_extra_args = "--kubelet-extra-args '--node-labels=node-role.jarvice.io/default=true'"
+            public_ip = true
+            pre_bootstrap_user_data = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
 # Add authorized ssh key
 echo "${module.common.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
 EOF
         }
-    ]
-    system_nodes = [
-        {
-            "name" = "jxesystem",
-            "instance_type" = module.common.system_nodes_type
-            "ami_id" = lookup(var.cluster.meta, "arch", "") == "arm64" ? data.aws_ami.eks_arm64.id : data.aws_ami.eks_amd64.id
-            "asg_desired_capacity" = module.common.system_nodes_num
-            "asg_min_size" = module.common.system_nodes_num
-            "asg_max_size" = module.common.system_nodes_num * 2
-            "key_name" = ""
-            "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-system=true,node-pool.jarvice.io/jarvice-system=jxesystem --register-with-taints=node-role.jarvice.io/jarvice-system=true:NoSchedule"
-            "public_ip" = true
-            "pre_userdata" = <<EOF
+        jxesystem = {
+            name = "jxesystem"
+            instance_type = module.common.system_nodes_type
+            ami_id = lookup(var.cluster.meta, "arch", "") == "arm64" ? data.aws_ami.eks_arm64.id : data.aws_ami.eks_amd64.id
+            desired_size = module.common.system_nodes_num
+            min_size = module.common.system_nodes_num
+            max_size = module.common.system_nodes_num * 2
+            key_name = ""
+            bootstrap_extra_args = "--kubelet-extra-args '--node-labels=node-role.jarvice.io/jarvice-system=true,node-pool.jarvice.io/jarvice-system=jxesystem --register-with-taints=node-role.jarvice.io/jarvice-system=true:NoSchedule'"
+            public_ip = true
+            pre_bootstrap_user_data = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
 # Add authorized ssh key
 echo "${module.common.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
 EOF
         }
-    ]
-    dockerbuild_nodes = module.common.jarvice_cluster_type == "downstream" || var.cluster.dockerbuild_node_pool["nodes_type"] == null ? [] : [
-        {
-            "name" = "jxedockerbuild",
-            "instance_type" = var.cluster.dockerbuild_node_pool["nodes_type"]
-            "ami_id" = lookup(var.cluster.meta, "arch", "") == "arm64" ? data.aws_ami.eks_arm64.id : data.aws_ami.eks_amd64.id
-            "asg_desired_capacity" = var.cluster.dockerbuild_node_pool["nodes_num"]
-            "asg_min_size" = var.cluster.dockerbuild_node_pool["nodes_min"]
-            "asg_max_size" = var.cluster.dockerbuild_node_pool["nodes_max"]
-            "key_name" = ""
-            "instance_refresh_enabled" = true
-            "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-dockerbuild=true,node-pool.jarvice.io/jarvice-dockerbuild=jxedockerbuild --register-with-taints=node-role.jarvice.io/jarvice-dockerbuild=true:NoSchedule"
-            "public_ip" = true
-            "pre_userdata" = <<EOF
+    },
+    module.common.jarvice_cluster_type == "downstream" || var.cluster.dockerbuild_node_pool["nodes_type"] == null ? {} : {
+        jxedockerbuild = {
+            name = "jxedockerbuild"
+            instance_type = var.cluster.dockerbuild_node_pool["nodes_type"]
+            ami_id = lookup(var.cluster.meta, "arch", "") == "arm64" ? data.aws_ami.eks_arm64.id : data.aws_ami.eks_amd64.id
+            desired_size = var.cluster.dockerbuild_node_pool["nodes_num"]
+            min_size = var.cluster.dockerbuild_node_pool["nodes_min"]
+            max_size = var.cluster.dockerbuild_node_pool["nodes_max"]
+            key_name = ""
+            instance_refresh_enabled = true
+            bootstrap_extra_args = "--kubelet-extra-args '--node-labels=node-role.jarvice.io/jarvice-dockerbuild=true,node-pool.jarvice.io/jarvice-dockerbuild=jxedockerbuild --register-with-taints=node-role.jarvice.io/jarvice-dockerbuild=true:NoSchedule'"
+            public_ip = true
+            pre_bootstrap_user_data = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
 # Add authorized ssh key
 echo "${module.common.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
 EOF
-            "tags" = [
+            propagate_tags = [
                 {
                     "key" = "k8s.io/cluster-autoscaler/enabled"
                     "propagate_at_launch" = "false"
@@ -240,23 +341,23 @@ EOF
                 }
             ]
         }
-    ]
-    compute_nodes = length(var.cluster["compute_node_pools"]) == 0 ? [] : [
-        for name, pool in var.cluster["compute_node_pools"]:
-            {
-                "name" = name
-                "instance_type" = pool.nodes_type
-                "ami_id" = lookup(var.cluster.meta, "arch", "") == "arm64" ? data.aws_ami.eks_arm64.id : lookup(pool.meta, "interface_type", null) == "efa" ? data.aws_ami.eks_amd64.id : data.aws_ami.eks_amd64_gpu.id
-                "root_volume_size" = pool.nodes_disk_size_gb
-                "asg_desired_capacity" = pool.nodes_num
-                "asg_min_size" = pool.nodes_min
-                "asg_max_size" = pool.nodes_max
-                "key_name" = ""
-                "instance_refresh_enabled" = true
-                "kubelet_extra_args" = "--node-labels=node-role.jarvice.io/jarvice-compute=true,node-pool.jarvice.io/jarvice-compute=${name},node-pool.jarvice.io/disable-hyperthreading=${lookup(pool.meta, "disable_hyperthreading", "false")}${length(regexall("^(p2|p3|p4|g3|g4|inf1)", pool.nodes_type)) > 0 ? ",accelerator=nvidia" : ""}${lookup(pool.meta, "interface_type", null) == "efa" ? ",node-pool.jarvice.io/interface-type=efa" : ""} --register-with-taints=node-role.jarvice.io/jarvice-compute=true:NoSchedule"
-                "public_ip" = true
-                "interface_type" = lookup(pool.meta, "interface_type", null)
-                "subnets" = lookup(pool.meta, "zones", null) == null ? (
+    },
+    {
+        for pool_name, pool in var.cluster["compute_node_pools"]:
+            pool_name => {
+                name = pool_name
+                instance_type = pool.nodes_type
+                ami_id = lookup(var.cluster.meta, "arch", "") == "arm64" ? data.aws_ami.eks_arm64.id : lookup(pool.meta, "interface_type", null) == "efa" ? data.aws_ami.eks_amd64.id : data.aws_ami.eks_amd64_gpu.id
+                disk_size = pool.nodes_disk_size_gb
+                desired_size = pool.nodes_num
+                min_size = pool.nodes_min
+                max_size = pool.nodes_max
+                key_name = ""
+                instance_refresh_enabled = true
+                bootstrap_extra_args = "--kubelet-extra-args '--node-labels=node-role.jarvice.io/jarvice-compute=true,node-pool.jarvice.io/jarvice-compute=${pool_name},node-pool.jarvice.io/disable-hyperthreading=${lookup(pool.meta, "disable_hyperthreading", "false")}${length(regexall("^(p2|p3|p4|g3|g4|inf1)", pool.nodes_type)) > 0 ? ",accelerator=nvidia" : ""}${lookup(pool.meta, "interface_type", null) == "efa" ? ",node-pool.jarvice.io/interface-type=efa" : ""} --register-with-taints=node-role.jarvice.io/jarvice-compute=true:NoSchedule'"
+                public_ip = true
+                interface_type = lookup(pool.meta, "interface_type", null)
+                subnet_ids = lookup(pool.meta, "zones", null) == null ? (
                     lookup(pool.meta, "interface_type", null) == "efa" ? [module.vpc.private_subnets[0]] : module.vpc.private_subnets
                 ) : (
                     lookup(pool.meta, "interface_type", null) == "efa" ? (
@@ -270,9 +371,9 @@ EOF
                         ]
                     )
                 )
-                "additional_security_group_ids" = lookup(pool.meta, "interface_type", null) == "efa" ? [aws_security_group.efa.id] : []
-                "placement_group" = lookup(pool.meta, "interface_type", null) == "efa" ? aws_placement_group.efa.id : null
-                "pre_userdata" = <<EOF
+                vpc_security_group_ids = lookup(pool.meta, "interface_type", null) == "efa" ? [aws_security_group.efa.id] : []
+                placement_group = lookup(pool.meta, "interface_type", null) == "efa" ? aws_placement_group.efa.id : null
+                pre_bootstrap_user_data = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
 # Add authorized ssh key
 echo "${module.common.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
@@ -281,10 +382,10 @@ ${lookup(pool.meta, "interface_type", null) == "efa" ? local.efa_install : ""}
 
 ${lower(lookup(pool.meta, "disable_hyperthreading", "false")) == "true" ? local.disable_hyperthreading : ""}
 EOF
-                "additional_userdata" = <<EOF
+                post_bootstrap_user_data = <<EOF
 # additional_userdata (executed after kubelet bootstrap and cluster join)
 EOF
-                "tags" = concat(
+                propagate_tags = concat(
                     [
                         {
                             "key" = "k8s.io/cluster-autoscaler/enabled"
@@ -317,42 +418,17 @@ EOF
                             {
                                 "key" = "k8s.io/cluster-autoscaler/node-template/resources/hugepages-2Mi"
                                 "propagate_at_launch" = "true"
-                                "value" = format("%sMi", tostring(((local.efa_ep_huge_pages_memory * data.aws_ec2_instance_type.jarvice_compute[name].default_vcpus * 2) / local.huge_pages_size + 1) * 2))
+                                "value" = format("%sMi", tostring(((local.efa_ep_huge_pages_memory * data.aws_ec2_instance_type.jarvice_compute[pool_name].default_vcpus * 2) / local.huge_pages_size + 1) * 2))
                             }
                         ] : []
                 )
             }
-    ]
-}
-
-module "eks" {
-    source = "terraform-aws-modules/eks/aws"
-    version = "~> 17.23"
-
-    cluster_name = var.cluster.meta["cluster_name"]
-    cluster_version = var.cluster.meta["kubernetes_version"]
-
-    #config_output_path = pathexpand(local.kube_config["config_path"])
-    write_kubeconfig = false
-
-    vpc_id = module.vpc.vpc_id
-    enable_irsa = true
-
-    subnets = module.vpc.private_subnets
-
-    wait_for_cluster_timeout = 600
-
-    worker_groups_launch_template = concat(local.default_nodes, local.system_nodes, local.dockerbuild_nodes, local.compute_nodes)
-    worker_additional_security_group_ids = [aws_security_group.ssh.id]
-    worker_ami_name_filter = lookup(var.cluster.meta, "arch", "") == "arm64" ? "amazon-eks-arm64-node-${var.cluster.meta["kubernetes_version"]}-*" : "amazon-eks-gpu-node-${var.cluster.meta["kubernetes_version"]}-v*"
+    })
 
     tags = {
         cluster_name = var.cluster.meta["cluster_name"]
     }
-
-    depends_on = [module.vpc, aws_security_group.ssh]
 }
-
 
 data "aws_iam_policy_document" "cluster_autoscaler" {
     statement {

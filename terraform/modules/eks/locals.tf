@@ -9,6 +9,31 @@ locals {
         "client_key" = "",
         "token" = data.aws_eks_cluster_auth.cluster.token
     }
+    kube_config_yaml = yamlencode({
+        apiVersion = "v1"
+        kind = "Config"
+        current-context = module.eks.cluster_id
+        contexts = [{
+            name = module.eks.cluster_id
+            context = {
+                cluster = module.eks.cluster_id
+                user = module.eks.cluster_id
+            }
+        }]
+        clusters = [{
+            name = module.eks.cluster_id
+            cluster = {
+                certificate-authority-data = local.kube_config["cluster_ca_certificate"]
+                server = local.kube_config["host"]
+            }
+        }]
+        users = [{
+            name = module.eks.cluster_id
+            user = {
+                token = local.kube_config["token"]
+            }
+        }]
+    })
 }
 
 locals {

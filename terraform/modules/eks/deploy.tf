@@ -359,6 +359,24 @@ EOF
     }
 }
 
+resource "null_resource" "create_aws_auth" {
+    triggers = {
+        kube_config_yaml = base64encode(local.kube_config_yaml)
+        cmd_patch  = <<-EOT
+            kubectl create configmap aws-auth -n kube-system --kubeconfig <(echo $KUBECONFIG | base64 --decode)
+            kubectl patch configmap/aws-auth --patch "${module.eks.aws_auth_configmap_yaml}" -n kube-system --kubeconfig <(echo $KUBECONFIG | base64 --decode)
+        EOT
+    }
+
+    provisioner "local-exec" {
+        interpreter = ["/bin/bash", "-c"]
+        environment = {
+            KUBECONFIG = self.triggers.kube_config_yaml
+        }
+        command = self.triggers.cmd_patch
+    }
+}
+
 resource "null_resource" "helm_module_sleep_after_destroy" {
     triggers = {
         sleep_after_destroy = "sleep 200"
@@ -389,7 +407,7 @@ EOF
 ${local.jarvice_ingress}
 EOF
 
-    depends_on = [module.eks, module.vpc, module.iam_assumable_role_admin_cluster_autoscaler, module.iam_assumable_role_admin_aws_load_balancer_controller, module.iam_assumable_role_admin_external_dns, aws_eip.jarvice, local_file.kube_config, null_resource.helm_module_sleep_after_destroy]
+    depends_on = [module.eks, module.vpc, module.iam_assumable_role_admin_cluster_autoscaler, module.iam_assumable_role_admin_aws_load_balancer_controller, module.iam_assumable_role_admin_external_dns, aws_eip.jarvice, local_file.kube_config, null_resource.create_aws_auth, null_resource.helm_module_sleep_after_destroy]
 }
 
 resource "kubernetes_daemonset" "aws_efa_k8s_device_plugin" {
@@ -483,6 +501,6 @@ resource "kubernetes_daemonset" "aws_efa_k8s_device_plugin" {
         }
     }
 
-    depends_on = [module.eks, module.vpc, local_file.kube_config]
+    depends_on = [module.eks, module.vpc, local_file.kube_config, null_resource.create_aws_auth]
 }
 

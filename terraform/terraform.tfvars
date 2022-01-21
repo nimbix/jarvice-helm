@@ -699,7 +699,7 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
 
         location = {
             region = "us-west-2"
-            zones = ["us-west-2a"]
+            zones = ["us-west-2a", "us-west-2b"]
         }
 
         # Visit the following link for AWS instance type specs:
@@ -857,7 +857,7 @@ EOF
 
         location = {
             region = "us-west-2"
-            zones = ["us-west-2a"]
+            zones = ["us-west-2a", "us-west-2b"]
         }
 
         # Visit the following link for AWS instance type specs:
