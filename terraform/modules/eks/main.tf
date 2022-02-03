@@ -37,10 +37,79 @@ resource "null_resource" "aws_availability_zones_available" {
     }
 }
 
+locals {
+  create_vpc = lookup(var.cluster.meta, "vpc_id", "") == "" ? true : false
+}
+
+locals {
+  vpc = (
+    local.create_vpc ?
+    {
+      id         = module.vpc.vpc_id
+      cidr_block = module.vpc.vpc_cidr_block
+      azs = module.vpc.azs
+      public_subnets = module.vpc.public_subnets
+      private_subnets = module.vpc.private_subnets
+    } :
+    {
+      id         = data.aws_vpc.selected[0].id
+      cidr_block = data.aws_vpc.selected[0].cidr_block
+      azs = data.aws_availability_zones.available.names
+      public_subnets = tolist(data.aws_subnet_ids.public[0].ids)
+      private_subnets = tolist(data.aws_subnet_ids.private[0].ids)
+    }
+  )
+}
+
+data "aws_vpc" "selected" {
+  count = local.create_vpc ? 0 : 1
+
+  id = var.cluster.meta["vpc_id"]
+}
+
+data "aws_subnet_ids" "private" {
+  count = local.create_vpc ? 0 : 1
+  vpc_id = var.cluster.meta["vpc_id"]
+
+  tags = {
+    "kubernetes.io/role/internal-elb" = "1"
+  }
+}
+
+data "aws_subnet_ids" "public" {
+  count = local.create_vpc ? 0 : 1
+  vpc_id = var.cluster.meta["vpc_id"]
+
+  tags = {
+    "kubernetes.io/role/elb" = "1"
+  }
+}
+
+resource "aws_ec2_tag" "vpc_tag" {
+  count = local.create_vpc ? 0 : 1
+  resource_id = local.vpc.id
+  key         = "kubernetes.io/cluster/${var.cluster.meta["cluster_name"]}"
+  value       = "shared"
+}
+
+resource "aws_ec2_tag" "private_subnet_cluster_tag" {
+  for_each    = toset([ for id in local.vpc.private_subnets : id if !local.create_vpc ])
+  resource_id = each.value
+  key         = "kubernetes.io/cluster/${var.cluster.meta["cluster_name"]}"
+  value       = "shared"
+}
+
+resource "aws_ec2_tag" "public_subnet_cluster_tag" {
+  for_each    = toset([ for id in local.vpc.public_subnets : id if !local.create_vpc ])
+  resource_id = each.value
+  key         = "kubernetes.io/cluster/${var.cluster.meta["cluster_name"]}"
+  value       = "shared"
+}
 
 module "vpc" {
     source = "terraform-aws-modules/vpc/aws"
     version = "~> 3.11"
+    create_vpc = local.create_vpc
 
     name = "${var.cluster.meta["cluster_name"]}-vpc"
     cidr = "10.0.0.0/16"
@@ -65,14 +134,14 @@ module "vpc" {
 
 resource "aws_security_group" "ssh" {
     name_prefix = "${var.cluster.meta["cluster_name"]}-ssh"
-    vpc_id = module.vpc.vpc_id
+    vpc_id = local.vpc.id
 
     ingress {
         from_port = 22
         to_port = 22
         protocol = "tcp"
 
-        cidr_blocks = [module.vpc.vpc_cidr_block]
+        cidr_blocks = [local.vpc.cidr_block]
     }
 
     tags = {
@@ -82,7 +151,7 @@ resource "aws_security_group" "ssh" {
 
 resource "aws_security_group" "efa" {
     name_prefix = "${var.cluster.meta["cluster_name"]}-efa"
-    vpc_id = module.vpc.vpc_id
+    vpc_id = local.vpc.id
 
     ingress {
         from_port = 0
@@ -180,9 +249,9 @@ module "eks" {
 
     cluster_version = var.cluster.meta["kubernetes_version"]
 
-    vpc_id = module.vpc.vpc_id
+    vpc_id = local.vpc.id
     enable_irsa = true
-    subnet_ids = module.vpc.private_subnets
+    subnet_ids = local.vpc.private_subnets
 
     cluster_security_group_additional_rules = {
         egress_internet_all = {
@@ -334,16 +403,16 @@ EOF
                 key_name = ""
                 bootstrap_extra_args = "--kubelet-extra-args '--node-labels=node-role.jarvice.io/jarvice-compute=true,node-pool.jarvice.io/jarvice-compute=${pool_name},node-pool.jarvice.io/disable-hyperthreading=${lookup(pool.meta, "disable_hyperthreading", "false")}${length(regexall("^(p2|p3|p4|g3|g4|inf1)", pool.nodes_type)) > 0 ? ",accelerator=nvidia" : ""}${lookup(pool.meta, "interface_type", null) == "efa" ? ",node-pool.jarvice.io/interface-type=efa" : ""} --register-with-taints=node-role.jarvice.io/jarvice-compute=true:NoSchedule'"
                 subnet_ids = lookup(pool.meta, "zones", null) == null ? (
-                    lookup(pool.meta, "interface_type", null) == "efa" ? [module.vpc.private_subnets[0]] : module.vpc.private_subnets
+                    lookup(pool.meta, "interface_type", null) == "efa" ? [local.vpc.private_subnets[0]] : local.vpc.private_subnets
                 ) : (
                     lookup(pool.meta, "interface_type", null) == "efa" ? (
                         [
-                            module.vpc.private_subnets[index(module.vpc.azs, split(",", pool.meta["zones"])[0])]
+                            local.vpc.private_subnets[index(local.vpc.azs, split(",", pool.meta["zones"])[0])]
                         ]
                     ) : (
                         [
                             for zone in split(",", pool.meta["zones"]):
-                                module.vpc.private_subnets[index(module.vpc.azs, zone)]
+                                local.vpc.private_subnets[index(local.vpc.azs, zone)]
                         ]
                     )
                 )
@@ -369,8 +438,8 @@ EOF
                       interface_type = lookup(pool.meta, "interface_type", null) == "efa" ? "efa" : null
                       security_groups = lookup(pool.meta, "interface_type", null) == "efa" ? ["${aws_security_group.efa.id}", "${aws_security_group.ssh.id}"] : ["${aws_security_group.ssh.id}"] 
                       #subnet_id = lookup(pool.meta, "zones", null) == null ? (
-                      #      module.vpc.private_subnets[0]
-                      #      ) : (module.vpc.private_subnets[index(module.vpc.azs, pool.meta["zones"])])
+                      #      local.vpc.private_subnets[0]
+                      #      ) : (local.vpc.private_subnets[index(local.vpc.azs, pool.meta["zones"])])
                     }
                 ]
                 placement_group = lookup(pool.meta, "interface_type", null) == "efa" ? [for k,v in aws_placement_group.efa : v.id if v.name == "${var.cluster.meta["cluster_name"]}-${pool_name}"][0] : null
