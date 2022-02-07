@@ -280,6 +280,10 @@ echo "${module.common.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
 ${lookup(pool.meta, "interface_type", null) == "efa" ? local.efa_install : ""}
 
 ${lower(lookup(pool.meta, "disable_hyperthreading", "false")) == "true" ? local.disable_hyperthreading : ""}
+if [ "${pool.nodes_type}" = "hpc6a.48xlarge" ]; then
+    echo "hpc6a.48xlarge 5" >> /etc/eks/eni-max-pods.txt
+    /etc/eks/bootstrap.sh tf-us-02b
+fi
 EOF
                 "additional_userdata" = <<EOF
 # additional_userdata (executed after kubelet bootstrap and cluster join)
