@@ -272,7 +272,7 @@ EOF
                     )
                 )
                 "additional_security_group_ids" = lookup(pool.meta, "interface_type", null) == "efa" ? [aws_security_group.efa.id] : []
-                "placement_group" = lookup(pool.meta, "interface_type", null) == "efa" ? ${for k,v in aws_placement_group.efa : v.id if v.name = name} : null
+                "placement_group" = lookup(pool.meta, "interface_type", null) == "efa" ? [for k,v in aws_placement_group.efa : v.id if v.name = name][0] : null
                 "pre_userdata" = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
 # Add authorized ssh key
