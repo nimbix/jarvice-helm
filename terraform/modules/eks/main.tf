@@ -138,7 +138,7 @@ data "aws_ec2_instance_type" "jarvice_compute" {
 
 resource "aws_placement_group" "efa" {
     for_each = { for name, pool in var.cluster["compute_node_pools"] : name => pool if lookup(pool.meta, "interface_type", null) == "efa" ? true:false}
-    name = each.key
+    name = "${var.cluster.meta["cluster_name"]}-${each.key}"
     strategy = "cluster"
 }
 
