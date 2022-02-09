@@ -728,6 +728,9 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
                     # EFA requires k8s ver >= 1.19.  Supported instance types:
                     # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
                     #interface_type = "efa"
+
+                    #Define custom ami_id for compute nodes. Can be used to avoid AMI updates that require pool recreation during upgrades.
+                    #ami_id
                 }
             },
             #jxecompute01 = {
