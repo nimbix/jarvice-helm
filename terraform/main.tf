@@ -198,9 +198,6 @@ provider "aws" {
     region  = local.eks["${key}"].location["region"]
     access_key  = local.eks["${key}"].auth["access_key"]
     secret_key  = local.eks["${key}"].auth["secret_key"]
-    ignore_tags {
-      key_prefixes = ["kubernetes.io/"]
-    }
 }
 
 provider "kubernetes" {
