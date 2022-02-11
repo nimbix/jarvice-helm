@@ -19,6 +19,7 @@ A comprehensive mechanism for queuing jobs based on license token availability.
 * [Troubleshooting](#troubleshooting)
 * [Advanced: Multiple License Server Addresses](#advanced-multiple-license-server-addresses)
 * [Advanced: Automatic License Feature Computation](#advanced-automatic-license-feature-computation)
+* [Advanced: Preemptible Features](#advanced-preemptible-features)
 * [Best Practices, Anomalies, and Caveats](#best-practices-anomalies-and-caveats)
 
 ---
@@ -451,6 +452,41 @@ Variable|Description
 2. As described above, great care should be taken not to output anything to `stdout` other than the final license feature(s) and count(s); JARVICE will error check the value and job submission may fail otherwise
 3. To "learn" the mechanism it is recommended that you connect a sample script similar to the one described above, which dumps the environment to `stderr` (`&2`); you can then inspect the `jarvice-scheduler` logs to see the values
 4. do not attempt to make license server queries within this script; first, binaries such as `lmutil` and their required LSB dependencies are not available in the environment; second, `jarvice-license-manager` already provides the mechanisms needed to queue jobs based on licensing, at the appropriate time in the job lifecycle
+
+---
+
+## Advanced: Preemptible Features
+
+`jarvice-license-manager` has the ability to define specific "preemptible" license features and prioritize their use among a list of projects.  Preemptible features can be used to suspend running jobs consuming them in order to allow the jobs of a higher priority project to run.
+
+When used, preemptible features take precedence over normal project and pseudofeature definitions.  They operate completely differently - specifically:
+
+1. Each preemptible feature contains a list of prioritized projects that may request them.
+2. Rather than a token/percentage limit for a given license feature, they enforce a minimum floor for each project as a percentage of total tokens.
+3. If license tokens are available, any job for any project that requests them is granted reservations against them.
+4. If license tokens are not available, running jobs for lower priority projects may be suspended to allow jobs for higher priority projects to run.
+5. Suspended jobs are resumed in the order of highest priority projects first, once tokens become available again.
+
+In order to use this capability, solvers must be release tokens when signalled by a scheduler.  JARVICE allows configuration of what signal to send, but most solvers should respond to the `SIGTSTP` signal.  Resumption is always via the `SIGCONT` signal.  Applications may also override the behavior if signalling is not appropriate for a specific solver (see below for more details).  Note that only the first node in a parallel set receives these signals from the JARVICE scheduler (e.g. the "head node" of the dynamic cluster created to run a given solver as part of JARVICE job construction).  It's the solver's responsibility to alert parallel workers (e.g. MPI ranks) that license tokens need to be checked in.  Solvers should also check tokens in as quickly as possible when signalled in order to avoid checkout errors of new jobs.
+
+Configuration of preemptible features is done via the JARVICE web portal's *Administration->License Manager* view, in the *Preemptible Feature* section.  Multiple preemptible features can be defined for a given license server, but preemptible features may only map to one specific "real" license feature each.  The following configuration parameters must exist for each preemptible feature:
+
+1. `default_priority` - the default relative priority (1 being highest, `n` being lowest) to assign to jobs that don't match a configured project.
+2. `feature` - the license server feature to map to when this preemptible feature is requested; any symbolic name can be used for the preemptible feature itself, and jobs would request it by name regardless of what license feature it maps to.
+3. `signal` - the signal to send to suspend a job when a higher priority job must run; **note that suspending a job does not affect the resources it's running on, and they will continue to consume capacity and/or cost** unless a termination/kill signal is sent instead!
+4. List of projects with priorities and minimum allocation as a percentage of total tokens.  JARVICE will stop considering job suspension once the jobs for a project have reached this "floor", even if higher priority jobs are queued.  Note that minimum allocation is 0 if a project is not listed here, regardless of what `default_priority` is set to.
+
+### Job Submission Flow for Preemptible Features
+
+The following flow chart represents the logic `jarvice-license-manager` uses to inspect queued jobs for a given preemptible feature:
+
+![Queued job inspection flow](pfeature-job-submission-flow.svg)
+
+\* Order is by lowest priority project first, then shortest-running job first within each considered project.  This may be configurable in the future.
+
+Additionally, if multiple projects have the same relative priority, the order in which they are inspected as candidates for job suspension is undefined.
+
+
 
 ---
 
