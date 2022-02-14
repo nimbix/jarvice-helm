@@ -266,6 +266,14 @@ Returns 200 on success or HTTP error on failure - e.g. not enough licenses avail
 
 1. to update an existing reservation, do not specify `kv` - e.g. to change `expiration` from 0 (never) to 60 (1 minute from now)
 
+### /pause
+
+Temporarily suspends reservations until the next update either by interval or explicitly by the [/update](#update) endpoint.  New reservations will receive a 503 error during this moratorium.  `jarvice-license-manager` occasionally uses this mechanism to avoid race conditions when suspending or resuming jobs for preemptible features.
+
+### /pfmetrics/*server*
+
+Retrieves preemptible feature metrics (also referred to as "prioritized feature") for the specified *server*.  See [Preemptible Feature Metrics](#preemptible-feature-metrics) for details.  Metrics are returned in `text/plain` format.
+
 ### /live and /ready
 
 Liveness and Readiness endpoints - return 200 when the service is up.
@@ -348,6 +356,8 @@ In all cases the output of `jarvice-license-server`, in log level 10, is the sug
 If a single application needs to consider multiple license server addresses for checkouts, the best practice is to consolidate these under a single entry and use the `address` key to specify the multiples, separated by a colon (`:`) character.  For example, if the `myservers` entry must consider multiple addresses, such as `1055@server1:1055@server2` (as would be passed to the `lmutil lmstat -c` command), you would specify the `port` as `1055` and the address as `server1:1055@server2`.  `jarvice-license-manager` would then concatenate this to `1055@server1:1055@server2` for the Flex `lmutil` client request to inspect the total and available feature counts.  The following rules apply:
 1. `jarvice-license-manager` will add the totals and consider them in aggregate for any reservations against the server entry with multiple addresses; it's expected the Flex license client in the solver will be able to do partial checkouts if all tokens are not available on one given address.  Note that `jarvice-license-manager` will consider the license request "available" if the total number of requested tokens for any given feature is less than or equal to the total number of available tokens across all daemon addresses queried for that server.  If the solver you are trying to use does not support this, you may end up with checkout failures even though `jarvice-license-manager` thinks there are enough tokens.  Check with your solver's software vendor if you are not sure how it considers availabilty of features across multiple servers.
 2. The best practice is to create server entries for each individual address as well as one for all addresses combined, so that the appropriate host resolution automation can take place.  Do this even if you don't plan on ever using the servers individually for best results.  For additional details, see [Flex server host name resolution](#flex-server-host-name-resolution).
+
+[Back to Contents](#contents)
 
 ---
 
@@ -453,6 +463,8 @@ Variable|Description
 3. To "learn" the mechanism it is recommended that you connect a sample script similar to the one described above, which dumps the environment to `stderr` (`&2`); you can then inspect the `jarvice-scheduler` logs to see the values
 4. do not attempt to make license server queries within this script; first, binaries such as `lmutil` and their required LSB dependencies are not available in the environment; second, `jarvice-license-manager` already provides the mechanisms needed to queue jobs based on licensing, at the appropriate time in the job lifecycle
 
+[Back to Contents](#contents)
+
 ---
 
 ## Advanced: Preemptible Features
@@ -486,7 +498,33 @@ The following flow chart represents the logic `jarvice-license-manager` uses to 
 
 Additionally, if multiple projects have the same relative priority, the order in which they are inspected as candidates for job suspension is undefined.
 
+### Periodic Job Resumption Flow for Preemptible Features
 
+The following flow chart represents the logic `jarvice-license-manager` uses to resume suspended jobs for a given preemptible feature once license tokens are available:
+
+![Suspended job resumption flow](pfeature-job-resumption-flow.svg)
+
+\* Order is by highest priority project first, then longest-running job first within each considered project.  This is the opposite of the order used to suspend jobs.  This may be configurable in the future.
+
+Additionally, if multiple projects have the same relative priority, the order in which they are inspected as candidates for job resumption is undefined.
+
+Suspended jobs are inspected for resumption periodically, with the default being every 60 seconds.  Use the Helm chart configuration setting `jarvice_license_manager.JARVICE_LMSTAT_INTERVAL` to change this value.  Note that it's the same interval that's used to query Flex servers and garbage collect reservations, and should not be set too low.
+
+### Preemptible Feature Metrics
+
+The `jarvice-license-manager` [/pfmetrics](#pfmetricsserver) endpoint can be used to query summary and per-project metrics on preemptible license feature utilization and oversubscription.
+
+For each preemptible feature (also referred to as "prioritized feature"), a summary line displays the number of tokens in use, the number of tokens reserved, and the number of tokens corresponding to suspended jobs.
+
+For each project within a preemptible feature, the following columns are shown:
+
+PROJECT|SHARE %|TOKENS|IN-USE|RESERVED|SUSPENDED
+---|---|---|---|---|---
+The name of a given project, including its payer username prefix (e.g. for project `HighGain` under payer `hpcleader`, the column will show `hpcleader-HighGain`)|the minimum percentage of total tokens set as this project's "floor"|the number of tokens calculated as the share percentage (e.g. if the license server has 30 tokens for the feature, and the project has a 10% share, the value shown here would be `3`)|the number of tokens used by running jobs with this feature requested out but without an active reservation (e.g. the reservation expired)|the number of tokens reserved by queued or running jobs with this feature requested; note that a given solver may or may not have already checked out the token from the license server before the reservation expires; see [Reservation Life Cycle](#reservation-life-cycle) for additional details|the number of tokens requested by jobs that have since been suspended, in order to make licenses available for higher priority jobs
+
+Note that in all cases, numbers refer to tokens and not jobs - e.g. it's possible 10 tokens are "suspended" but this corresponds to only one job that requested 10 tokens rather than 10 individual jobs.
+
+[Back to Contents](#contents)
 
 ---
 
@@ -497,6 +535,7 @@ Additionally, if multiple projects have the same relative priority, the order in
 4. The scheduling algorithm is linear and jobs don't return to prior states once they progress; the progression is advisory limits enforcement, then released to the general queue to wait on license features or infrastructure (order depends on setting described above); therefore account limits take precedence over all conditions, including license availability.  Once a job progresses to the general queue, it will count against account limits even if it continues to queue for either license features or infrastructure.
 5. While the `jarvice-license-manager` service is technically multi-architecture capable, the default configuration selects nodes of the `amd64` (`x86_64`) architecture only; this is to remain compatible with the site-supplied FlexNet `lmutil` binaries that must be executed to query the configured license servers.
 6. Commercial ISVs (Independent Software Vendors) typically package FlexNet `lmutil` binaries along with their installations as they are commonly used for troubleshooting.  Please consult the respective documentation or contact the vendor directly for details if you are not sure where to find the `lmutil` binary.  Note that different applications use different versions of this binary, which is why each configuration for `jarvice-license-manager` supports its own specific `lmutil` binary.
+7. For best results, especially if using license servers outside of JARVICE, it's recommended that the total project minimums for a preemptible feature add up to less than 100%.  Leaving a margin will reduce the chances of errors due to unaccounted for licenses.
 
 [Back to Contents](#contents)
 
