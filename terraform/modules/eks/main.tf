@@ -166,8 +166,9 @@ EOF
 }
 
 module "eks" {
-    source = "terraform-aws-modules/eks/aws"
-    version = "~> 18.2"
+    # source = "terraform-aws-modules/eks/aws"
+    # version = "~> 18.2"
+    source = "/home/khill/github/terraform-aws-modules/terraform-aws-eks"
 
     cluster_name = var.cluster.meta["cluster_name"]
     cluster_version = var.cluster.meta["kubernetes_version"]
@@ -262,22 +263,23 @@ module "eks" {
         }
     }
 
-    self_managed_node_group_defaults = {
+    eks_managed_node_group_defaults = {
         vpc_security_group_ids = [aws_security_group.ssh.id]
         #iam_role_additional_policies = ["arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"]
     }
 
-    self_managed_node_groups = merge({
+    eks_managed_node_groups = merge({
         default = {
             name = "default"
-            instance_type = lookup(var.cluster.meta, "arch", "") == "arm64" ? "t4g.small" : "t2.small"
+            instance_types = [ lookup(var.cluster.meta, "arch", "") == "arm64" ? "t4g.small" : "t2.small" ]
             ami_id = lookup(var.cluster.meta, "arch", "") == "arm64" ? data.aws_ami.eks_arm64.id : data.aws_ami.eks_amd64.id
             desired_size = 2
             min_size = 2
             max_size = 2
             key_name = ""
+	    enable_bootstrap_user_data = true
             bootstrap_extra_args = "--kubelet-extra-args '--node-labels=node-role.jarvice.io/default=true'"
-            public_ip = true
+            # public_ip = true
             pre_bootstrap_user_data = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
 # Add authorized ssh key
@@ -286,14 +288,15 @@ EOF
         }
         jxesystem = {
             name = "jxesystem"
-            instance_type = module.common.system_nodes_type
+            instance_types = [ module.common.system_nodes_type ]
             ami_id = lookup(var.cluster.meta, "arch", "") == "arm64" ? data.aws_ami.eks_arm64.id : data.aws_ami.eks_amd64.id
             desired_size = module.common.system_nodes_num
             min_size = module.common.system_nodes_num
             max_size = module.common.system_nodes_num * 2
             key_name = ""
+	    enable_bootstrap_user_data = true
             bootstrap_extra_args = "--kubelet-extra-args '--node-labels=node-role.jarvice.io/jarvice-system=true,node-pool.jarvice.io/jarvice-system=jxesystem --register-with-taints=node-role.jarvice.io/jarvice-system=true:NoSchedule'"
-            public_ip = true
+            # public_ip = true
             pre_bootstrap_user_data = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
 # Add authorized ssh key
@@ -304,15 +307,16 @@ EOF
     module.common.jarvice_cluster_type == "downstream" || var.cluster.dockerbuild_node_pool["nodes_type"] == null ? {} : {
         jxedockerbuild = {
             name = "jxedockerbuild"
-            instance_type = var.cluster.dockerbuild_node_pool["nodes_type"]
+            instance_types = [ var.cluster.dockerbuild_node_pool["nodes_type"] ]
             ami_id = lookup(var.cluster.meta, "arch", "") == "arm64" ? data.aws_ami.eks_arm64.id : data.aws_ami.eks_amd64.id
             desired_size = var.cluster.dockerbuild_node_pool["nodes_num"]
             min_size = var.cluster.dockerbuild_node_pool["nodes_min"]
             max_size = var.cluster.dockerbuild_node_pool["nodes_max"]
             key_name = ""
-            instance_refresh_enabled = true
+            # instance_refresh_enabled = true
+	    enable_bootstrap_user_data = true
             bootstrap_extra_args = "--kubelet-extra-args '--node-labels=node-role.jarvice.io/jarvice-dockerbuild=true,node-pool.jarvice.io/jarvice-dockerbuild=jxedockerbuild --register-with-taints=node-role.jarvice.io/jarvice-dockerbuild=true:NoSchedule'"
-            public_ip = true
+            # public_ip = true
             pre_bootstrap_user_data = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
 # Add authorized ssh key
@@ -346,17 +350,18 @@ EOF
         for pool_name, pool in var.cluster["compute_node_pools"]:
             pool_name => {
                 name = pool_name
-                instance_type = pool.nodes_type
+                instance_types = [ pool.nodes_type ]
                 ami_id = lookup(var.cluster.meta, "arch", "") == "arm64" ? data.aws_ami.eks_arm64.id : lookup(pool.meta, "interface_type", null) == "efa" ? data.aws_ami.eks_amd64.id : data.aws_ami.eks_amd64_gpu.id
                 disk_size = pool.nodes_disk_size_gb
                 desired_size = pool.nodes_num
                 min_size = pool.nodes_min
                 max_size = pool.nodes_max
                 key_name = ""
-                instance_refresh_enabled = true
+                # instance_refresh_enabled = true
+                enable_bootstrap_user_data = true
                 bootstrap_extra_args = "--kubelet-extra-args '--node-labels=node-role.jarvice.io/jarvice-compute=true,node-pool.jarvice.io/jarvice-compute=${pool_name},node-pool.jarvice.io/disable-hyperthreading=${lookup(pool.meta, "disable_hyperthreading", "false")}${length(regexall("^(p2|p3|p4|g3|g4|inf1)", pool.nodes_type)) > 0 ? ",accelerator=nvidia" : ""}${lookup(pool.meta, "interface_type", null) == "efa" ? ",node-pool.jarvice.io/interface-type=efa" : ""} --register-with-taints=node-role.jarvice.io/jarvice-compute=true:NoSchedule'"
-                public_ip = true
-                interface_type = lookup(pool.meta, "interface_type", null)
+                # public_ip = true
+                # interface_type = lookup(pool.meta, "interface_type", null)
                 subnet_ids = lookup(pool.meta, "zones", null) == null ? (
                     lookup(pool.meta, "interface_type", null) == "efa" ? [module.vpc.private_subnets[0]] : module.vpc.private_subnets
                 ) : (
@@ -372,12 +377,14 @@ EOF
                     )
                 )
                 vpc_security_group_ids = lookup(pool.meta, "interface_type", null) == "efa" ? [aws_security_group.efa.id] : []
-                placement_group = lookup(pool.meta, "interface_type", null) == "efa" ? aws_placement_group.efa.id : null
+                # placement_group = lookup(pool.meta, "interface_type", null) == "efa" ? aws_placement_group.efa.id : null
                 pre_bootstrap_user_data = <<EOF
 # pre_userdata (executed before kubelet bootstrap and cluster join)
 # Add authorized ssh key
 echo "${module.common.ssh_public_key}" >>/home/ec2-user/.ssh/authorized_keys
-
+# Set root password to debug via serial console
+# TODO update XXXXX
+# sudo sh -c 'echo XXXXX | passwd --stdin root'
 ${lookup(pool.meta, "interface_type", null) == "efa" ? local.efa_install : ""}
 
 ${lower(lookup(pool.meta, "disable_hyperthreading", "false")) == "true" ? local.disable_hyperthreading : ""}
@@ -385,43 +392,22 @@ EOF
                 post_bootstrap_user_data = <<EOF
 # additional_userdata (executed after kubelet bootstrap and cluster join)
 EOF
-                propagate_tags = concat(
-                    [
-                        {
-                            "key" = "k8s.io/cluster-autoscaler/enabled"
-                            "propagate_at_launch" = "false"
-                            "value" = "true"
-                        },
-                        {
-                            "key" = "k8s.io/cluster-autoscaler/${var.cluster.meta["cluster_name"]}"
-                            "propagate_at_launch" = "false"
-                            "value" = "owned"
-                        },
-                        {
-                            "key" = "k8s.io/cluster-autoscaler/node-template/label/node.kubernetes.io/instance-type"
-                            "propagate_at_launch" = "true"
-                            "value" = pool.nodes_type
-                        },
-                        {
-                            "key" = "k8s.io/cluster-autoscaler/node-template/label/kubernetes.io/arch"
-                            "propagate_at_launch" = "true"
-                            "value" = lookup(var.cluster.meta, "arch", null) == "arm64" ? "arm64" : "amd64"
-                        }
-                    ],
-                    lookup(pool.meta, "interface_type", null) == "efa" ?
-                        [
-                            {
-                                "key" = "k8s.io/cluster-autoscaler/node-template/resources/vpc.amazonaws.com/efa"
-                                "propagate_at_launch" = "true"
-                                "value" = "1"
-                            },
-                            {
-                                "key" = "k8s.io/cluster-autoscaler/node-template/resources/hugepages-2Mi"
-                                "propagate_at_launch" = "true"
-                                "value" = format("%sMi", tostring(((local.efa_ep_huge_pages_memory * data.aws_ec2_instance_type.jarvice_compute[pool_name].default_vcpus * 2) / local.huge_pages_size + 1) * 2))
-                            }
-                        ] : []
-                )
+		network_interfaces = [
+		    {
+                        "associate_public_ip_address" = "false"
+		        "delete_on_termination"       = "true"
+                        "interface_type"              = lookup(pool.meta, "interface_type", null) == "efa" ? "efa" : null
+
+                    }
+		]
+		placement = {
+	            "group_name" = lookup(pool.meta, "interface_type", null) == "efa" ? aws_placement_group.efa.id : null 
+		}
+		
+		# labels = lookup(pool.meta, "interface_type", null) == "efa" ? {
+                #         "k8s.io/cluster-autoscaler/node-template/resources/vpc.amazonaws.com/efa" = "1"
+                #         "k8s.io/cluster-autoscaler/node-template/resources/hugepages-2Mi" = format("%sMi", tostring(((local.efa_ep_huge_pages_memory * data.aws_ec2_instance_type.jarvice_compute[pool_name].default_vcpus * 2) / local.huge_pages_size + 1) * 2))
+                # } : {}
             }
     })
 
@@ -429,6 +415,28 @@ EOF
         cluster_name = var.cluster.meta["cluster_name"]
     }
 }
+
+#resource "aws_launch_template" "compute" {
+#    name_prefix  = "compute-eks-"
+#    description  = "EKS managed node group launch template"
+#    update_default_version = true
+#   
+#    montoring = true
+#
+#    network_interfaces {
+#        associate_public_ip_address = "true"
+#        delete_on_termination       = "true"
+#        interface_type              = "efa"
+#    }
+#
+#    tags = {
+#        cluster_name = var.cluster.meta["cluster_name"]
+#    }
+#
+#    lifecycle {
+#        create_before_destroy = true
+#    }
+#}
 
 data "aws_iam_policy_document" "cluster_autoscaler" {
     statement {
