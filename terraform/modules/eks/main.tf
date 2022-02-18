@@ -168,7 +168,7 @@ EOF
 module "eks" {
     # source = "terraform-aws-modules/eks/aws"
     # version = "~> 18.2"
-    source = "/home/khill/github/terraform-aws-modules/terraform-aws-eks"
+    source = "git::https://github.com/nimbix/terraform-aws-eks.git?ref=interface_type_update"
 
     cluster_name = var.cluster.meta["cluster_name"]
     cluster_version = var.cluster.meta["kubernetes_version"]
@@ -184,14 +184,6 @@ module "eks" {
             from_port = 0
             to_port = 65535
             type = "egress"
-            cidr_blocks = ["0.0.0.0/0"]
-        }
-        ingress_internet_all = {
-            description = "Allow cluster ingress access from the Internet."
-            protocol = "-1"
-            from_port = 0
-            to_port = 65535
-            type = "ingress"
             cidr_blocks = ["0.0.0.0/0"]
         }
         egress_nodes_all = {
@@ -401,9 +393,9 @@ EOF
                     }
 		]
 		placement = {
-	            "group_name" = lookup(pool.meta, "interface_type", null) == "efa" ? aws_placement_group.efa.id : null 
+	            "group_name" = lookup(pool.meta, "interface_type", null) == "efa" ? aws_placement_group.efa.id : null
 		}
-		
+
 		# labels = lookup(pool.meta, "interface_type", null) == "efa" ? {
                 #         "k8s.io/cluster-autoscaler/node-template/resources/vpc.amazonaws.com/efa" = "1"
                 #         "k8s.io/cluster-autoscaler/node-template/resources/hugepages-2Mi" = format("%sMi", tostring(((local.efa_ep_huge_pages_memory * data.aws_ec2_instance_type.jarvice_compute[pool_name].default_vcpus * 2) / local.huge_pages_size + 1) * 2))
@@ -415,28 +407,6 @@ EOF
         cluster_name = var.cluster.meta["cluster_name"]
     }
 }
-
-#resource "aws_launch_template" "compute" {
-#    name_prefix  = "compute-eks-"
-#    description  = "EKS managed node group launch template"
-#    update_default_version = true
-#   
-#    montoring = true
-#
-#    network_interfaces {
-#        associate_public_ip_address = "true"
-#        delete_on_termination       = "true"
-#        interface_type              = "efa"
-#    }
-#
-#    tags = {
-#        cluster_name = var.cluster.meta["cluster_name"]
-#    }
-#
-#    lifecycle {
-#        create_before_destroy = true
-#    }
-#}
 
 data "aws_iam_policy_document" "cluster_autoscaler" {
     statement {
