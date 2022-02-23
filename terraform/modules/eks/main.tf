@@ -172,8 +172,12 @@ module "eks" {
     #source = "terraform-aws-modules/eks/aws"
     #version = "~> 18.2"
     source = "git::https://github.com/nimbix/terraform-aws-eks.git?ref=interface_type_update"
-
+    prefix_separator = ""
     cluster_name = var.cluster.meta["cluster_name"]
+    cluster_security_group_name = var.cluster.meta["cluster_name"]
+    cluster_security_group_description = "EKS cluster security group."
+    iam_role_name = var.cluster.meta["cluster_name"]
+
     cluster_version = var.cluster.meta["kubernetes_version"]
 
     vpc_id = module.vpc.vpc_id
