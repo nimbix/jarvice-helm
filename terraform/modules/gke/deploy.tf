@@ -242,7 +242,7 @@ EOF
 ${local.jarvice_ingress}
 EOF
 
-    depends_on = [google_container_cluster.jarvice, google_container_node_pool.jarvice_system, google_container_node_pool.jarvice_compute, google_compute_address.jarvice, kubernetes_daemonset.nvidia_driver_installer_cos, local_file.kube_config]
+    depends_on = [google_container_cluster.jarvice, google_container_node_pool.jarvice_system, google_container_node_pool.jarvice_compute, google_compute_address.jarvice, kubernetes_daemonset.nvidia_driver_installer_cos, kubernetes_daemonset.nvidia_driver_installer_ubuntu, local_file.kube_config]
 }
 
 resource "kubernetes_daemonset" "nvidia_driver_installer_cos" {
@@ -384,6 +384,115 @@ resource "kubernetes_daemonset" "nvidia_driver_installer_cos" {
                     volume_mount {
                         name = "cos-tools"
                         mount_path = "/build/cos-tools"
+                    }
+                }
+                container {
+                    image = "gcr.io/google-containers/pause:3.2"
+                    name  = "pause"
+                }
+            }
+        }
+    }
+
+    depends_on = [google_container_cluster.jarvice, local_file.kube_config]
+}
+
+resource "kubernetes_daemonset" "nvidia_driver_installer_ubuntu" {
+    metadata {
+        name = "nvidia-driver-installer-ubuntu"
+        namespace = "kube-system"
+        labels = {
+            k8s-app = "nvidia-driver-installer-ubuntu"
+        }
+    }
+
+    spec {
+        selector {
+            match_labels = {
+                k8s-app = "nvidia-driver-installer-ubuntu"
+            }
+        }
+        strategy {
+            type = "RollingUpdate"
+        }
+
+        template {
+            metadata {
+                labels = {
+                    name = "nvidia-driver-installer-ubuntu"
+                    k8s-app = "nvidia-driver-installer-ubuntu"
+                }
+            }
+
+            spec {
+                affinity {
+                    node_affinity {
+                        required_during_scheduling_ignored_during_execution {
+                            node_selector_term {
+                                match_expressions {
+                                    key = "cloud.google.com/gke-accelerator"
+                                    operator = "Exists"
+                                }
+                                match_expressions {
+                                    key = "cloud.google.com/gke-os-distribution"
+                                    operator = "In"
+                                    values = ["ubuntu"]
+                                }
+                                match_expressions {
+                                    key = "cloud.google.com/gke-container-runtime"
+                                    operator = "In"
+                                    values = ["containerd"]
+                                }
+                            }
+                        }
+                    }
+                }
+                toleration {
+                    operator = "Exists"
+                }
+                host_network = true
+                host_pid = true
+                volume {
+                    name = "dev"
+                    host_path {
+                        path = "/dev"
+                    }
+                }
+                volume {
+                    name = "boot"
+                    host_path {
+                        path = "/boot"
+                    }
+                }
+                volume {
+                    name = "root-mount"
+                    host_path {
+                        path = "/"
+                    }
+                }
+                init_container {
+                    image = "gke-nvidia-installer:fixed"
+                    image_pull_policy = "Never"
+                    name = "nvidia-driver-installer-ubuntu"
+                    resources {
+                        requests = {
+                            cpu = "0.15"
+                        }
+                    }
+                    security_context {
+                        privileged = true
+                    }
+                    volume_mount {
+                        name = "dev"
+                        mount_path = "/dev"
+                    }
+                    volume_mount {
+                        name = "boot"
+                        mount_path = "/boot"
+                    }
+                    volume_mount {
+                        name = "root-mount"
+                        mount_path = "/root"
                     }
                 }
                 container {

@@ -996,7 +996,30 @@ chart, add the following `--set` flag to the helm install/upgrade command:
 --set jarvice.daemonsets.lxcfs.enabled="true"
 ```
 
-#### JARVICE Cache Pull
+#### JARVICE Images Pull
+
+JARVICE Images Pull is a DaemonSet which can be utilized to pre-populate
+kubernetes worker nodes with the docker images used to run JARVICE
+appplications.  This can be used to speed up job startup times for the most
+used JARVICE applications.
+
+In order to enable the cache pull DaemonSet provided in this helm
+chart, add the following `--set` flag to the helm install/upgrade command:
+```bash
+--set jarvice.daemonsets.images_pull.enabled="true"
+```
+
+The images pull interval can then be set with
+`jarvice.daemonsets.images_pull.interval`.
+The images to pull can be set per architecture via
+`jarvice.daemonsets.images_pull.images.amd64` and
+`jarvice.daemonsets.images_pull.images.arm64`.
+
+**Note:**  JARVICE Images Pull supersedes JARVICE Images Pull.
+
+#### JARVICE Cache Pull (Deprecated)
+
+**Note:**  JARVICE Cache Pull has been superseded by JARVICE Images Pull.
 
 JARVICE Cache Pull is a DaemonSet which can be utilized to pre-populate
 kubernetes worker nodes with the docker images used to run JARVICE
