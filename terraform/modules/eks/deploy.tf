@@ -13,7 +13,7 @@ module "common" {
 }
 
 resource "aws_eip" "jarvice" {
-    count = length(module.vpc.public_subnets)
+    count = length(local.vpc.public_subnets)
 
     vpc = true
 
@@ -90,7 +90,7 @@ affinity:
 
 region: "${var.cluster.location["region"]}"
 
-vpcId: "${module.vpc.vpc_id}"
+vpcId: "${local.vpc.id}"
 
 podDisruptionBudget:
   maxUnavailable: 1
