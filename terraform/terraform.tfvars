@@ -159,7 +159,7 @@ k8s = {  # Deploy JARVICE to pre-existing K8s clusters
   #ingress:
   #  tls:
   #    issuer:
-  #      name: "letsencrypt-prod"  # "letsecrypt-staging" # "selfsigned"
+  #      name: "letsencrypt-prod"  # "letsencrypt-staging" # "selfsigned"
   #      # An admin email is required when letsencrypt issuer is set. The first
   #      # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
   #      email: # "admin@my-domain.com"
@@ -301,7 +301,7 @@ jarvice:
   #ingress:
   #  tls:
   #    issuer:
-  #      name: "letsencrypt-prod"  # "letsecrypt-staging" # "selfsigned"
+  #      name: "letsencrypt-prod"  # "letsencrypt-staging" # "selfsigned"
   #      # An admin email is required when letsencrypt issuer is set. The first
   #      # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
   #      email: # "admin@my-domain.com"
@@ -472,7 +472,7 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
   #ingress:
   #  tls:
   #    issuer:
-  #      name: "letsencrypt-prod"  # "letsecrypt-staging" # "selfsigned"
+  #      name: "letsencrypt-prod"  # "letsencrypt-staging" # "selfsigned"
   #      # An admin email is required when letsencrypt issuer is set. The first
   #      # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
   #      email: # "admin@my-domain.com"
@@ -648,7 +648,7 @@ jarvice:
   #ingress:
   #  tls:
   #    issuer:
-  #      name: "letsencrypt-prod"  # "letsecrypt-staging" # "selfsigned"
+  #      name: "letsencrypt-prod"  # "letsencrypt-staging" # "selfsigned"
   #      # An admin email is required when letsencrypt issuer is set. The first
   #      # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
   #      email: # "admin@my-domain.com"
@@ -797,7 +797,7 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
   #ingress:
   #  tls:
   #    issuer:
-  #      name: "letsencrypt-prod"  # "letsecrypt-staging" # "selfsigned"
+  #      name: "letsencrypt-prod"  # "letsencrypt-staging" # "selfsigned"
   #      # An admin email is required when letsencrypt issuer is set. The first
   #      # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
   #      email: # "admin@my-domain.com"
@@ -955,7 +955,7 @@ jarvice:
   #ingress:
   #  tls:
   #    issuer:
-  #      name: "letsencrypt-prod"  # "letsecrypt-staging" # "selfsigned"
+  #      name: "letsencrypt-prod"  # "letsencrypt-staging" # "selfsigned"
   #      # An admin email is required when letsencrypt issuer is set. The first
   #      # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
   #      email: # "admin@my-domain.com"
@@ -1084,7 +1084,7 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
   #ingress:
   #  tls:
   #    issuer:
-  #      name: "letsencrypt-prod"  # "letsecrypt-staging" # "selfsigned"
+  #      name: "letsencrypt-prod"  # "letsencrypt-staging" # "selfsigned"
   #      # An admin email is required when letsencrypt issuer is set. The first
   #      # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
   #      email: # "admin@my-domain.com"
@@ -1231,7 +1231,7 @@ jarvice:
   #ingress:
   #  tls:
   #    issuer:
-  #      name: "letsencrypt-prod"  # "letsecrypt-staging" # "selfsigned"
+  #      name: "letsencrypt-prod"  # "letsencrypt-staging" # "selfsigned"
   #      # An admin email is required when letsencrypt issuer is set. The first
   #      # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
   #      email: # "admin@my-domain.com"
