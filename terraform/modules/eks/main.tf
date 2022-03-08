@@ -262,6 +262,22 @@ module "eks" {
             type = "egress"
             cidr_blocks = ["0.0.0.0/0"]
         }
+        #egress_nodes_all = {
+        #    description = "Allow cluster egress access to the nodes."
+        #    protocol = "-1"
+        #    from_port = 0
+        #    to_port = 65535
+        #    type = "egress"
+        #    source_node_security_group = true
+        #}
+        ingress_nodes_all = {
+            description = "Allow cluster ingress access from the nodes."
+            protocol = "-1"
+            from_port = 0
+            to_port = 65535
+            type = "ingress"
+            source_node_security_group = true
+        }
 
     }
 
@@ -274,13 +290,37 @@ module "eks" {
             type = "egress"
             cidr_blocks = ["0.0.0.0/0"]
         }
-        ingress_internet_all = {
-            description = "Allow nodes all ingress from the Internet."
+        #ingress_internet_all = {
+        #    description = "Allow nodes all ingress from the Internet."
+        #    protocol = "-1"
+        #    from_port = 0
+        #    to_port = 65535
+        #    type = "ingress"
+        #    cidr_blocks = ["0.0.0.0/0"]
+        #}
+        ingress_cluster_all = {
+            description = "Allow workers pods to receive communication from the cluster control plane."
             protocol = "-1"
             from_port = 0
             to_port = 65535
             type = "ingress"
-            cidr_blocks = ["0.0.0.0/0"]
+            source_cluster_security_group = true
+        }
+        egress_self_all = {
+            description = "Allow nodes to communicate with each other."
+            protocol = "-1"
+            from_port = 0
+            to_port = 65535
+            type = "egress"
+            self = true
+        }
+        ingress_self_all = {
+            description = "Allow nodes to communicate with each other."
+            protocol = "-1"
+            from_port = 0
+            to_port = 65535
+            type = "ingress"
+            self = true
         }
 
     }
