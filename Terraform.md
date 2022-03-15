@@ -25,6 +25,7 @@ https://github.com/nimbix/jarvice-helm
             - [GCP Credentials](#gcp-credentials)
         - [AWS for EKS: `aws`](#aws-for-eks-aws)
             - [AWS Credentials](#aws-credentials)
+            - [EKS Terraform Module Migration](#eks-terraform-module-migration)
         - [Azure for AKS: `az`](#azure-for-aks-az)
             - [Azure Credentials](#azure-credentials)
 * [Terraform Configuration](#terraform-configuration)
@@ -162,6 +163,50 @@ EOF
 
 See the following link for more details:
 https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
+
+##### EKS Terraform Module Migration
+
+AWS Terraform support for JARVICE v3.22+ is not backwards compatible  with clusters
+deployed by previous versions. Starting with v3.22+, JARVICE moved from
+AWS EKS Terraform module v17 to v18 which introduces breaking changes. Existing
+AWS clusters will need to be recreated before using v3.22+.
+
+1) Create new JARVICE v3.22+ workspace
+
+```bash
+git clone https://github.com/nimbix/jarvice-helm /tmp/jarvice-helm
+```
+
+2) Copy `override.auto.tfvars` and disable non EKS clusters (`enabled = false`)
+
+**Note:** `cluster_name` and ingress values must be different from existing clusters.
+
+```bash
+cp override.auto.tfvars /tmp/jarvice-helm/terraform
+```
+
+3) Deploy new AWS EKS cluster(s)
+
+```bash
+ORIG=$PWD
+cd /tmp/jarvice-helm/terraform
+terraform init --upgrade
+terraform apply -target=local_file.clusters -auto-approve -compact-warnings && terraform init
+terraform apply
+cd $ORIG
+```
+
+4) Update existing workspace to v3.22+ and merge terraform state file
+
+This example merges statefile for `esk_cluster_01`: 
+
+```bash
+git checkout <version-tag>
+terraform init --upgrade
+../scripts/terraform-aws-migrate.sh --cluster eks_cluster_01 \
+    --tfstate /tmp/jarvice-helm/terraform/terrafrom.tfstate
+```
+**Note:** `terraform-aws-migrate.sh` needs to be run for each EKS cluster in `override.auto.tfvars`
 
 #### Azure for AKS: `az`
 
