@@ -696,8 +696,8 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
 
             #Join existing VPC by defining the VPC ID here. Make sure to set allow_cluster_join to true on the deployment that manages the VPC you are trying to join.
             #vpc_id = "aws_vpc_id"
-            #Set to true if you want to allow another jarvice-helm deployment to join this deployments VPC allowing them to both use the same storage and subnets. NOTE: Setting allow_cluster_join = "true" will cause terraform to add kubernetes tags when they already exist. 
-            #This is done to avoid Terraform removing the joining clusters tags, these changes should not interupt running jobs and can be ignored during terraform plan/apply operations. 
+            #Set to true if you want to allow another jarvice-helm deployment to join this deployments VPC allowing them to both use the same storage and subnets. NOTE: Setting allow_cluster_join = "true" will cause terraform to add kubernetes tags when they already exist.
+            #This is done to avoid Terraform removing the joining clusters tags, these changes should not interupt running jobs and can be ignored during terraform plan/apply operations.
             #allow_cluster_join = "true"
 
             ssh_public_key = null  # global setting used if null specified
@@ -860,6 +860,12 @@ EOF
 
             # Sync ingress hosts to zones/domains managed w/ AWS Route53 DNS
             #dns_manage_records = "true"
+
+            #Join existing VPC by defining the VPC ID here. Make sure to set allow_cluster_join to true on the deployment that manages the VPC you are trying to join.
+            #vpc_id = "aws_vpc_id"
+            #Set to true if you want to allow another jarvice-helm deployment to join this deployments VPC allowing them to both use the same storage and subnets. NOTE: Setting allow_cluster_join = "true" will cause terraform to add kubernetes tags when they already exist.
+            #This is done to avoid Terraform removing the joining clusters tags, these changes should not interupt running jobs and can be ignored during terraform plan/apply operations.
+            #allow_cluster_join = "true"
 
             ssh_public_key = null  # global setting used if null specified
         }
