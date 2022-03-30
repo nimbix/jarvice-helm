@@ -127,6 +127,15 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202203301625
+
+* (JAR-83) Handle missing zone or cluster gracefully in web portal login.
+* (JAR-4848) Support for solver suspend/resume in apps implementing embedded Slurm scheduler.
+* (JAR-4901) (JAR-4902) (JAR-4978) (JAR-4980) (JAR-4951) (JAR-5010) (JAR-5054) (JAR-5063) Advanced license-based queuing with preemptible features; see [Advanced: Preemptible Features](LicenseManager.md#advanced-preemptible-features) in the [JARVICE License Manager](LicenseManager.md) documentation for details.
+* (JAR-4999) Fixed regression in browser-based interactive apps where team admin has disabled encoding connection passwords in URL.
+* (JAR-5022) Added index to audit log table in database to improve performance of audit-related functions over time.
+* (JAR-5062) GPU-related fixes for GKE.
+
 ## 3.21.9-1.202201191724
 
 * (JAR-4866) Added support for adding ingress annotations for jobs; see [Additional Ingress annotation for jobs](README.md#additional-ingress-annotation-for-jobs) for details.
