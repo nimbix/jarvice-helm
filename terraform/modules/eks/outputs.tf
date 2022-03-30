@@ -4,7 +4,35 @@ resource "local_file" "kube_config" {
     filename = pathexpand(local.kube_config["config_path"])
     file_permission = "0600" 
     directory_permission = "0775"
-    content = module.eks.kubeconfig
+    content = <<EOF
+apiVersion: v1
+kind: Config
+preferences:
+  colors: true
+current-context: ${module.eks.cluster_id}
+contexts:
+- context:
+    cluster: ${module.eks.cluster_id}
+    namespace: default
+    user: ${module.eks.cluster_id}
+  name: ${module.eks.cluster_id}
+clusters:
+- cluster:
+    server: ${local.kube_config["host"]}
+    certificate-authority-data: ${local.kube_config["cluster_ca_certificate"]}
+  name: ${module.eks.cluster_id}
+users:
+- name: ${module.eks.cluster_id}
+  user:
+    exec:
+      apiVersion: client.authentication.k8s.io/v1alpha1
+      args:
+      - token
+      - -i
+      - ${module.eks.cluster_id}
+      command: aws-iam-authenticator
+      env: null
+EOF
 }
 
 output "kube_config" {
