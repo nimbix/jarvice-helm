@@ -45,6 +45,12 @@ For additional details on huge pages in the Linux kernel, see [https://www.kerne
 
 By default, JARVICE will run jobs with the Kubernetes default of 64Mi `tmpfs` attached to `/dev/shm`.  This is generally not sufficient for certain fabric providers and/or endpoints.  It is recommended that machine definitions used for MPI jobs have the `devshm` pseudo-device defined, which will allow up to half of physical RAM in `/dev/shm` (the default for a host-mounted `tmpfs` filesystem).
 
+### Supporting OFI MPI stacks over InfiniBand
+
+OFI MPIs (e.g. newer versions of OpenMPI and Intel MPI) require the InfiniBand IP-over-IB device to be passed through into jobs even to use the `verbs` provider of `libfabric`.  The [Multus CNI](https://github.com/k8snetworkplumbingwg/multus-cni) can be used to provide this level of passthrough.  When the `ibrdma` pseudo-device is used in machine definitions, JARVICE will set the annotation `k8s.v1.cni.cncf.io/networks` to `jarvice-ipoib` by default.  If you need to change this name, you can override it with the Helm chart value `jarvice.JARVICE_IB_CNI_NETWORKS`.
+
+For a detailed example of deploying the Multus CNI, please see [CNI Support for MPI over InfiniBand](InfiniBandCNI.md).
+
 ## Configuring Machine Types
 Machine types in JARVICE are used to describe resources that a job requests along with metadata for workflow construction.  Machine types are configured in the *Machines* view in the *Administration* section of the web portal.
 

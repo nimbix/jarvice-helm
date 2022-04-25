@@ -165,6 +165,11 @@ jarvice:
   JARVICE_S3_PREFIX: "output/" # object name prefix
   JARVICE_S3_ENDPOINTURL: # object store endpoint URL, defaults to AWS
 
+  # the following value should be set to the value needed for the annotation
+  # k8s.v1.cni.cncf.io/networks to specify the Multus CNI name for passing in
+  # IPoIB networks (needed when using the ibrdma plugin)
+  JARVICE_IB_CNI_NETWORKS:  # defaults to jarvice-ipoib
+
   # Optionally, quick enable DaemonSets here.  More details can be found at:
   # https://github.com/nimbix/jarvice-helm#kubernetes-device-plugins
   # https://github.com/nimbix/jarvice-helm#install-recommended-daemonsets
