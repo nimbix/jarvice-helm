@@ -304,6 +304,8 @@ spec:
 {{- else }}
             value: "{{ .Values.jarvice.JARVICE_SELINUX_ENFORCING }}"
 {{- end }}
+          - name: JARVICE_IB_CNI_NETWORKS
+            value: {{ .Values.jarvice.JARVICE_IB_CNI_NETWORKS }}
 {{- if and .Values.jarvice_license_manager.enabled (empty .Values.jarvice.JARVICE_LICENSE_MANAGER_URL) }}
           - name: JARVICE_LICENSE_MANAGER_URL
             value: "http://jarvice-license-manager:8080"
@@ -341,8 +343,6 @@ spec:
             value: "{{ .Values.jarvice.JARVICE_S3_REGION }}"
           - name: JARVICE_S3_ENDPOINTURL
             value: "{{ .Values.jarvice.JARVICE_S3_ENDPOINTURL }}"
-          - name: JARVICE_IB_CNI_NETWORKS
-            value: {{ .Values.jarvice.JARVICE_IB_CNI_NETWORKS }}
 {{- end }}
         resources:
 {{- if .Values.jarvice_k8s_scheduler.resources }}
