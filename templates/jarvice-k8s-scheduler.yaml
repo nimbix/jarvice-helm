@@ -304,8 +304,10 @@ spec:
 {{- else }}
             value: "{{ .Values.jarvice.JARVICE_SELINUX_ENFORCING }}"
 {{- end }}
+{{- if (not (empty .Values.jarvice.JARVICE_IB_CNI_NETWORKS)) }}
           - name: JARVICE_IB_CNI_NETWORKS
             value: {{ .Values.jarvice.JARVICE_IB_CNI_NETWORKS }}
+{{- end }}
 {{- if and .Values.jarvice_license_manager.enabled (empty .Values.jarvice.JARVICE_LICENSE_MANAGER_URL) }}
           - name: JARVICE_LICENSE_MANAGER_URL
             value: "http://jarvice-license-manager:8080"
