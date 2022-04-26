@@ -11,9 +11,9 @@ Assumptions
 - This has only been tested with Mellanox infiniband cards and Mellanox OFED
 
 ### Required 3rd party tools
-- [Multus](https://github.com/k8snetworkplumbingwg/multus-cni) project will be utilized to add the secondary IpoIB interface. 
- - [ipoib-cni](https://github.com/Mellanox/ipoib-cni) from Mellanox
- - [Whereabouts](https://github.com/dougbtv/whereabouts) for ipam
+- [Multus](https://github.com/k8snetworkplumbingwg/multus-cni) project will be utilized to add the secondary IpoIB interface
+- [ipoib-cni](https://github.com/Mellanox/ipoib-cni) from Mellanox
+- [Whereabouts](https://github.com/dougbtv/whereabouts) for ipam
 
 1. Install Multus by applying [multus-daemonset-thick-plugin.yaml](https://github.com/k8snetworkplumbingwg/multus-cni/blob/master/deployments/multus-daemonset-thick-plugin.yml). 
 ```
