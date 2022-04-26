@@ -19,7 +19,7 @@ Assumptions
 ```
 kubectl apply -f multus-daemonset-thick-plugin.yml
 ```
-2. deploy the [ipoib-cni](https://github.com/Mellanox/ipoib-cni/blob/master/images/ipoib-cni-daemonset.yaml)
+2. Deploy the [ipoib-cni](https://github.com/Mellanox/ipoib-cni/blob/master/images/ipoib-cni-daemonset.yaml).
 ```
 kubectl apply -f ipoib-cni-daemonset.yaml
 ```
