@@ -8,7 +8,7 @@ Assumptions
 - working Kubernetes cluster with a functional primary CNI
 - required drivers already installed for infiniband host adapter
 - an existing IPoIB interface is up and active on the hosts
-- This has only been tested with Mellanox infiniband cards and Mellanox OFED
+- this has only been tested with Mellanox infiniband cards and Mellanox OFED
 
 ### Required 3rd party tools
 - [Multus](https://github.com/k8snetworkplumbingwg/multus-cni) project will be utilized to add the secondary IpoIB interface
