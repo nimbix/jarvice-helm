@@ -4,7 +4,7 @@ The following document is a HOWTO for how to enable Kubernetes support for using
 
 ## Howto enable IPoIB in Kubernetes
 
-Assumptions
+Assumptions:
 - working Kubernetes cluster with a functional primary CNI
 - required drivers already installed for infiniband host adapter
 - an existing IPoIB interface is up and active on the hosts
