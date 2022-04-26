@@ -1,6 +1,6 @@
 # CNI Support for MPI over InfiniBand
 
-The following document is a HOWTO for how to enable Kubernetes support for using MPI over InfiniBand in JARVICE jobs.  Note that the referrenced components are managed by their respective third party maintainers.
+The following document is a HOWTO for how to enable Kubernetes support for using MPI over InfiniBand in JARVICE jobs. Note that the referrenced components are managed by their respective third party maintainers.
 
 ## Howto enable IPoIB in Kubernetes
 
