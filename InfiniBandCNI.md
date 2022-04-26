@@ -23,7 +23,7 @@ kubectl apply -f multus-daemonset-thick-plugin.yml
 ```
 kubectl apply -f ipoib-cni-daemonset.yaml
 ```
-3. Install the whereabouts ipam
+3. Install the whereabouts ipam.
 ```
 git clone https://github.com/k8snetworkplumbingwg/whereabouts && cd whereabouts
 kubectl apply \
