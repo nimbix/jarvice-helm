@@ -127,6 +127,20 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202204271651
+
+* (JAR-75) Added endpoint capability in AppDef to run commands in a webshell; for additional details and examples please see [Gotty Shell AppDef Template](https://github.com/nimbix/appdef-template#gotty-shell-appdef-template) in the [JARVICE Application Definition Guide on GitHub](https://github.com/nimbix/appdef-template).
+* (JAR-5047) Added color coding and filtering for Suspended Jobs in the *Administration->Jobs* view.
+* (JAR-5055) Added consideration for project floor oversubscription when deciding what jobs to suspend for projects with identical priorities in JARVICE License Manager.
+* (JAR-5072) Added `/jarvice/projects` API endpoint to list all available projects in the system and their members; available to system administrators only; for details please see the [JARVICE API](https://jarvice.readthedocs.io/en/latest/api) reference.
+* (JAR-5089) Added capability to specify timeout in seconds for `lmstat` queries against license servers in JARVICE License Manager using the `timeout` configuration key.
+* (JAR-5090) Remediated "critical" and "high" package security vulnerabilities in all control plane containers.
+* (JAR-5105) Removed the obsolete *Administration->Nodes* section.
+* (JAR-5118) Fixed bug in license manager when configuring 0 for minimum allocation in preemptible features.
+* (JAR-5119) Optimized saving of license manager configuration from *Administration->License Manager*.
+* (JAR-5144) Fixed bug with project allocation edit dialog box in *Administration->License Manager*.
+* (JAR-5164) Added support for IP-over-InfiniBand passthrough, as required for modern OFI-based MPI applications to leverage the `verbs` fabric provider (RDMA); for details, please see [Supporting OFI MPI stacks over InfiniBand](Configuration.md#supporting-ofi-mpi-stacks-over-infiniband).
+
 ## 3.21.9-1.202203301625
 
 * (JAR-83) Handle missing zone or cluster gracefully in web portal login.
