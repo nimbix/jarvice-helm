@@ -18,6 +18,7 @@ if [ "$ID" != "ubuntu" ] && [ "$ID" != "centos" ] && [ "$ID" != "rhel" ]; then
     exit 1
 fi
 
+rm -f /etc/apt/sources.list.d/nvidia.list
 export DEBIAN_FRONTEND=noninteractive
 if [ "$ID" = "ubuntu" ]; then
     apt-get -y update
@@ -38,7 +39,7 @@ CUDA_REPO_ARCH=$ARCH
     CUDA_REPO_ARCH=ppc64el
 
 URL_NVIDIA_CUDA=http://developer.download.nvidia.com/compute/cuda/repos/$CUDA_REPO_ID$CUDA_REPO_REL/$CUDA_REPO_ARCH
-URL_NVIDIA_CUDA_KEY=$URL_NVIDIA_CUDA/7fa2af80.pub
+URL_NVIDIA_CUDA_KEY=$URL_NVIDIA_CUDA/3bf863cc.pub
 
 repo_file=
 if [ "$ID" = "ubuntu" ]; then
