@@ -168,7 +168,7 @@ jarvice:
   # the following value should be set to the value needed for the annotation
   # k8s.v1.cni.cncf.io/networks to specify the Multus CNI name for passing in
   # IPoIB networks (needed when using the ibrdma plugin)
-  JARVICE_IB_CNI_NETWORKS:  # defaults to jarvice-ipoib
+  JARVICE_IB_CNI_NETWORKS: # defaults to jarvice-ipoib
 
   # Optionally, quick enable DaemonSets here.  More details can be found at:
   # https://github.com/nimbix/jarvice-helm#kubernetes-device-plugins
@@ -958,6 +958,7 @@ jarvice_mc_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   env:
     JARVICE_USER_DEFAULT_ENABLED: True
     JARVICE_USER_DEFAULT_DEVELOPER: True
+    JARVICE_PORTAL_JOB_TERMINATE_LIMIT:
     JARVICE_PORTAL_GSS_REALM:
     JARVICE_PORTAL_GSS_DOMAIN:
     JARVICE_PORTAL_GSS_LOG: # "debug"

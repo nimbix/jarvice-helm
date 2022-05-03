@@ -1,29 +1,29 @@
 # CNI Support for MPI over InfiniBand
 
-The following document is a HOWTO for how to enable Kubernetes support for using MPI over InfiniBand in JARVICE jobs.  Note that the referrenced components are managed by their respective third party maintainers.
+The following document is a HOWTO for how to enable Kubernetes support for using MPI over InfiniBand in JARVICE jobs. Note that the referrenced components are managed by their respective third party maintainers.
 
-## Howto enable IPoIB in Kubernetes.
+## Howto enable IPoIB in Kubernetes
 
-Assumptions
+Assumptions:
 - working Kubernetes cluster with a functional primary CNI
 - required drivers already installed for infiniband host adapter
 - an existing IPoIB interface is up and active on the hosts
-- This has only been tested with Mellanox infiniband cards and Mellanox OFED
+- this has only been tested with Mellanox infiniband cards and Mellanox OFED
 
 ### Required 3rd party tools
-- [Multus](https://github.com/k8snetworkplumbingwg/multus-cni) project will be utilized to add the secondary IpoIB interface. 
- - [ipoib-cni](https://github.com/Mellanox/ipoib-cni) from Mellanox
- - [Whereabouts](https://github.com/dougbtv/whereabouts) for ipam
+- [Multus](https://github.com/k8snetworkplumbingwg/multus-cni) project will be utilized to add the secondary IpoIB interface
+- [ipoib-cni](https://github.com/Mellanox/ipoib-cni) from Mellanox
+- [Whereabouts](https://github.com/dougbtv/whereabouts) for ipam
 
 1. Install Multus by applying [multus-daemonset-thick-plugin.yaml](https://github.com/k8snetworkplumbingwg/multus-cni/blob/master/deployments/multus-daemonset-thick-plugin.yml). 
 ```
 kubectl apply -f multus-daemonset-thick-plugin.yml
 ```
-2. deploy the [ipoib-cni](https://github.com/Mellanox/ipoib-cni/blob/master/images/ipoib-cni-daemonset.yaml)
+2. Deploy the [ipoib-cni](https://github.com/Mellanox/ipoib-cni/blob/master/images/ipoib-cni-daemonset.yaml).
 ```
 kubectl apply -f ipoib-cni-daemonset.yaml
 ```
-3. Install the whereabouts ipam
+3. Install the whereabouts ipam.
 ```
 git clone https://github.com/k8snetworkplumbingwg/whereabouts && cd whereabouts
 kubectl apply \
