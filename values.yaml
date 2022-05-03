@@ -958,9 +958,7 @@ jarvice_mc_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   env:
     JARVICE_USER_DEFAULT_ENABLED: True
     JARVICE_USER_DEFAULT_DEVELOPER: True
-    JARVICE_PORTAL_JOB_TERMINATE_LIMIT: # By default, **TERMINATE ALL** button in Admininstration.Jobs view terminates all current running jobs.
-    # It is possible to limit the scope of this action by setting `JARVICE_PORTAL_JOB_TERMINATE_LIMIT` value.
-    # Setting `JARVICE_PORTAL_JOB_TERMINATE_LIMIT: 10` will limit the terminate action to latest 10 jobs.
+    JARVICE_PORTAL_JOB_TERMINATE_LIMIT:
     JARVICE_PORTAL_GSS_REALM:
     JARVICE_PORTAL_GSS_DOMAIN:
     JARVICE_PORTAL_GSS_LOG: # "debug"
