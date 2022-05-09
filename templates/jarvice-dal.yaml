@@ -240,7 +240,7 @@ spec:
             value: "{{ .Values.jarvice_dal.env.JARVICE_ROOT_USER_PASSWD }}"
           - name: JARVICE_ROOT_USER_EMAIL
             value: "{{ .Values.jarvice_dal.env.JARVICE_ROOT_USER_EMAIL }}"
-          - name: JARVICE_USER_REGISTRY_VERIFY
+          - name: USER_REGISTRY_VERIFY
             value: "{{ .Values.jarvice_dal.env.JARVICE_USER_REGISTRY_VERIFY }}"
           - name: JARVICE_ROOT_USER_VAULT
             value: "{{ .Values.jarvice_dal.env.JARVICE_ROOT_USER_VAULT }}"
