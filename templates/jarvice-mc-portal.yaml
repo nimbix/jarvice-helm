@@ -187,6 +187,8 @@ spec:
 {{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_JOB_TERMINATE_LIMIT)) }}
           - name: JARVICE_PORTAL_JOB_TERMINATE_LIMIT
             value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_JOB_TERMINATE_LIMIT }}"
+{{- else }}
+            value: "10"
 {{- end }}
 {{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_DOMAIN)) }}
           - name: JARVICE_PORTAL_GSS_DOMAIN
