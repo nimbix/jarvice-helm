@@ -456,10 +456,10 @@ EOF
                         ]
                     )
                 )
-                cpu_options = {
+                cpu_options = lookup(pool.meta, "disable_hyperthreading", null) == "true" ?{
                   core_count       = data.aws_ec2_instance_type.jarvice_compute[pool_name].default_vcpus / data.aws_ec2_instance_type.jarvice_compute[pool_name].default_threads_per_core
-                  threads_per_core = lower(lookup(pool.meta, "disable_hyperthreading", "false")) == "true" ? 1:2
-                }
+                  threads_per_core = 1
+                } : null
                 ebs_optimized = true
                 block_device_mappings = {
                     compute_disk = {
