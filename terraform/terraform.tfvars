@@ -399,6 +399,8 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
                     # https://cloud.google.com/compute/docs/gpus
                     #accelerator_type = "nvidia-tesla-v100"
                     #accelerator_count = 8
+                    # Override image_type logic and define the desired image_type
+                    #image_type = "COS_CONTAINERD"
                 }
             },
             #jxecompute01 = {
@@ -418,6 +420,8 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
             #        # https://cloud.google.com/compute/docs/gpus
             #        #accelerator_type = "nvidia-tesla-v100"
             #        #accelerator_count = 8
+                     # Override image_type logic and define the desired image_type
+                     #image_type = "COS_CONTAINERD"
             #    }
             #},
         }

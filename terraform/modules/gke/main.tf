@@ -346,7 +346,7 @@ resource "google_container_node_pool" "jarvice_compute" {
         disk_size_gb = each.value["nodes_disk_size_gb"]
         disk_type = lookup(each.value.meta, "disk_type", "pd-standard")
 
-        image_type = lower(lookup(each.value.meta, "enable_gcfs", "false")) == "true" ? "COS_CONTAINERD" : var.cluster.meta["kubernetes_version"] > 1.19 ? "UBUNTU_CONTAINERD" : "UBUNTU"
+        image_type = upper(lookup(each.value.meta, "image_type", lower(lookup(each.value.meta, "enable_gcfs", "false")) == "true" ? "COS_CONTAINERD" : var.cluster.meta["kubernetes_version"] > 1.19 ? "UBUNTU_CONTAINERD" : "UBUNTU"))
         dynamic "gcfs_config" {
             for_each = lookup(each.value.meta, "enable_gcfs", null) != null ? [lower(each.value.meta["enable_gcfs"]) == "true" ? true : false] : []
             content {
