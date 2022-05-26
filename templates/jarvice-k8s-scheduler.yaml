@@ -74,6 +74,12 @@ spec:
         {{- end }}
       imagePullSecrets:
       - name: jarvice-docker
+      volumes:
+      - name: ca-jarvice-user
+        configMap:
+          name: {{ .Values.jarvice.cacert.configMap }}
+          optional: true
+          default: 444
       containers:
       - name: jarvice-k8s-scheduler
         image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-k8s-scheduler:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
@@ -346,6 +352,11 @@ spec:
           - name: JARVICE_S3_ENDPOINTURL
             value: "{{ .Values.jarvice.JARVICE_S3_ENDPOINTURL }}"
 {{- end }}
+        volumeMounts:
+        - name: ca-jarvice-user
+          mountPath: /etc/ssl/certs/ca-jarvice-user.pem
+          subPath: ca-jarvice-user.pem
+          readOnly: true
         resources:
 {{- if .Values.jarvice_k8s_scheduler.resources }}
 {{ toYaml .Values.jarvice_k8s_scheduler.resources | indent 10 }}

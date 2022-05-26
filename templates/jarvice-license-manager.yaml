@@ -51,6 +51,11 @@ spec:
           configMap:
             name: jarvice-license-manager
             optional: true
+        - name: ca-jarvice-user
+          configMap:
+            name: {{ .Values.jarvice.cacert.configMap }}
+            optional: true
+            default: 444
 {{- if (not (empty .Values.jarvice_license_manager.env.JARVICE_HOSTALIASES)) }}
       hostAliases: {{ .Values.jarvice_license_manager.env.JARVICE_HOSTALIASES }}
 {{- end }}
@@ -165,6 +170,10 @@ spec:
         volumeMounts:
         - name: jarvice-etc
           mountPath: /jarvice/etc
+          readOnly: true
+        - name: ca-jarvice-user
+          mountPath: /etc/ssl/certs/ca-jarvice-user.pem
+          subPath: ca-jarvice-user.pem
           readOnly: true
         resources:
 {{- if .Values.jarvice_license_manager.resources }}

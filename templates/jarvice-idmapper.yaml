@@ -122,9 +122,18 @@ spec:
         - mountPath: /home
           name: homes
           readOnly: true
+        - mountPath: /etc/ssl/certs/ca-jarvice-user.pem
+          subPath: ca-jarvice-user-pem
+          readOnly: true
+          name: ca-jarvice-user
         resources:
 {{ toYaml .Values.jarvice_idmapper.resources | indent 10 }}
       volumes:
+        - name: ca-jarvice-user
+          configMap:
+            name: {{ .Values.jarvice.cacert.configMap }}
+            optional: true
+            default: 444
         - name: homes
 {{- if (not (empty .Values.jarvice_idmapper.filesystem.server)) }}
           nfs:
