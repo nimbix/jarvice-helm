@@ -136,7 +136,7 @@ spec:
           configMap:
             name: {{ .Values.jarvice.cacert.configMap }}
             optional: true
-            default: 444
+            defaultMode: 444
 {{- end }}
         - name: homes
 {{- if (not (empty .Values.jarvice_idmapper.filesystem.server)) }}
