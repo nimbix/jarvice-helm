@@ -110,6 +110,11 @@ spec:
             - key: krb5.keytab
               mode: 0644
               path: krb5.keytab
+        - name: ca-jarvice-user
+          configMap:
+            name: {{ .Values.jarvice.cacert.configMap }}
+            optional: true
+            default: 444
       containers:
       - name: jarvice-mc-portal
         image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-mc-portal:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
@@ -325,6 +330,10 @@ spec:
         - name: krb5-keytab
           mountPath: /etc/krb5.keytab
           subPath: krb5.keytab
+          readOnly: true
+        - name: ca-jarvice-user
+          mountPath: /etc/ssl/certs/ca-certificates.crt
+          subPath: ca-certificates.crt
           readOnly: true
         resources:
 {{- if .Values.jarvice_mc_portal.resources }}

@@ -44,6 +44,12 @@ spec:
 {{- end }}
       imagePullSecrets:
       - name: jarvice-docker
+      volumes:
+      - name: ca-jarvice-user
+        configMap:
+          name: {{ .Values.jarvice.cacert.configMap }}
+          optional: true
+          default: 444
       containers:
       - name: jarvice-appsync
         image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-appsync:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
@@ -142,6 +148,11 @@ spec:
 {{- end }}
           - name: JARVICE_APPSYNC_INTERVAL
             value: "{{ .Values.jarvice_appsync.env.JARVICE_APPSYNC_INTERVAL }}"
+        volumeMounts:
+        - name: ca-jarvice-user
+          mountPath: /etc/ssl/certs/ca-certificates.crt
+          subPath: ca-certificates.crt
+          readOnly: true
         resources:
 {{ toYaml .Values.jarvice_appsync.resources | indent 10 }}
 {{- end }}

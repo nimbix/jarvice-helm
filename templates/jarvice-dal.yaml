@@ -103,6 +103,11 @@ spec:
           configMap:
             name: {{ .Values.jarvice.settings.configMap }}
             optional: true
+        - name: ca-jarvice-user
+          configMap:
+            name: {{ .Values.jarvice.cacert.configMap }}
+            optional: true
+            default: 444
       containers:
       - name: jarvice-dal
         image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-dal:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
@@ -291,6 +296,10 @@ spec:
         volumeMounts:
         - name: jarvice-settings
           mountPath: /etc/jarvice/settings/jarvice-dal
+          readOnly: true
+        - name: ca-jarvice-user
+          mountPath: /etc/ssl/certs/ca-certificates.crt
+          subPath: ca-certificates.crt
           readOnly: true
         resources:
 {{ toYaml .Values.jarvice_dal.resources | indent 10 }}
