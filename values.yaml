@@ -145,6 +145,12 @@ jarvice:
   settings:
     configMap: jarvice-settings
 
+  # Optionally, provide root certificate for JARVICE pods
+  # jarvice.cacert.configMap:
+  # TODO docs
+  cacert:
+    configMap: jarvice-cacert
+
   JARVICE_SYSTEM_NAMESPACE: # auto-detected, should not need to be updated
   JARVICE_JOBS_NAMESPACE: # auto-set, should not need to be updated
   JARVICE_BUILDS_NAMESPACE: # auto-set, should not need to be updated

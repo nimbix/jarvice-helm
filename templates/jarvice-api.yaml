@@ -94,12 +94,14 @@ spec:
         {{- end }}
       imagePullSecrets:
       - name: jarvice-docker
+{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
       volumes:
       - name: ca-jarvice-user
         configMap:
           name: {{ .Values.jarvice.cacert.configMap }}
           optional: true
           default: 444
+{{- end }}
       containers:
       - name: jarvice-api
         image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-api:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
@@ -332,11 +334,13 @@ spec:
           - name: JARVICE_USER_CACERT
             value: {{ .Values.jarvice.cacert.configMap }}
 {{- end }}
+{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
         volumeMounts:
         - name: ca-jarvice-user
           mountPath: /etc/ssl/certs/ca-certificates.crt
           subPath: ca-certificates.crt
           readOnly: true
+{{- end }}
         resources:
 {{ toYaml .Values.jarvice_api.resources | indent 10 }}
 ---
