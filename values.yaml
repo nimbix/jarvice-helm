@@ -149,7 +149,7 @@ jarvice:
   # jarvice.cacert.configMap:
   # TODO docs
   cacert:
-    configMap: jarvice-cacert
+    configMap: # jarvice-cacert
 
   JARVICE_SYSTEM_NAMESPACE: # auto-detected, should not need to be updated
   JARVICE_JOBS_NAMESPACE: # auto-set, should not need to be updated
