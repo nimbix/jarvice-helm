@@ -88,7 +88,7 @@ spec:
           configMap:
             name: {{ .Values.jarvice.cacert.configMap }}
             optional: true
-            default: 444
+            defaultMode: 444
 {{- end }}
       containers:
       - name: jarvice-scheduler
