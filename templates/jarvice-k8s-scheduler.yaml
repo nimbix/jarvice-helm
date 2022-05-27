@@ -354,8 +354,8 @@ spec:
 {{- end }}
         volumeMounts:
         - name: ca-jarvice-user
-          mountPath: /etc/ssl/certs/ca-jarvice-user.pem
-          subPath: ca-jarvice-user.pem
+          mountPath: /etc/ssl/certs/ca-certificates.crt
+          subPath: ca-certificates.crt
           readOnly: true
         resources:
 {{- if .Values.jarvice_k8s_scheduler.resources }}

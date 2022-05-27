@@ -122,8 +122,8 @@ spec:
         - mountPath: /home
           name: homes
           readOnly: true
-        - mountPath: /etc/ssl/certs/ca-jarvice-user.pem
-          subPath: ca-jarvice-user-pem
+        - mountPath: /etc/ssl/certs/ca-certificates.crt
+          subPath: ca-certificates.crt
           readOnly: true
           name: ca-jarvice-user
         resources:

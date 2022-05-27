@@ -97,8 +97,8 @@ spec:
           timeoutSeconds: {{ .Values.jarvice_smtpd.livenessProbe.timeoutSeconds }}
         volumeMounts:
         - name: ca-jarvice-user
-          mountPath: /etc/ssl/certs/ca-jarvice-user.pem
-          subPath: ca-jarvice-user.pem
+          mountPath: /etc/ssl/certs/ca-certificates.crt
+          subPath: ca-certificates.crt
           readOnly: true
         resources:
 {{ toYaml .Values.jarvice_smtpd.resources | indent 10 }}

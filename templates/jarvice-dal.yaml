@@ -298,8 +298,8 @@ spec:
           mountPath: /etc/jarvice/settings/jarvice-dal
           readOnly: true
         - name: ca-jarvice-user
-          mountPath: /etc/ssl/certs/ca-jarvice-user.pem
-          subPath: ca-jarvice-user.pem
+          mountPath: /etc/ssl/certs/ca-certificates.crt
+          subPath: ca-certificates.crt
           readOnly: true
         resources:
 {{ toYaml .Values.jarvice_dal.resources | indent 10 }}
