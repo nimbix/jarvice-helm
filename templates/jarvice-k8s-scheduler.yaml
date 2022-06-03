@@ -312,6 +312,10 @@ spec:
 {{- else }}
             value: "{{ .Values.jarvice.JARVICE_SELINUX_ENFORCING }}"
 {{- end }}
+{{- if (not (empty .Values.jarvice.JARVICE_DATA_CHOWN)) }}
+          - name: JARVICE_DATA_CHOWN
+            value: "{{ .Values.jarvice.JARVICE_DATA_CHOWN }}"
+{{- end }}
 {{- if (not (empty .Values.jarvice.JARVICE_IB_CNI_NETWORKS)) }}
           - name: JARVICE_IB_CNI_NETWORKS
             value: {{ .Values.jarvice.JARVICE_IB_CNI_NETWORKS }}
