@@ -127,6 +127,23 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202206081546
+
+* (JAR-5064) Fixed bug where `jarvice-license-manager` was allowing too many jobs when using reservation limits.
+* (JAR-5100) CVE remediation for various components
+* (JAR-5150) Made the *TERMINATE ALL* job limit configurable in *Administration->Jobs*; set `jarvice_mc_portal.JARVICE_PORTAL_JOB_TERMINATE_LIMIT` in the deployment to a number less than 100 if desired.  The default is to terminate all jobs in the current page.
+* (JAR-5160) Fixed bug with `RANGE` parameter type in apps.
+* (JAR-5197) Removed hardcoded default of `master` branch name from PushToCompute builds; uses server's default (e.g. `main` or `master` on GitHub) unless otherwise specified.
+* (JAR-5201) Made the `timeout` key for JARVICE License Manager configuration optional.
+* (JAR-5213) Bundled OpenMPI for app container build stages, compatible with JARVICE-provided OpenMPI at runtime.  See the [nimbix/mpi-common](https://github.com/nimbix/mpi-common) repository for details and example.
+* (JAR-5230) Fixed parameter name bug in `/jarvice/pull` API endpoint in the case where the pull Pod creation fails in Kubernetes.
+* (JAR-5234) Added support to inject custom CA root certificates into JARVICE services and jobs.  See [Add CA root for JARVICE (optional)](README.md#add-ca-root-for-jarvice-optional) for details. (EXPERIMENTAL)
+* (JAR-5240) Fixed bug with runtime info timeout that prevented jobs from transitioning out of *Starting* state due to Kubernetes client cache on some distributions.
+* (JAR-5242) Fixed bug where *TERMINATE ALL* button in *Administration->Jobs* view was not enabled until refresh button clicked.
+* (JAR-5276) Fixed SAML and LDAP configuration inconsistencies between team admins and team payer account.
+* (JAR-5282) Added feature to optionally disable `chown` of user vault mountpoints.  See [Preventing permission changes on user storage directories](Storage.md#preventing-permission-changes-on-user-storage-directories) for details. (EXPERIMENTAL)
+* (JAR-5291) Added support for optionally mapping SAML attributes for Active Directory UPN and sAMAccountName in *Account->SAML2 IdP*, in order to enable `jarvice-idmapper` to correctly map ownership to that of user home directories named after either UPN or sAMAccountName.  The configuration allows mapping arbitrary attributes from the SAML assertion to these values, and varies per identity provider and site configuration. (EXPERIMENTAL)
+
 ## 3.21.9-1.202204271651
 
 * (JAR-75) Added endpoint capability in AppDef to run commands in a webshell; for additional details and examples please see [Gotty Shell AppDef Template](https://github.com/nimbix/appdef-template#gotty-shell-appdef-template) in the [JARVICE Application Definition Guide on GitHub](https://github.com/nimbix/appdef-template).
