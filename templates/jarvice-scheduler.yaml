@@ -83,6 +83,13 @@ spec:
             name: {{ .Values.jarvice.settings.configMap }}
             optional: true
             defaultMode: 0555
+{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
+        - name: ca-jarvice-user
+          configMap:
+            name: {{ .Values.jarvice.cacert.configMap }}
+            optional: true
+            defaultMode: 444
+{{- end }}
       containers:
       - name: jarvice-scheduler
         image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-scheduler:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
@@ -258,6 +265,12 @@ spec:
         - name: jarvice-settings
           mountPath: /etc/jarvice/settings
           readOnly: true
+{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
+        - name: ca-jarvice-user
+          mountPath: /etc/ssl/certs/ca-certificates.crt
+          subPath: ca-certificates.crt
+          readOnly: true
+{{- end }}
         resources:
 {{- if .Values.jarvice_scheduler.resources }}
 {{ toYaml .Values.jarvice_scheduler.resources | indent 10 }}

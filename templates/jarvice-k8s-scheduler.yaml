@@ -74,6 +74,14 @@ spec:
         {{- end }}
       imagePullSecrets:
       - name: jarvice-docker
+{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
+      volumes:
+      - name: ca-jarvice-user
+        configMap:
+          name: {{ .Values.jarvice.cacert.configMap }}
+          optional: true
+          defaultMode: 444
+{{- end }}
       containers:
       - name: jarvice-k8s-scheduler
         image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-k8s-scheduler:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
@@ -304,6 +312,10 @@ spec:
 {{- else }}
             value: "{{ .Values.jarvice.JARVICE_SELINUX_ENFORCING }}"
 {{- end }}
+{{- if (not (empty .Values.jarvice.JARVICE_DATA_CHOWN)) }}
+          - name: JARVICE_DATA_CHOWN
+            value: "{{ .Values.jarvice.JARVICE_DATA_CHOWN }}"
+{{- end }}
 {{- if (not (empty .Values.jarvice.JARVICE_IB_CNI_NETWORKS)) }}
           - name: JARVICE_IB_CNI_NETWORKS
             value: {{ .Values.jarvice.JARVICE_IB_CNI_NETWORKS }}
@@ -345,6 +357,13 @@ spec:
             value: "{{ .Values.jarvice.JARVICE_S3_REGION }}"
           - name: JARVICE_S3_ENDPOINTURL
             value: "{{ .Values.jarvice.JARVICE_S3_ENDPOINTURL }}"
+{{- end }}
+{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
+        volumeMounts:
+        - name: ca-jarvice-user
+          mountPath: /etc/ssl/certs/ca-certificates.crt
+          subPath: ca-certificates.crt
+          readOnly: true
 {{- end }}
         resources:
 {{- if .Values.jarvice_k8s_scheduler.resources }}

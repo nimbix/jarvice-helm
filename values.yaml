@@ -73,6 +73,8 @@ jarvice:
   JARVICE_EPHEMERAL_VAULT_ZONE:   # (defaults to -1 if not set)
   JARVICE_DAL_HOOK_META:          # opaque (unset by default)
 
+  JARVICE_DATA_CHOWN: # set to "false" to prevent chown of /data
+
   JARVICE_POD_SCHED_LOGLEVEL: 30
   JARVICE_SCHED_PASS_LOGLEVEL: 30
   JARVICE_SCHED_LOGLEVEL: 30
@@ -144,6 +146,12 @@ jarvice:
   # https://github.com/nimbix/jarvice-helm#customize-jarvice-files-via-a-configmap
   settings:
     configMap: jarvice-settings
+
+  # Optionally, provide root certificate for JARVICE pods
+  # jarvice.cacert.configMap:
+  # TODO docs
+  cacert:
+    configMap: # jarvice-cacert
 
   JARVICE_SYSTEM_NAMESPACE: # auto-detected, should not need to be updated
   JARVICE_JOBS_NAMESPACE: # auto-set, should not need to be updated
@@ -958,6 +966,7 @@ jarvice_mc_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   env:
     JARVICE_USER_DEFAULT_ENABLED: True
     JARVICE_USER_DEFAULT_DEVELOPER: True
+    JARVICE_PORTAL_JOB_TERMINATE_LIMIT:
     JARVICE_PORTAL_GSS_REALM:
     JARVICE_PORTAL_GSS_DOMAIN:
     JARVICE_PORTAL_GSS_LOG: # "debug"

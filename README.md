@@ -22,6 +22,7 @@ $ git clone https://github.com/nimbix/jarvice-helm.git
     - [Kubernetes device plugins](#kubernetes-device-plugins)
     - [Kubernetes persistent volumes (for non-demo installation)](#kubernetes-persistent-volumes-for-non-demo-installation)
     - [JARVICE license and credentials](#jarvice-license-and-credentials)
+    - [Add CA root for JARVICE (optional)](#add-ca-root-for-jarvice-optional)
 * [Installation Recommendations](#installation-recommendations)
     - [Kubernetes Cluster Shaping](#kubernetes-cluster-shaping)
         - [Node labels and selectors](#node-labels-and-selectors)
@@ -279,6 +280,23 @@ The license and credentials will be used for the following settings:
     - jarvice.JARVICE_REMOTE_APIKEY=<jarvice_upstream_user_apikey>
 
 See the commands below for more detail on how to set and use these values.
+
+### Add CA root for JARVICE (optional)
+
+A CA root can be added to JARVICE to enable trust between internal services,
+such as a private container registry, using the following steps:
+
+```bash
+# create configmap of CA root
+# this example uses /etc/ssl/certs/ca-certificates.crt from the local client
+# replace with the desired CA root if needed
+kubectl -n jarvice-system create configmap jarvice-cacert --from-file=/etc/ssl/certs/ca-certificates.crt
+kubectl -n jarvice-system-jobs create configmap jarvice-cacert --from-file=/etc/ssl/certs/ca-certificates.crt
+kubectl -n jarvice-system-pulls create configmap jarvice-cacert --from-file=/etc/ssl/certs/ca-certificates.crt
+kubectl -n jarvice-system-builds create configmap jarvice-cacert --from-file=/etc/ssl/certs/ca-certificates.crt
+```
+
+Update `jarvice.cacert.configMap` in `values.yaml` (uncomment `# jarvice-cacert`)
 
 ------------------------------------------------------------------------------
 

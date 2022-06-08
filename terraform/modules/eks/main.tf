@@ -40,6 +40,16 @@ resource "null_resource" "aws_availability_zones_available" {
 locals {
   create_vpc = lookup(var.cluster.meta, "vpc_id", "") == "" ? true : false
 }
+locals {
+  pub_av_map = local.create_vpc ? {} : {
+    for s in data.aws_subnet.public : s.availability_zone => s.id...
+  } 
+  priv_av_map = local.create_vpc ? {} : {
+    for s in data.aws_subnet.private : s.availability_zone => s.id...
+  }
+}
+
+
 
 locals {
   vpc = (
@@ -54,9 +64,9 @@ locals {
     {
       id         = data.aws_vpc.selected[0].id
       cidr_block = data.aws_vpc.selected[0].cidr_block
-      azs = data.aws_availability_zones.available.names
-      public_subnets = tolist(data.aws_subnet_ids.public[0].ids)
-      private_subnets = tolist(data.aws_subnet_ids.private[0].ids)
+      azs = [ for k,v in local.priv_av_map : k ]
+      public_subnets = [ for k,v in local.pub_av_map : v[0] ]
+      private_subnets = [ for k,v in local.priv_av_map : v[0] ]
     }
   )
 }
@@ -83,6 +93,16 @@ data "aws_subnet_ids" "public" {
   tags = {
     "kubernetes.io/role/elb" = "1"
   }
+}
+
+data "aws_subnet" "public" {
+  for_each = toset(local.create_vpc ? [] : data.aws_subnet_ids.public[0].ids)
+  id = each.key
+}
+
+data "aws_subnet" "private" {
+  for_each = toset(local.create_vpc ? [] : data.aws_subnet_ids.private[0].ids)
+  id = each.key
 }
 
 resource "aws_ec2_tag" "vpc_tag" {
