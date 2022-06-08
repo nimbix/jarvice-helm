@@ -152,3 +152,9 @@ By default, ephemeral vaults (created automatically for all users and set as def
 
 It's possible to pass opaque metadata (as an environment variable value) to DAL hooks by setting the `jarvice.JARVICE_DAL_HOOK_META` value; this may be useful for custom DAL hooks.
 
+### Preventing permission changes on user storage directories
+
+By default, JARVICE performs a `chown` to the in-container user's `UID` and `GID` (e.g. `505:505`) on the `/data` directory, as a best effort.  If using a mounted filesystem with root squashing, this silently fails.  If root is not squashed, it may change permissions to something unintentional (e.g. if the directory should be group owned but not user owned).  To disable this attempt, set `jarvice.JARVICE_DATA_CHOWN` to `"false"` (in double quotes) when deploying.
+
+In general, the default mode (`"true"`) should be used for dynamically provisioned volumes to ensure users can write files to them.
+

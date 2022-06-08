@@ -73,6 +73,8 @@ jarvice:
   JARVICE_EPHEMERAL_VAULT_ZONE:   # (defaults to -1 if not set)
   JARVICE_DAL_HOOK_META:          # opaque (unset by default)
 
+  JARVICE_DATA_CHOWN: # set to "false" to prevent chown of /data
+
   JARVICE_POD_SCHED_LOGLEVEL: 30
   JARVICE_SCHED_PASS_LOGLEVEL: 30
   JARVICE_SCHED_LOGLEVEL: 30
