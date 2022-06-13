@@ -73,7 +73,7 @@ resource "google_container_cluster" "jarvice" {
     node_version = local.node_version
 
     release_channel {
-        channel = "UNSPECIFIED"
+        channel = coalesce(lookup(var.cluster.meta, "release_channel",  null), "UNSPECIFIED")
     }
 
     initial_node_count = 2
