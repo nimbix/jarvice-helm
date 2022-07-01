@@ -1,6 +1,30 @@
 #!/bin/bash
 
-kubectl proxy &> /dev/null &
+KUBECTL=$(type -p kubectl)
+if [ -z "$KUBECTL" ]; then
+    cat <<EOF
+Could not find 'kubectl' in PATH. It may not be installed.
+EOF
+    exit 1
+fi
+
+CURL=$(type -p curl)
+if [ -z "$CURL" ]; then
+    cat <<EOF
+Could not find 'curl' in PATH. It may not be installed.
+EOF
+    exit 1
+fi
+
+JQ=$(type -p jq)
+if [ -z "$JQ" ]; then
+    cat <<EOF
+Could not find 'jq' in PATH. It may not be installed.
+EOF
+    exit 1
+fi
+
+$KUBECTL proxy &> /dev/null &
 proxy_pid="$!"
-curl -sSL "localhost:8001/api/v1/nodes/$(kubectl get no | awk 'FNR==2{ print $1 }')/proxy/configz" | jq -r .kubeletconfig.clusterDomain
+$CURL -sSL "localhost:8001/api/v1/nodes/$($KUBECTL get no | awk 'FNR==2{ print $1 }')/proxy/configz" | $JQ -r .kubeletconfig.clusterDomain
 kill -9 "$proxy_pid"
