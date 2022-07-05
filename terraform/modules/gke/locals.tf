@@ -51,7 +51,7 @@ jarvice:
       enabled: true
       env:
         DRI_INIT_DELAY: ${local.enable_gcfs_all_with_accelerator == true ? "90" : "180"}
-        DRI_DEFAULT_CAPACITY: 1
+        DRI_DEFAULT_CAPACITY: 128
     flex_volume_plugin_nfs_nolock_install:
       enabled: true
       tolerations: '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.jarvice.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.jarvice.io/jarvice-storage", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-storage", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}, {"key": "nvidia.com/gpu", "effect": "NoSchedule", "operator": "Exists"}]'
