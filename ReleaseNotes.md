@@ -127,6 +127,17 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202207071522 *(TECHNOLOGY PREVIEW RELEASE)*
+
+* (JAR-5198) (JAR-5199) Upgrade base components in `jarvice-mc-portal` and `jarvice-dal` to address future vulnerabilities.
+* (JAR-5200) Support for configurable cluster name for default `no_proxy` settings; set `jarvice.JARVICE_K8S_CLUSTER_DOMAIN` if the cluster is named something other than `cluster.local`.
+* (JAR-5309) Increased job submission throughput, especially in parallel (EXPERIMENTAL)
+* (JAR-5328) Fixed bug where `jarvice-license-manager` permitted more jobs than available tokens.
+* (JAR-5329) *Administration->Jobs* view now shows jobs queued for licensing or limits, in orange and yellow background, respectively.
+* (JAR-5355) Eliminate use of `host_path` volume when using EGL 3D acceleration, and allow multiple jobs to use this mechanism on each node concurrently.
+* (JAR-5362) Fixed `jarvice-license-manager` metrics to better align with Flex server, including fast expiration of reservations soon after tokens are checked out; also hold reservations while solvers are performing preprocessing operations ahead of checking out tokens to avoid oversubscribing licenses.
+* (JAR-5407) Fixed bug where the search function of `Administration->Jobs` was causing a front-end exception.
+
 ## 3.21.9-1.202206081546
 
 * (JAR-5064) Fixed bug where `jarvice-license-manager` was allowing too many jobs when using reservation limits.
