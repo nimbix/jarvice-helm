@@ -63,7 +63,7 @@ resource "helm_release" "external_dns" {
     name = "external-dns"
     repository = "https://charts.bitnami.com/bitnami"
     chart = "external-dns"
-    version = "5.5.2"
+    version = "6.5.6"
     namespace = "kube-system"
     reuse_values = false
     reset_values = true
