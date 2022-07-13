@@ -6,6 +6,29 @@ terraform {
   }
 }
 
+resource "null_resource" "terraform_repo_test" {
+  triggers = {
+    always_run = "${timestamp()}"
+  }
+
+  provisioner "local-exec" {
+    environment = {
+      XDG_CACHE_HOME = "/tmp/helmtest"
+    }
+    command = <<EOF
+mkdir /tmp/helmtest &&
+helm repo update &&
+helm pull --repo ${helm_release.external_dns[0].repository} ${helm_release.external_dns[0].chart} --version ${helm_release.external_dns[0].version} &&
+helm pull --repo ${helm_release.aws_load_balancer_controller[0].repository} ${helm_release.aws_load_balancer_controller[0].chart} --version ${helm_release.aws_load_balancer_controller[0].version} &&
+helm pull --repo ${helm_release.cluster_autoscaler[0].repository} ${helm_release.cluster_autoscaler[0].chart} --version ${helm_release.cluster_autoscaler[0].version} &&
+helm pull --repo ${helm_release.metrics_server[0].repository} ${helm_release.metrics_server[0].chart} --version ${helm_release.metrics_server[0].version} &&
+helm pull --repo ${helm_release.cert_manager[0].repository} ${helm_release.cert_manager[0].chart} --version ${helm_release.cert_manager[0].version} &&
+helm pull --repo ${helm_release.traefik[0].repository} ${helm_release.traefik[0].chart} --version ${helm_release.traefik[0].version} &&
+rm -rf /tmp/helmtest
+EOF
+  }
+}
+
 resource "helm_release" "aws_load_balancer_controller" {
     count = contains(keys(var.charts), "aws-load-balancer-controller") ? 1 : 0
 
