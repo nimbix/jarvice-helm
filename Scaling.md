@@ -61,7 +61,8 @@ The default control plane resource configuration is based on providing response 
 Scenario|Description|Notes
 ---|---|---
 "Login storm"|20 users logging in concurrently|Expect 5-8x slowdown as worst case in this scenario, assuming logins are perfectly concurrent (highly unlikely); increasing DAL replicas can mitigate the slow down but this should be treated as peak load in most cases.
-"Job submission storm"|20 concurrent job submissions|Since job submissions occur in critical sections, this will generally be serialized without slowing down other aspects of the system.  Increasing DAL replicas can mitigate this somewhat, but not significantly.
+"Job submission storm"|20 concurrent job submissions|Job submission at this level should be highly parallelized and occur quickly without generating high load on the system.
+"Job submission storm 2"|100 concurrent job submissions|`jarvice-api` minimum replicas should be increased to 7 in order to avoid HTTP 503 errors; `jarvice-scheduler` and the relevant downstream `jarvice-k8s-scheduler` replicas should be increased to at least 4 each for best performance.
 Concurrent login sessions|20 users logged in at once, with a single job running, in the *Dashboard* view of the web portal|The default control plane configuraiton provides ample performance for this scenario; if other slowdowns are noticed as more users are logged in, increasing DAL replicas generally mitigates the situation.
 
 ### Additional Mitigation
