@@ -454,6 +454,28 @@ resource "kubernetes_daemonset" "aws_efa_k8s_device_plugin" {
                         required_during_scheduling_ignored_during_execution {
                             node_selector_term {
                                 match_expressions {
+                                    key = "beta.kubernetes.io/instance-type"
+                                    operator = "In"
+                                    values = [
+                                        "c5n.18xlarge",
+                                        "c5n.metal",
+                                        "g4dn.metal",
+                                        "i3en.24xlarge",
+                                        "i3en.metal",
+                                        "inf1.24xlarge",
+                                        "m5dn.24xlarge",
+                                        "m5n.24xlarge",
+                                        "p3dn.24xlarge",
+                                        "r5dn.24xlarge",
+                                        "r5n.24xlarge",
+                                        "p4d.24xlarge",
+                                        "hpc6a.48xlarge",
+                                        "dl1.24xlarge",
+                                        "g5.48xlarge",
+                                        "p4de.24xlarge"
+                                    ]
+                                }
+                                match_expressions {
                                     key = "node.kubernetes.io/instance-type"
                                     operator = "In"
                                     values = [
@@ -468,7 +490,11 @@ resource "kubernetes_daemonset" "aws_efa_k8s_device_plugin" {
                                         "p3dn.24xlarge",
                                         "r5dn.24xlarge",
                                         "r5n.24xlarge",
-                                        "p4d.24xlarge"
+                                        "p4d.24xlarge",
+                                        "hpc6a.48xlarge",
+                                        "dl1.24xlarge",
+                                        "g5.48xlarge",
+                                        "p4de.24xlarge"
                                     ]
                                 }
                             }
