@@ -127,6 +127,14 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202207201607
+
+* (JAR-5356) Added optional parameter in the task builder to use RSA keys instead of ED25519 keys for SSH inside jobs.  Use only for older applications packaging an SSH which does not support ED25519 keys.
+* (JAR-5357) Improved job submission throughput and updated scaling guidelines for parallel submissions.  See [Load Scenarios Tested](Scaling.md#load-scenarios-tested) in the *Resource Planning and Scaling Guide* for details.
+* (JAR-5386) Fixed bug causing potentially excessive `jarvice-pod-scheduler` restarts due to "best effort" *ConfigMap* deletion failure.
+* (JAR-5417) Kubernetes 1.22 support.  See [Kubernetes Support](#kubernetes-support) for the latest list of supported Kubernetes versions.
+* (JAR-5418) Improved `jarvice-license-manager` stability.
+
 ## 3.21.9-1.202207071522 *(TECHNOLOGY PREVIEW RELEASE)*
 
 * (JAR-5198) (JAR-5199) Upgrade base components in `jarvice-mc-portal` and `jarvice-dal` to address future vulnerabilities.
