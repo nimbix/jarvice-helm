@@ -127,6 +127,10 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202207251527
+
+* (JAR-5386) Fixed regression introduced in previous release on `jarvice-pod-schduler` restart fixes; added additional fix to pod binding at scale for gang-scheduling robustness.
+
 ## 3.21.9-1.202207201613
 
 * (JAR-5356) Added optional parameter in the task builder to use RSA keys instead of ED25519 keys for SSH inside jobs.  Use only for older applications packaging an SSH which does not support ED25519 keys.
