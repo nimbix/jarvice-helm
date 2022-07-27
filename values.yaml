@@ -679,9 +679,12 @@ jarvice_k8s_scheduler:
   loadBalancerIP:
   ingressHost: # jarvice-k8s-scheduler.my-domain.com
   resources:
-    limits:
+    requests:
       cpu: 1
       memory: 2Gi
+    limits:
+      cpu: 2
+      memory: 4Gi
   readinessProbe:
     initialDelaySeconds: 5
     periodSeconds: 30
