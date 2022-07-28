@@ -641,9 +641,12 @@ jarvice_scheduler: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   # Set to "hard" to require pods to run on diff nodes.
   antiAffinity: "soft"
   resources:
-    limits:
+    requests:
       cpu: 1
       memory: 2Gi
+    limits:
+      cpu: 4
+      memory: 8Gi
   readinessProbe:
     initialDelaySeconds: 5
     periodSeconds: 30
@@ -683,8 +686,8 @@ jarvice_k8s_scheduler:
       cpu: 1
       memory: 2Gi
     limits:
-      cpu: 2
-      memory: 4Gi
+      cpu: 4
+      memory: 8Gi
   readinessProbe:
     initialDelaySeconds: 5
     periodSeconds: 30
