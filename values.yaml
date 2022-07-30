@@ -642,7 +642,7 @@ jarvice_scheduler: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   antiAffinity: "soft"
   resources:
     requests:
-      cpu: 1
+      cpu: 2
       memory: 2Gi
     limits:
       cpu: 4
