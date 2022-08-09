@@ -114,6 +114,9 @@ jarvice:
   # upstream scheduler pass maximum number of parallel worker threads
   JARVICE_SCHED_PASS_WORKERS: # defaults to 8
 
+  # time budget in seconds alloted to an upstream scheduler pass
+  JARVICE_SCHED_PASS_BUDGET:  # defaults to 30
+
   # downstream pod scheduler maximum number of parallel worker threads
   JARVICE_POD_SCHED_WORKERS:  # defaults to 8
 

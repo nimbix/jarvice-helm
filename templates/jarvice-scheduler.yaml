@@ -197,6 +197,10 @@ spec:
           - name: MAX_WORKER_THREADS
             value: "{{ .Values.jarvice.JARVICE_SCHED_PASS_WORKERS }}"
 {{- end }}
+{{- if (not (empty .Values.jarvice.JARVICE_SCHED_PASS_BUDGET)) }}
+          - name: JARVICE_SCHED_PASS_BUDGET
+            value: "{{ .Values.jarvice.JARVICE_SCHED_PASS_BUDGET }}"
+{{- end }}
 {{- if (not (empty .Values.jarvice.JARVICE_HTTP_PROXY)) }}
           - name: http_proxy
             value: "{{ .Values.jarvice.JARVICE_HTTP_PROXY }}"
