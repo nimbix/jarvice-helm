@@ -5,6 +5,7 @@
 * [Load Scenarios Tested](#load-scenarios-tested)
 * [Minimum System Requirements](#minimum-system-requirements)
 * [Additional Considerations](#additional-considerations)
+* [Advanced: Scheduler Performance Tuning](#advanced-scheduler-performance-tuning)
 
 ## Overview
 
@@ -120,3 +121,26 @@ Cloud infrastructure|Instance type|Instance Count
 * Not all adjustments should be limited to replica counts - if experiencing container restarts, check for *OOMKilled* status, which would mean the deployment needs additional memory.
 * Most JARVICE control plane components are not really microservices, and may benefit from increased **cpu** allocation rather than just additional replicas.
 * Components in "not ready" state are generally not indicative of a resource problem, but rather a network issue.  Check that the cluster CNI plugin (e.g. `weave`, `kube-router`, etc.) is working correctly in this scenario.
+
+## Advanced: Scheduler Performance Tuning
+
+The upstream scheduler (`jarvice-scheduler`) elects a single pass reconciliation process (referred to internally as `jarvice-sched-pass`) that is responsible for updating job statuses between the control plane and the processing endpoints.  This includes all downstream schedulers in a multi-cluster/multi-zone deployment as well.  This process compares job status downstream with the last known job status upstream, and triggers the appropriate state transitions and notifications.  It can also become a bottleneck during job submission and/or termination storms.  Job finalization (which takes place after a job ends or is terminated) can be especially expensive at scale due to the complexity of the function (gathering logs, garbage collecting objects, etc.)
+
+Downstream on Kubernetes compute endpoints, `jarvice-pod-scheduler` is responsible for binding job pods in *Pending* state to compute nodes, triggering appropriate scale-up and honoring scheduling policies as needed.
+
+In both cases, `jarvice-sched-pass` and `jarvice-pod-scheduler` function with exclusivity.  Only one of these processes may be active upstream and downstream, respectively, in order to avoid race conditions.  Note that the `jarvice-k8s-scheduler` downstream component is part of the flow as well, but it's "perfectly parallel" and can be scaled horizontally to handle additional requests providing the underlying Kubernetes API and `etcd` services can provide enough performance for object listing and manipulation.  For more information on `etcd` performancebest specifically, please see [Performance | etcd](https://etcd.io/docs/latest/op-guide/performance/).
+
+While both `jarvice-sched-pass` and `jarvice-pod-scheduler` run as exclusive instances, they do provide tunable parameters for internal parallelization.  These are settable as Helm parameters or overrides.
+
+Parameter|Cluster|Description|Default|Notes
+---|---|---|---|---
+`jarvice.JARVICE_SCHED_PASS_WORKERS`|Upstream|Maximum number of parallel threads for job status processing and notifications|8|Increase for more parallelism, but note that this may overwhelm the `jarvice-k8s-scheduler` service if it doesn't have enough replicas, as well as the Kubernetes API itself if it's not tuned for performance
+`jarvice.JARVICE_SCHED_PASS_BUDGET`|Upstream|Maximum time, in seconds, spent on examining job status before skipping to the next pass|30|Increase to process more jobs per pass, but note that this may slow down the rate at which newly queued jobs are examined; not recommended to use values less than 30 or more than 120
+`jarvice.JARVICE_POD_SCHED_WORKERS`|Downstream (or default)|Maximum number of parallel threads for job pod binding|8|Increase to bind newly queued jobs faster to available nodes, possibly resulting in faster starts (assuming containers are cached, etc.), but note that this may overwhelm the Kubernetes API itself during job submission storms if it's not tuned for performance
+
+### Notes
+
+1. Both `jarvice-sched-pass` and `jarvice-pod-scheduler` should be run in "info" logging mode, or levels 20 (or lower) via `jarvice.JARVICE_SCHED_PASS_LOGLEVEL` and `jarvice.JARVICE_POD_SCHED_LOGLEVEL`, respectively, when performance tuning
+2. `jarvice-sched-pass` logging (via the `component=jarvice-scheduler` selector) will indicate how many jobs are skipped/left to a future pass due to pass budget or failures
+3. Try increasing `jarvice-k8s-scheduler` replicas if too many jobs are skipped or you notice timeout errors in the `jarvice-scheduler` logs (via the `component=jarvice-scheduler` selector)
+4. Email notifications sent from `jarvice-sched-pass` are pushed in parallel and the SMTP relay must be able to handle this.  Otherwise notifications may be lost.  Note that these notifications can also become a bottleneck during job submission or finalization storms.  To increase performance, consider disabling these notifications by setting `jarvice.JARVICE_MAIL_SERVER` to an empty value.  Alternatively, configure a `postfix` (or similar) relay with the proper settings to accept large volumes of mails but queue and retry on errors correctly.
