@@ -104,6 +104,10 @@ spec:
 {{- end }}
           - name: JARVICE_POD_SCHED_MULTIPLIERS
             value: '{{ .Values.jarvice.JARVICE_POD_SCHED_MULTIPLIERS }}'
+{{- if (not (empty .Values.jarvice.JARVICE_POD_SCHED_WORKERS)) }}
+          - name: MAX_WORKER_THREADS
+            value: "{{ .Values.jarvice.JARVICE_POD_SCHED_WORKERS }}"
+{{- end }}
           - name: JARVICE_JOBS_MULTI_TENANT
             value: "{{ .Values.jarvice.JARVICE_JOBS_MULTI_TENANT }}"
 {{- if and .Values.jarvice_license_manager.enabled (empty .Values.jarvice.JARVICE_LICENSE_MANAGER_URL) }}
