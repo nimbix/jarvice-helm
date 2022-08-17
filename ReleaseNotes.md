@@ -127,6 +127,15 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202208171639
+
+* (JAR-5459) Fixed vulnerability with billing reports URLs.
+* (JAR-5472) Fixed `jarvice-license-manager` to maintain license reservations until all tokens are checked out by solver from FlexLM.
+* (JAR-5483) Adjusted all scheduler components `requests` and `limits` in Helm templates for performance and scalability.
+* (JAR-5493) Parallelized most elements of formerly serial scheduling mechanisms to improve job submission, start, and end throughput at scale.
+* (JAR-5497) Fixed vulnerabilities related to using HTTP GET requests in web portal.
+* (JAR-5499) Fixed vulnerability in web portal to hide server information in response headers.
+
 ## 3.21.9-1.202207251527
 
 * (JAR-5386) Fixed regression introduced in previous release on `jarvice-pod-schduler` restart fixes; added additional fix to pod binding at scale for gang-scheduling robustness.
