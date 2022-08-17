@@ -111,6 +111,15 @@ jarvice:
   JARVICE_LRJ_PAYER_BLACKLIST:  # comma-separated list
   JARVICE_LRJ_CURRENCY_FMT: "$%.2f" # printf-format, single %f value
 
+  # upstream scheduler pass maximum number of parallel worker threads
+  JARVICE_SCHED_PASS_WORKERS: # defaults to 8
+
+  # time budget in seconds alloted to an upstream scheduler pass
+  JARVICE_SCHED_PASS_BUDGET:  # defaults to 30
+
+  # downstream pod scheduler maximum number of parallel worker threads
+  JARVICE_POD_SCHED_WORKERS:  # defaults to 8
+
   ingress:
     class: "traefik"  # "nginx"
     tls:
@@ -641,9 +650,12 @@ jarvice_scheduler: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   # Set to "hard" to require pods to run on diff nodes.
   antiAffinity: "soft"
   resources:
-    limits:
-      cpu: 1
+    requests:
+      cpu: 2
       memory: 2Gi
+    limits:
+      cpu: 4
+      memory: 8Gi
   readinessProbe:
     initialDelaySeconds: 5
     periodSeconds: 30
@@ -679,9 +691,12 @@ jarvice_k8s_scheduler:
   loadBalancerIP:
   ingressHost: # jarvice-k8s-scheduler.my-domain.com
   resources:
-    limits:
+    requests:
       cpu: 1
       memory: 2Gi
+    limits:
+      cpu: 4
+      memory: 8Gi
   readinessProbe:
     initialDelaySeconds: 5
     periodSeconds: 30
@@ -712,9 +727,12 @@ jarvice_k8s_scheduler:
 jarvice_pod_scheduler:
   enabled: true
   resources:
-    limits:
-      cpu: 1
+    requests:
+      cpu: 2
       memory: 2Gi
+    limits:
+      cpu: 4
+      memory: 8Gi
   readinessProbe:
     initialDelaySeconds: 5
     periodSeconds: 30
