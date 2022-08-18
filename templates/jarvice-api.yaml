@@ -2,7 +2,7 @@
 {{- if .Values.jarvice_api.enabled }}
 {{- if gt (.Values.jarvice_api.replicaCount | int) 1 }}
 {{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
-apiVersion: policy/v1
+apiVersion : policy/v1
 {{- else }}
 apiVersion: policy/v1beta1
 {{- end }}
