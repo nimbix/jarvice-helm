@@ -1,6 +1,5 @@
 {{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
-{{- if .Values.jarvice_scheduler.enabled }}
-{{- if gt (.Values.jarvice_scheduler.replicaCount | int) 1 }}
+{{- if .Values.jarvice_sched_pass.enabled }}
 {{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
 apiVersion: policy/v1
 {{- else }}
@@ -8,34 +7,34 @@ apiVersion: policy/v1beta1
 {{- end }}
 kind: PodDisruptionBudget
 metadata:
-  name: jarvice-scheduler
+  name: jarvice-sched-pass
 spec:
   selector:
     matchLabels:
-      deployment: jarvice-scheduler
-  minAvailable: {{ .Values.jarvice_scheduler.pdb.minAvailable }}
+      deployment: jarvice-sched-pass
+  minAvailable: {{ .Values.jarvice_sched_pass.pdb.minAvailable }}
 ---
 {{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: jarvice-scheduler
+  name: jarvice-sched-pass
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-scheduler
-    deployment: jarvice-scheduler
+    component: jarvice-sched-pass
+    deployment: jarvice-sched-pass
     jarvice-system: core
 spec:
-  replicas: {{ .Values.jarvice_scheduler.replicaCount }}
+  replicas: 1
   selector:
     matchLabels:
-      deployment: jarvice-scheduler
+      deployment: jarvice-sched-pass
   template:
     metadata:
       labels:
         {{- include "jarvice.release_labels" . | indent 8 }}
-        component: jarvice-scheduler
-        deployment: jarvice-scheduler
+        component: jarvice-sched-pass
+        deployment: jarvice-sched-pass
         jarvice-system: core
       annotations:
         deployment-date: {{ now | quote }}
@@ -43,37 +42,37 @@ spec:
       serviceAccountName: jarvice-system
       securityContext:
         runAsUser: 0
-{{- if (not (empty .Values.jarvice_scheduler.tolerations)) }}
-      tolerations: {{ .Values.jarvice_scheduler.tolerations }}
+{{- if (not (empty .Values.jarvice_sched_pass.tolerations)) }}
+      tolerations: {{ .Values.jarvice_sched_pass.tolerations }}
 {{- else if (not (empty .Values.jarvice.tolerations)) }}
       tolerations: {{ .Values.jarvice.tolerations }}
 {{- end }}
-{{- if (not (empty .Values.jarvice_scheduler.nodeSelector)) }}
-      nodeSelector: {{ .Values.jarvice_scheduler.nodeSelector }}
+{{- if (not (empty .Values.jarvice_sched_pass.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice_sched_pass.nodeSelector }}
 {{- else if (not (empty .Values.jarvice.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice.nodeSelector }}
 {{- end }}
       affinity:
-{{- if (not (empty .Values.jarvice_scheduler.nodeAffinity)) }}
-        nodeAffinity: {{ .Values.jarvice_scheduler.nodeAffinity }}
+{{- if (not (empty .Values.jarvice_sched_pass.nodeAffinity)) }}
+        nodeAffinity: {{ .Values.jarvice_sched_pass.nodeAffinity }}
 {{- else if (not (empty .Values.jarvice.nodeAffinity)) }}
         nodeAffinity: {{ .Values.jarvice.nodeAffinity }}
 {{- end }}
         podAntiAffinity:
-        {{- if eq .Values.jarvice_scheduler.antiAffinity "hard" }}
+        {{- if eq .Values.jarvice_sched_pass.antiAffinity "hard" }}
           requiredDuringSchedulingIgnoredDuringExecution:
           - topologyKey: "kubernetes.io/hostname"
             labelSelector:
               matchLabels:
-                deployment: jarvice-scheduler
-        {{- else if eq .Values.jarvice_scheduler.antiAffinity "soft" }}
+                deployment: jarvice-sched-pass
+        {{- else if eq .Values.jarvice_sched_pass.antiAffinity "soft" }}
           preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 5
             podAffinityTerm:
               topologyKey: "kubernetes.io/hostname"
               labelSelector:
                 matchLabels:
-                  deployment: jarvice-scheduler
+                  deployment: jarvice-sched-pass
         {{- end }}
       imagePullSecrets:
       - name: jarvice-docker
@@ -91,8 +90,8 @@ spec:
             defaultMode: 444
 {{- end }}
       containers:
-      - name: jarvice-scheduler
-        image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-scheduler:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+      - name: jarvice-sched-pass
+        image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-sched-pass:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
 {{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
         imagePullPolicy: Always
 {{- else }}
@@ -102,25 +101,25 @@ spec:
           - name: https
             containerPort: 9443
         readinessProbe:
-          httpGet:
-            scheme: HTTPS
-            port: https
-            path: /ready
-          initialDelaySeconds: {{ .Values.jarvice_scheduler.readinessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.jarvice_scheduler.readinessProbe.periodSeconds }}
-          timeoutSeconds: {{ .Values.jarvice_scheduler.readinessProbe.timeoutSeconds }}
-          successThreshold: {{ .Values.jarvice_scheduler.readinessProbe.successThreshold }}
-          failureThreshold: {{ .Values.jarvice_scheduler.readinessProbe.failureThreshold }}
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - /usr/bin/curl -s -k  http://jarvice-dal:8080/ready | grep -q OK
+          initialDelaySeconds: {{ .Values.jarvice_sched_pass.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jarvice_sched_pass.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jarvice_sched_pass.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_sched_pass.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_sched_pass.readinessProbe.failureThreshold }}
         livenessProbe:
-          httpGet:
-            scheme: HTTPS
-            port: https
-            path: /live
-          initialDelaySeconds: {{ .Values.jarvice_scheduler.livenessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.jarvice_scheduler.livenessProbe.periodSeconds }}
-          timeoutSeconds: {{ .Values.jarvice_scheduler.livenessProbe.timeoutSeconds }}
-          successThreshold: {{ .Values.jarvice_scheduler.livenessProbe.successThreshold }}
-          failureThreshold: {{ .Values.jarvice_scheduler.livenessProbe.failureThreshold }}
+          exec:
+            command:
+            - /bin/true
+          initialDelaySeconds: {{ .Values.jarvice_sched_pass.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jarvice_sched_pass.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jarvice_sched_pass.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_sched_pass.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_sched_pass.livenessProbe.failureThreshold }}
         env:
           - name: JARVICE_SYSTEM_K8S
 {{- if empty .Values.jarvice.JARVICE_SYSTEM_K8S }}
@@ -135,14 +134,14 @@ spec:
             value: "{{ .Values.jarvice.JARVICE_EXPERIMENTAL }}"
 {{- end }}
           - name: JARVICE_DAL_URL
-{{- if (not (empty .Values.jarvice_scheduler.env.JARVICE_DAL_URL)) }}
-            value: "{{ .Values.jarvice_scheduler.env.JARVICE_DAL_URL }}"
+{{- if (not (empty .Values.jarvice_sched_pass.env.JARVICE_DAL_URL)) }}
+            value: "{{ .Values.jarvice_sched_pass.env.JARVICE_DAL_URL }}"
 {{- else }}
             value: "http://jarvice-dal:8080"
 {{- end }}
           - name: JARVICE_SCHED_URL
-{{- if (not (empty .Values.jarvice_scheduler.env.JARVICE_SCHED_URL)) }}
-            value: "{{ .Values.jarvice_scheduler.env.JARVICE_SCHED_URL }}"
+{{- if (not (empty .Values.jarvice_sched_pass.env.JARVICE_SCHED_URL)) }}
+            value: "{{ .Values.jarvice_sched_pass.env.JARVICE_SCHED_URL }}"
 {{- else }}
             value: "https://jarvice-scheduler:9443"
 {{- end }}
@@ -174,7 +173,7 @@ spec:
           - name: JARVICE_LOCAL_REPO_BASE
             value: {{ .Values.jarvice.JARVICE_LOCAL_REPO_BASE }}
           - name: JARVICE_K8S_ADMIN_CONF
-            value: "{{ .Values.jarvice_scheduler.env.JARVICE_K8S_ADMIN_CONF }}"
+            value: "{{ .Values.jarvice_sched_pass.env.JARVICE_K8S_ADMIN_CONF }}"
           - name: JARVICE_SCHED_PLUGIN_USE
 {{- if or (not (empty .Values.jarvice.JARVICE_DEFAULT_CLUSTER_URL)) .Values.jarvice_k8s_scheduler.enabled }}
             value: "false"
@@ -182,15 +181,23 @@ spec:
             value: "true"
 {{- end }}
           - name: JARVICE_SCHED_PASS_INTERVAL
-            value: "{{ .Values.jarvice_scheduler.env.JARVICE_SCHED_PASS_INTERVAL }}"
+            value: "{{ .Values.jarvice_sched_pass.env.JARVICE_SCHED_PASS_INTERVAL }}"
           - name: JARVICE_SCHED_CLUSTERS_TIMEOUT
-            value: "{{ .Values.jarvice_scheduler.env.JARVICE_SCHED_CLUSTERS_TIMEOUT }}"
+            value: "{{ .Values.jarvice_sched_pass.env.JARVICE_SCHED_CLUSTERS_TIMEOUT }}"
 {{- if .Values.jarvice_idmapper.enabled }}
           - name: JARVICE_IDMAPPER_URL
             value: "http://jarvice-idmapper:8080"
 {{- end }}
-          - name: JARVICE_SCHED_LOGLEVEL
-            value: "{{ .Values.jarvice.JARVICE_SCHED_LOGLEVEL }}"
+          - name: JARVICE_SCHED_PASS_LOGLEVEL
+            value: "{{ .Values.jarvice.JARVICE_SCHED_PASS_LOGLEVEL }}"
+{{- if (not (empty .Values.jarvice.JARVICE_SCHED_PASS_WORKERS)) }}
+          - name: MAX_WORKER_THREADS
+            value: "{{ .Values.jarvice.JARVICE_SCHED_PASS_WORKERS }}"
+{{- end }}
+{{- if (not (empty .Values.jarvice.JARVICE_SCHED_PASS_BUDGET)) }}
+          - name: JARVICE_SCHED_PASS_BUDGET
+            value: "{{ .Values.jarvice.JARVICE_SCHED_PASS_BUDGET }}"
+{{- end }}
 {{- if (not (empty .Values.jarvice.JARVICE_HTTP_PROXY)) }}
           - name: http_proxy
             value: "{{ .Values.jarvice.JARVICE_HTTP_PROXY }}"
@@ -270,129 +277,6 @@ spec:
           readOnly: true
 {{- end }}
         resources:
-{{- if .Values.jarvice_scheduler.resources }}
-{{ toYaml .Values.jarvice_scheduler.resources | indent 10 }}
-{{- end }}
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: jarvice-scheduler
-  labels:
-    {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-scheduler
-spec:
-  type: ClusterIP
-  ports:
-  - protocol: TCP
-    port: 9443
-    targetPort: 9443
-    name: https
-  selector:
-    deployment: jarvice-scheduler
----
-{{- if or .Values.jarvice_scheduler.networkPolicy.enabled (and (eq "<nil>" (toString .Values.jarvice_scheduler.networkPolicy.enabled)) .Values.jarvice.networkPolicy.enabled) }}
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-  name: jarvice-scheduler
-spec:
-  podSelector:
-    matchLabels:
-      deployment: jarvice-scheduler
-  policyTypes:
-  - Ingress
-  ingress:
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          name: {{ .Release.Namespace }}
-    - podSelector: {}
-    ports:
-    - protocol: TCP
-      port: 9443
-{{/*
-WARNING: Enabling ingressHost for this service is dangerous.
-DO NOT enable it here without understanding the security implications!
-*/}}
-{{- if (not (empty .Values.jarvice_scheduler.ingressHost)) }}
-  - from:
-    - namespaceSelector: {}
-    - podSelector: {}
-    ports:
-    - protocol: TCP
-      port: 9443
-{{- end }}
----
-{{- end }}
-{{/*
-WARNING: Enabling ingressHost for this service is dangerous.
-DO NOT enable it here without understanding the security implications!
-*/}}
-{{- if (not (empty .Values.jarvice_scheduler.ingressHost)) }}
-{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
-apiVersion: networking.k8s.io/v1
-{{- else }}
-apiVersion: networking.k8s.io/v1beta1
-{{- end }}
-kind: Ingress
-metadata:
-  name: jarvice-scheduler
-  labels:
-    {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-scheduler
-  annotations:
-{{- if (not (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion)) }}
-{{- if (not (empty .Values.jarvice.ingress.class)) }}
-    kubernetes.io/ingress.class: {{ .Values.jarvice.ingress.class }}
-{{- end }}
-{{- end }}
-{{- if and (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (empty .Values.jarvice.ingress.tls.crt) (empty .Values.jarvice.ingress.tls.key)) }}
-    cert-manager.io/issuer: {{ .Values.jarvice.ingress.tls.issuer.name }}
-{{- else if and (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) (and (empty .Values.jarvice.ingress.tls.crt) (empty .Values.jarvice.ingress.tls.key)) }}
-    cert-manager.io/cluster-issuer: {{ .Values.jarvice.ingress.tls.cluster_issuer.name }}
-{{- end }}
-{{- if .Values.jarvice_scheduler.ingressAnnotations }}
-{{- if (kindIs "string" .Values.jarvice_scheduler.ingressAnnotations) }}
-{{ toYaml (fromJson .Values.jarvice_scheduler.ingressAnnotations) | indent 4 }}
-{{- else }}
-{{ toYaml .Values.jarvice_scheduler.ingressAnnotations | indent 4 }}
-{{- end }}
-{{- end }}
-spec:
-{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
-{{- if (not (empty .Values.jarvice.ingress.class)) }}
-  ingressClassName: {{ .Values.jarvice.ingress.class }}
-{{- end }}
-{{- end }}
-  rules:
-  - host: {{ .Values.jarvice_scheduler.ingressHost }}
-    http:
-      paths:
-{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
-      - backend:
-          service:
-            name: jarvice-scheduler
-            port:
-              name: https
-        pathType: Prefix
-        path: /
-{{- else }}
-      - backend:
-          serviceName: jarvice-scheduler
-          servicePort: https
-{{- end }}
-{{- if or (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}
-  tls:
-  - hosts:
-    - '{{- .Values.jarvice_scheduler.ingressHost -}}'
-{{- if and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key)) }}
-    secretName: 'tls-jarvice'
-{{- else }}
-    secretName: 'tls-{{- .Values.jarvice_scheduler.ingressHost -}}'
-{{- end }}
-{{- end }}
----
-{{- end }}
-{{- end }}
+{{- if .Values.jarvice_sched_pass.resources }}
+{{ toYaml .Values.jarvice_sched_pass.resources | indent 10 }}
 {{- end }}
