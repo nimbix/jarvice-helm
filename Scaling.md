@@ -27,21 +27,27 @@ This is the default MySQL-based database component, and cannot scale beyond a si
 
 The DAL is the central "business layer" for the JARVICE control plane, and manages configuration, policies, and security for all aspects of the system.  This component is also key to most operations, and therefore is critical to scaling.  As such, it receives the largest amount of resource of any single component in the control plane, and is designed to scale out with multiple replicas.
 
-### "Upstream" Scheduler deployment (jarvice-scheduler)
+### "Upstream" Scheduler deployment
 
-The upstream scheduler receives scheduling and job control requests from the user interfaces and converts them to downstream requests targeting actual compute clusters.  In a single cluster configuration, downstream requests are handled in the same control plane, which is also the case for the "default cluster" in a multi-cluster configuration.  This is a scale-out component designed to support multiple replicas both for performance and high availabiity, although it does include large critical sections such as during job submission and job status reconciliation.  Distributed locking to govern these critical sections is handled automatically by the JARVICE control plane.
+#### jarvice-scheduler
+
+The upstream scheduler receives scheduling and job control requests from the user interfaces and converts them to downstream requests targeting actual compute clusters.  In a single cluster configuration, downstream requests are handled in the same control plane, which is also the case for the "default cluster" in a multi-cluster configuration.  This is a scale-out component designed to support multiple replicas both for performance and high availabiity, with minor critical sections during job submission to avoid race conditions.  Distributed locking to govern these critical sections is handled automatically by the JARVICE control plane.
+
+#### jarvice-sched-pass
+
+The `jarvice-sched-pass` component is responsible for job status updates and reconciliation, including job finalization.  This is not a scalable component and uses a global lock to ensure only one replica is acting at any given time.  It is however fault-tolerant, allowing for other instances to take over processing should it fail, without disruption.  While `jarvice-sched-pass` can become a bottleneck during large amounts of job status update changes, it utilizes parallel worker threads to improve processing performance during each iteration.  For additional details, please see [Advanced: Scheduler Performance Tuning](#advanced-scheduler-performance-tuning).
 
 ### "Downstream" Scheduler deployment (jarvice-k8s-scheduler)
 
 The downstream scheduler receives scheduling and job control requests from the upstream scheduler (see above) and uses the Kubernetes API to create and manage these objects on the compute cluster.  Each downstream cluster (including the "default" cluster on the main control plane) runs a downstream scheduler deployment.
 
-It does not communicate "back" to the control plane in any way, and instead uses a request/response mechanism to provide job status, etc.  It is a scale-out component with support for multiple replicas which does include some critical sections governed by JARVICE's distributed locking mechanisms as explained for the upstream scheduler.
+It does not communicate "back" to the control plane in any way, and instead uses a request/response mechanism to provide job status, etc.  It is a scale-out component with support for multiple replicas and makes very minor use of critical sections in order to maximize parallelism.
 
 ### "Pod" scheduler deployment (jarvice-pod-scheduler)
 
 The pod scheduler binds pending pods to nodes using gang scheduling and other HPC scheduling policies, and runs as an asynchronous event-driven process from the rest of the system.  Each downstream cluster (including the "default" cluster on the main control plane) runs a pod scheduler deployment.
 
-The pod scheduler is a single threaded service which does not scale-out and is limited to a single replica.  It is generally not affected by high system load, and only "wakes up" when there are pending jobs queuing.
+The pod scheduler is not a scalable component and is limited to a single replica.  It is however fault-tolerant, allowing for other instances to take over processing should it fail, without disruption.  It is generally not affected by high system load, and only "wakes up" when there are pending jobs queuing.  It utilizes parallel worker threads to improve processing performance during each iteration.  For additional details, please see [Advanced: Scheduler Performance Tuning](#advanced-scheduler-performance-tuning).
 
 ### Web portal deployment (jarvice-mc-portal)
 
