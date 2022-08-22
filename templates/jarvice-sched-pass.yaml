@@ -280,3 +280,5 @@ spec:
 {{- if .Values.jarvice_sched_pass.resources }}
 {{ toYaml .Values.jarvice_sched_pass.resources | indent 10 }}
 {{- end }}
+{{- end }}
+{{- end }}
