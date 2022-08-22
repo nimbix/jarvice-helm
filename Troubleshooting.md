@@ -6,6 +6,8 @@ This guide can be used to troubleshoot basic issues with a JARVICE deployment.
 
 ## Table of Contents
 
+### JARVICE deployment
+
 * [Checking status of JARVICE system pods](#checking-status-of-jarvice-system-pods)
     - [Describe the pod(s) that are not in the Running state](#describe-the-pods-that-are-not-in-the-running-state)
     - [Pod status showing `ImagePullBackOff`](#pod-status-showing-imagepullbackoff)
@@ -14,6 +16,12 @@ This guide can be used to troubleshoot basic issues with a JARVICE deployment.
         - [Check kubernetes node labels and taints](#check-kubernetes-node-labels-and-taints)
         - [Insufficient resources available](#insufficient-resources-available)
     - [`jarvice-dal` pods are continually restarting](#jarvice-dal-pods-are-continually-restarting)
+
+### JARVICE HPC jobs
+* [Job status problems](#job-status-problems)
+    - [Job pods remain in Pending state (Kubernetes)](#job-pods-remain-in-pending-state-kubernetes)
+    - [Job status does not change](#job-status-does-not-change)
+    - [Job status changes are too slow](#job-status-changes-are-too-slow)
 
 ------------------------------------------------------------------------------
 
@@ -152,6 +160,39 @@ NetworkPolicy for the `jarvice-db` pod and/or globally for all
 `jarvice-system` pods.
 This can be done by setting `jarvice_db.networkPolicy.enabled` to `false`
 and/or setting `jarvice.networkPolicy.enabled` to `false` respectively.
+
+------------------------------------------------------------------------------
+
+## Job status problems
+
+The JARVICE control plane manages job status from all attached downstream clusters (including the default in a single or multi-cluster configuration).  The system is designed to reconcile job status changes periodically to not rely on complex notification mechanisms or even require full-time connectivity.  When troubleshooting any job status issue, log levels of respective component(s) will need to be increased from `30` (errors and warnings only) to at least `20` (informatinal) or even `10` (debug, very verbose) in some cases.  See each section below for details
+
+### Job pods remain in Pending state (Kubernetes)
+
+On Kubernetes clusters, job pods must be "bound" to compute nodes before processing can begin.  `jarvice-pod-scheduler` runs downstream and on the default cluster and attempts to "best-fit" pods onto nodes, packing where possible, and ensuring jobs with multiple pods are "gang-scheduled" on like nodes.  Putting this component in log level `20` via the `jarvice.JARVICE_POD_SCHED_LOGLEVEL` setting is the minimum recommended value to see a summary of why nodes are being skipped.  To see precise (but highly verbose) details for each node evaluated, including why it's disqualified from scheduling a particular job, set the log level to `10` (debug).
+
+Common reasons for job pods not being bound include, but are not limited to:
+
+1. Insufficient resources (the most common).
+2. Lack of "like" nodes when trying to schedule a multi-node job - nodes are weighed and grouped by weight.
+3. Improper taints or node label mismatches.
+
+### Job status does not change
+
+`jarvice-sched-pass` (upstream control plane only) is responsible for all job status changes.  Putting this component in log level `20` via the `jarvice.JARVICE_SCHED_PASS_LOGEVEL` is generally sufficient to see why.  Most errors are well spelled out.
+
+Common reasons for job status not changing include, but are not limited to:
+
+1. Unable to communicate with downstream components - in this case, check the connection from upstream to downstream including any Ingress controllers downstream.
+2. Failures (not timeouts) when communicating with downstream components - in this case, examine `jarvice-k8s-scheduler` downstream (on Kubernetes clusters) by putting it in log level `20` (or `10` for additional verbosity) via the `jarvice.JARVICE_K8S_SCHED_LOGEVEL` setting.
+3. Job pods not binding to nodes (on Kubernetes) - see [Job pods remain in Pending state (Kubernetes)](#job-pods-remain-in-pending-state-kubernetes)
+4. Pass "budget" insufficient and not all jobs can be examined - see [Advanced: Scheduler Performance Tuning](Scaling.md#advanced-scheduler-performance-tuning) in the *Resource Planning and Scaling Guide*
+
+### Job status changes are too slow
+
+Generally, this relates to capacity and scaling parameter issues.  Putting `jarvice-sched-pass` in log level `20` via the `jarvice.JARVICE_SCHED_PASS_LOGLEVEL` parameter is recommended to determine why.
+
+Generally, see [Advanced: Scheduler Performance Tuning](Scaling.md#advanced-scheduler-performance-tuning) in the *Resource Planning and Scaling Guide* for information on how to overcome this issue.
 
 ------------------------------------------------------------------------------
 
