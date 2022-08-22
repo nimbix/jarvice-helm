@@ -188,8 +188,6 @@ spec:
           - name: JARVICE_IDMAPPER_URL
             value: "http://jarvice-idmapper:8080"
 {{- end }}
-          - name: JARVICE_SCHED_LOGLEVEL
-            value: "{{ .Values.jarvice.JARVICE_SCHED_LOGLEVEL }}"
           - name: JARVICE_SCHED_PASS_LOGLEVEL
             value: "{{ .Values.jarvice.JARVICE_SCHED_PASS_LOGLEVEL }}"
 {{- if (not (empty .Values.jarvice.JARVICE_SCHED_PASS_WORKERS)) }}
