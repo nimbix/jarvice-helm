@@ -73,6 +73,9 @@ jarvice:
   JARVICE_EPHEMERAL_VAULT_ZONE:   # (defaults to -1 if not set)
   JARVICE_DAL_HOOK_META:          # opaque (unset by default)
 
+  JARVICE_APP_ALLOW_ROOT_INIT:            # allows root appdefv2 apps init, default to false
+  JARVICE_APP_ALLOW_PRIVILEGE_ESCALATION: # allows sudo inside appdefv2 apps, default to false
+
   JARVICE_DATA_CHOWN: # set to "false" to prevent chown of /data
 
   JARVICE_POD_SCHED_LOGLEVEL: 30
