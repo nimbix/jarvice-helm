@@ -127,6 +127,16 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202208311627 *(TECHNOLOGY PREVIEW RELEASE)*
+
+* (JAR-100) `jarvice-sched-pass` became its own component, for improved troubleshooting and scalability; see [Advanced: Scheduler Performance Tuning](Scaling.md#advanced-scheduler-performance-tuning) in the *Resource Planning and Scaling Guide* and [Job status problems](Troubleshooting.md#job-status-problems) in the *JARVICE Troubleshooting Guide* for more information.
+* (JAR-5414) (JAR-5536) (JAR-5545) Future AppDef "v2" support added.
+* (JAR-5471) Reduced machine visibility to payers and team admins in *Account->Limits* view to those only in zones the team has access to.
+* (JAR-5500) (Vulnerability remediation) use HSTS headers for web portal.
+* (JAR-5571) Prevent caching of portal index page to avoid stale versions in browser, and version assets with each build.
+* (JAR-5583) Fixed bug where sorting the metadata table in the portal *Administration->Metadata* view could result in selecting the wrong row.
+* (JAR-5585) Fixed bug where downloading CSV report was failing in the *Administration->Billing* view.
+
 ## 3.21.9-1.202208171639
 
 * (JAR-5459) Fixed vulnerability with billing reports URLs.
