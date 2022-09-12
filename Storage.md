@@ -158,3 +158,6 @@ By default, JARVICE performs a `chown` to the in-container user's `UID` and `GID
 
 In general, the default mode (`"true"`) should be used for dynamically provisioned volumes to ensure users can write files to them.
 
+### Improve file lister performance for shared vaults
+
+The file lister performance in JARVICE decreases for large vaults which are shared between large sets of users. By default, the CPU resource for kubernetes is set to 200m requests with a 500m limit. These values can be increased by setting `jarvice.JARVICE_PVCRUN_CPU_REQUEST` and `jarvice.JARVICE_PVCRUN_CPU_LIMIT`.
