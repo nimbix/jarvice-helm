@@ -70,6 +70,9 @@ jarvice:
   JARVICE_PVC_VAULT_SUBPATH:      # optional subpath (supports substitutions)
   JARVICE_PVC_VAULT_ZONE:         # optional zone ID for vault (defaults to 0 - default)
 
+  JARVICE_PVCRUN_CPU_REQUEST: "200m"  # cpu request for file lister
+  JARVICE_PVCRUN_CPU_LIMIT: "500m"    # cpu limit for file lister
+
   JARVICE_EPHEMERAL_VAULT_ZONE:   # (defaults to -1 if not set)
   JARVICE_DAL_HOOK_META:          # opaque (unset by default)
 
