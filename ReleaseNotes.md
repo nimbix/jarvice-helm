@@ -127,6 +127,102 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202208311627 *(TECHNOLOGY PREVIEW RELEASE)*
+
+* (JAR-100) `jarvice-sched-pass` became its own component, for improved troubleshooting and scalability; see [Advanced: Scheduler Performance Tuning](Scaling.md#advanced-scheduler-performance-tuning) in the *Resource Planning and Scaling Guide* and [Job status problems](Troubleshooting.md#job-status-problems) in the *JARVICE Troubleshooting Guide* for more information.
+* (JAR-5414) (JAR-5536) (JAR-5545) Future AppDef "v2" support added.
+* (JAR-5471) Reduced machine visibility to payers and team admins in *Account->Limits* view to those only in zones the team has access to.
+* (JAR-5500) (Vulnerability remediation) use HSTS headers for web portal.
+* (JAR-5571) Prevent caching of portal index page to avoid stale versions in browser, and version assets with each build.
+* (JAR-5583) Fixed bug where sorting the metadata table in the portal *Administration->Metadata* view could result in selecting the wrong row.
+* (JAR-5585) Fixed bug where downloading CSV report was failing in the *Administration->Billing* view.
+
+## 3.21.9-1.202208171639
+
+* (JAR-5459) Fixed vulnerability with billing reports URLs.
+* (JAR-5472) Fixed `jarvice-license-manager` to maintain license reservations until all tokens are checked out by solver from FlexLM.
+* (JAR-5483) Adjusted all scheduler components `requests` and `limits` in Helm templates for performance and scalability.
+* (JAR-5493) Parallelized most elements of formerly serial scheduling mechanisms to improve job submission, start, and end throughput at scale.
+* (JAR-5497) Fixed vulnerabilities related to using HTTP GET requests in web portal.
+* (JAR-5499) Fixed vulnerability in web portal to hide server information in response headers.
+
+## 3.21.9-1.202207251527
+
+* (JAR-5386) Fixed regression introduced in previous release on `jarvice-pod-schduler` restart fixes; added additional fix to pod binding at scale for gang-scheduling robustness.
+
+## 3.21.9-1.202207201613
+
+* (JAR-5356) Added optional parameter in the task builder to use RSA keys instead of ED25519 keys for SSH inside jobs.  Use only for older applications packaging an SSH which does not support ED25519 keys.
+* (JAR-5357) Improved job submission throughput and updated scaling guidelines for parallel submissions.  See [Load Scenarios Tested](Scaling.md#load-scenarios-tested) in the *Resource Planning and Scaling Guide* for details.
+* (JAR-5386) Fixed bug causing potentially excessive `jarvice-pod-scheduler` restarts due to "best effort" *ConfigMap* deletion failure.
+* (JAR-5417) Kubernetes 1.22 support.  See [Kubernetes Support](#kubernetes-support) for the latest list of supported Kubernetes versions.
+* (JAR-5418) Improved `jarvice-license-manager` stability.
+
+## 3.21.9-1.202207071522 *(TECHNOLOGY PREVIEW RELEASE)*
+
+* (JAR-5198) (JAR-5199) Upgrade base components in `jarvice-mc-portal` and `jarvice-dal` to address future vulnerabilities.
+* (JAR-5200) Support for configurable cluster name for default `no_proxy` settings; set `jarvice.JARVICE_K8S_CLUSTER_DOMAIN` if the cluster is named something other than `cluster.local`.
+* (JAR-5309) Increased job submission throughput, especially in parallel (EXPERIMENTAL)
+* (JAR-5328) Fixed bug where `jarvice-license-manager` permitted more jobs than available tokens.
+* (JAR-5329) *Administration->Jobs* view now shows jobs queued for licensing or limits, in orange and yellow background, respectively.
+* (JAR-5355) Eliminate use of `host_path` volume when using EGL 3D acceleration, and allow multiple jobs to use this mechanism on each node concurrently.
+* (JAR-5362) Fixed `jarvice-license-manager` metrics to better align with Flex server, including fast expiration of reservations soon after tokens are checked out; also hold reservations while solvers are performing preprocessing operations ahead of checking out tokens to avoid oversubscribing licenses.
+* (JAR-5407) Fixed bug where the search function of `Administration->Jobs` was causing a front-end exception.
+
+## 3.21.9-1.202206081546
+
+* (JAR-5064) Fixed bug where `jarvice-license-manager` was allowing too many jobs when using reservation limits.
+* (JAR-5100) CVE remediation for various components
+* (JAR-5150) Made the *TERMINATE ALL* job limit configurable in *Administration->Jobs*; set `jarvice_mc_portal.JARVICE_PORTAL_JOB_TERMINATE_LIMIT` in the deployment to a number less than 100 if desired.  The default is to terminate all jobs in the current page.
+* (JAR-5160) Fixed bug with `RANGE` parameter type in apps.
+* (JAR-5197) Removed hardcoded default of `master` branch name from PushToCompute builds; uses server's default (e.g. `main` or `master` on GitHub) unless otherwise specified.
+* (JAR-5201) Made the `timeout` key for JARVICE License Manager configuration optional.
+* (JAR-5213) Bundled OpenMPI for app container build stages, compatible with JARVICE-provided OpenMPI at runtime.  See the [nimbix/mpi-common](https://github.com/nimbix/mpi-common) repository for details and example.
+* (JAR-5230) Fixed parameter name bug in `/jarvice/pull` API endpoint in the case where the pull Pod creation fails in Kubernetes.
+* (JAR-5234) Added support to inject custom CA root certificates into JARVICE services and jobs.  See [Add CA root for JARVICE (optional)](README.md#add-ca-root-for-jarvice-optional) for details. (EXPERIMENTAL)
+* (JAR-5240) Fixed bug with runtime info timeout that prevented jobs from transitioning out of *Starting* state due to Kubernetes client cache on some distributions.
+* (JAR-5242) Fixed bug where *TERMINATE ALL* button in *Administration->Jobs* view was not enabled until refresh button clicked.
+* (JAR-5276) Fixed SAML and LDAP configuration inconsistencies between team admins and team payer account.
+* (JAR-5282) Added feature to optionally disable `chown` of user vault mountpoints.  See [Preventing permission changes on user storage directories](Storage.md#preventing-permission-changes-on-user-storage-directories) for details. (EXPERIMENTAL)
+* (JAR-5291) Added support for optionally mapping SAML attributes for Active Directory UPN and sAMAccountName in *Account->SAML2 IdP*, in order to enable `jarvice-idmapper` to correctly map ownership to that of user home directories named after either UPN or sAMAccountName.  The configuration allows mapping arbitrary attributes from the SAML assertion to these values, and varies per identity provider and site configuration. (EXPERIMENTAL)
+
+## 3.21.9-1.202204271651
+
+* (JAR-75) Added endpoint capability in AppDef to run commands in a webshell; for additional details and examples please see [Gotty Shell AppDef Template](https://github.com/nimbix/appdef-template#gotty-shell-appdef-template) in the [JARVICE Application Definition Guide on GitHub](https://github.com/nimbix/appdef-template).
+* (JAR-5047) Added color coding and filtering for Suspended Jobs in the *Administration->Jobs* view.
+* (JAR-5055) Added consideration for project floor oversubscription when deciding what jobs to suspend for projects with identical priorities in JARVICE License Manager.
+* (JAR-5072) Added `/jarvice/projects` API endpoint to list all available projects in the system and their members; available to system administrators only; for details please see the [JARVICE API](https://jarvice.readthedocs.io/en/latest/api) reference.
+* (JAR-5089) Added capability to specify timeout in seconds for `lmstat` queries against license servers in JARVICE License Manager using the `timeout` configuration key.
+* (JAR-5090) Remediated "critical" and "high" package security vulnerabilities in all control plane containers.
+* (JAR-5105) Removed the obsolete *Administration->Nodes* section.
+* (JAR-5118) Fixed bug in license manager when configuring 0 for minimum allocation in preemptible features.
+* (JAR-5119) Optimized saving of license manager configuration from *Administration->License Manager*.
+* (JAR-5144) Fixed bug with project allocation edit dialog box in *Administration->License Manager*.
+* (JAR-5164) Added support for IP-over-InfiniBand passthrough, as required for modern OFI-based MPI applications to leverage the `verbs` fabric provider (RDMA); for details, please see [Supporting OFI MPI stacks over InfiniBand](Configuration.md#supporting-ofi-mpi-stacks-over-infiniband).
+
+## 3.21.9-1.202203301625
+
+* (JAR-83) Handle missing zone or cluster gracefully in web portal login.
+* (JAR-4848) Support for solver suspend/resume in apps implementing embedded Slurm scheduler.
+* (JAR-4901) (JAR-4902) (JAR-4978) (JAR-4980) (JAR-4951) (JAR-5010) (JAR-5054) (JAR-5063) Advanced license-based queuing with preemptible features; see [Advanced: Preemptible Features](LicenseManager.md#advanced-preemptible-features) in the [JARVICE License Manager](LicenseManager.md) documentation for details.
+* (JAR-4999) Fixed regression in browser-based interactive apps where team admin has disabled encoding connection passwords in URL.
+* (JAR-5022) Added index to audit log table in database to improve performance of audit-related functions over time.
+* (JAR-5062) GPU-related fixes for GKE.
+
+## 3.21.9-1.202201191724
+
+* (JAR-4866) Added support for adding ingress annotations for jobs; see [Additional Ingress annotation for jobs](README.md#additional-ingress-annotation-for-jobs) for details.
+* (JAR-4882) Added suggestion box in addition to dropdown for selecting users to add to projects in *Account->Projects* view.
+* (JAR-4888) Improved performance of the `/jarvice/events` API endpoint, in addition to the "Active Jobs" detail in the portal's *Administrator->Jobs* view.
+
+## 3.21.9-1.202112081812
+
+* (JAR-4795) Support for automated license feature computation on job submission via hook script; see [Advanced: Automatic License Feature Computation](LicenseManager.md#advanced-automatic-license-feature-computation) for details.
+* (JAR-4804) Support for signaling processes in running jobs (e.g. to suspend or resume jobs) via the JARVICE API; see the [/jarvice/signal](https://jarvice.readthedocs.io/en/latest/api/#jarvicesignal) API documentation for details.
+* (JAR-4809) Support for deploying JARVICE clusters behind HTTP(s) proxy servers; see the values `jarvice.JARVICE_HTTP_PROXY`, `jarvice.JARVICE_HTTPS_PROXY`, and `jarvice.JARVICE_NO_PROXY` in [values.yaml](values.yaml) for details; note that proxy configuration may be set independently for upstream and downstream clusters in multi-cluster configuration.
+* (JAR-4838) Preemptible license feature configuration in *Administration->License Manager* view; **note that this feature is currently incomplete and will not impact scheduling until a future release**.
+
+
 ## 3.21.9-1.202111241749
 
 * (JAR-4654) Added the ability to specify availability zones for node groups separately from the control plane on EKS and AKS deployments.  Use the `zones` key in the respective node group Terraform configuration to specify a different value than that of the system nodes.
