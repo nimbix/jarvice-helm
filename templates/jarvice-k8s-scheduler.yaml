@@ -324,6 +324,14 @@ spec:
 {{- else }}
             value: "{{ .Values.jarvice.JARVICE_SELINUX_ENFORCING }}"
 {{- end }}
+{{- if (not (empty .Values.jarvice.JARVICE_APP_ALLOW_ROOT_INIT)) }}
+          - name: JARVICE_APP_ALLOW_ROOT_INIT
+            value: "{{ .Values.jarvice.JARVICE_APP_ALLOW_ROOT_INIT }}"
+{{- end }}
+{{- if (not (empty .Values.jarvice.JARVICE_APP_ALLOW_PRIVILEGE_ESCALATION)) }}
+          - name: JARVICE_APP_ALLOW_PRIVILEGE_ESCALATION
+            value: "{{ .Values.jarvice.JARVICE_APP_ALLOW_PRIVILEGE_ESCALATION }}"
+{{- end }}
 {{- if (not (empty .Values.jarvice.JARVICE_DATA_CHOWN)) }}
           - name: JARVICE_DATA_CHOWN
             value: "{{ .Values.jarvice.JARVICE_DATA_CHOWN }}"

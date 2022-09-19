@@ -13,7 +13,7 @@ Assumptions:
 ### Required 3rd party tools
 - [Multus](https://github.com/k8snetworkplumbingwg/multus-cni) project will be utilized to add the secondary IpoIB interface
 - [ipoib-cni](https://github.com/Mellanox/ipoib-cni) from Mellanox
-- [Whereabouts](https://github.com/dougbtv/whereabouts) for ipam
+- [Whereabouts](https://github.com/k8snetworkplumbingwg/whereabouts) for ipam
 
 1. Install Multus by applying [multus-daemonset-thick-plugin.yaml](https://github.com/k8snetworkplumbingwg/multus-cni/blob/master/deployments/multus-daemonset-thick-plugin.yml). 
 ```
@@ -79,3 +79,15 @@ spec:
       ls -l /dev/infiniband /sys/class/infiniband /sys/class/net
       sleep 1000000
 ```
+
+### Rootless applications and Memlock rlimit when Infiniband
+
+When using rootless applications, which is default with appdef V2, init executions do not posses 
+sufficient privileges to set Memlock rlimit to unlimited, leading to failure of Infiniband usage.
+
+Two possibilities are available to bypass this issue:
+
+1. Cluster administrator need to force unlimited Memlock rlimites at docker / containerd level.
+   * For docker, append `--default-ulimit memlock=-1:-1` inside docker service file, at `ExecStart=/usr/bin/dockerd` line, then reload systemctl and restart docker service.
+   * For containerd, edit service file, and add under `[SERVICE]` line `LimitMEMLOCK=infinity`, then reload systemctl and restart containerd service.
+2. Or allow apps to run init as root, before dropping to unprivileged user. To do so, set `JARVICE_APP_ALLOW_ROOT_INIT` value to `true` in `override.yaml`. This will unlock root usage for appdef V2 apps, which will set Memlock rlimit to unlimited before MPI execution.
