@@ -184,6 +184,11 @@ providers:
 additionalArguments:
   - "--serverstransport.insecureskipverify=true"
 
+tls:
+  options:
+    default:
+      minVersion: VersionTLS13
+
 ports:
   web:
     redirectTo: websecure
