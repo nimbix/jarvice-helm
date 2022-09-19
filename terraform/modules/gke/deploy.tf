@@ -189,6 +189,9 @@ tls:
     default:
       minVersion: VersionTLS13
 
+      cipherSuites:
+        - ECDHE-RSA-AES256-SHA
+
 ports:
   web:
     redirectTo: websecure
