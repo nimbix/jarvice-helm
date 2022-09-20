@@ -124,6 +124,18 @@ spec:
             value: "{{ .Values.jarvice.JARVICE_REGISTRY_PROXY_REPOS }}"
 {{- end }}
 {{- end }}
+          - name: JARVICE_PVCRUN_CPU_REQUEST
+{{- if empty .Values.jarvice.JARVICE_PVCRUN_CPU_REQUEST }}
+            value: "200m"
+{{- else }}
+            value: "{{ .Values.jarvice.JARVICE_PVCRUN_CPU_REQUEST }}"
+{{- end }}
+          - name: JARVICE_PVCRUN_CPU_LIMIT
+{{- if empty .Values.jarvice.JARVICE_PVCRUN_CPU_LIMIT }}
+            value: "500m"
+{{- else }}
+            value: "{{ .Values.jarvice.JARVICE_PVCRUN_CPU_LIMIT }}"
+{{- end }}
           - name: JARVICE_SYSTEM_K8S
 {{- if empty .Values.jarvice.JARVICE_SYSTEM_K8S }}
             value: "true"
