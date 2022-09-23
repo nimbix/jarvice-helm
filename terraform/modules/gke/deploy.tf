@@ -184,13 +184,11 @@ providers:
 additionalArguments:
   - "--serverstransport.insecureskipverify=true"
 
-tls:
-  options:
-    default:
-      minVersion: VersionTLS13
-
-      cipherSuites:
-        - ECDHE-RSA-AES256-SHA
+tlsOptions:
+  default:
+    minVersion: VersionTLS13
+    cipherSuites:
+      - ECDHE-RSA-AES256-SHA
 
 ports:
   web:
