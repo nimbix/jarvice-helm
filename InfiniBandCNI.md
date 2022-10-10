@@ -29,8 +29,7 @@ git clone https://github.com/k8snetworkplumbingwg/whereabouts && cd whereabouts
 kubectl apply \
     -f doc/crds/daemonset-install.yaml \
     -f doc/crds/whereabouts.cni.cncf.io_ippools.yaml \
-    -f doc/crds/whereabouts.cni.cncf.io_overlappingrangeipreservations.yaml \
-    -f doc/crds/ip-reconciler-job.yaml
+    -f doc/crds/whereabouts.cni.cncf.io_overlappingrangeipreservations.yaml
 ```
 4. Define the network for IPoIB with a NetworkAttachmentDefinition. Please modify ip range and master interface as required.
 
