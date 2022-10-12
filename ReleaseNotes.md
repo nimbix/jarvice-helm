@@ -127,6 +127,17 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202210121614
+
+* (JAR-5308) Updated `kubectl` authentication plugin for GKE to use `gke-gcloud-auth-plugin`.
+* (JAR-5502) Prevent clickjacking vulnerability via iframe in portal.
+* (JAR-5556) Made `interactive` key optional (defaulting to `false` for non-interactive endpoints) in the AppDef.
+* (JAR-5575) Increased resource requests and limits for `pvcrun` file lister, and made them configurable when more is needed; please see [Improve file lister performance for shared vaults](Storage.md#improve-file-lister-performance-for-shared-vaults) in the *User Storage Patterns and Configuration* guide for details.
+* (JAR-5576) Made the primary DN attribute configurable in *Account->LDAP* in order to support non-AD schemas.
+* (JAR-5584) Performance improvement in portal user stats.
+* (JAR-5623) Fixed bug where saving configuration in *Account->SAML* was failing with a null-related error.
+* (JAR-5680) Added job `substatus` to response JSON from `jarvice/status` API endpoint.
+
 ## 3.21.9-1.202209141659 *(TECHNOLOGY PREVIEW RELEASE)*
 
 * (JAR-5471) Fixed issue with team admins getting the payer vault list instead of their own on the Account/Vaults view
