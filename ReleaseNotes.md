@@ -132,7 +132,6 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 * (JAR-5471) Fixed issue with team admins getting the payer vault list instead of their own on the Account/Vaults view
 * (JAR-5614) Fixed bug with LDAP and SAML login URLs failing to launch  
 
-
 ## 3.21.9-1.202208311627 *(TECHNOLOGY PREVIEW RELEASE)*
 
 * (JAR-100) `jarvice-sched-pass` became its own component, for improved troubleshooting and scalability; see [Advanced: Scheduler Performance Tuning](Scaling.md#advanced-scheduler-performance-tuning) in the *Resource Planning and Scaling Guide* and [Job status problems](Troubleshooting.md#job-status-problems) in the *JARVICE Troubleshooting Guide* for more information.
