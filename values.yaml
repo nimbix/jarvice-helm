@@ -1044,7 +1044,7 @@ jarvice_mc_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     JARVICE_API_PUBLIC_URL: # https://<jarvice_api.ingressHost><jarvice_api.ingressPath>
 
 jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
-  enabled: true
+  enabled: false
   replicaCount: 1
   replicaCountMax: 1
   # HorizontalPodAutoscaler is enabled when replicaCountMax > replicaCount
