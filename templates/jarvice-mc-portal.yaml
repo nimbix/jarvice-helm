@@ -149,6 +149,22 @@ spec:
           successThreshold: {{ .Values.jarvice_mc_portal.livenessProbe.successThreshold }}
           failureThreshold: {{ .Values.jarvice_mc_portal.livenessProbe.failureThreshold }}
         env:
+{{- if .Values.jarvice_bird.enabled }}
+{{- if (not (empty .Values.jarvice_bird.env.KEYCLOAK_URL)) }}
+          - name: JARVICE_KEYCLOAK_URL
+{{- if hasSuffix "/" "{{ .Values.jarvice_bird.env.KEYCLOAK_URL }}" }}
+            value: "{{ .Values.jarvice_bird.env.KEYCLOAK_URL }}"
+{{- else }}
+            value: {{ (printf "%s/" .Values.jarvice_bird.env.KEYCLOAK_URL ) }}
+{{- end }}
+{{- end }}
+          - name: JARVICE_KEYCLOAK_REALM
+{{- if (not (empty .Values.jarvice_bird.env.KEYCLOAK_REALM)) }}
+            value: "{{ .Values.jarvice_bird.env.KEYCLOAK_REALM }}"
+{{- else }}
+            value: jarvice
+{{- end }}
+{{- end }}
           - name: JARVICE_SYSTEM_K8S
 {{- if empty .Values.jarvice.JARVICE_SYSTEM_K8S }}
             value: "true"

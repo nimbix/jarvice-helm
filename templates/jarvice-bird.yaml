@@ -1,0 +1,370 @@
+{{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
+{{- if .Values.jarvice_bird.enabled }}
+{{- if gt (.Values.jarvice_bird.replicaCount | int) 1 }}
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+apiVersion: policy/v1
+{{- else }}
+apiVersion: policy/v1beta1
+{{- end }}
+kind: PodDisruptionBudget
+metadata:
+  name: jarvice-bird
+spec:
+  selector:
+    matchLabels:
+      deployment: jarvice-bird
+  minAvailable: {{ .Values.jarvice_bird.pdb.minAvailable }}
+---
+{{- end }}
+{{- if gt (.Values.jarvice_bird.replicaCountMax | int) (.Values.jarvice_bird.replicaCount | int) }}
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: jarvice-bird
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-bird
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: jarvice-bird
+  minReplicas: {{ .Values.jarvice_bird.replicaCount }}
+  maxReplicas: {{ .Values.jarvice_bird.replicaCountMax }}
+  metrics:
+    {{- toYaml .Values.jarvice_bird.autoscaling.metrics | nindent 4 }}
+---
+{{- end}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jarvice-bird
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-bird
+    deployment: jarvice-bird
+    jarvice-system: core
+spec:
+  replicas: {{ .Values.jarvice_bird.replicaCount }}
+  selector:
+    matchLabels:
+      deployment: jarvice-bird
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-bird
+        deployment: jarvice-bird
+        jarvice-system: core
+      annotations:
+        deployment-date: {{ now | quote }}
+    spec:
+      serviceAccountName: jarvice-system
+{{- if (not (empty .Values.jarvice_bird.tolerations)) }}
+      tolerations: {{ .Values.jarvice_bird.tolerations }}
+{{- else if (not (empty .Values.jarvice.tolerations)) }}
+      tolerations: {{ .Values.jarvice.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice_bird.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice_bird.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.nodeSelector }}
+{{- end }}
+      affinity:
+{{- if (not (empty .Values.jarvice_bird.nodeAffinity)) }}
+        nodeAffinity: {{ .Values.jarvice_bird.nodeAffinity }}
+{{- else if (not (empty .Values.jarvice.nodeAffinity)) }}
+        nodeAffinity: {{ .Values.jarvice.nodeAffinity }}
+{{- end }}
+        podAntiAffinity:
+        {{- if eq .Values.jarvice_bird.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                deployment: jarvice-bird
+        {{- else if eq .Values.jarvice_bird.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  deployment: jarvice-bird
+        {{- end }}
+      imagePullSecrets:
+      - name: jarvice-docker
+      volumes:
+      - name: bird-config
+        configMap:
+          defaultMode: 420
+          items:
+          - key: jarvice-bird-config.json
+            path: config.json
+{{- if empty .Values.jarvice_bird.conf.configMap }}
+          name: jarvice-bird-config
+{{- else }}
+          name: "{{ .Values.jarvice_bird.conf.configMap }}"
+{{- end }}
+      - name: nginx-config
+        configMap:
+          defaultMode: 420
+          items:
+          - key: jarvice-bird-nginx.conf
+            path: default.conf
+{{- if empty .Values.jarvice_bird.nginx.configMap }}
+          name: jarvice-bird-nginx-config
+{{- else }}
+          name: "{{ .Values.jarvice_bird.nginx.configMap }}"
+{{- end }}
+{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
+      - name: ca-jarvice-user
+        configMap:
+          name: "{{ .Values.jarvice.cacert.configMap }}"
+          optional: true
+          defaultMode: 444
+{{- end }}
+      containers:
+      - name: jarvice-bird
+        image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-bird:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+{{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
+        imagePullPolicy: Always
+{{- else }}
+        imagePullPolicy: IfNotPresent
+{{- end }}
+        ports:
+          - name: http
+            containerPort: 8080
+        readinessProbe:
+          exec:
+            command:
+            - /bin/true
+          initialDelaySeconds: {{ .Values.jarvice_bird.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jarvice_bird.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jarvice_bird.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_bird.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_bird.readinessProbe.failureThreshold }}
+        livenessProbe:
+          exec:
+            command:
+            - /bin/true
+          initialDelaySeconds: {{ .Values.jarvice_bird.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jarvice_bird.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jarvice_bird.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_bird.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_bird.livenessProbe.failureThreshold }}
+        env:
+          - name: KEYCLOAK_URL
+{{- if (not (empty .Values.jarvice_bird.env.KEYCLOAK_URL)) }}
+            value: {{ .Values.jarvice_bird.env.KEYCLOAK_URL }} # https://jarvice-kc.jarvicedev.com/auth
+{{- else }}
+{{- required "***** !!!!! A valid keycloak server is required.  Please provide a value for jarvice_bird.env.KEYCLOAK_URL. !!!!! *****" .Values.jarvice_bird.env.KEYCLOAK_URL }}
+{{- end }}
+          - name: KEYCLOAK_ID
+{{- if empty .Values.jarvice_bird.env.KEYCLOAK_ID }}
+            value: jarvice
+{{- else }}
+            value: "{{ .Values.jarvice_bird.env.KEYCLOAK_ID }}"
+{{- end }}
+          - name: KEYCLOAK_REALM
+{{- if empty .Values.jarvice_bird.env.KEYCLOAK_REALM }}
+            value: jarvice
+{{- else }}
+            value: "{{ .Values.jarvice_bird.env.KEYCLOAK_REALM }}"
+{{- end }}
+          - name: PORT
+            value: "8080"
+{{- if or .Values.jarvice.JARVICE_HTTPS_PROXY .Values.jarvice.JARVICE_HTTP_PROXY .Values.jarvice.JARVICE_NO_PROXY }}
+{{- if (not (empty .Values.jarvice.JARVICE_NO_PROXY)) }}
+          - name: no_proxy
+            value: '{{ include "jarvice.no_proxy" . }},{{ .Values.jarvice.JARVICE_NO_PROXY }}'
+{{- else }}
+          - name: no_proxy
+            value: '{{ include "jarvice.no_proxy" . }}'
+{{- end }}
+{{- end }}
+        volumeMounts:
+        - mountPath: /etc/nginx/conf.d/
+          name: nginx-config
+          readOnly: true
+        - mountPath: /usr/share/nginx/html/web-ui-grid/config/config.json
+          name: bird-config
+          readOnly: true
+          subPath: config.json
+        - mountPath: /usr/share/nginx/html/config/config.json
+          name: bird-config
+          readOnly: true
+          subPath: config.json
+{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
+        - name: ca-jarvice-user
+          mountPath: /etc/ssl/certs/ca-certificates.crt
+          subPath: ca-certificates.crt
+          readOnly: true
+{{- end }}
+        resources:
+{{ toYaml .Values.jarvice_bird.resources | indent 10 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-bird
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-bird
+spec:
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: http
+    name: http
+  selector:
+    deployment: jarvice-bird
+---
+{{- if or .Values.jarvice_bird.networkPolicy.enabled (and (eq "<nil>" (toString .Values.jarvice_bird.networkPolicy.enabled)) .Values.jarvice.networkPolicy.enabled) }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: jarvice-bird
+spec:
+  podSelector:
+    matchLabels:
+      deployment: jarvice-bird
+  policyTypes:
+  - Ingress
+  ingress:
+{{- if (empty .Values.jarvice_bird.ingressHost) }}
+  - {}
+{{- else }}
+  - from:
+    - namespaceSelector: {}
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 8080
+{{- end }}
+---
+{{- end }}
+{{- if (empty .Values.jarvice_bird.ingressHost) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-bird-lb
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-bird
+spec:
+  type: LoadBalancer
+  loadBalancerIP: {{ .Values.jarvice_bird.loadBalancerIP }}
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+    name: http
+  selector:
+    deployment: jarvice-bird
+---
+{{- else }}
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+apiVersion: networking.k8s.io/v1
+{{- else }}
+apiVersion: networking.k8s.io/v1beta1
+{{- end }}
+kind: Ingress
+metadata:
+  name: jarvice-bird
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-bird
+  annotations:
+{{- if (not (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion)) }}
+{{- if (not (empty .Values.jarvice.ingress.class)) }}
+    kubernetes.io/ingress.class: {{ .Values.jarvice.ingress.class }}
+{{- end }}
+{{- end }}
+{{- if and (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (empty .Values.jarvice.ingress.tls.crt) (empty .Values.jarvice.ingress.tls.key)) }}
+    cert-manager.io/issuer: {{ .Values.jarvice.ingress.tls.issuer.name }}
+{{- else if and (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) (and (empty .Values.jarvice.ingress.tls.crt) (empty .Values.jarvice.ingress.tls.key)) }}
+    cert-manager.io/cluster-issuer: {{ .Values.jarvice.ingress.tls.cluster_issuer.name }}
+{{- end }}
+{{- if .Values.jarvice_bird.ingressAnnotations }}
+{{- if (kindIs "string" .Values.jarvice_bird.ingressAnnotations) }}
+{{ toYaml (fromJson .Values.jarvice_bird.ingressAnnotations) | indent 4 }}
+{{- else }}
+{{ toYaml .Values.jarvice_bird.ingressAnnotations | indent 4 }}
+{{- end }}
+{{- end }}
+spec:
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+{{- if (not (empty .Values.jarvice.ingress.class)) }}
+  ingressClassName: {{ .Values.jarvice.ingress.class }}
+{{- end }}
+{{- end }}
+  rules:
+  - http:
+      paths:
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+{{- if (eq "/bird" .Values.jarvice_bird.ingressPath) }}
+      - backend:
+          service:
+            name: jarvice-bird
+            port:
+              name: http
+        pathType: Prefix
+        path: /bird
+{{- else }}
+      - backend:
+          service:
+            name: jarvice-bird
+            port:
+              name: http
+        pathType: Prefix
+        path: /
+{{- end }}
+{{- else }}
+{{- if (eq "/bird" .Values.jarvice_bird.ingressPath) }}
+      - backend:
+          serviceName: jarvice-bird
+          servicePort: http
+        path: /bird
+{{- else }}
+      - backend:
+          serviceName: jarvice-bird
+          servicePort: http
+        path: /
+{{- end }}
+{{- end }}
+{{- if ne "-" .Values.jarvice_bird.ingressHost }}
+    host: '{{- .Values.jarvice_bird.ingressHost -}}'
+{{- if or (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}
+  tls:
+  - hosts:
+    - '{{- .Values.jarvice_bird.ingressHost -}}'
+{{- if and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key)) }}
+    secretName: 'tls-jarvice'
+{{- else }}
+    secretName: 'tls-{{- .Values.jarvice_bird.ingressHost -}}'
+{{- end }}
+{{- end }}
+{{- end }}
+---
+{{- end }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jarvice-bird-config
+  namespace: jarvice-system
+data:
+  jarvice-bird-config.json: |-
+{{ .Files.Get "configmaps/jarvice-bird-config.json" | indent 4 }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jarvice-bird-nginx-config
+data:
+  jarvice-bird-nginx.conf: |-
+{{ .Files.Get "configmaps/jarvice-bird-nginx.conf" | indent 4 }}
+---
+{{- end }}
+{{- end }}
