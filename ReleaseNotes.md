@@ -127,6 +127,10 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202210191724
+
+* (JAR-5911) Restore compatibility with newer downstream endpoints during upgrades.
+
 ## 3.21.9-1.202210121614
 
 * (JAR-5308) Updated `kubectl` authentication plugin for GKE to use `gke-gcloud-auth-plugin`.
