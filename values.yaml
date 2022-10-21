@@ -1104,6 +1104,18 @@ jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 
 jarvice_bird_server: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: false
+  persistence:
+    enable: false
+    # Set to "keep" to prevent removal of jarvice-db-pvc on helm delete
+    resourcePolicy: ""  # "keep"
+    # Use empty existingClaimName for dynamic provisioning via storageClass
+    existingClaimName: # "jarvice-bird-server-pvc"
+    # storageClass: "-"  # "-" uses cluster's default StorageClass/provisioner
+    storageClass: "jarvice-bird-server"
+    accessMode: ReadWriteOnce
+    size: 8Gi
+    securityContext:
+      fsGroup: 890
   replicaCount: 1
   replicaCountMax: 1
   # HorizontalPodAutoscaler is enabled when replicaCountMax > replicaCount

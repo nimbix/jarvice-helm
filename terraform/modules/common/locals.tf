@@ -68,6 +68,11 @@ jarvice_db:
     enabled: true
     storageClassProvisioner: ${var.storage_class_provisioner}
 
+jarvice_bird_server:
+  persistence:
+    enabled: true
+    storageClassProvisioner: ${var.storage_class_provisioner}
+
 jarvice_dal:
   env:
     JARVICE_MACHINES_ADD: '${local.jarvice_machines_add}'
