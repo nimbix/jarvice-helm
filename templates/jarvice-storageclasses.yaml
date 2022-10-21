@@ -96,3 +96,36 @@ allowVolumeExpansion: true
 {{- end }}
 ---
 {{- end }}
+{{- if and .Values.jarvice_bird_server.persistence.enabled (not (empty .Values.jarvice_bird_server.persistence.storageClass)) (not (empty .Values.jarvice_bird_server.persistence.storageClassProvisioner)) }}
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: {{ .Values.jarvice_bird_server.persistence.storageClass }}
+reclaimPolicy: Delete
+provisioner: {{ .Values.jarvice_bird_server.persistence.storageClassProvisioner }}
+{{- if (eq "kubernetes.io/aws-ebs" .Values.jarvice_bird_server.persistence.storageClassProvisioner) }}
+parameters:
+  type: gp2
+mountOptions:
+  - debug
+{{- end }}
+{{- if (eq "kubernetes.io/gce-pd" .Values.jarvice_bird_server.persistence.storageClassProvisioner) }}
+parameters:
+  type: pd-standard
+  replication-type: none
+mountOptions:
+  - debug
+{{- end }}
+{{- if (eq "pd.csi.storage.gke.io" .Values.jarvice_bird_server.persistence.storageClassProvisioner) }}
+parameters:
+  type: pd-standard
+{{- end }}
+{{- if (eq "kubernetes.io/azure-disk" .Values.jarvice_bird_server.persistence.storageClassProvisioner) }}
+parameters:
+  cachingmode: ReadOnly
+  kind: Managed
+  storageaccounttype: StandardSSD_LRS
+volumeBindingMode: Immediate
+{{- end }}
+---
+{{- end }}
