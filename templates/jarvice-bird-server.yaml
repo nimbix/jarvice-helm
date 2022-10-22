@@ -8,10 +8,10 @@ metadata:
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-bird-server
-{{- if eq .Values.jarvice_bird_server.persistence.resourcePolicy "keep" }}
+  {{- if eq .Values.jarvice_bird_server.persistence.resourcePolicy "keep" }}
   annotations:
     helm.sh/resource-policy: keep
-{{- end }}
+  {{- end }}
 spec:
   accessModes:
     - {{ .Values.jarvice_bird_server.persistence.accessMode }}
@@ -179,10 +179,12 @@ spec:
             value: "{{ .Values.jarvice_bird_server.env.TENANT_SCHEMAS }}"
 {{- end }}
 {{- if .Values.jarvice_bird_server.persistence.enabled }}
-          volumeMounts:
-          - mountPath: /home/bird/.bird
-            name: jarvice-bird-server
-        volumes:
+        volumeMounts:
+        - mountPath: /home/bird/.bird
+          name: jarvice-bird-server
+        resources:
+{{ toYaml .Values.jarvice_bird.resources | indent 10 }}
+      volumes:
         - name : jarvice-bird-server
           persistentVolumeClaim:
 {{- if (empty .Values.jarvice_bird_server.persistence.existingClaimName) }}
@@ -190,11 +192,9 @@ spec:
 {{- else }}
             claimName: {{ .Values.jarvice_bird_server.persistence.existingClaimName }}
 {{- end }}
-        securityContext:
-          fsGroup: {{ .Values.jarvice_bird_server.persistence.securityContext.fsGroup }}
+      securityContext:
+        fsGroup: {{ .Values.jarvice_bird_server.persistence.securityContext.fsGroup }}
 {{- end }}
-        resources:
-{{ toYaml .Values.jarvice_bird.resources | indent 10 }}
 ---
 apiVersion: v1
 kind: Service
