@@ -191,7 +191,7 @@ spec:
             claimName: {{ .Values.jarvice_bird_server.persistence.existingClaimName }}
 {{- end }}
         securityContext:
-          fsGroup: {{ .Values.jarvice_bird_server.persistence.secerityContext.fsGroup }}
+          fsGroup: {{ .Values.jarvice_bird_server.persistence.securityContext.fsGroup }}
 {{- end }}
         resources:
 {{ toYaml .Values.jarvice_bird.resources | indent 10 }}
