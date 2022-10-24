@@ -349,6 +349,7 @@ spec:
 {{- end }}
 ---
 {{- end }}
+{{- if empty .Values.jarvice_bird.conf.configMap }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -358,6 +359,8 @@ data:
   jarvice-bird-config.json: |-
 {{ .Files.Get "configmaps/jarvice-bird-config.json" | indent 4 }}
 ---
+{{- end }}
+{{- if empty .Values.jarvice_bird.nginx.configMap }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -366,5 +369,6 @@ data:
   jarvice-bird-nginx.conf: |-
 {{ .Files.Get "configmaps/jarvice-bird-nginx.conf" | indent 4 }}
 ---
+{{- end }}
 {{- end }}
 {{- end }}

@@ -1092,9 +1092,9 @@ jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-bird", "operator": "Exists"}]}] }}'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-bird": "true"}'
   conf:
-    configMap: jarvice-bird-config
+    configMap: # jarvice-bird-config
   nginx:
-    configMap: jarvice-bird-nginx-config
+    configMap: # jarvice-bird-nginx-config
   env:
     KEYCLOAK_URL: # keycloak.my-domain.com/auth
     KEYCLOAK_ID: jarvice
