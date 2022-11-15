@@ -155,7 +155,7 @@ spec:
 {{- if hasSuffix "/" "{{ .Values.jarvice_bird.env.KEYCLOAK_URL }}" }}
             value: "{{ .Values.jarvice_bird.env.KEYCLOAK_URL }}"
 {{- else }}
-            value: {{ (printf "%s/" .Values.jarvice_bird.env.KEYCLOAK_URL ) }}
+            value: {{ (printf "%s" .Values.jarvice_bird.env.KEYCLOAK_URL ) }}
 {{- end }}
 {{- end }}
           - name: JARVICE_KEYCLOAK_REALM
