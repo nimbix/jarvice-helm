@@ -127,6 +127,12 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202211231718
+
+* (JAR-5617) Improved web portal login speeds by optimizing whitelisted app queries.
+* (JAR-5961) Future architectural updates.
+* (JAR-6035) Prevent V2 apps from being sync'd to older systems via App Sync.
+
 ## 3.21.9-1.202210191724
 
 * (JAR-5911) Restore compatibility with newer downstream endpoints during upgrades.
