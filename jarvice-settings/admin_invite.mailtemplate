@@ -17,7 +17,7 @@
                     <table id="header" style="line-height: 1.6; font-size: 12px; font-family: Helvetica,Arial,sans-serif; border: 1px solid #ffffff; color: #444444;" width="100%" border="0" cellspacing="0" cellpadding="0" bgcolor="#FFFFFF">
                       <tbody>
                         <tr>
-                          <td colspan="2" style="color:#FFFFFF;" background="http://www.nimbix.net/_images/white-grad-active.png" height="30" valign="bottom">.</td>
+                          <td colspan="2" style="color:#FFFFFF;" background="https://atos.net/wp-content/uploads/2022/11/white-grad-active.png" height="30" valign="bottom">.</td>
                         </tr>
                         <tr>
                             <td style="line-height:32px; padding-left:30px;" valign="baseline"><span style="font-size:32px;"><a style="text-decoration:none;" title="JARVICE" href="http://www.nimbix.net/platform/"><h1>JARVICE</h1></a></span></td>
@@ -58,11 +58,11 @@
                         <tr style="font-size:11px; color:#999999;">
                           <td colspan="2" style="border-top:1px solid #D9D9D9;">
                           <div style="padding-top:28px; float:right;">
-                            <a href="http://twitter.com/"><img src="http://www.nimbix.net/wp-content/uploads/2014/06/twitterremailer.png" alt="twitter" width="16" height="16"/></a>&nbsp;<a href="http://www.linkedin.com/"><img src="http://www.nimbix.net/wp-content/uploads/2014/06/linkedinremailer.png" alt="linkedin" width="16" height="16"/></a>
+                            <a href="http://twitter.com/"><img src="https://atos.net/wp-content/uploads/2022/11/twitterremailer.png" alt="twitter" width="16" height="16"/></a>&nbsp;<a href="http://www.linkedin.com/"><img src="https://atos.net/wp-content/uploads/2022/11/linkedinremailer.png" alt="linkedin" width="16" height="16"/></a>
                           </div>
-                          <div style="padding-top:15px; padding-bottom:1px;"><img src="http://www.nimbix.net/wp-content/uploads/2014/06/date-button.gif" style="vertical-align: middle" alt="Date" width="13" height="13"/>&nbsp;Email sent {{datetime}}.
+                          <div style="padding-top:15px; padding-bottom:1px;"><img src="https://atos.net/wp-content/uploads/2022/11/date-button.gif" style="vertical-align: middle" alt="Date" width="13" height="13"/>&nbsp;Email sent {{datetime}}.
                           </div>
-                          <div><img src="http://www.nimbix.net/wp-content/uploads/2014/06/comment-grey-bubble.png" style="vertical-align: middle;" alt="Contact" width="12" height="12"/><span>&nbsp;For any requests, please contact a system admin&nbsp;</span>
+                          <div><img src="https://atos.net/wp-content/uploads/2022/11/comment-grey-bubble.png" style="vertical-align: middle;" alt="Contact" width="12" height="12"/><span>&nbsp;For any requests, please contact a system admin&nbsp;</span>
                           </div></td>
                         </tr>
                         <tr>
