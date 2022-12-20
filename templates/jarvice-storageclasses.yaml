@@ -106,6 +106,8 @@ provisioner: {{ .Values.jarvice_bird_server.persistence.storageClassProvisioner 
 {{- if (eq "kubernetes.io/aws-ebs" .Values.jarvice_bird_server.persistence.storageClassProvisioner) }}
 parameters:
   type: gp2
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
 mountOptions:
   - debug
 {{- end }}
@@ -113,12 +115,17 @@ mountOptions:
 parameters:
   type: pd-standard
   replication-type: none
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
 mountOptions:
   - debug
 {{- end }}
 {{- if (eq "pd.csi.storage.gke.io" .Values.jarvice_bird_server.persistence.storageClassProvisioner) }}
 parameters:
   type: pd-standard
+  type: pd-ssd
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
 {{- end }}
 {{- if (eq "kubernetes.io/azure-disk" .Values.jarvice_bird_server.persistence.storageClassProvisioner) }}
 parameters:
@@ -126,6 +133,9 @@ parameters:
   kind: Managed
   storageaccounttype: StandardSSD_LRS
 volumeBindingMode: Immediate
+  storageaccounttype: Premium_LRS
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
 {{- end }}
 ---
 {{- end }}

@@ -357,7 +357,7 @@ metadata:
   namespace: jarvice-system
 data:
   jarvice-bird-config.json: |-
-{{ .Files.Get "configmaps/jarvice-bird-config.json" | indent 4 }}
+{{ .Files.Get "files/jarvice-bird-config.json" | indent 4 }}
 ---
 {{- end }}
 {{- if empty .Values.jarvice_bird.nginx.configMap }}
@@ -367,7 +367,7 @@ metadata:
   name: jarvice-bird-nginx-config
 data:
   jarvice-bird-nginx.conf: |-
-{{ .Files.Get "configmaps/jarvice-bird-nginx.conf" | indent 4 }}
+{{ .Files.Get "files/jarvice-bird-nginx.conf" | indent 4 }}
 ---
 {{- end }}
 {{- end }}
