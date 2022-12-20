@@ -96,6 +96,7 @@ allowVolumeExpansion: true
 {{- end }}
 ---
 {{- end }}
+{{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if and .Values.jarvice_bird_server.persistence.enabled (not (empty .Values.jarvice_bird_server.persistence.storageClass)) (not (empty .Values.jarvice_bird_server.persistence.storageClassProvisioner)) }}
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
@@ -135,4 +136,5 @@ volumeBindingMode: WaitForFirstConsumer
 allowVolumeExpansion: true
 {{- end }}
 ---
+{{- end }}
 {{- end }}
