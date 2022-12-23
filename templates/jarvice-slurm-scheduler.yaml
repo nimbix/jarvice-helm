@@ -187,6 +187,27 @@ spec:
             value: {{ .Values.jarvice.JARVICE_LOCAL_REGISTRY }}
           - name: JARVICE_LOCAL_REPO_BASE
             value: {{ .Values.jarvice.JARVICE_LOCAL_REPO_BASE }}
+          - name: JARVICE_JOBS_DOMAIN
+{{- if (hasPrefix "lookup" .Values.jarvice.JARVICE_JOBS_DOMAIN) }}
+{{- if (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE) }}
+            value: '{{- .Values.jarvice_k8s_scheduler.ingressHost -}}{{- trimPrefix "lookup" .Values.jarvice.JARVICE_JOBS_DOMAIN -}}'
+{{- else }}
+            value: '{{- .Values.jarvice_mc_portal.ingressHost -}}{{- trimPrefix "lookup" .Values.jarvice.JARVICE_JOBS_DOMAIN -}}'
+{{- end }}
+{{- else }}
+            value: "{{ .Values.jarvice.JARVICE_JOBS_DOMAIN }}"
+{{- end }}
+          - name: JARVICE_JOBS_INGRESS_CLASS
+            value: "{{ .Values.jarvice.ingress.class }}"
+          - name: JARVICE_JOBS_INGRESS_ANNOTATIONS
+            value: '{{ .Values.jarvice.JARVICE_JOBS_INGRESS_ANNOTATIONS }}'
+{{- if (not (empty .Values.jarvice.ingress.tls.issuer.name)) }}
+          - name: JARVICE_JOBS_INGRESS_CERT_ISSUER
+            value: "{{ .Values.jarvice.ingress.tls.issuer.name }}"
+{{- else if (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) }}
+          - name: JARVICE_JOBS_INGRESS_CERT_CLUSTER_ISSUER
+            value: "{{ .Values.jarvice.ingress.tls.cluster_issuer.name }}"
+{{- end }}
 {{- if (not (empty .Values.jarvice.cacert.configMap)) }}
         volumeMounts:
         - name: ca-jarvice-user
