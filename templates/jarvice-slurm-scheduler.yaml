@@ -1,0 +1,240 @@
+{{- if .Values.jarvice_slurm_scheduler.enabled }}
+{{- if gt (.Values.jarvice_slurm_scheduler.replicaCount | int) 1 }}
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+apiVersion: policy/v1
+{{- else }}
+apiVersion: policy/v1beta1
+{{- end }}
+kind: PodDisruptionBudget
+metadata:
+  name: jarvice-slurm-scheduler
+spec:
+  selector:
+    matchLabels:
+      deployment: jarvice-slurm-scheduler
+  minAvailable: {{ .Values.jarvice_slurm_scheduler.pdb.minAvailable }}
+---
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jarvice-slurm-scheduler
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-slurm-scheduler
+    deployment: jarvice-slurm-scheduler
+    jarvice-system: core
+spec:
+  replicas: {{ .Values.jarvice_slurm_scheduler.replicaCount }}
+  selector:
+    matchLabels:
+      deployment: jarvice-slurm-scheduler
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-slurm-scheduler
+        deployment: jarvice-slurm-scheduler
+        jarvice-system: core
+      annotations:
+        deployment-date: {{ now | quote }}
+    spec:
+      serviceAccountName: jarvice-system
+{{- if (not (empty .Values.jarvice_slurm_scheduler.tolerations)) }}
+      tolerations: {{ .Values.jarvice_slurm_scheduler.tolerations }}
+{{- else if (not (empty .Values.jarvice.tolerations)) }}
+      tolerations: {{ .Values.jarvice.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice_slurm_scheduler.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice_slurm_scheduler.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.nodeSelector }}
+{{- end }}
+      affinity:
+{{- if (not (empty .Values.jarvice_slurm_scheduler.nodeAffinity)) }}
+        nodeAffinity: {{ .Values.jarvice_slurm_scheduler.nodeAffinity }}
+{{- else if (not (empty .Values.jarvice.nodeAffinity)) }}
+        nodeAffinity: {{ .Values.jarvice.nodeAffinity }}
+{{- end }}
+        podAntiAffinity:
+        {{- if eq .Values.jarvice_slurm_scheduler.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                deployment: jarvice-slurm-scheduler
+        {{- else if eq .Values.jarvice_slurm_scheduler.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  deployment: jarvice-slurm-scheduler
+        {{- end }}
+      imagePullSecrets:
+      - name: jarvice-docker
+{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
+      volumes:
+      - name: ca-jarvice-user
+        configMap:
+          name: {{ .Values.jarvice.cacert.configMap }}
+          optional: true
+          defaultMode: 444
+{{- end }}
+      containers:
+      - name: jarvice-slurm-scheduler
+        image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-slurm-scheduler:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+{{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
+        imagePullPolicy: Always
+{{- else }}
+        imagePullPolicy: IfNotPresent
+{{- end }}
+        ports:
+          - name: http
+            containerPort: 8080
+        readinessProbe:
+          httpGet:
+            scheme: HTTP
+            port: http
+            path: /ready
+          initialDelaySeconds: {{ .Values.jarvice_slurm_scheduler.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jarvice_slurm_scheduler.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jarvice_slurm_scheduler.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_slurm_scheduler.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_slurm_scheduler.readinessProbe.failureThreshold }}
+        livenessProbe:
+          httpGet:
+            scheme: HTTP
+            port: http
+            path: /live
+          initialDelaySeconds: {{ .Values.jarvice_slurm_scheduler.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jarvice_slurm_scheduler.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jarvice_slurm_scheduler.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_slurm_scheduler.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_slurm_scheduler.livenessProbe.failureThreshold }}
+        env:
+          - name: JARVICE_SLURM_CLUSTER_ADDR
+{{- if and (empty .Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_CLUSTER_ADDR) .Values.jarvice_slurm_scheduler.enabled }}
+{{- required "***** !!!!! slurm headnode address required. Please provide a value for jarvice_slurm_scheduler.env.JARVICE_SLURM_CLUSTER_ADDR. !!!!! *****" .Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_CLUSTER_ADDR }}
+{{- end }}
+            value: {{ .Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_CLUSTER_ADDR }}
+          - name: JARVICE_SLURM_CLUSTER_PORT
+            value: "{{ .Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_CLUSTER_PORT }}"
+          - name: JARVICE_SLURM_SSH_USER
+            valueFrom:
+              secretKeyRef:
+                key: user
+                name: jarvice-slurm-scheduler
+          - name: JARVICE_SLURM_SSH_PKEY
+            valueFrom:
+              secretKeyRef:
+                key: pkey
+                name: jarvice-slurm-scheduler
+          - name: JARVICE_SLURM_SCHED_LOGLEVEL
+            value: "{{ .Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_SCHED_LOGLEVEL }}"
+          - name: JARVICE_SLURM_OVERLAY_SIZE
+            value: "{{ .Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_OVERLAY_SIZE }}"
+          - name: JARVICE_SYSTEM_K8S
+{{- if empty .Values.jarvice.JARVICE_SYSTEM_K8S }}
+            value: "true"
+{{- else }}
+            value: "{{ .Values.jarvice.JARVICE_SYSTEM_K8S }}"
+{{- end }}
+          - name: JARVICE_EXPERIMENTAL
+{{- if empty .Values.jarvice.JARVICE_EXPERIMENTAL }}
+            value: "false"
+{{- else }}
+            value: "{{ .Values.jarvice.JARVICE_EXPERIMENTAL }}"
+{{- end }}
+          - name: JARVICE_CLUSTER_TYPE
+{{- if empty .Values.jarvice.JARVICE_CLUSTER_TYPE }}
+            value: "upstream"
+{{- else }}
+            value: "{{ .Values.jarvice.JARVICE_CLUSTER_TYPE }}"
+{{- end }}
+{{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
+          - name: JARVICE_DAL_URL
+            value: "http://jarvice-dal:8080"
+          - name: JARVICE_SCHED_URL
+            value: "https://jarvice-scheduler:9443"
+{{- end }}
+          - name: JARVICE_SCHED_SERVER_KEY
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-sched-server-key
+                key: JARVICE_SCHED_SERVER_KEY
+                optional: true
+          - name: JARVICE_JOBS_NAMESPACE
+{{- if empty .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
+            value: {{ .Release.Namespace }}-jobs
+{{- else }}
+            value: {{ .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
+{{- end }}
+          - name: JARVICE_SYSTEM_NAMESPACE
+{{- if empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+            value: {{ .Release.Namespace }}
+{{- else }}
+            value: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+{{- end }}
+          - name: JARVICE_SYSTEM_REGISTRY
+            value: {{ include "jarvice.registry" . }}
+          - name: JARVICE_SYSTEM_REPO_BASE
+            value: {{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}
+          - name: JARVICE_IMAGES_TAG
+            value: {{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+          - name: JARVICE_LOCAL_REGISTRY
+            value: {{ .Values.jarvice.JARVICE_LOCAL_REGISTRY }}
+          - name: JARVICE_LOCAL_REPO_BASE
+            value: {{ .Values.jarvice.JARVICE_LOCAL_REPO_BASE }}
+          - name: JARVICE_JOBS_DOMAIN
+{{- if (hasPrefix "lookup" .Values.jarvice.JARVICE_JOBS_DOMAIN) }}
+{{- if (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE) }}
+            value: '{{- .Values.jarvice_k8s_scheduler.ingressHost -}}{{- trimPrefix "lookup" .Values.jarvice.JARVICE_JOBS_DOMAIN -}}'
+{{- else }}
+            value: '{{- .Values.jarvice_mc_portal.ingressHost -}}{{- trimPrefix "lookup" .Values.jarvice.JARVICE_JOBS_DOMAIN -}}'
+{{- end }}
+{{- else }}
+            value: "{{ .Values.jarvice.JARVICE_JOBS_DOMAIN }}"
+{{- end }}
+          - name: JARVICE_JOBS_INGRESS_CLASS
+            value: "{{ .Values.jarvice.ingress.class }}"
+          - name: JARVICE_JOBS_INGRESS_ANNOTATIONS
+            value: '{{ .Values.jarvice.JARVICE_JOBS_INGRESS_ANNOTATIONS }}'
+{{- if (not (empty .Values.jarvice.ingress.tls.issuer.name)) }}
+          - name: JARVICE_JOBS_INGRESS_CERT_ISSUER
+            value: "{{ .Values.jarvice.ingress.tls.issuer.name }}"
+{{- else if (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) }}
+          - name: JARVICE_JOBS_INGRESS_CERT_CLUSTER_ISSUER
+            value: "{{ .Values.jarvice.ingress.tls.cluster_issuer.name }}"
+{{- end }}
+{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
+        volumeMounts:
+        - name: ca-jarvice-user
+          mountPath: /etc/ssl/certs/ca-certificates.crt
+          subPath: ca-certificates.crt
+          readOnly: true
+{{- end }}
+        resources:
+{{- if .Values.jarvice_slurm_scheduler.resources }}
+{{ toYaml .Values.jarvice_slurm_scheduler.resources | indent 10 }}
+{{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-slurm-scheduler
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-slurm-scheduler
+spec:
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+    name: http
+  selector:
+    deployment: jarvice-slurm-scheduler
+---
+{{- end }}
