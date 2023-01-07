@@ -32,3 +32,6 @@ output "cluster_output_message" {
     value = local.cluster_output_message
 }
 
+output "jarvice_slurm_schedulers" {
+    value = local.jarvice_slurm_schedulers
+}

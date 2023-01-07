@@ -765,6 +765,9 @@ jarvice_k8s_scheduler:
     JARVICE_SCHED_JOB_GID:  # set to numeric value to override GID for jobs
 
 jarvice_slurm_scheduler:
+  enabled: false
+  networkPolicy:
+    enabled: false
   replicaCount: 2
   # PodDisruptionBudget default requires 25% minimum of pods must be running
   pdb:
@@ -801,7 +804,6 @@ jarvice_slurm_scheduler:
   # define each slurm scheduler
   schedulers:
   - name: default
-    enabled: false
     env:
       JARVICE_SLURM_CLUSTER_ADDR: # address for slurm headnode
       # uncomment to override
@@ -842,7 +844,6 @@ jarvice_slurm_scheduler:
     # nodeSelector: # '{"node-role.jarvice.io/jarvice-slurm-scheduler": "true"}'
   # add additional slurm schedulers here
   # - name: # name for slurm-scheduler deployment (must be unique)
-  #   enabled: false
   #     env:
   #     JARVICE_SLURM_CLUSTER_ADDR: # address for slurm headnode
   #     # uncomment to override

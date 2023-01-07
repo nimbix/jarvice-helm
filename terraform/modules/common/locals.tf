@@ -21,7 +21,17 @@ EOF
         lookup(yamldecode("XXXdummy: value\n\n${var.cluster.helm.jarvice["values_yaml"]}"), "jarvice", {})
     )
 
+    jarvice_slurm_helm_values = merge(
+        lookup(yamldecode(local.jarvice_helm_values_min_defaults), "jarvice_slurm_scheduler", {}),
+        lookup(yamldecode("XXXdummy: value\n\n${fileexists(var.global.helm.jarvice["values_file"]) ? file(var.global.helm.jarvice["values_file"]) : ""}"), "jarvice_slurm_scheduler", {}),
+        lookup(yamldecode("XXXdummy: value\n\n${local.jarvice_helm_override_yaml}"), "jarvice_slurm_scheduler", {}),
+        lookup(yamldecode("XXXdummy: value\n\n${var.global.helm.jarvice["values_yaml"]}"), "jarvice_slurm_scheduler", {}),
+        lookup(yamldecode("XXXdummy: value\n\n${var.cluster.helm.jarvice["values_yaml"]}"), "jarvice_slurm_scheduler", {})
+    )
+
     jarvice_cluster_type = local.jarvice_helm_values["JARVICE_CLUSTER_TYPE"] == "downstream" ? "downstream" : "upstream"
+
+    jarvice_slurm_schedulers = local.jarvice_slurm_helm_values["enabled"] ? local.jarvice_slurm_helm_values["schedulers"] : []
 }
 
 locals {

@@ -1,5 +1,5 @@
+{{- if .Values.jarvice_slurm_scheduler.enabled }}
 {{- range .Values.jarvice_slurm_scheduler.schedulers }}
-{{- if .enabled }}
 {{- if gt (.replicaCount | int) 1 }}
 {{- if (semverCompare ">=1.21-0" $.Capabilities.KubeVersion.GitVersion) }}
 apiVersion: policy/v1
@@ -221,11 +221,19 @@ spec:
             value: "https://jarvice-scheduler:9443"
 {{- end }}
           - name: JARVICE_SCHED_SERVER_KEY
+{{- if (not (empty .env.JARVICE_SCHED_SERVER_KEY)) }}
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-sched-server-key-{{ .name }}
+                key: JARVICE_SCHED_SERVER_KEY
+                optional: true
+{{- else }}
             valueFrom:
               secretKeyRef:
                 name: jarvice-sched-server-key
                 key: JARVICE_SCHED_SERVER_KEY
                 optional: true
+{{- end }}
           - name: JARVICE_JOBS_NAMESPACE
 {{- if empty $.Values.jarvice.JARVICE_JOBS_NAMESPACE }}
             value: {{ $.Release.Namespace }}-jobs
@@ -269,6 +277,23 @@ spec:
           - name: JARVICE_JOBS_INGRESS_CERT_CLUSTER_ISSUER
             value: "{{ $.Values.jarvice.ingress.tls.cluster_issuer.name }}"
 {{- end }}
+{{- if (not (empty $.Values.jarvice.JARVICE_HTTP_PROXY)) }}
+          - name: http_proxy
+            value: "{{ $.Values.jarvice.JARVICE_HTTP_PROXY }}"
+{{- end }}
+{{- if (not (empty $.Values.jarvice.JARVICE_HTTPS_PROXY)) }}
+          - name: https_proxy
+            value: "{{ $.Values.jarvice.JARVICE_HTTPS_PROXY }}"
+{{- end }}
+{{- if or $.Values.jarvice.JARVICE_HTTPS_PROXY $.Values.jarvice.JARVICE_HTTP_PROXY $.Values.jarvice.JARVICE_NO_PROXY }}
+{{- if (not (empty $.Values.jarvice.JARVICE_NO_PROXY)) }}
+          - name: no_proxy
+            value: '{{ include "jarvice.no_proxy" $ }},{{ $.Values.jarvice.JARVICE_NO_PROXY }}'
+{{- else }}
+          - name: no_proxy
+            value: '{{ include "jarvice.no_proxy" $ }}'
+{{- end }}
+{{- end }}
 {{- if (not (empty $.Values.jarvice.cacert.configMap)) }}
         volumeMounts:
         - name: ca-jarvice-user
@@ -298,5 +323,127 @@ spec:
   selector:
     deployment: jarvice-slurm-scheduler-{{ .name }}
 ---
+{{- if or $.Values.jarvice_slurm_scheduler.networkPolicy.enabled $.Values.jarvice.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: jarvice-slurm-scheduler-{{ .name }}
+spec:
+  podSelector:
+    matchLabels:
+      deployment: jarvice-slurm-scheduler-{{ .name }}
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: {{ $.Release.Namespace }}
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 8080
+{{- if (eq "downstream" $.Values.jarvice.JARVICE_CLUSTER_TYPE) }}
+{{- if (empty .ingressHost) }}
+  - {}
+{{- else }}
+  - from:
+    - namespaceSelector: {}
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 8080
+{{- end }}
+{{- end }}
+---
+{{- end }}
+{{- if (eq "downstream" $.Values.jarvice.JARVICE_CLUSTER_TYPE) }}
+{{- if (empty .ingressHost) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-slurm-scheduler-{{ .name }}-lb
+  labels:
+    {{- include "jarvice.release_labels" $ | indent 4 }}
+    component: jarvice-slurm-scheduler-{{ .name }}
+spec:
+  type: LoadBalancer
+  loadBalancerIP: {{ .loadBalancerIP }}
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+    name: http
+  selector:
+    deployment: jarvice-slurm-scheduler-{{ .name }}
+---
+{{- else }}
+{{- if (semverCompare ">=1.21-0" $.Capabilities.KubeVersion.GitVersion) }}
+apiVersion: networking.k8s.io/v1
+{{- else }}
+apiVersion: networking.k8s.io/v1beta1
+{{- end }}
+kind: Ingress
+metadata:
+  name: jarvice-slurm-scheduler-{{ .name }}
+  labels:
+    {{- include "jarvice.release_labels" $ | indent 4 }}
+    component: jarvice-slurm-scheduler-{{ .name }}
+  annotations:
+{{- if (not (semverCompare ">=1.21-0" $.Capabilities.KubeVersion.GitVersion)) }}
+{{- if (not (empty $.Values.jarvice.ingress.class)) }}
+    kubernetes.io/ingress.class: {{ $.Values.jarvice.ingress.class }}
+{{- end }}
+{{- end }}
+{{- if and (not (empty $.Values.jarvice.ingress.tls.issuer.name)) (and (empty $.Values.jarvice.ingress.tls.crt) (empty $.Values.jarvice.ingress.tls.key)) }}
+    cert-manager.io/issuer: {{ $.Values.jarvice.ingress.tls.issuer.name }}
+{{- else if and (not (empty $.Values.jarvice.ingress.tls.cluster_issuer.name)) (and (empty $.Values.jarvice.ingress.tls.crt) (empty $.Values.jarvice.ingress.tls.key)) }}
+    cert-manager.io/cluster-issuer: {{ $.Values.jarvice.ingress.tls.cluster_issuer.name }}
+{{- end }}
+{{- if .ingressAnnotations }}
+{{- if (kindIs "string" .ingressAnnotations) }}
+{{ toYaml (fromJson .ingressAnnotations) | indent 4 }}
+{{- else }}
+{{ toYaml .ingressAnnotations | indent 4 }}
+{{- end }}
+{{- end }}
+spec:
+{{- if (semverCompare ">=1.21-0" $.Capabilities.KubeVersion.GitVersion) }}
+{{- if (not (empty $.Values.jarvice.ingress.class)) }}
+  ingressClassName: {{ $.Values.jarvice.ingress.class }}
+{{- end }}
+{{- end }}
+  rules:
+  - http:
+      paths:
+{{- if (semverCompare ">=1.21-0" $.Capabilities.KubeVersion.GitVersion) }}
+      - backend:
+          service:
+            name: jarvice-slurm-scheduler-{{ .name }}
+            port:
+              name: http
+        pathType: Prefix
+        path: /
+{{- else }}
+      - backend:
+          serviceName: jarvice-slurm-scheduler-{{ .name }}
+          servicePort: http
+{{- end }}
+{{- if ne "-" .ingressHost }}
+    host: '{{- .ingressHost -}}'
+{{- if or (not (empty $.Values.jarvice.ingress.tls.cluster_issuer.name)) (not (empty $.Values.jarvice.ingress.tls.issuer.name)) (and (not (empty $.Values.jarvice.ingress.tls.crt)) (not (empty $.Values.jarvice.ingress.tls.key))) }}
+  tls:
+  - hosts:
+    - '{{- .ingressHost -}}'
+{{- if and (not (empty $.Values.jarvice.ingress.tls.crt)) (not (empty $.Values.jarvice.ingress.tls.key)) }}
+    secretName: 'tls-jarvice'
+{{- else }}
+    secretName: 'tls-{{- .ingressHost -}}'
+{{- end }}
+{{- end }}
+{{- end }}
+---
+{{- end }}
+{{- end }}
 {{- end }}
 {{- end }}

@@ -106,3 +106,24 @@ EOF
     depends_on = [module.helm]
 }
 
+locals {
+      slurm_hosts = [ for key in module.common.jarvice_slurm_schedulers : lookup(local.helm_jarvice_values["jarvice"], "JARVICE_CLUSTER_TYPE", "upstream") == "downstream" ? key.ingressHost : "http://jarvice-slurm-scheduler-${key.name}.${module.helm.metadata["jarvice"]["namespace"]}.svc.cluster.local:8080" ]
+}
+
+output "slurm_info" {
+    value = <<EOF
+===============================================================================
+
+JXE slurm scheduler URLs
+
+%{ for key in local.slurm_hosts }
+
+slurm cluster URL: ${key}
+
+%{ endfor }
+
+===============================================================================
+EOF
+
+    depends_on = [module.helm]
+}
