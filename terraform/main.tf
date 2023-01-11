@@ -187,7 +187,7 @@ output "${key}" {
     value = format("\n\nGKE Cluster Configuration: %s\n%s\n", "${key}", module.${key}.cluster_info)
 }
 output "${key}_slurm" {
-    value = format("\n\nGKE slurm Cluster Configuration: %s\n%s\n", "${key}", module.${key}.slurm_info)
+    value = module.${key}.slurm_info
 }
 %{ endfor }
 ################
@@ -248,6 +248,9 @@ module "${key}" {
 output "${key}" {
     value = format("\n\nEKS Cluster Configuration: %s\n%s\n", "${key}", module.${key}.cluster_info)
 }
+output "${key}_slurm" {
+    value = module.${key}.slurm_info
+}
 %{ endfor }
 ################
 # AKS clusters #
@@ -291,7 +294,9 @@ module "${key}" {
 output "${key}" {
     value = format("\n\nAKS Cluster Configuration: %s\n%s\n", "${key}", module.${key}.cluster_info)
 }
+output "${key}_slurm" {
+    value = module.${key}.slurm_info
+}
 %{ endfor }
 EOF
 }
-

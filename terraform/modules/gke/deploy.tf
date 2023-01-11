@@ -246,6 +246,7 @@ EOF
 }
 
 resource "kubernetes_daemonset" "nvidia_driver_installer_cos" {
+    count = var.cluster.compute_node_pools == null ? 0 : 1
     metadata {
         name = "nvidia-driver-installer-cos"
         namespace = "kube-system"
@@ -398,6 +399,7 @@ resource "kubernetes_daemonset" "nvidia_driver_installer_cos" {
 }
 
 resource "kubernetes_daemonset" "nvidia_driver_installer_ubuntu" {
+    count = var.cluster.compute_node_pools == null ? 0 : 1
     metadata {
         name = "nvidia-driver-installer-ubuntu"
         namespace = "kube-system"
