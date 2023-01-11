@@ -766,6 +766,8 @@ jarvice_k8s_scheduler:
 
 jarvice_slurm_scheduler:
   enabled: false
+  networkPolicy:
+    enabled: false
   replicaCount: 2
   # PodDisruptionBudget default requires 25% minimum of pods must be running
   pdb:
@@ -796,13 +798,65 @@ jarvice_slurm_scheduler:
   nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-slurm-scheduler", "operator": "Exists"}]}] }}'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-slurm-scheduler": "true"}'
   env:
-    JARVICE_SLURM_CLUSTER_ADDR:      # address for slurm headnode
     JARVICE_SLURM_CLUSTER_PORT: 22   # slurm headnode ssh port
     JARVICE_SLURM_SCHED_LOGLEVEL: 30
     JARVICE_SLURM_OVERLAY_SIZE: 128
-  sshConf:
-    user: # base64 encoded user to ssh into slurm headnode (e.g. bmltYml4)
-    pkey: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
+    JARVICE_SLURM_HTTPS_PROXY: ""
+    JARVICE_SLURM_NO_PROXY: ""
+    JARVICE_SINGULARITY_VERBOSE: false
+    JARVICE_SINGULARITY_CACHEDIR: "/tmp"
+  # define each slurm scheduler
+  schedulers:
+  - name: default
+    env:
+      JARVICE_SLURM_CLUSTER_ADDR: # address for slurm headnode
+      # uncomment to override
+      # JARVICE_SLURM_CLUSTER_PORT: 22   # slurm headnode ssh port
+      # JARVICE_SLURM_SCHED_LOGLEVEL: 30
+      # JARVICE_SLURM_OVERLAY_SIZE: 128
+    sshConf:
+      user: # base64 encoded user to ssh into slurm headnode (e.g. bmltYml4)
+      pkey: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.    replicaCount: 2
+    # local override values
+    # PodDisruptionBudget default requires 25% minimum of pods must be running
+    # pdb:
+    #   minAvailable: "25%"
+    # antiAffinity default of "soft" prefers that pods run on diff nodes.
+    # Set to "hard" to require pods to run on diff nodes.
+    # antiAffinity: "soft"
+    # resources:
+    #   requests:
+    #     cpu: 1
+    #     memory: 2Gi
+    #   limits:
+    #     cpu: 4
+    #     memory: 8Gi
+    # readinessProbe:
+    #   initialDelaySeconds: 5
+    #   periodSeconds: 30
+    #   timeoutSeconds: 3
+    #   successThreshold: 1
+    #   failureThreshold: 3
+    # livenessProbe:
+    #   initialDelaySeconds: 30
+    #   periodSeconds: 60
+    #   timeoutSeconds: 3
+    #   successThreshold: 1
+    #   failureThreshold: 3
+    # tolerations: # '[{"key": "node-role.jarvice.io/jarvice-slurm-scheduler", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-slurm-scheduler", "effect": "NoSchedule", "operator": "Exists"}]'
+    # nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-slurm-scheduler", "operator": "Exists"}]}] }}'
+    # nodeSelector: # '{"node-role.jarvice.io/jarvice-slurm-scheduler": "true"}'
+  # add additional slurm schedulers here
+  # - name: # name for slurm-scheduler deployment (must be unique)
+  #     env:
+  #     JARVICE_SLURM_CLUSTER_ADDR: # address for slurm headnode
+  #     # uncomment to override
+  #     # JARVICE_SLURM_CLUSTER_PORT: 22   # slurm headnode ssh port
+  #     # JARVICE_SLURM_SCHED_LOGLEVEL: 30
+  #     # JARVICE_SLURM_OVERLAY_SIZE: 128
+  #   sshConf:
+  #     user: # base64 encoded user to ssh into slurm headnode (e.g. bmltYml4)
+  #     pkey: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.    replicaCount: 2
 
 jarvice_pod_scheduler:
   enabled: true

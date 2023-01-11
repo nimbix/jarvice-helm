@@ -1,91 +1,124 @@
 {{- if .Values.jarvice_slurm_scheduler.enabled }}
-{{- if gt (.Values.jarvice_slurm_scheduler.replicaCount | int) 1 }}
-{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+{{- range .Values.jarvice_slurm_scheduler.schedulers }}
+{{- if gt (.replicaCount | int) 1 }}
+{{- if (semverCompare ">=1.21-0" $.Capabilities.KubeVersion.GitVersion) }}
 apiVersion: policy/v1
 {{- else }}
 apiVersion: policy/v1beta1
 {{- end }}
 kind: PodDisruptionBudget
 metadata:
-  name: jarvice-slurm-scheduler
+  name: jarvice-slurm-scheduler-{{ .name }}
 spec:
   selector:
     matchLabels:
-      deployment: jarvice-slurm-scheduler
-  minAvailable: {{ .Values.jarvice_slurm_scheduler.pdb.minAvailable }}
+      deployment: jarvice-slurm-scheduler-{{ .name }}
+{{- if (not (empty .pdb.minAvailable)) }}
+  minAvailable: {{ .pdb.minAvailable }}
+{{- else }}
+  minAvailable: {{ $.Values.jarvice_slurm_scheduler.pdb.minAvailable }}
+{{- end }}
 ---
 {{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: jarvice-slurm-scheduler
+  name: jarvice-slurm-scheduler-{{ .name }}
   labels:
-    {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-slurm-scheduler
-    deployment: jarvice-slurm-scheduler
+    {{- include "jarvice.release_labels" $ | indent 4 }}
+    component: jarvice-slurm-scheduler-{{ .name }}
+    deployment: jarvice-slurm-scheduler-{{ .name }}
     jarvice-system: core
 spec:
-  replicas: {{ .Values.jarvice_slurm_scheduler.replicaCount }}
+{{- if (not (empty .replicaCount)) }}
+  replicas: {{ .replicaCount }}
+{{- else }}
+  replicas: {{ $.Values.jarvice_slurm_scheduler.replicaCount }}
+{{- end }}
   selector:
     matchLabels:
-      deployment: jarvice-slurm-scheduler
+      deployment: jarvice-slurm-scheduler-{{ .name }}
   template:
     metadata:
       labels:
-        {{- include "jarvice.release_labels" . | indent 8 }}
-        component: jarvice-slurm-scheduler
-        deployment: jarvice-slurm-scheduler
+        {{- include "jarvice.release_labels" $ | indent 8 }}
+        component: jarvice-slurm-scheduler-{{ .name }}
+        deployment: jarvice-slurm-scheduler-{{ .name }}
         jarvice-system: core
       annotations:
         deployment-date: {{ now | quote }}
     spec:
       serviceAccountName: jarvice-system
-{{- if (not (empty .Values.jarvice_slurm_scheduler.tolerations)) }}
-      tolerations: {{ .Values.jarvice_slurm_scheduler.tolerations }}
-{{- else if (not (empty .Values.jarvice.tolerations)) }}
-      tolerations: {{ .Values.jarvice.tolerations }}
+{{- if (not (empty .tolerations)) }}
+      tolerations: {{ .tolerations }}
+{{- else if (not (empty $.Values.jarvice_slurm_scheduler.tolerations)) }}
+      tolerations: {{ $.Values.jarvice_slurm_scheduler.tolerations }}
+{{- else if (not (empty $.Values.jarvice.tolerations)) }}
+      tolerations: {{ $.Values.jarvice.tolerations }}
 {{- end }}
-{{- if (not (empty .Values.jarvice_slurm_scheduler.nodeSelector)) }}
-      nodeSelector: {{ .Values.jarvice_slurm_scheduler.nodeSelector }}
-{{- else if (not (empty .Values.jarvice.nodeSelector)) }}
-      nodeSelector: {{ .Values.jarvice.nodeSelector }}
+{{- if (not (empty .nodeSelector)) }}
+      nodeSelector: {{ .nodeSelector }}
+{{- else if (not (empty $.Values.jarvice_slurm_scheduler.nodeSelector)) }}
+      nodeSelector: {{ $.Values.jarvice_slurm_scheduler.nodeSelector }}
+{{- else if (not (empty $.Values.jarvice.nodeSelector)) }}
+      nodeSelector: {{ $.Values.jarvice.nodeSelector }}
 {{- end }}
       affinity:
-{{- if (not (empty .Values.jarvice_slurm_scheduler.nodeAffinity)) }}
-        nodeAffinity: {{ .Values.jarvice_slurm_scheduler.nodeAffinity }}
-{{- else if (not (empty .Values.jarvice.nodeAffinity)) }}
-        nodeAffinity: {{ .Values.jarvice.nodeAffinity }}
+{{- if (not (empty .nodeAffinity)) }}
+        nodeAffinity: {{ .nodeAffinity }}
+{{- else if (not (empty $.Values.jarvice_slurm_scheduler.nodeAffinity)) }}
+        nodeAffinity: {{ $.Values.jarvice_slurm_scheduler.nodeAffinity }}
+{{- else if (not (empty $.Values.jarvice.nodeAffinity)) }}
+        nodeAffinity: {{ $.Values.jarvice.nodeAffinity }}
 {{- end }}
         podAntiAffinity:
-        {{- if eq .Values.jarvice_slurm_scheduler.antiAffinity "hard" }}
+{{- if (not (empty .antiAffinity)) }}
+        {{- if eq .antiAffinity "hard" }}
           requiredDuringSchedulingIgnoredDuringExecution:
           - topologyKey: "kubernetes.io/hostname"
             labelSelector:
               matchLabels:
-                deployment: jarvice-slurm-scheduler
-        {{- else if eq .Values.jarvice_slurm_scheduler.antiAffinity "soft" }}
+                deployment: jarvice-slurm-scheduler-{{ .name }}
+        {{- else if eq .antiAffinity "soft" }}
           preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 5
             podAffinityTerm:
               topologyKey: "kubernetes.io/hostname"
               labelSelector:
                 matchLabels:
-                  deployment: jarvice-slurm-scheduler
+                  deployment: jarvice-slurm-scheduler-{{ .name }}
         {{- end }}
+{{- else }}
+        {{- if eq $.Values.jarvice_slurm_scheduler.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                deployment: jarvice-slurm-scheduler-{{ .name }}
+        {{- else if eq $.Values.jarvice_slurm_scheduler.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  deployment: jarvice-slurm-scheduler-{{ .name }}
+        {{- end }}
+{{- end }}
       imagePullSecrets:
       - name: jarvice-docker
-{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
+{{- if (not (empty $.Values.jarvice.cacert.configMap)) }}
       volumes:
       - name: ca-jarvice-user
         configMap:
-          name: {{ .Values.jarvice.cacert.configMap }}
+          name: {{ $.Values.jarvice.cacert.configMap }}
           optional: true
           defaultMode: 444
 {{- end }}
       containers:
-      - name: jarvice-slurm-scheduler
-        image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-slurm-scheduler:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
-{{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
+      - name: jarvice-slurm-scheduler-{{ .name }}
+        image: {{ include "jarvice.registry" $ }}/{{ $.Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-slurm-scheduler:{{ default $.Values.jarvice.JARVICE_IMAGES_TAG $.Chart.Annotations.tag }}{{- include "jarvice.version" $ }}
+{{- if and (empty $.Values.jarvice.JARVICE_IMAGES_VERSION) (empty $.Chart.Annotations.tag) }}
         imagePullPolicy: Always
 {{- else }}
         imagePullPolicy: IfNotPresent
@@ -98,117 +131,190 @@ spec:
             scheme: HTTP
             port: http
             path: /ready
-          initialDelaySeconds: {{ .Values.jarvice_slurm_scheduler.readinessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.jarvice_slurm_scheduler.readinessProbe.periodSeconds }}
-          timeoutSeconds: {{ .Values.jarvice_slurm_scheduler.readinessProbe.timeoutSeconds }}
-          successThreshold: {{ .Values.jarvice_slurm_scheduler.readinessProbe.successThreshold }}
-          failureThreshold: {{ .Values.jarvice_slurm_scheduler.readinessProbe.failureThreshold }}
+{{- if (not (empty .readinessProbe)) }}
+          initialDelaySeconds: {{ .readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .readinessProbe.successThreshold }}
+          failureThreshold: {{ .readinessProbe.failureThreshold }}
+{{- else }}
+          initialDelaySeconds: {{ $.Values.jarvice_slurm_scheduler.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ $.Values.jarvice_slurm_scheduler.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ $.Values.jarvice_slurm_scheduler.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ $.Values.jarvice_slurm_scheduler.readinessProbe.successThreshold }}
+          failureThreshold: {{ $.Values.jarvice_slurm_scheduler.readinessProbe.failureThreshold }}
+{{- end }}
         livenessProbe:
           httpGet:
             scheme: HTTP
             port: http
             path: /live
-          initialDelaySeconds: {{ .Values.jarvice_slurm_scheduler.livenessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.jarvice_slurm_scheduler.livenessProbe.periodSeconds }}
-          timeoutSeconds: {{ .Values.jarvice_slurm_scheduler.livenessProbe.timeoutSeconds }}
-          successThreshold: {{ .Values.jarvice_slurm_scheduler.livenessProbe.successThreshold }}
-          failureThreshold: {{ .Values.jarvice_slurm_scheduler.livenessProbe.failureThreshold }}
+{{- if (not (empty .livenessProbe)) }}
+          initialDelaySeconds: {{ .livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .livenessProbe.successThreshold }}
+          failureThreshold: {{ .livenessProbe.failureThreshold }}
+{{- else }}
+          initialDelaySeconds: {{ $.Values.jarvice_slurm_scheduler.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ $.Values.jarvice_slurm_scheduler.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ $.Values.jarvice_slurm_scheduler.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ $.Values.jarvice_slurm_scheduler.livenessProbe.successThreshold }}
+          failureThreshold: {{ $.Values.jarvice_slurm_scheduler.livenessProbe.failureThreshold }}
+{{- end }}
         env:
           - name: JARVICE_SLURM_CLUSTER_ADDR
-{{- if and (empty .Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_CLUSTER_ADDR) .Values.jarvice_slurm_scheduler.enabled }}
+{{- if and (empty .env.JARVICE_SLURM_CLUSTER_ADDR) .enabled }}
 {{- required "***** !!!!! slurm headnode address required. Please provide a value for jarvice_slurm_scheduler.env.JARVICE_SLURM_CLUSTER_ADDR. !!!!! *****" .Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_CLUSTER_ADDR }}
 {{- end }}
-            value: {{ .Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_CLUSTER_ADDR }}
+            value: {{ .env.JARVICE_SLURM_CLUSTER_ADDR }}
           - name: JARVICE_SLURM_CLUSTER_PORT
-            value: "{{ .Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_CLUSTER_PORT }}"
+{{- if (not (empty .env.JARVICE_SLURM_CLUSTER_PORT)) }}
+            value: "{{ .env.JARVICE_SLURM_CLUSTER_PORT }}"
+{{- else }}
+            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_CLUSTER_PORT }}"
+{{- end }}
           - name: JARVICE_SLURM_SSH_USER
             valueFrom:
               secretKeyRef:
                 key: user
-                name: jarvice-slurm-scheduler
+                name: jarvice-slurm-scheduler-{{ .name }}
           - name: JARVICE_SLURM_SSH_PKEY
             valueFrom:
               secretKeyRef:
                 key: pkey
-                name: jarvice-slurm-scheduler
+                name: jarvice-slurm-scheduler-{{ .name }}
           - name: JARVICE_SLURM_SCHED_LOGLEVEL
-            value: "{{ .Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_SCHED_LOGLEVEL }}"
+{{- if (not (empty .env.JARVICE_SLURM_SCHED_LOGLEVEL)) }}
+            value: "{{ .env.JARVICE_SLURM_SCHED_LOGLEVEL }}"
+{{- else }}
+            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_SCHED_LOGLEVEL }}"
+{{- end }}
           - name: JARVICE_SLURM_OVERLAY_SIZE
-            value: "{{ .Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_OVERLAY_SIZE }}"
+{{- if (not (empty .env.JARVICE_SLURM_OVERLAY_SIZE)) }}
+            value: "{{ .env.JARVICE_SLURM_OVERLAY_SIZE }}"
+{{- else }}
+            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_OVERLAY_SIZE }}"
+{{- end }}
           - name: JARVICE_SYSTEM_K8S
-{{- if empty .Values.jarvice.JARVICE_SYSTEM_K8S }}
+{{- if empty $.Values.jarvice.JARVICE_SYSTEM_K8S }}
             value: "true"
 {{- else }}
-            value: "{{ .Values.jarvice.JARVICE_SYSTEM_K8S }}"
+            value: "{{ $.Values.jarvice.JARVICE_SYSTEM_K8S }}"
 {{- end }}
           - name: JARVICE_EXPERIMENTAL
-{{- if empty .Values.jarvice.JARVICE_EXPERIMENTAL }}
+{{- if empty $.Values.jarvice.JARVICE_EXPERIMENTAL }}
             value: "false"
 {{- else }}
-            value: "{{ .Values.jarvice.JARVICE_EXPERIMENTAL }}"
+            value: "{{ $.Values.jarvice.JARVICE_EXPERIMENTAL }}"
 {{- end }}
           - name: JARVICE_CLUSTER_TYPE
-{{- if empty .Values.jarvice.JARVICE_CLUSTER_TYPE }}
+{{- if empty $.Values.jarvice.JARVICE_CLUSTER_TYPE }}
             value: "upstream"
 {{- else }}
-            value: "{{ .Values.jarvice.JARVICE_CLUSTER_TYPE }}"
+            value: "{{ $.Values.jarvice.JARVICE_CLUSTER_TYPE }}"
 {{- end }}
-{{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
+{{- if (not (eq "downstream" $.Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
           - name: JARVICE_DAL_URL
             value: "http://jarvice-dal:8080"
           - name: JARVICE_SCHED_URL
             value: "https://jarvice-scheduler:9443"
 {{- end }}
           - name: JARVICE_SCHED_SERVER_KEY
+{{- if (not (empty .env.JARVICE_SCHED_SERVER_KEY)) }}
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-sched-server-key-{{ .name }}
+                key: JARVICE_SCHED_SERVER_KEY
+                optional: true
+{{- else }}
             valueFrom:
               secretKeyRef:
                 name: jarvice-sched-server-key
                 key: JARVICE_SCHED_SERVER_KEY
                 optional: true
+{{- end }}
           - name: JARVICE_JOBS_NAMESPACE
-{{- if empty .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
-            value: {{ .Release.Namespace }}-jobs
+{{- if empty $.Values.jarvice.JARVICE_JOBS_NAMESPACE }}
+            value: {{ $.Release.Namespace }}-jobs
 {{- else }}
-            value: {{ .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
+            value: {{ $.Values.jarvice.JARVICE_JOBS_NAMESPACE }}
 {{- end }}
           - name: JARVICE_SYSTEM_NAMESPACE
-{{- if empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
-            value: {{ .Release.Namespace }}
+{{- if empty $.Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+            value: {{ $.Release.Namespace }}
 {{- else }}
-            value: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+            value: {{ $.Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
 {{- end }}
           - name: JARVICE_SYSTEM_REGISTRY
-            value: {{ include "jarvice.registry" . }}
+            value: {{ include "jarvice.registry" $ }}
           - name: JARVICE_SYSTEM_REPO_BASE
-            value: {{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}
+            value: {{ $.Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}
           - name: JARVICE_IMAGES_TAG
-            value: {{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+            value: {{ default $.Values.jarvice.JARVICE_IMAGES_TAG $.Chart.Annotations.tag }}{{- include "jarvice.version" $ }}
           - name: JARVICE_LOCAL_REGISTRY
-            value: {{ .Values.jarvice.JARVICE_LOCAL_REGISTRY }}
+            value: {{ $.Values.jarvice.JARVICE_LOCAL_REGISTRY }}
           - name: JARVICE_LOCAL_REPO_BASE
-            value: {{ .Values.jarvice.JARVICE_LOCAL_REPO_BASE }}
+            value: {{ $.Values.jarvice.JARVICE_LOCAL_REPO_BASE }}
           - name: JARVICE_JOBS_DOMAIN
-{{- if (hasPrefix "lookup" .Values.jarvice.JARVICE_JOBS_DOMAIN) }}
-{{- if (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE) }}
-            value: '{{- .Values.jarvice_k8s_scheduler.ingressHost -}}{{- trimPrefix "lookup" .Values.jarvice.JARVICE_JOBS_DOMAIN -}}'
+{{- if (hasPrefix "lookup" $.Values.jarvice.JARVICE_JOBS_DOMAIN) }}
+{{- if (eq "downstream" $.Values.jarvice.JARVICE_CLUSTER_TYPE) }}
+            value: '{{- .ingressHost -}}{{- trimPrefix "lookup" $.Values.jarvice.JARVICE_JOBS_DOMAIN -}}'
 {{- else }}
-            value: '{{- .Values.jarvice_mc_portal.ingressHost -}}{{- trimPrefix "lookup" .Values.jarvice.JARVICE_JOBS_DOMAIN -}}'
+            value: '{{- $.Values.jarvice_mc_portal.ingressHost -}}{{- trimPrefix "lookup" $.Values.jarvice.JARVICE_JOBS_DOMAIN -}}'
 {{- end }}
 {{- else }}
-            value: "{{ .Values.jarvice.JARVICE_JOBS_DOMAIN }}"
+            value: "{{ $.Values.jarvice.JARVICE_JOBS_DOMAIN }}"
 {{- end }}
           - name: JARVICE_JOBS_INGRESS_CLASS
-            value: "{{ .Values.jarvice.ingress.class }}"
+            value: "{{ $.Values.jarvice.ingress.class }}"
           - name: JARVICE_JOBS_INGRESS_ANNOTATIONS
-            value: '{{ .Values.jarvice.JARVICE_JOBS_INGRESS_ANNOTATIONS }}'
-{{- if (not (empty .Values.jarvice.ingress.tls.issuer.name)) }}
+            value: '{{ $.Values.jarvice.JARVICE_JOBS_INGRESS_ANNOTATIONS }}'
+{{- if (not (empty $.Values.jarvice.ingress.tls.issuer.name)) }}
           - name: JARVICE_JOBS_INGRESS_CERT_ISSUER
-            value: "{{ .Values.jarvice.ingress.tls.issuer.name }}"
-{{- else if (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) }}
+            value: "{{ $.Values.jarvice.ingress.tls.issuer.name }}"
+{{- else if (not (empty $.Values.jarvice.ingress.tls.cluster_issuer.name)) }}
           - name: JARVICE_JOBS_INGRESS_CERT_CLUSTER_ISSUER
-            value: "{{ .Values.jarvice.ingress.tls.cluster_issuer.name }}"
+            value: "{{ $.Values.jarvice.ingress.tls.cluster_issuer.name }}"
 {{- end }}
-{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
+{{- if (not (empty $.Values.jarvice.JARVICE_HTTP_PROXY)) }}
+          - name: http_proxy
+            value: "{{ $.Values.jarvice.JARVICE_HTTP_PROXY }}"
+{{- end }}
+{{- if (not (empty $.Values.jarvice.JARVICE_HTTPS_PROXY)) }}
+          - name: https_proxy
+            value: "{{ $.Values.jarvice.JARVICE_HTTPS_PROXY }}"
+{{- end }}
+{{- if or $.Values.jarvice.JARVICE_HTTPS_PROXY $.Values.jarvice.JARVICE_HTTP_PROXY $.Values.jarvice.JARVICE_NO_PROXY }}
+{{- if (not (empty $.Values.jarvice.JARVICE_NO_PROXY)) }}
+          - name: no_proxy
+            value: '{{ include "jarvice.no_proxy" $ }},{{ $.Values.jarvice.JARVICE_NO_PROXY }}'
+{{- else }}
+          - name: no_proxy
+            value: '{{ include "jarvice.no_proxy" $ }}'
+{{- end }}
+{{- end }}
+{{- if (not (empty .env.JARVICE_SLURM_HTTPS_PROXY)) }}
+            value: "{{ .env.JARVICE_SLURM_HTTPS_PROXY }}"
+{{- else }}
+            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_HTTPS_PROXY }}"
+{{- end }}
+{{- if (not (empty .env.JARVICE_SLURM_NO_PROXY)) }}
+            value: "{{ .env.JARVICE_SLURM_NO_PROXY }}"
+{{- else }}
+            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_NO_PROXY }}"
+{{- end }}
+{{- if (not (empty .env.JARVICE_SINGULARITY_VERBOSE)) }}
+            value: "{{ .env.JARVICE_SINGULARITY_VERBOSE }}"
+{{- else }}
+            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SINGULARITY_VERBOSE }}"
+{{- end }}
+{{- if (not (empty .env.JARVICE_SINGULARITY_CACHEDIR)) }}
+            value: "{{ .env.JARVICE_SINGULARITY_CACHEDIR }}"
+{{- else }}
+            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SINGULARITY_CACHEDIR }}"
+{{- end }}
+{{- if (not (empty $.Values.jarvice.cacert.configMap)) }}
         volumeMounts:
         - name: ca-jarvice-user
           mountPath: /etc/ssl/certs/ca-certificates.crt
@@ -216,17 +322,17 @@ spec:
           readOnly: true
 {{- end }}
         resources:
-{{- if .Values.jarvice_slurm_scheduler.resources }}
-{{ toYaml .Values.jarvice_slurm_scheduler.resources | indent 10 }}
+{{- if .resources }}
+{{ toYaml .resources | indent 10 }}
 {{- end }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: jarvice-slurm-scheduler
+  name: jarvice-slurm-scheduler-{{ .name }}
   labels:
-    {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-slurm-scheduler
+    {{- include "jarvice.release_labels" $ | indent 4 }}
+    component: jarvice-slurm-scheduler-{{ .name }}
 spec:
   type: ClusterIP
   ports:
@@ -235,6 +341,129 @@ spec:
     targetPort: 8080
     name: http
   selector:
-    deployment: jarvice-slurm-scheduler
+    deployment: jarvice-slurm-scheduler-{{ .name }}
 ---
+{{- if or $.Values.jarvice_slurm_scheduler.networkPolicy.enabled $.Values.jarvice.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: jarvice-slurm-scheduler-{{ .name }}
+spec:
+  podSelector:
+    matchLabels:
+      deployment: jarvice-slurm-scheduler-{{ .name }}
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: {{ $.Release.Namespace }}
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 8080
+{{- if (eq "downstream" $.Values.jarvice.JARVICE_CLUSTER_TYPE) }}
+{{- if (empty .ingressHost) }}
+  - {}
+{{- else }}
+  - from:
+    - namespaceSelector: {}
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 8080
+{{- end }}
+{{- end }}
+---
+{{- end }}
+{{- if (eq "downstream" $.Values.jarvice.JARVICE_CLUSTER_TYPE) }}
+{{- if (empty .ingressHost) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-slurm-scheduler-{{ .name }}-lb
+  labels:
+    {{- include "jarvice.release_labels" $ | indent 4 }}
+    component: jarvice-slurm-scheduler-{{ .name }}
+spec:
+  type: LoadBalancer
+  loadBalancerIP: {{ .loadBalancerIP }}
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+    name: http
+  selector:
+    deployment: jarvice-slurm-scheduler-{{ .name }}
+---
+{{- else }}
+{{- if (semverCompare ">=1.21-0" $.Capabilities.KubeVersion.GitVersion) }}
+apiVersion: networking.k8s.io/v1
+{{- else }}
+apiVersion: networking.k8s.io/v1beta1
+{{- end }}
+kind: Ingress
+metadata:
+  name: jarvice-slurm-scheduler-{{ .name }}
+  labels:
+    {{- include "jarvice.release_labels" $ | indent 4 }}
+    component: jarvice-slurm-scheduler-{{ .name }}
+  annotations:
+{{- if (not (semverCompare ">=1.21-0" $.Capabilities.KubeVersion.GitVersion)) }}
+{{- if (not (empty $.Values.jarvice.ingress.class)) }}
+    kubernetes.io/ingress.class: {{ $.Values.jarvice.ingress.class }}
+{{- end }}
+{{- end }}
+{{- if and (not (empty $.Values.jarvice.ingress.tls.issuer.name)) (and (empty $.Values.jarvice.ingress.tls.crt) (empty $.Values.jarvice.ingress.tls.key)) }}
+    cert-manager.io/issuer: {{ $.Values.jarvice.ingress.tls.issuer.name }}
+{{- else if and (not (empty $.Values.jarvice.ingress.tls.cluster_issuer.name)) (and (empty $.Values.jarvice.ingress.tls.crt) (empty $.Values.jarvice.ingress.tls.key)) }}
+    cert-manager.io/cluster-issuer: {{ $.Values.jarvice.ingress.tls.cluster_issuer.name }}
+{{- end }}
+{{- if .ingressAnnotations }}
+{{- if (kindIs "string" .ingressAnnotations) }}
+{{ toYaml (fromJson .ingressAnnotations) | indent 4 }}
+{{- else }}
+{{ toYaml .ingressAnnotations | indent 4 }}
+{{- end }}
+{{- end }}
+spec:
+{{- if (semverCompare ">=1.21-0" $.Capabilities.KubeVersion.GitVersion) }}
+{{- if (not (empty $.Values.jarvice.ingress.class)) }}
+  ingressClassName: {{ $.Values.jarvice.ingress.class }}
+{{- end }}
+{{- end }}
+  rules:
+  - http:
+      paths:
+{{- if (semverCompare ">=1.21-0" $.Capabilities.KubeVersion.GitVersion) }}
+      - backend:
+          service:
+            name: jarvice-slurm-scheduler-{{ .name }}
+            port:
+              name: http
+        pathType: Prefix
+        path: /
+{{- else }}
+      - backend:
+          serviceName: jarvice-slurm-scheduler-{{ .name }}
+          servicePort: http
+{{- end }}
+{{- if ne "-" .ingressHost }}
+    host: '{{- .ingressHost -}}'
+{{- if or (not (empty $.Values.jarvice.ingress.tls.cluster_issuer.name)) (not (empty $.Values.jarvice.ingress.tls.issuer.name)) (and (not (empty $.Values.jarvice.ingress.tls.crt)) (not (empty $.Values.jarvice.ingress.tls.key))) }}
+  tls:
+  - hosts:
+    - '{{- .ingressHost -}}'
+{{- if and (not (empty $.Values.jarvice.ingress.tls.crt)) (not (empty $.Values.jarvice.ingress.tls.key)) }}
+    secretName: 'tls-jarvice'
+{{- else }}
+    secretName: 'tls-{{- .ingressHost -}}'
+{{- end }}
+{{- end }}
+{{- end }}
+---
+{{- end }}
+{{- end }}
+{{- end }}
 {{- end }}

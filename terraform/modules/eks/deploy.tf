@@ -411,6 +411,7 @@ EOF
 }
 
 resource "kubernetes_daemonset" "aws_efa_k8s_device_plugin" {
+    count = var.cluster.compute_node_pools == null ? 0 : 1
     metadata {
         name = "aws-efa-k8s-device-plugin-daemonset"
         namespace = "kube-system"
