@@ -294,6 +294,26 @@ spec:
             value: '{{ include "jarvice.no_proxy" $ }}'
 {{- end }}
 {{- end }}
+{{- if (not (empty .env.JARVICE_SLURM_HTTPS_PROXY)) }}
+            value: "{{ .env.JARVICE_SLURM_HTTPS_PROXY }}"
+{{- else }}
+            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_HTTPS_PROXY }}"
+{{- end }}
+{{- if (not (empty .env.JARVICE_SLURM_NO_PROXY)) }}
+            value: "{{ .env.JARVICE_SLURM_NO_PROXY }}"
+{{- else }}
+            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_NO_PROXY }}"
+{{- end }}
+{{- if (not (empty .env.JARVICE_SINGULARITY_VERBOSE)) }}
+            value: "{{ .env.JARVICE_SINGULARITY_VERBOSE }}"
+{{- else }}
+            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SINGULARITY_VERBOSE }}"
+{{- end }}
+{{- if (not (empty .env.JARVICE_SINGULARITY_CACHEDIR)) }}
+            value: "{{ .env.JARVICE_SINGULARITY_CACHEDIR }}"
+{{- else }}
+            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SINGULARITY_CACHEDIR }}"
+{{- end }}
 {{- if (not (empty $.Values.jarvice.cacert.configMap)) }}
         volumeMounts:
         - name: ca-jarvice-user

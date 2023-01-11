@@ -801,6 +801,10 @@ jarvice_slurm_scheduler:
     JARVICE_SLURM_CLUSTER_PORT: 22   # slurm headnode ssh port
     JARVICE_SLURM_SCHED_LOGLEVEL: 30
     JARVICE_SLURM_OVERLAY_SIZE: 128
+    JARVICE_SLURM_HTTPS_PROXY: ""
+    JARVICE_SLURM_NO_PROXY: ""
+    JARVICE_SINGULARITY_VERBOSE: false
+    JARVICE_SINGULARITY_CACHEDIR: "/tmp"
   # define each slurm scheduler
   schedulers:
   - name: default
