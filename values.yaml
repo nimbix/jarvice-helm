@@ -816,8 +816,9 @@ jarvice_slurm_scheduler:
       # JARVICE_SLURM_OVERLAY_SIZE: 128
     sshConf:
       user: # base64 encoded user to ssh into slurm headnode (e.g. bmltYml4)
-      pkey: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.    replicaCount: 2
+      pkey: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
     # local override values
+    # replicaCount: 2
     # PodDisruptionBudget default requires 25% minimum of pods must be running
     # pdb:
     #   minAvailable: "25%"
