@@ -299,6 +299,11 @@ spec:
 {{- else }}
             value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_HTTPS_PROXY }}"
 {{- end }}
+{{- if (not (empty .env.JARVICE_SLURM_HTTP_PROXY)) }}
+            value: "{{ .env.JARVICE_SLURM_HTTP_PROXY }}"
+{{- else }}
+            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_HTTP_PROXY }}"
+{{- end }}
 {{- if (not (empty .env.JARVICE_SLURM_NO_PROXY)) }}
             value: "{{ .env.JARVICE_SLURM_NO_PROXY }}"
 {{- else }}

@@ -802,9 +802,10 @@ jarvice_slurm_scheduler:
     JARVICE_SLURM_SCHED_LOGLEVEL: 30
     JARVICE_SLURM_OVERLAY_SIZE: 128
     JARVICE_SLURM_HTTPS_PROXY: ""
+    JARVICE_SLURM_HTTP_PROXY: ""
     JARVICE_SLURM_NO_PROXY: ""
     JARVICE_SINGULARITY_VERBOSE: false
-    JARVICE_SINGULARITY_CACHEDIR: "/tmp"
+    JARVICE_SINGULARITY_CACHEDIR: ""
   # define each slurm scheduler
   schedulers:
   - name: default
@@ -815,7 +816,7 @@ jarvice_slurm_scheduler:
       # JARVICE_SLURM_SCHED_LOGLEVEL: 30
       # JARVICE_SLURM_OVERLAY_SIZE: 128
     sshConf:
-      user: # base64 encoded user to ssh into slurm headnode (e.g. bmltYml4)
+      user: # user to ssh into slurm headnode (e.g. nimbix)
       pkey: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
     # local override values
     # replicaCount: 2
