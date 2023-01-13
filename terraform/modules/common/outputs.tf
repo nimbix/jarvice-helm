@@ -32,3 +32,14 @@ output "cluster_output_message" {
     value = local.cluster_output_message
 }
 
+output "jarvice_slurm_schedulers" {
+    value = local.jarvice_slurm_schedulers
+}
+
+output "jarvice_slurm_helm_values" {
+    value = local.jarvice_slurm_helm_values
+}
+
+output "jarvice_k8s_helm_values" {
+    value = local.jarvice_k8s_helm_values
+}
