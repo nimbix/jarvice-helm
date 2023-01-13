@@ -857,8 +857,8 @@ jarvice_slurm_scheduler:
   #     # JARVICE_SLURM_SCHED_LOGLEVEL: 30
   #     # JARVICE_SLURM_OVERLAY_SIZE: 128
   #   sshConf:
-  #     user: # base64 encoded user to ssh into slurm headnode (e.g. bmltYml4)
-  #     pkey: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.    replicaCount: 2
+  #     user: # user to ssh into slurm headnode (e.g. nimbix)
+  #     pkey: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
 
 jarvice_pod_scheduler:
   enabled: true
