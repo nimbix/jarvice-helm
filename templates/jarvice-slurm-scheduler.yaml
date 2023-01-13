@@ -164,8 +164,8 @@ spec:
 {{- end }}
         env:
           - name: JARVICE_SLURM_CLUSTER_ADDR
-{{- if and (empty .env.JARVICE_SLURM_CLUSTER_ADDR) .enabled }}
-{{- required "***** !!!!! slurm headnode address required. Please provide a value for jarvice_slurm_scheduler.env.JARVICE_SLURM_CLUSTER_ADDR. !!!!! *****" .Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_CLUSTER_ADDR }}
+{{- if (empty .env.JARVICE_SLURM_CLUSTER_ADDR) }}
+{{- required "***** !!!!! slurm headnode address required. Please provide a value for .env.JARVICE_SLURM_CLUSTER_ADDR. !!!!! *****" .env.JARVICE_SLURM_CLUSTER_ADDR }}
 {{- end }}
             value: {{ .env.JARVICE_SLURM_CLUSTER_ADDR }}
           - name: JARVICE_SLURM_CLUSTER_PORT
