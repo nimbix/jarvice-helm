@@ -220,17 +220,11 @@ spec:
           - name: JARVICE_SCHED_URL
             value: "https://jarvice-scheduler:9443"
 {{- end }}
-          - name: JARVICE_SCHED_SERVER_KEY
 {{- if (not (empty .env.JARVICE_SCHED_SERVER_KEY)) }}
+          - name: JARVICE_SCHED_SERVER_KEY
             valueFrom:
               secretKeyRef:
-                name: jarvice-sched-server-key-{{ .name }}
-                key: JARVICE_SCHED_SERVER_KEY
-                optional: true
-{{- else }}
-            valueFrom:
-              secretKeyRef:
-                name: jarvice-sched-server-key
+                name: jarvice-sched-slurm-server-key-{{ .name }}
                 key: JARVICE_SCHED_SERVER_KEY
                 optional: true
 {{- end }}
