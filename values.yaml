@@ -805,7 +805,7 @@ jarvice_slurm_scheduler:
     JARVICE_SLURM_HTTP_PROXY: ""
     JARVICE_SLURM_NO_PROXY: ""
     JARVICE_SINGULARITY_VERBOSE: false
-    JARVICE_SINGULARITY_CACHEDIR: ""
+    JARVICE_SINGULARITY_TMPDIR: ""
   # define each slurm scheduler
   schedulers:
   - name: default
