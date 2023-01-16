@@ -308,10 +308,10 @@ spec:
 {{- else }}
             value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SINGULARITY_VERBOSE }}"
 {{- end }}
-{{- if (not (empty .env.JARVICE_SINGULARITY_CACHEDIR)) }}
-            value: "{{ .env.JARVICE_SINGULARITY_CACHEDIR }}"
+{{- if (not (empty .env.JARVICE_SINGULARITY_TMPDIR)) }}
+            value: "{{ .env.JARVICE_SINGULARITY_TMPDIR }}"
 {{- else }}
-            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SINGULARITY_CACHEDIR }}"
+            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SINGULARITY_TMPDIR }}"
 {{- end }}
 {{- if (not (empty $.Values.jarvice.cacert.configMap)) }}
         volumeMounts:
