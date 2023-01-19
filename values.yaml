@@ -1210,8 +1210,8 @@ jarvice_bird_server: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     storageClass: "jarvice-bird-server"
     accessMode: ReadWriteOnce
     size: 8Gi
-    securityContext:
-      fsGroup: 890
+  securityContext:
+    fsGroup: 890
   replicaCount: 1
   replicaCountMax: 1
   # HorizontalPodAutoscaler is enabled when replicaCountMax > replicaCount

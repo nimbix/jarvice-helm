@@ -192,9 +192,10 @@ spec:
 {{- else }}
             claimName: {{ .Values.jarvice_bird_server.persistence.existingClaimName }}
 {{- end }}
-      securityContext:
-        fsGroup: {{ .Values.jarvice_bird_server.persistence.securityContext.fsGroup }}
 {{- end }}
+      securityContext:
+        fsGroup: {{ .Values.jarvice_bird_server.securityContext.fsGroup }}
+
 ---
 apiVersion: v1
 kind: Service
