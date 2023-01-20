@@ -1139,3 +1139,200 @@ jarvice_mc_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     # If a non-empty string is passed, the MC portal will use this URL for build and pull web links shown to the user
     JARVICE_API_PUBLIC_URL: # https://<jarvice_api.ingressHost><jarvice_api.ingressPath>
 
+jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  enabled: false
+  replicaCount: 1
+  replicaCountMax: 1
+  # HorizontalPodAutoscaler is enabled when replicaCountMax > replicaCount
+  autoscaling:
+    metrics:
+      - type: Resource
+        resource:
+          name: cpu
+          target:
+            type: Utilization
+            averageUtilization: 60
+      - type: Resource
+        resource:
+          name: memory
+          target:
+            type: Utilization
+            averageUtilization: 60
+  # PodDisruptionBudget default requires 25% minimum of pods must be running
+  pdb:
+    minAvailable: "25%"
+  # antiAffinity default of "soft" prefers that pods run on diff nodes.
+  # Set to "hard" to require pods to run on diff nodes.
+  antiAffinity: "soft"
+  loadBalancerIP:
+  ingressHost: # jarvice-bird.my-domain.com
+  ingressPath: "/"  # Valid values are "/" (default) or "/bird"
+  ingressAnnotations: # '{"nginx.org/client-max-body-size": "0", "nginx.org/proxy-read-timeout": "3600", "nginx.org/proxy-send-timeout": "3600"}'
+  resources:
+    limits:
+      cpu: 1
+      memory: 1Gi
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 30
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 60
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+  tolerations: # '[{"key": "node-role.jarvice.io/jarvice-bird", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-bird", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-bird", "operator": "Exists"}]}] }}'
+  nodeSelector: # '{"node-role.jarvice.io/jarvice-bird": "true"}'
+  conf:
+    configMap: # jarvice-bird-config
+  nginx:
+    configMap: # jarvice-bird-nginx-config
+  env:
+    KEYCLOAK_URL: # keycloak.my-domain.com/auth
+    KEYCLOAK_ID: jarvice
+    KEYCLOAK_REALM: jarvice
+  networkPolicy:
+    enabled: # Inherits from jarvice.networkPolicy.enabled if unset
+
+jarvice_bird_server: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  enabled: false
+  persistence:
+    enabled: false
+    # Set to "keep" to prevent removal of jarvice-bird-server-pvc on helm delete
+    resourcePolicy: ""  # "keep"
+    # Use empty existingClaimName for dynamic provisioning via storageClass
+    existingClaimName: # "jarvice-bird-server-pvc"
+    # storageClass: "-"  # "-" uses cluster's default StorageClass/provisioner
+    storageClass: "jarvice-bird-server"
+    accessMode: ReadWriteOnce
+    size: 8Gi
+  securityContext:
+    fsGroup: 890
+  replicaCount: 1
+  replicaCountMax: 1
+  # HorizontalPodAutoscaler is enabled when replicaCountMax > replicaCount
+  autoscaling:
+    metrics:
+      - type: Resource
+        resource:
+          name: cpu
+          target:
+            type: Utilization
+            averageUtilization: 60
+      - type: Resource
+        resource:
+          name: memory
+          target:
+            type: Utilization
+            averageUtilization: 60
+  # PodDisruptionBudget default requires 25% minimum of pods must be running
+  pdb:
+    minAvailable: "25%"
+  # antiAffinity default of "soft" prefers that pods run on diff nodes.
+  # Set to "hard" to require pods to run on diff nodes.
+  antiAffinity: "soft"
+  resources:
+    limits:
+      cpu: 1
+      memory: 1Gi
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 30
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 60
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+  tolerations: # '[{"key": "node-role.jarvice.io/jarvice-bird-server", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-bird-server", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-bird-server", "operator": "Exists"}]}] }}'
+  nodeSelector: # '{"node-role.jarvice.io/jarvice-bird-server": "true"}'
+  env:
+    TOKEN_INFO_URI: # keycloak.my-domain.com/auth/realm/jarvice/protocol/openid-connect/token/introspect
+    KEYCLOAK_URI: # keycloak.my-domain.com/auth
+    CLIENT_ID: jarvice
+    TENANT_SCHEMAS: jarvice
+  networkPolicy:
+    enabled: # Inherits from jarvice.networkPolicy.enabled if unset
+
+jarvice_bird_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  enabled: false
+  replicaCount: 2
+  replicaCountMax: 6
+  # HorizontalPodAutoscaler is enabled when replicaCountMax > replicaCount
+  autoscaling:
+    metrics:
+      - type: Resource
+        resource:
+          name: cpu
+          target:
+            type: Utilization
+            averageUtilization: 60
+      - type: Resource
+        resource:
+          name: memory
+          target:
+            type: Utilization
+            averageUtilization: 60
+  # PodDisruptionBudget default requires 25% minimum of pods must be running
+  pdb:
+    minAvailable: "25%"
+  # antiAffinity default of "soft" prefers that pods run on diff nodes.
+  # Set to "hard" to require pods to run on diff nodes.
+  antiAffinity: "soft"
+  loadBalancerIP:
+  ingressHost: # jarvice.my-domain.com
+  ingressPath: "/"  # Valid values are "/" (default) or "/portal"
+  ingressAnnotations: # '{"nginx.org/client-max-body-size": "0", "nginx.org/proxy-read-timeout": "3600", "nginx.org/proxy-send-timeout": "3600"}'
+  resources:
+    limits:
+      cpu: 1
+      memory: 2Gi
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 30
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 60
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+  tolerations: # '[{"key": "node-role.jarvice.io/jarvice-bird-portal", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-bird-portal", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-bird-portal", "operator": "Exists"}]}] }}'
+  nodeSelector: # '{"node-role.jarvice.io/jarvice-bird-portal": "true"}'
+  networkPolicy:
+    enabled: # Inherits from jarvice.networkPolicy.enabled if unset
+  # JARVICE_PORTAL_DBHOST inherits from jarvice.JARVICE_DBHOST if unset
+  # JARVICE_PORTAL_DBPASSWD inherits from jarvice.JARVICE_DBPASSWD if unset
+  # JARVICE_PORTAL_DBUSER inherits from jarvice.JARVICE_DBUSER if unset
+  # JARVICE_PORTAL_WEB_HOST inherits from jarvice_bird_portal.ingressHost/jarvice_bird_portal.ingressPath if unset
+  env:
+    JARVICE_USER_DEFAULT_ENABLED: True
+    JARVICE_USER_DEFAULT_DEVELOPER: True
+    JARVICE_PORTAL_JOB_TERMINATE_LIMIT: 100
+    JARVICE_PORTAL_GSS_REALM:
+    JARVICE_PORTAL_GSS_DOMAIN:
+    JARVICE_PORTAL_GSS_LOG: # "debug"
+    JARVICE_PORTAL_WEB_HOST: # https://<jarvice_bird_portal.ingressHost><jarvice_bird_portal.ingressPath>
+    # If null, JARVICE_PORTAL_MEMCACHED_LOCATIONS is auto-generated based on
+    # jarvice_memcached.enabled/jarvice_memcached.replicaCount
+    JARVICE_PORTAL_MEMCACHED_LOCATIONS: # jarvice-memcached-0.jarvice-memcached:11211,jarvice-memcached-1.jarvice-memcached:11211,jarvice-memcached-2.jarvice-memcached:11211
+    JARVICE_PORTAL_APP_OWNERS:
+    JARVICE_PORTAL_DB: nimbix_portal_ng
+    JARVICE_PORTAL_DBHOST: # jarvice-db
+    JARVICE_PORTAL_DBUSER: # root
+    JARVICE_PORTAL_DBPASSWD: # Pass1234
+    # If a non-empty string is passed, the MC portal will not warn about the use of API key related substitutions
+    JARVICE_DISABLE_API_SUBST_WARNING: # ""
+    # If a non-empty string is passed, the MC portal will use this URL for build and pull web links shown to the user
+    JARVICE_API_PUBLIC_URL: # https://<jarvice_api.ingressHost><jarvice_api.ingressPath>
