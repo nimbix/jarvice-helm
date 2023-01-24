@@ -1317,6 +1317,9 @@ jarvice_bird_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   # JARVICE_PORTAL_DBUSER inherits from jarvice.JARVICE_DBUSER if unset
   # JARVICE_PORTAL_WEB_HOST inherits from jarvice_bird_portal.ingressHost/jarvice_bird_portal.ingressPath if unset
   env:
+    JARVICE_KEYCLOAK_URL: # jarvice-keycloak.my-domain.com/auth
+    JARVICE_KEYCLOAK_CLIENT_ID: jarvice
+    JARVICE_KEYCLOAK_REALM: jarvice
     JARVICE_USER_DEFAULT_ENABLED: True
     JARVICE_USER_DEFAULT_DEVELOPER: True
     JARVICE_PORTAL_JOB_TERMINATE_LIMIT: 100
