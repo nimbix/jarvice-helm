@@ -60,7 +60,7 @@ spec:
   minReplicas: {{ .Values.jarvice_bird_server.replicaCount }}
   maxReplicas: {{ .Values.jarvice_bird_server.replicaCountMax }}
   metrics:
-    {{- toYaml .Values.jarvice_bird_server.autoscaling.metrics | nindent 4 }}
+    {{- toYaml .Values.jarvice_bird_server.autoscaling.metrics | indent 4 }}
 ---
 {{- end}}
 apiVersion: apps/v1
@@ -165,7 +165,7 @@ spec:
 {{- required "***** !!!!! A valid keycloak server is required.  Please provide a value for jarvice_bird_server.env.KEYCLOAK_URI. !!!!! *****" .Values.jarvice_bird_server.env.KEYCLOAK_URI }}
 {{- end }}
           - name: CLIENT_ID
-{{- if empty .Values.jarvice_bird.env.CLIENT_ID }}
+{{- if empty .Values.jarvice_bird_server.env.CLIENT_ID }}
             value: jarvice
 {{- else }}
             value: "{{ .Values.jarvice_bird_server.env.CLIENT_ID }}"
@@ -178,13 +178,21 @@ spec:
 {{- else }}
             value: "{{ .Values.jarvice_bird_server.env.TENANT_SCHEMAS }}"
 {{- end }}
-{{- if .Values.jarvice_bird_server.persistence.enabled }}
         volumeMounts:
+{{- if .Values.jarvice_bird_server.persistence.enabled }}
         - mountPath: /home/bird/.bird
           name: jarvice-bird-server
+{{- end }}
+{{- if (not (empty .Values.jarvice_bird_server.java.cacert.configMap)) }}
+        - name: jarvice-java-cacert
+          mountPath: /etc/ssl/certs/java/cacerts
+          subPath: cacerts
+          readOnly: true
+{{- end }}
         resources:
 {{ toYaml .Values.jarvice_bird.resources | indent 10 }}
       volumes:
+{{- if .Values.jarvice_bird_server.persistence.enabled }}
         - name : jarvice-bird-server
           persistentVolumeClaim:
 {{- if (empty .Values.jarvice_bird_server.persistence.existingClaimName) }}
@@ -192,6 +200,13 @@ spec:
 {{- else }}
             claimName: {{ .Values.jarvice_bird_server.persistence.existingClaimName }}
 {{- end }}
+{{- end }}
+{{- if (not (empty .Values.jarvice_bird_server.java.cacert.configMap)) }}
+        - name: jarvice-java-cacert
+          configMap:
+            name: {{ .Values.jarvice_bird_server.java.cacert.configMap }}
+            optional: true
+            defaultMode: 444
 {{- end }}
       securityContext:
         fsGroup: {{ .Values.jarvice_bird_server.securityContext.fsGroup }}

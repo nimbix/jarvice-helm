@@ -315,6 +315,24 @@ spec:
 {{- else }}
                 key: JARVICE_PORTAL_DBPASSWD
 {{- end }}
+          - name: JARVICE_KEYCLOAK_URL
+{{- if empty .Values.jarvice_bird_portal.env.JARVICE_KEYCLOAK_URL }}
+{{- required "***** !!!!! A valid keycloak server is required.  Please provide a value for jarvice_bird_portal.env.JARVICE_KEYCLOAK_URL. !!!!! *****" .Values.jarvice_bird_portal.env.JARVICE_KEYCLOAK_URL }}
+{{- else }}
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_KEYCLOAK_URL }}"
+{{- end }}
+          - name: JARVICE_KEYCLOAK_CLIENT_ID
+{{- if empty .Values.jarvice_bird_portal.env.JARVICE_KEYCLOAK_CLIENT_ID }}
+            value: jarvice
+{{- else }}
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_KEYCLOAK_CLIENT_ID }}"
+{{- end }}
+          - name: JARVICE_KEYCLOAK_REALM
+{{- if empty .Values.jarvice_bird_portal.env.JARVICE_KEYCLOAK_REALM }}
+            value: jarvice
+{{- else }}
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_KEYCLOAK_REALM }}"
+{{- end }}
 {{- if (not (empty .Values.jarvice.JARVICE_LICENSE_MANAGER_KEY)) }}
           - name: JARVICE_LICENSE_MANAGER_KEY
             valueFrom:
