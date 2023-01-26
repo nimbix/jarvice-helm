@@ -1262,8 +1262,8 @@ jarvice_bird_server: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   java:
-    cacerts:
-      configMap: # jarvice-java-cacerts
+    cacert:
+      configMap: # jarvice-java-cacert
 
 jarvice_bird_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: false

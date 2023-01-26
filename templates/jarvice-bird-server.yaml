@@ -183,9 +183,9 @@ spec:
         - mountPath: /home/bird/.bird
           name: jarvice-bird-server
 {{- end }}
-{{- if (not (empty .Values.jarvice_bird_server.java.cacerts.configMap)) }}
-        - name: jarvice-java-cacerts
-          mountPath: /etc/ssl/java/cacerts
+{{- if (not (empty .Values.jarvice_bird_server.java.cacert.configMap)) }}
+        - name: jarvice-java-cacert
+          mountPath: /etc/ssl/certs/java/cacerts
           subPath: cacerts
           readOnly: true
 {{- end }}
@@ -201,10 +201,10 @@ spec:
             claimName: {{ .Values.jarvice_bird_server.persistence.existingClaimName }}
 {{- end }}
 {{- end }}
-{{- if (not (empty .Values.jarvice_bird_server.java.cacerts.configMap)) }}
-        - name: jarvice-java-cacerts
+{{- if (not (empty .Values.jarvice_bird_server.java.cacert.configMap)) }}
+        - name: jarvice-java-cacert
           configMap:
-            name: {{ .Values.jarvice_bird_server.jarva.cacerts.configMap }}
+            name: {{ .Values.jarvice_bird_server.java.cacert.configMap }}
             optional: true
             defaultMode: 444
 {{- end }}
