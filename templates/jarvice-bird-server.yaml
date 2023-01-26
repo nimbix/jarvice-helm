@@ -60,7 +60,7 @@ spec:
   minReplicas: {{ .Values.jarvice_bird_server.replicaCount }}
   maxReplicas: {{ .Values.jarvice_bird_server.replicaCountMax }}
   metrics:
-    {{- toYaml .Values.jarvice_bird_server.autoscaling.metrics | nindent 4 }}
+    {{- toYaml .Values.jarvice_bird_server.autoscaling.metrics | indent 4 }}
 ---
 {{- end}}
 apiVersion: apps/v1
@@ -183,10 +183,10 @@ spec:
         - mountPath: /home/bird/.bird
           name: jarvice-bird-server
 {{- end }}
-{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
-        - name: ca-jarvice-user
-          mountPath: /etc/ssl/certs/ca-certificates.crt
-          subPath: ca-certificates.crt
+{{- if (not (empty .Values.jarvice_bird_server.java.cacerts.configMap)) }}
+        - name: jarvice-java-cacerts
+          mountPath: /etc/ssl/java/cacerts
+          subPath: cacerts
           readOnly: true
 {{- end }}
         resources:
@@ -201,10 +201,10 @@ spec:
             claimName: {{ .Values.jarvice_bird_server.persistence.existingClaimName }}
 {{- end }}
 {{- end }}
-{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
-        - name: ca-jarvice-user
+{{- if (not (empty .Values.jarvice_bird_server.java.cacerts.configMap)) }}
+        - name: jarvice-java-cacerts
           configMap:
-            name: {{ .Values.jarvice.cacert.configMap }}
+            name: {{ .Values.jarvice_bird_server.jarva.cacerts.configMap }}
             optional: true
             defaultMode: 444
 {{- end }}
