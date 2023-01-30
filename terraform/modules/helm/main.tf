@@ -147,7 +147,7 @@ resource "kubernetes_config_map" "jarvice_java_cacert" {
         namespace = var.jarvice["namespace"]
     }
 
-    data = {
+    binary_data = {
         "cacerts" = "${filebase64(local.jarvice_user_java_cacert)}"
     }
 
