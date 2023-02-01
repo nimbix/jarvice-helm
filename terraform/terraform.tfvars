@@ -22,16 +22,16 @@ global = {  # Global config options can be overridden in cluster configs
     }
 
     helm = {
-        keycloak = {
-            enabled = true
-            repository = "https://codecentric.github.io/helm-charts/"
-            version = "17.0.3"
-            keycloak_realm = "/home/khill/data/jarvice-helm/realm.json"
-            keycloak_user = "jarvice"
-            keycloak_pass = "Pass1234"
-            keycloak_ingress = "jarvice-khill-kc.jarvicedev.com" # "keycloak.mydomain.com"
-            keycloak_cert_issert = "letsencrypt-staging"
-        },
+        # keycloak = {
+        #     enabled = true
+        #     repository = "https://codecentric.github.io/helm-charts/"
+        #     version = "17.0.3"
+        #     keycloak_realm = # "keycloak/realm.json"
+        #     keycloak_user = # "jarvice"
+        #     keycloak_pass = # "Pass1234"
+        #     keycloak_ingress = # "keycloak.mydomain.com"
+        #     keycloak_cert_issert = # "letsencrypt-staging"
+        # },
         jarvice = {
             repository = "https://nimbix.github.io/jarvice-helm/"
             # null version installs latest release from the helm repository.
@@ -44,8 +44,8 @@ global = {  # Global config options can be overridden in cluster configs
             # Available helm values for a released version can be found via:
             # version=3.0.0-1.XXXXXXXXXXXX; curl https://raw.githubusercontent.com/nimbix/jarvice-helm/$version/values.yaml
             values_file = "values.yaml"  # ignored if file does not exist
-            user_cacert = "/etc/ssl/certs/ca-certificates.crt"
-            user_java_cacert = "/home/khill/data/jarvice-helm/cacerts"
+            # user_cacert = "/etc/ssl/certs/ca-certificates.crt"
+            # user_java_cacert = "/etc/ssl/certs/java/cacerts"
             values_yaml = <<EOF
 # global values_yaml - Uncomment or add any values that should be
 # applied to all defined clusters.
