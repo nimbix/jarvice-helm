@@ -452,8 +452,8 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
                 # global values_yaml take precedence over cluster
                 # values_file (values_file ignored if not found)
                 values_file = "override-tf.gke.<region>.<cluster_name>.yaml"  # "override-tf.gke.us-west1.tf-jarvice.yaml"
-                user_cacert = "/etc/ssl/certs/ca-certificates.crt"
-                user_java_cacert = "/home/khill/data/jarvice-helm/cacerts"
+                # user_cacert = "/etc/ssl/certs/ca-certificates.crt"
+                # user_java_cacert = "/etc/ssl/certs/java/cacerts"
                 values_yaml = <<EOF
 # values_yaml - takes precedence over values_file and global values_yaml
 
@@ -817,6 +817,8 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
 
                 # global values_yaml take precedence over cluster
                 # values_file (values_file ignored if not found)
+                # user_cacert = "/etc/ssl/certs/ca-certificates.crt"
+                # user_java_cacert = "/etc/ssl/certs/java/cacerts"
                 values_file = "override-tf.eks.<region>.<cluster_name>.yaml"  # "override-tf.eks.us-west-2.tf-jarvice.yaml"
 
                 values_yaml = <<EOF
