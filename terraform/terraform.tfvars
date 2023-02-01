@@ -435,16 +435,16 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
         }
 
         helm = {
-            keycloak = {
-                enabled = true
-                repository = "https://codecentric.github.io/helm-charts/"
-                version = "17.0.3"
-                keycloak_realm = "/home/khill/data/jarvice-helm/realm.json"
-                keycloak_user = "jarvice"
-                keycloak_pass = "Pass1234"
-                keycloak_ingress = "jarvice-khill-kc.jarvicedev.com" # "keycloak.mydomain.com"
-                keycloak_cert_issert = "letsencrypt-staging"
-            },
+            # keycloak = {
+            #     enabled = true
+            #     repository = "https://codecentric.github.io/helm-charts/"
+            #     version = "17.0.3"
+            #     keycloak_realm = # "keycloak/realm.json"
+            #     keycloak_user = # "jarvice"
+            #     keycloak_pass = # "Pass1234"
+            #     keycloak_ingress = # "keycloak.mydomain.com"
+            #     keycloak_cert_issert = # "letsencrypt-staging"
+            # },
             jarvice = {
                 # version = "3.0.0-1.XXXXXXXXXXXX"  # Override global version
                 namespace = "jarvice-system"
@@ -801,6 +801,16 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
         }
 
         helm = {
+            # keycloak = {
+            #     enabled = true
+            #     repository = "https://codecentric.github.io/helm-charts/"
+            #     version = "17.0.3"
+            #     keycloak_realm = # "keycloak/realm.json"
+            #     keycloak_user = # "jarvice"
+            #     keycloak_pass = # "Pass1234"
+            #     keycloak_ingress = # "keycloak.mydomain.com"
+            #     keycloak_cert_issert = # "letsencrypt-staging"
+            # },        
             jarvice = {
                 # version = "3.0.0-1.XXXXXXXXXXXX"  # Override global version
                 namespace = "jarvice-system"
