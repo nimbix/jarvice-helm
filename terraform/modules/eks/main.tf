@@ -456,7 +456,7 @@ EOF
                 #create_launch_template = false
                 #launch_template_id = aws_launch_template.jarvice_compute[pool_name].id
                 instance_type = pool.nodes_type
-                ami_id = lookup(pool.meta, "ami_id", null) != null ? pool.meta.ami_id : lookup(var.cluster.meta, "arch", "") == "arm64" ? data.aws_ami.eks_arm64.id : lookup(pool.meta, "interface_type", null) == "efa" ? data.aws_ami.eks_amd64.id : data.aws_ami.eks_amd64_gpu.id
+                ami_id = lookup(pool.meta, "ami_id", null) != null ? pool.meta.ami_id : lookup(var.cluster.meta, "arch", "") == "arm64" ? data.aws_ami.eks_arm64.id : lookup(pool.meta, "gpu", false) ? data.aws_ami.eks_amd64_gpu.id : data.aws_ami.eks_amd64.id
                 desired_size = pool.nodes_num
                 min_size = pool.nodes_min
                 max_size = pool.nodes_max
