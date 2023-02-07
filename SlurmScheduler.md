@@ -31,8 +31,8 @@ necessary to set `ingressHost` for each Slurm scheduler defined under the `sched
 
 Environment|Value|Description/Notes
 ---|---|---
-`JARVICE_SLURM_CLUSTER_ADDR`|string|IPv4 address for Slurm HPC cluster headnode (`x.x.x.x`)
-`JARVICE_SLURM_CLUSTER_PORT`|integer|Slurm headnode SSH port
+`JARVICE_SLURM_CLUSTER_ADDR`|string|IPv4 address or hostname for Slurm HPC cluster login node (`x.x.x.x`)
+`JARVICE_SLURM_CLUSTER_PORT`|integer|Slurm login node SSH port
 `JARVICE_SLURM_SCHED_LOGLEVEL`|integer|Python style debug level (10, 20, 30, etc)
 `JARVICE_SLURM_HTTPS_PROXY`|string|`https_proxy` value to apply to Slurm cluster to pull images **from computes nodes**
 `JARVICE_SLURM_HTTP_PROXY`|string|`http_proxy` value to apply to Slurm cluster to pull images **from computes nodes**
