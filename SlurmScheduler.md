@@ -6,9 +6,7 @@ to existing Slurm clusters.
 The Slurm scheduler head node must have a public or private IP address that is reachable from
 a JARVICE control plane and meet the following dependencies:
 * Recent Slurm version - tested with 22.05.4
-* `socat(1)` should be installed and in `${PATH}` for the SSH user
-* `resize2fs(8)` should be installed and in `${PATH}` for the SSH user; note that this is used only on overlay files, as non-root
-* Singularity 3.x or higher - tested with 3.6, 3.8, and 3.10.4
+* Singularity 3.x or higher - tested with 3.8, and 3.10.4
     * `singularity` command should be able to reach remote containers via the Internet (e.g. to pull containers); this can happen via a proxy if the login environment is automatically configured to use one
 * Non-root Linux user that can run `singularity` command
     * Home directory for this user should be network-mounted and consistent on all compute nodes (as well as login node if this is the entry point for job submissions)
@@ -33,15 +31,15 @@ necessary to set `ingressHost` for each Slurm scheduler defined under the `sched
 
 Environment|Value|Description/Notes
 ---|---|---
-`JARVICE_SLURM_CLUSTER_ADDR`|string|IP address for Slurm headnode (`x.x.x.x`)
+`JARVICE_SLURM_CLUSTER_ADDR`|string|IPv4 address for Slurm HPC cluster headnode (`x.x.x.x`)
 `JARVICE_SLURM_CLUSTER_PORT`|integer|Slurm headnode SSH port
 `JARVICE_SLURM_SCHED_LOGLEVEL`|integer|Python style debug level (10, 20, 30, etc)
-`JARVICE_SLURM_HTTPS_PROXY`|string|`https_proxy` value to apply to Slurm cluster 
-`JARVICE_SLURM_HTTP_PROXY`|string|`http_proxy` value to apply to Slurm cluster
+`JARVICE_SLURM_HTTPS_PROXY`|string|`https_proxy` value to apply to Slurm cluster to pull images **from computes nodes**
+`JARVICE_SLURM_HTTP_PROXY`|string|`http_proxy` value to apply to Slurm cluster to pull images **from computes nodes**
 `JARVICE_SLURM_NO_PROXY`|string|`no_proxy` value to apply to Slurm cluster
-`JARVICE_SINGULARITY_TMPDIR`|string|override tmp directory used by singularity
-`JARVICE_SLURM_OVERLAY_SIZE`|integer|overlay size of running singularity images
-`JARVICE_SINGULARITY_VERBOSE`|boolean|verbosity flag
+`JARVICE_SINGULARITY_TMPDIR`|string|Override tmp directory used by singularity (prevent usage of /tmp for diskless compute nodes for example)
+`JARVICE_SLURM_OVERLAY_SIZE`|integer|Overlay size of running singularity images
+`JARVICE_SINGULARITY_VERBOSE`|boolean|Verbosity flag of singularity jobs execution
 
 #### Example Helm Values
 
