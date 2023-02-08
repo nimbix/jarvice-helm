@@ -1,0 +1,172 @@
+#!/bin/bash
+
+version_tag=17.0.3
+namespace=jarvice-system
+realm_configmap=jarvice-keycloak-realm
+keycloak_user=jarvice
+keycloak_pass=Pass1234
+keycloak_cert_issuer=letsencrypt-staging
+keycloak_ingress_class=traefik
+keycloak_ingress=
+keycloak_realm=realm.json
+
+function usage {
+    cat <<EOF
+Usage:
+    $0 [options]
+
+Options:
+    --version-tag <tag>                    Keycloak version
+                                           (Default: $version_tag)
+    --namespace <kube_namespace>           Kubernetes namespace to deploy to
+                                           (Default: $namespace)
+    --user <admin_user>                    Keycloak admin user
+                                           (Default: $keycloak_user)
+    --pass <admin_pass>                    Keyclaok admin pass
+                                           (Default: $keycloak_pass)
+    --cert-issuer <cert-manager_issuer>    cert-manager issuer for ingress
+                                           (Default: $keycloak_cert_issuer) 
+    --realm <json_file>                    Keycloak realm export json file (required)
+    --ingress <host_ingress>               Ingress host for Keycloak (required)
+    --ingress-class                        K8s ingress class (optional)
+
+Example:
+    $0 --realm $HOME/realm.json --ingress keycloak.example.com
+
+Note:
+    Deployment requires active cert-manager deployment to issue certificates
+    for ingress. New cert-manager can be deployed using:
+        scripts/deploy2k8s-cert-manager
+EOF
+}
+
+HELM=$(type -p helm)
+if [ -z "$HELM" ]; then
+    cat <<EOF
+Could not find 'helm' in PATH.  It may not be installed.
+Run 'install-helm' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+KUBECTL=$(type -p kubectl)
+if [ -z "$KUBECTL" ]; then
+    cat <<EOF
+Could not find 'kubectl' in PATH.  It may not be installed.
+Run 'install-kubectl' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        --help)
+            usage
+            exit 0
+            ;;
+        --version-tag)
+            version_tag=$2
+            shift; shift
+            ;;
+        --namespace)
+            namespace=$2
+            shift; shift
+            ;;
+        --user)
+	        keycloak_user=$2
+	        shift; shift
+	        ;;
+	    --pass)
+	        keycloak_pass=$2
+	        shift; shift
+	        ;;
+	    --cert-issuer)
+	        keycloak_cert_issuer=$2
+	        shift; shift
+	        ;;
+	    --realm)
+	        keycloak_realm=$2
+	        shift; shift
+	        ;;
+	    --ingress)
+	        keycloak_ingress=$2
+	        shift; shift
+	        ;;
+        --ingress-class)
+            keycloak_ingress_class=$2
+            shift; shift
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+set -e
+
+[ ! -f "$keycloak_realm" ] && usage && exit 1
+
+[ -z "$keycloak_ingress" ] && usage && exit 1
+
+echo
+echo "* Creating namespace: $namespace"
+$KUBECTL create namespace $namespace 2>/dev/null || /bin/true
+
+echo
+echo "* Creating configmap: $realm_configmap"
+$KUBECTL -n $namespace create configmap \
+    --from-file "$keycloak_realm" \
+    "$realm_configmap" 2>/dev/null || /bin/true
+
+values_yaml=$(cat  << EOF
+extraVolumes: |
+  - name: jarvice-realm
+    configMap:
+      name: jarvice-keycloak-realm
+
+extraVolumeMounts: |
+  - name: jarvice-realm
+    mountPath: "/realm/"
+    readOnly: true
+
+extraEnv: |
+  - name: KEYCLOAK_USER
+    value: ${keycloak_user}
+  - name: KEYCLOAK_PASSWORD
+    value: ${keycloak_pass}
+  - name: PROXY_ADDRESS_FORWARDING
+    value: "true"
+  - name: KEYCLOAK_IMPORT
+    value: /realm/realm.json
+ingress:
+  enabled: true
+  annotations:
+    cert-manager.io/issuer: ${keycloak_cert_issuer}
+  ingressClassName: ${keycloak_ingress_class}
+  rules:
+  - host: ${keycloak_ingress}
+    paths:
+    - path: /
+      pathType: Prefix
+  tls:
+  - hosts:
+    - ${keycloak_ingress}
+    secretName: tls-${keycloak_ingress}
+EOF
+)
+
+echo
+echo "* Deploying..."
+repo=https://codecentric.github.io/helm-charts
+printf "$values_yaml" | $HELM upgrade jarvice-keycloak keycloak --repo $repo \
+    --namespace $namespace --install --reset-values \
+    -f -
+
+echo
+echo "* Deployment successful..."
+
+echo
+echo "For advanced setup details, visit https://github.com/codecentric/helm-charts/tree/master/charts/keycloak and/or execute:"
+echo "$ helm inspect all keycloak --repo $repo"
+
