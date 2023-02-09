@@ -115,6 +115,62 @@ resource "helm_release" "traefik" {
     depends_on = [helm_release.aws_load_balancer_controller, helm_release.external_dns]
 }
 
+resource "kubernetes_namespace" "jarvice_ns" {
+    count = fileexists(local.jarvice_user_cacert) || fileexists(local.jarvice_user_java_cacert) ? 1 : 0 || fileexists(local.jarvice_bird_user_preset) ? 1 : 0
+
+    metadata {
+        name = var.jarvice["namespace"]
+    }
+}
+
+resource "kubernetes_config_map" "jarvice_bird_user_preset" {
+    count = fileexists(local.jarvice_bird_user_preset) ? 1 : 0
+
+    metadata {
+        name = "jarvice-bird-user-preset"
+        namespace = var.jarvice["namespace"]
+    }
+
+    data = {
+        "user_dashboards_configuration_default.json" = "${file(local.jarvice_bird_user_preset)}"
+    }
+
+    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik, kubernetes_namespace.jarvice_ns]
+
+}
+
+resource "kubernetes_config_map" "jarvice_user_cacert" {
+    count = fileexists(local.jarvice_user_cacert) ? 1 : 0
+
+    metadata {
+        name = "jarvice-cacert"
+        namespace = var.jarvice["namespace"]
+    }
+
+    data = {
+        "ca-certificates.crt" = "${file(local.jarvice_user_cacert)}"
+    }
+
+    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik, kubernetes_namespace.jarvice_ns]
+
+}
+
+resource "kubernetes_config_map" "jarvice_java_cacert" {
+    count = fileexists(local.jarvice_user_java_cacert) ? 1 : 0
+
+    metadata {
+        name = "jarvice-java-cacert"
+        namespace = var.jarvice["namespace"]
+    }
+
+    binary_data = {
+        "cacerts" = "${filebase64(local.jarvice_user_java_cacert)}"
+    }
+
+    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik, kubernetes_namespace.jarvice_ns]
+
+}
+
 resource "helm_release" "jarvice" {
     name = "jarvice"
     repository = local.jarvice_chart_is_dir ? null : local.jarvice_chart_repository
@@ -140,6 +196,6 @@ resource "helm_release" "jarvice" {
         var.jarvice["values_yaml"]
     ]
 
-    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik]
+    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik,kubernetes_config_map.jarvice_bird_user_preset,kubernetes_config_map.jarvice_java_cacert,kubernetes_config_map.jarvice_user_cacert]
 }
 

@@ -189,6 +189,12 @@ spec:
           subPath: cacerts
           readOnly: true
 {{- end }}
+{{- if (not (empty .Values.jarvice_bird_server.preset.configMap)) }}
+        - name: jarvice-bird-user-preset
+          mountPath: /opt/bird/bird-presets/user_dashboards_configuration_default.json
+          subPath: user_dashboards_configuration_default.json
+          readOnly: true
+{{- end }}
         resources:
 {{ toYaml .Values.jarvice_bird.resources | indent 10 }}
       volumes:
@@ -205,6 +211,13 @@ spec:
         - name: jarvice-java-cacert
           configMap:
             name: {{ .Values.jarvice_bird_server.java.cacert.configMap }}
+            optional: true
+            defaultMode: 444
+{{- end }}
+{{- if (not (empty .Values.jarvice_bird_server.preset.configMap)) }}
+        - name: jarvice-bird-user-preset
+          configMap:
+            name: {{ .Values.jarvice_bird_server.preset.configMap }}
             optional: true
             defaultMode: 444
 {{- end }}
