@@ -127,6 +127,15 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202302101625
+
+* (JAR-4255) Fixed subsequent login failure when deleting default vault for a user in *Administration->Users*.
+* (JAR-6080) Added `/jarvice/batch` endpoint to JARVICE API, to support submitting batch-only jobs referencing arbitrary containers (rather than apps in the catalog); note that cloning these jobs is not supported and inspecting the JSON in the portal from these jobs may not precisely match the submission payload.  For details please see the [JARVICE API](https://jarvice.readthedocs.io/en/latest/api) reference.
+* (JAR-6131) Portal performance improvements.
+* (JAR-6277) Experimental support for one or more downstream Slurm clusters, utilizing Singularity container engine for runtime.  For details please see the work-in-progress documentation in [JARVICE Slurm Scheduler Overview](SlurmScheduler.md)
+* (JAR-6689) Increased size of ephemeral user home directory in v2 apps to take advantage of the entire overlay and avoid application issues.
+* (JAR-6694) Improved robustness of SQL queries against certain versions of MySQL.
+
 ## 3.21.9-1.202211231718
 
 * (JAR-5617) Improved web portal login speeds by optimizing whitelisted app queries.
