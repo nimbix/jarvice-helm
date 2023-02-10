@@ -12,6 +12,10 @@ jarvice:
   JARVICE_PVC_VAULT_STORAGECLASS: jarvice-user
   JARVICE_PVC_VAULT_ACCESSMODES:  # e.g. "ReadWriteMany,ReadOnlyMany"
   JARVICE_PVC_VAULT_SIZE:         # gigabytes
+jarvice_slurm_scheduler:
+  enabled: false
+jarvice_k8s_scheduler:
+  enabled: true
 EOF
     jarvice_helm_values = merge(
         lookup(yamldecode(local.jarvice_helm_values_min_defaults), "jarvice", {}),
@@ -21,7 +25,25 @@ EOF
         lookup(yamldecode("XXXdummy: value\n\n${var.cluster.helm.jarvice["values_yaml"]}"), "jarvice", {})
     )
 
+    jarvice_slurm_helm_values = merge(
+        lookup(yamldecode(local.jarvice_helm_values_min_defaults), "jarvice_slurm_scheduler", {}),
+        lookup(yamldecode("XXXdummy: value\n\n${fileexists(var.global.helm.jarvice["values_file"]) ? file(var.global.helm.jarvice["values_file"]) : ""}"), "jarvice_slurm_scheduler", {}),
+        lookup(yamldecode("XXXdummy: value\n\n${local.jarvice_helm_override_yaml}"), "jarvice_slurm_scheduler", {}),
+        lookup(yamldecode("XXXdummy: value\n\n${var.global.helm.jarvice["values_yaml"]}"), "jarvice_slurm_scheduler", {}),
+        lookup(yamldecode("XXXdummy: value\n\n${var.cluster.helm.jarvice["values_yaml"]}"), "jarvice_slurm_scheduler", {})
+    )
+
+    jarvice_k8s_helm_values = merge(
+        lookup(yamldecode(local.jarvice_helm_values_min_defaults), "jarvice_k8s_scheduler", {}),
+        lookup(yamldecode("XXXdummy: value\n\n${fileexists(var.global.helm.jarvice["values_file"]) ? file(var.global.helm.jarvice["values_file"]) : ""}"), "jarvice_k8s_scheduler", {}),
+        lookup(yamldecode("XXXdummy: value\n\n${local.jarvice_helm_override_yaml}"), "jarvice_k8s_scheduler", {}),
+        lookup(yamldecode("XXXdummy: value\n\n${var.global.helm.jarvice["values_yaml"]}"), "jarvice_k8s_scheduler", {}),
+        lookup(yamldecode("XXXdummy: value\n\n${var.cluster.helm.jarvice["values_yaml"]}"), "jarvice_k8s_scheduler", {})
+    )
+
     jarvice_cluster_type = local.jarvice_helm_values["JARVICE_CLUSTER_TYPE"] == "downstream" ? "downstream" : "upstream"
+
+    jarvice_slurm_schedulers = local.jarvice_slurm_helm_values["enabled"] ? local.jarvice_slurm_helm_values["schedulers"] : []
 }
 
 locals {
@@ -64,6 +86,11 @@ jarvice:
       enabled: true
 
 jarvice_db:
+  persistence:
+    enabled: true
+    storageClassProvisioner: ${var.storage_class_provisioner}
+
+jarvice_bird_server:
   persistence:
     enabled: true
     storageClassProvisioner: ${var.storage_class_provisioner}

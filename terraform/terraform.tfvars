@@ -516,6 +516,16 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
 
 #jarvice_mc_portal:
   #ingressHost: tf-jarvice.my-domain.com
+
+#jarvice_slurm_scheduler:
+  #enabled: true
+  #schedulers:
+  #- name: default
+    #env:
+      #JARVICE_SLURM_CLUSTER_ADDR: # address for slurm headnode
+    #sshConf:
+      #user: # user to ssh into slurm headnode (e.g. nimbix)
+      #pkey: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
 EOF
             }
         }
@@ -667,6 +677,17 @@ jarvice:
 
 #jarvice_k8s_scheduler:
   #ingressHost: tf-jarvice-downstream.my-domain.com
+
+#jarvice_slurm_scheduler:
+  #enabled: true
+  #schedulers:
+  #- name: default
+    #ingressHost: # jarvice-slurm.my-domain.com
+    #env:
+      #JARVICE_SLURM_CLUSTER_ADDR: # address for slurm headnode
+    #sshConf:
+      #user: # user to ssh into slurm headnode (e.g. nimbix)
+      #pkey: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
 EOF
             }
         }
@@ -737,6 +758,9 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
 
                     #Define custom ami_id for compute nodes. Leave commented out to pull in newest version of the AMI which will recreate pool.
                     #ami_id
+
+                    #Indicate whether the node pool should have a GPU capable AWS ami.
+                    #gpu = "true"
                 }
             },
             #jxecompute01 = {
@@ -752,6 +776,12 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
             #        # EFA requires k8s ver >= 1.19.  Supported instance types:
             #        # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
             #        #interface_type = "efa"
+            # 
+            #        #Define custom ami_id for compute nodes. Leave commented out to pull in newest version of the AMI which will recreate pool.
+            #        #ami_id
+
+            #        #Indicate whether the node pool should have a GPU capable AWS ami.
+            #        #gpu = "true"
             #    }
             #},
         }
@@ -841,6 +871,16 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
 
 #jarvice_mc_portal:
   #ingressHost: tf-jarvice.my-domain.com
+
+#jarvice_slurm_scheduler:
+  #enabled: true
+  #schedulers:
+  #- name: default
+    #env:
+      #JARVICE_SLURM_CLUSTER_ADDR: # address for slurm headnode
+    #sshConf:
+      #user: # user to ssh into slurm headnode (e.g. nimbix)
+      #pkey: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
 EOF
             }
         }
@@ -980,6 +1020,17 @@ jarvice:
 
 #jarvice_k8s_scheduler:
   #ingressHost: tf-jarvice-downstream.my-domain.com
+
+#jarvice_slurm_scheduler:
+  #enabled: true
+  #schedulers:
+  #- name: default
+    #ingressHost: # jarvice-slurm.my-domain.com
+    #env:
+      #JARVICE_SLURM_CLUSTER_ADDR: # address for slurm headnode
+    #sshConf:
+      #user: # user to ssh into slurm headnode (e.g. nimbix)
+      #pkey: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
 EOF
             }
         }
@@ -1134,6 +1185,16 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
 
 #jarvice_mc_portal:
   #ingressHost: tf-jarvice.my-domain.com
+
+#jarvice_slurm_scheduler:
+  #enabled: true
+  #schedulers:
+  #- name: default
+    #env:
+      #JARVICE_SLURM_CLUSTER_ADDR: # address for slurm headnode
+    #sshConf:
+      #user: # user to ssh into slurm headnode (e.g. nimbix)
+      #pkey: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
 EOF
             }
         }
@@ -1256,6 +1317,17 @@ jarvice:
 
 #jarvice_k8s_scheduler:
   #ingressHost: tf-jarvice-downstream.my-domain.com
+
+#jarvice_slurm_scheduler:
+  #enabled: true
+  #schedulers:
+  #- name: default
+    #ingressHost: # jarvice-slurm.my-domain.com
+    #env:
+      #JARVICE_SLURM_CLUSTER_ADDR: # address for slurm headnode
+    #sshConf:
+      #user: # user to ssh into slurm headnode (e.g. nimbix)
+      #pkey: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
 EOF
             }
         }

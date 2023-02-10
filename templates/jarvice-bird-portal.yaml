@@ -1,6 +1,6 @@
 {{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
-{{- if .Values.jarvice_mc_portal.enabled }}
-{{- if gt (.Values.jarvice_mc_portal.replicaCount | int) 1 }}
+{{- if .Values.jarvice_bird_portal.enabled }}
+{{- if gt (.Values.jarvice_bird_portal.replicaCount | int) 1 }}
 {{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
 apiVersion: policy/v1
 {{- else }}
@@ -8,88 +8,88 @@ apiVersion: policy/v1beta1
 {{- end }}
 kind: PodDisruptionBudget
 metadata:
-  name: jarvice-mc-portal
+  name: jarvice-bird-portal
 spec:
   selector:
     matchLabels:
-      deployment: jarvice-mc-portal
-  minAvailable: {{ .Values.jarvice_mc_portal.pdb.minAvailable }}
+      deployment: jarvice-bird-portal
+  minAvailable: {{ .Values.jarvice_bird_portal.pdb.minAvailable }}
 ---
 {{- end }}
-{{- if gt (.Values.jarvice_mc_portal.replicaCountMax | int) (.Values.jarvice_mc_portal.replicaCount | int) }}
+{{- if gt (.Values.jarvice_bird_portal.replicaCountMax | int) (.Values.jarvice_bird_portal.replicaCount | int) }}
 apiVersion: autoscaling/v2beta2
 kind: HorizontalPodAutoscaler
 metadata:
-  name: jarvice-mc-portal
+  name: jarvice-bird-portal
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-mc-portal
+    component: jarvice-bird-portal
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: jarvice-mc-portal
-  minReplicas: {{ .Values.jarvice_mc_portal.replicaCount }}
-  maxReplicas: {{ .Values.jarvice_mc_portal.replicaCountMax }}
+    name: jarvice-bird-portal
+  minReplicas: {{ .Values.jarvice_bird_portal.replicaCount }}
+  maxReplicas: {{ .Values.jarvice_bird_portal.replicaCountMax }}
   metrics:
-    {{- toYaml .Values.jarvice_mc_portal.autoscaling.metrics | nindent 4 }}
+    {{- toYaml .Values.jarvice_bird_portal.autoscaling.metrics | nindent 4 }}
 ---
 {{- end}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: jarvice-mc-portal
+  name: jarvice-bird-portal
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-mc-portal
-    deployment: jarvice-mc-portal
+    component: jarvice-bird-portal
+    deployment: jarvice-bird-portal
     jarvice-system: core
 spec:
-  replicas: {{ .Values.jarvice_mc_portal.replicaCount }}
+  replicas: {{ .Values.jarvice_bird_portal.replicaCount }}
   selector:
     matchLabels:
-      deployment: jarvice-mc-portal
+      deployment: jarvice-bird-portal
   template:
     metadata:
       labels:
         {{- include "jarvice.release_labels" . | indent 8 }}
-        component: jarvice-mc-portal
-        deployment: jarvice-mc-portal
+        component: jarvice-bird-portal
+        deployment: jarvice-bird-portal
         jarvice-system: core
       annotations:
         deployment-date: {{ now | quote }}
     spec:
-{{- if (not (empty .Values.jarvice_mc_portal.tolerations)) }}
-      tolerations: {{ .Values.jarvice_mc_portal.tolerations }}
+{{- if (not (empty .Values.jarvice_bird_portal.tolerations)) }}
+      tolerations: {{ .Values.jarvice_bird_portal.tolerations }}
 {{- else if (not (empty .Values.jarvice.tolerations)) }}
       tolerations: {{ .Values.jarvice.tolerations }}
 {{- end }}
-{{- if (not (empty .Values.jarvice_mc_portal.nodeSelector)) }}
-      nodeSelector: {{ .Values.jarvice_mc_portal.nodeSelector }}
+{{- if (not (empty .Values.jarvice_bird_portal.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice_bird_portal.nodeSelector }}
 {{- else if (not (empty .Values.jarvice.nodeSelector)) }}
       nodeSelector: {{ .Values.jarvice.nodeSelector }}
 {{- end }}
       affinity:
-{{- if (not (empty .Values.jarvice_mc_portal.nodeAffinity)) }}
-        nodeAffinity: {{ .Values.jarvice_mc_portal.nodeAffinity }}
+{{- if (not (empty .Values.jarvice_bird_portal.nodeAffinity)) }}
+        nodeAffinity: {{ .Values.jarvice_bird_portal.nodeAffinity }}
 {{- else if (not (empty .Values.jarvice.nodeAffinity)) }}
         nodeAffinity: {{ .Values.jarvice.nodeAffinity }}
 {{- end }}
         podAntiAffinity:
-        {{- if eq .Values.jarvice_mc_portal.antiAffinity "hard" }}
+        {{- if eq .Values.jarvice_bird_portal.antiAffinity "hard" }}
           requiredDuringSchedulingIgnoredDuringExecution:
           - topologyKey: "kubernetes.io/hostname"
             labelSelector:
               matchLabels:
-                deployment: jarvice-mc-portal
-        {{- else if eq .Values.jarvice_mc_portal.antiAffinity "soft" }}
+                deployment: jarvice-bird-portal
+        {{- else if eq .Values.jarvice_bird_portal.antiAffinity "soft" }}
           preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 5
             podAffinityTerm:
               topologyKey: "kubernetes.io/hostname"
               labelSelector:
                 matchLabels:
-                  deployment: jarvice-mc-portal
+                  deployment: jarvice-bird-portal
         {{- end }}
       imagePullSecrets:
       - name: jarvice-docker
@@ -118,8 +118,8 @@ spec:
             defaultMode: 444
 {{- end }}
       containers:
-      - name: jarvice-mc-portal
-        image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-mc-portal:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+      - name: jarvice-bird-portal
+        image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-bird-portal:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
 {{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
         imagePullPolicy: Always
 {{- else }}
@@ -133,38 +133,22 @@ spec:
             scheme: HTTP
             port: http
             path: /ready
-          initialDelaySeconds: {{ .Values.jarvice_mc_portal.readinessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.jarvice_mc_portal.readinessProbe.periodSeconds }}
-          timeoutSeconds: {{ .Values.jarvice_mc_portal.readinessProbe.timeoutSeconds }}
-          successThreshold: {{ .Values.jarvice_mc_portal.readinessProbe.successThreshold }}
-          failureThreshold: {{ .Values.jarvice_mc_portal.readinessProbe.failureThreshold }}
+          initialDelaySeconds: {{ .Values.jarvice_bird_portal.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jarvice_bird_portal.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jarvice_bird_portal.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_bird_portal.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_bird_portal.readinessProbe.failureThreshold }}
         livenessProbe:
           httpGet:
             scheme: HTTP
             port: http
             path: /live
-          initialDelaySeconds: {{ .Values.jarvice_mc_portal.livenessProbe.initialDelaySeconds }}
-          periodSeconds: {{ .Values.jarvice_mc_portal.livenessProbe.periodSeconds }}
-          timeoutSeconds: {{ .Values.jarvice_mc_portal.livenessProbe.timeoutSeconds }}
-          successThreshold: {{ .Values.jarvice_mc_portal.livenessProbe.successThreshold }}
-          failureThreshold: {{ .Values.jarvice_mc_portal.livenessProbe.failureThreshold }}
+          initialDelaySeconds: {{ .Values.jarvice_bird_portal.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jarvice_bird_portal.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jarvice_bird_portal.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_bird_portal.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_bird_portal.livenessProbe.failureThreshold }}
         env:
-{{- if .Values.jarvice_bird.enabled }}
-{{- if (not (empty .Values.jarvice_bird.env.KEYCLOAK_URL)) }}
-          - name: JARVICE_KEYCLOAK_URL
-{{- if hasSuffix "/" "{{ .Values.jarvice_bird.env.KEYCLOAK_URL }}" }}
-            value: "{{ .Values.jarvice_bird.env.KEYCLOAK_URL }}"
-{{- else }}
-            value: {{ (printf "%s/" .Values.jarvice_bird.env.KEYCLOAK_URL ) }}
-{{- end }}
-{{- end }}
-          - name: JARVICE_KEYCLOAK_REALM
-{{- if (not (empty .Values.jarvice_bird.env.KEYCLOAK_REALM)) }}
-            value: "{{ .Values.jarvice_bird.env.KEYCLOAK_REALM }}"
-{{- else }}
-            value: jarvice
-{{- end }}
-{{- end }}
           - name: JARVICE_SYSTEM_K8S
 {{- if empty .Values.jarvice.JARVICE_SYSTEM_K8S }}
             value: "true"
@@ -178,20 +162,20 @@ spec:
             value: "{{ .Values.jarvice.JARVICE_EXPERIMENTAL }}"
 {{- end }}
           - name: JARVICE_DAL_URL
-{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_DAL_URL)) }}
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_DAL_URL }}"
+{{- if (not (empty .Values.jarvice_bird_portal.env.JARVICE_DAL_URL)) }}
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_DAL_URL }}"
 {{- else }}
             value: "http://jarvice-dal:8080"
 {{- end }}
           - name: JARVICE_API_URL
-{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_API_URL)) }}
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_API_URL }}"
+{{- if (not (empty .Values.jarvice_bird_portal.env.JARVICE_API_URL)) }}
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_API_URL }}"
 {{- else }}
             value: "http://jarvice-api:8080"
 {{- end }}
-{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_API_PUBLIC_URL)) }}
+{{- if (not (empty .Values.jarvice_bird_portal.env.JARVICE_API_PUBLIC_URL)) }}
           - name: JARVICE_API_PUBLIC_URL
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_API_PUBLIC_URL }}"
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_API_PUBLIC_URL }}"
 {{- else if (not (empty .Values.jarvice.JARVICE_API_PUBLIC_URL)) }}
           - name: JARVICE_API_PUBLIC_URL
             value: "{{ .Values.jarvice.JARVICE_API_PUBLIC_URL }}"
@@ -200,50 +184,50 @@ spec:
             value: 'https://{{- .Values.jarvice_api.ingressHost -}}{{- .Values.jarvice_api.ingressPath -}}'
 {{- end }}
           - name: JARVICE_USER_DEFAULT_ENABLED
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_USER_DEFAULT_ENABLED }}"
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_USER_DEFAULT_ENABLED }}"
           - name: JARVICE_USER_DEFAULT_DEVELOPER
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_USER_DEFAULT_DEVELOPER }}"
-{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_REALM)) }}
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_USER_DEFAULT_DEVELOPER }}"
+{{- if (not (empty .Values.jarvice_bird_portal.env.JARVICE_PORTAL_GSS_REALM)) }}
           - name: JARVICE_PORTAL_GSS_REALM
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_REALM }}"
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_PORTAL_GSS_REALM }}"
 {{- end }}
           - name: JARVICE_PORTAL_JOB_TERMINATE_LIMIT
-{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_JOB_TERMINATE_LIMIT)) }}
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_JOB_TERMINATE_LIMIT }}"
+{{- if (not (empty .Values.jarvice_bird_portal.env.JARVICE_PORTAL_JOB_TERMINATE_LIMIT)) }}
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_PORTAL_JOB_TERMINATE_LIMIT }}"
 {{- else }}
             value: "10"
 {{- end }}
-{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_DOMAIN)) }}
+{{- if (not (empty .Values.jarvice_bird_portal.env.JARVICE_PORTAL_GSS_DOMAIN)) }}
           - name: JARVICE_PORTAL_GSS_DOMAIN
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_DOMAIN }}"
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_PORTAL_GSS_DOMAIN }}"
 {{- end }}
-{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_LOG)) }}
+{{- if (not (empty .Values.jarvice_bird_portal.env.JARVICE_PORTAL_GSS_LOG)) }}
           - name: JARVICE_PORTAL_GSS_LOG
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_GSS_LOG }}"
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_PORTAL_GSS_LOG }}"
 {{- end }}
-{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_DISABLE_API_SUBST_WARNING)) }}
+{{- if (not (empty .Values.jarvice_bird_portal.env.JARVICE_DISABLE_API_SUBST_WARNING)) }}
           - name: JARVICE_DISABLE_API_SUBST_WARNING
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_DISABLE_API_SUBST_WARNING }}"
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_DISABLE_API_SUBST_WARNING }}"
 {{- end }}
-{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_WEB_HOST)) }}
+{{- if (not (empty .Values.jarvice_bird_portal.env.JARVICE_PORTAL_WEB_HOST)) }}
           - name: JARVICE_PORTAL_WEB_HOST
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_WEB_HOST }}"
-{{- else if (not (empty .Values.jarvice_mc_portal.ingressHost)) }}
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_PORTAL_WEB_HOST }}"
+{{- else if (not (empty .Values.jarvice_bird_portal.ingressHost)) }}
           - name: JARVICE_PORTAL_WEB_HOST
-            value: 'https://{{- .Values.jarvice_mc_portal.ingressHost -}}{{- .Values.jarvice_mc_portal.ingressPath -}}'
+            value: 'https://{{- .Values.jarvice_bird_portal.ingressHost -}}{{- .Values.jarvice_bird_portal.ingressPath -}}'
 {{- end }}
           - name: JARVICE_PORTAL_MEMCACHED_LOCATIONS
-{{- if and .Values.jarvice_memcached.enabled (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MEMCACHED_LOCATIONS) }}
+{{- if and .Values.jarvice_memcached.enabled (empty .Values.jarvice_bird_portal.env.JARVICE_PORTAL_MEMCACHED_LOCATIONS) }}
             {{- $memcachedCount := .Values.jarvice_memcached.replicaCount }}
             value: "
               {{- range $i, $none := until (int $memcachedCount) }}
                 {{- if gt $i 0}},{{- end }}jarvice-memcached-{{ $i }}.jarvice-memcached:11211
               {{- end }}"
 {{- else }}
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MEMCACHED_LOCATIONS }}"
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_PORTAL_MEMCACHED_LOCATIONS }}"
 {{- end }}
           - name: JARVICE_PORTAL_APP_OWNERS
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_APP_OWNERS }}"
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_PORTAL_APP_OWNERS }}"
 {{- if (not (empty .Values.jarvice.JARVICE_HTTP_PROXY)) }}
           - name: http_proxy
             value: "{{ .Values.jarvice.JARVICE_HTTP_PROXY }}"
@@ -262,34 +246,34 @@ spec:
 {{- end }}
 {{- end }}
           - name: JARVICE_PORTAL_MAIL_FROM
-{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_FROM)) }}
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_FROM }}"
+{{- if (not (empty .Values.jarvice_bird_portal.env.JARVICE_PORTAL_MAIL_FROM)) }}
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_PORTAL_MAIL_FROM }}"
 {{- else }}
             value: "{{ .Values.jarvice.JARVICE_PORTAL_MAIL_FROM }}"
 {{- end }}
           - name: JARVICE_PORTAL_MAIL_SUBJECT
-{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_SUBJECT)) }}
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_SUBJECT }}"
+{{- if (not (empty .Values.jarvice_bird_portal.env.JARVICE_PORTAL_MAIL_SUBJECT)) }}
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_PORTAL_MAIL_SUBJECT }}"
 {{- else }}
             value: "{{ .Values.jarvice.JARVICE_PORTAL_MAIL_SUBJECT }}"
 {{- end }}
           - name: JARVICE_PORTAL_MAIL_SERVER
-{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_SERVER)) }}
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_SERVER }}"
+{{- if (not (empty .Values.jarvice_bird_portal.env.JARVICE_PORTAL_MAIL_SERVER)) }}
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_PORTAL_MAIL_SERVER }}"
 {{- else }}
             value: "{{ .Values.jarvice.JARVICE_MAIL_SERVER }}"
 {{- end }}
           - name: JARVICE_PORTAL_MAIL_USERNAME
-{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_USERNAME)) }}
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_USERNAME }}"
+{{- if (not (empty .Values.jarvice_bird_portal.env.JARVICE_PORTAL_MAIL_USERNAME)) }}
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_PORTAL_MAIL_USERNAME }}"
 {{- else }}
             value: "{{ .Values.jarvice.JARVICE_MAIL_USERNAME }}"
 {{- end }}
-{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_PASSWORD)) }}
+{{- if (not (empty .Values.jarvice_bird_portal.env.JARVICE_PORTAL_MAIL_PASSWORD)) }}
           - name: JARVICE_PORTAL_MAIL_PASSWORD
             valueFrom:
               secretKeyRef:
-                name: jarvice-mc-portal
+                name: jarvice-bird-portal
                 key: JARVICE_PORTAL_MAIL_PASSWORD
 {{- else if (not (empty .Values.jarvice.JARVICE_MAIL_PASSWORD)) }}
           - name: JARVICE_PORTAL_MAIL_PASSWORD
@@ -299,37 +283,55 @@ spec:
                 key: JARVICE_MAIL_PASSWORD
 {{- end }}
           - name: JARVICE_PORTAL_MAIL_ADMINS
-{{- if (not (empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_ADMINS)) }}
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_MAIL_ADMINS }}"
+{{- if (not (empty .Values.jarvice_bird_portal.env.JARVICE_PORTAL_MAIL_ADMINS)) }}
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_PORTAL_MAIL_ADMINS }}"
 {{- else }}
             value: "{{ .Values.jarvice.JARVICE_MAIL_ADMINS }}"
 {{- end }}
           - name: JARVICE_PORTAL_DB
-{{- if empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DB }}
+{{- if empty .Values.jarvice_bird_portal.env.JARVICE_PORTAL_DB }}
             value: "nimbix_portal_ng"
 {{- else }}
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DB }}"
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_PORTAL_DB }}"
 {{- end }}
           - name: JARVICE_PORTAL_DBHOST
-{{- if empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DBHOST }}
+{{- if empty .Values.jarvice_bird_portal.env.JARVICE_PORTAL_DBHOST }}
             value: "{{ .Values.jarvice.JARVICE_DBHOST }}"
 {{- else }}
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DBHOST }}"
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_PORTAL_DBHOST }}"
 {{- end }}
           - name: JARVICE_PORTAL_DBUSER
-{{- if empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DBUSER }}
+{{- if empty .Values.jarvice_bird_portal.env.JARVICE_PORTAL_DBUSER }}
             value: "{{ .Values.jarvice.JARVICE_DBUSER }}"
 {{- else }}
-            value: "{{ .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DBUSER }}"
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_PORTAL_DBUSER }}"
 {{- end }}
           - name: JARVICE_PORTAL_DBPASSWD
             valueFrom:
               secretKeyRef:
                 name: jarvice-db
-{{- if empty .Values.jarvice_mc_portal.env.JARVICE_PORTAL_DBPASSWD }}
+{{- if empty .Values.jarvice_bird_portal.env.JARVICE_PORTAL_DBPASSWD }}
                 key: JARVICE_DBPASSWD
 {{- else }}
                 key: JARVICE_PORTAL_DBPASSWD
+{{- end }}
+          - name: JARVICE_KEYCLOAK_URL
+{{- if empty .Values.jarvice_bird_portal.env.JARVICE_KEYCLOAK_URL }}
+{{- required "***** !!!!! A valid keycloak server is required.  Please provide a value for jarvice_bird_portal.env.JARVICE_KEYCLOAK_URL. !!!!! *****" .Values.jarvice_bird_portal.env.JARVICE_KEYCLOAK_URL }}
+{{- else }}
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_KEYCLOAK_URL }}"
+{{- end }}
+          - name: JARVICE_KEYCLOAK_CLIENT_ID
+{{- if empty .Values.jarvice_bird_portal.env.JARVICE_KEYCLOAK_CLIENT_ID }}
+            value: jarvice
+{{- else }}
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_KEYCLOAK_CLIENT_ID }}"
+{{- end }}
+          - name: JARVICE_KEYCLOAK_REALM
+{{- if empty .Values.jarvice_bird_portal.env.JARVICE_KEYCLOAK_REALM }}
+            value: jarvice
+{{- else }}
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_KEYCLOAK_REALM }}"
 {{- end }}
 {{- if (not (empty .Values.jarvice.JARVICE_LICENSE_MANAGER_KEY)) }}
           - name: JARVICE_LICENSE_MANAGER_KEY
@@ -356,17 +358,17 @@ spec:
           readOnly: true
 {{- end }}
         resources:
-{{- if .Values.jarvice_mc_portal.resources }}
-{{ toYaml .Values.jarvice_mc_portal.resources | indent 10 }}
+{{- if .Values.jarvice_bird_portal.resources }}
+{{ toYaml .Values.jarvice_bird_portal.resources | indent 10 }}
 {{- end }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: jarvice-mc-portal
+  name: jarvice-bird-portal
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-mc-portal
+    component: jarvice-bird-portal
 spec:
   type: ClusterIP
   ports:
@@ -375,21 +377,21 @@ spec:
     targetPort: 8080
     name: http
   selector:
-    deployment: jarvice-mc-portal
+    deployment: jarvice-bird-portal
 ---
-{{- if or .Values.jarvice_mc_portal.networkPolicy.enabled (and (eq "<nil>" (toString .Values.jarvice_mc_portal.networkPolicy.enabled)) .Values.jarvice.networkPolicy.enabled) }}
+{{- if or .Values.jarvice_bird_portal.networkPolicy.enabled (and (eq "<nil>" (toString .Values.jarvice_bird_portal.networkPolicy.enabled)) .Values.jarvice.networkPolicy.enabled) }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: jarvice-mc-portal
+  name: jarvice-bird-portal
 spec:
   podSelector:
     matchLabels:
-      deployment: jarvice-mc-portal
+      deployment: jarvice-bird-portal
   policyTypes:
   - Ingress
   ingress:
-{{- if (empty .Values.jarvice_mc_portal.ingressHost) }}
+{{- if (empty .Values.jarvice_bird_portal.ingressHost) }}
   - {}
 {{- else }}
   - from:
@@ -401,24 +403,24 @@ spec:
 {{- end }}
 ---
 {{- end }}
-{{- if (empty .Values.jarvice_mc_portal.ingressHost) }}
+{{- if (empty .Values.jarvice_bird_portal.ingressHost) }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: jarvice-mc-portal-lb
+  name: jarvice-bird-portal-lb
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-mc-portal
+    component: jarvice-bird-portal
 spec:
   type: LoadBalancer
-  loadBalancerIP: {{ .Values.jarvice_mc_portal.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.jarvice_bird_portal.loadBalancerIP }}
   ports:
   - protocol: TCP
     port: 8080
     targetPort: 8080
     name: http
   selector:
-    deployment: jarvice-mc-portal
+    deployment: jarvice-bird-portal
 ---
 {{- else }}
 {{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
@@ -428,10 +430,10 @@ apiVersion: networking.k8s.io/v1beta1
 {{- end }}
 kind: Ingress
 metadata:
-  name: jarvice-mc-portal
+  name: jarvice-bird-portal
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-mc-portal
+    component: jarvice-bird-portal
   annotations:
 {{- if (not (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion)) }}
 {{- if (not (empty .Values.jarvice.ingress.class)) }}
@@ -443,11 +445,11 @@ metadata:
 {{- else if and (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) (and (empty .Values.jarvice.ingress.tls.crt) (empty .Values.jarvice.ingress.tls.key)) }}
     cert-manager.io/cluster-issuer: {{ .Values.jarvice.ingress.tls.cluster_issuer.name }}
 {{- end }}
-{{- if .Values.jarvice_mc_portal.ingressAnnotations }}
-{{- if (kindIs "string" .Values.jarvice_mc_portal.ingressAnnotations) }}
-{{ toYaml (fromJson .Values.jarvice_mc_portal.ingressAnnotations) | indent 4 }}
+{{- if .Values.jarvice_bird_portal.ingressAnnotations }}
+{{- if (kindIs "string" .Values.jarvice_bird_portal.ingressAnnotations) }}
+{{ toYaml (fromJson .Values.jarvice_bird_portal.ingressAnnotations) | indent 4 }}
 {{- else }}
-{{ toYaml .Values.jarvice_mc_portal.ingressAnnotations | indent 4 }}
+{{ toYaml .Values.jarvice_bird_portal.ingressAnnotations | indent 4 }}
 {{- end }}
 {{- end }}
 spec:
@@ -460,24 +462,24 @@ spec:
   - http:
       paths:
 {{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
-{{- if (eq "/portal" .Values.jarvice_mc_portal.ingressPath) }}
+{{- if (eq "/portal" .Values.jarvice_bird_portal.ingressPath) }}
       - backend:
           service:
-            name: jarvice-mc-portal
+            name: jarvice-bird-portal
             port:
               name: http
         pathType: Prefix
         path: /portal
       - backend:
           service:
-            name: jarvice-mc-portal
+            name: jarvice-bird-portal
             port:
               name: http
         pathType: Prefix
         path: /static
       - backend:
           service:
-            name: jarvice-mc-portal
+            name: jarvice-bird-portal
             port:
               name: http
         pathType: Prefix
@@ -485,43 +487,43 @@ spec:
 {{- else }}
       - backend:
           service:
-            name: jarvice-mc-portal
+            name: jarvice-bird-portal
             port:
               name: http
         pathType: Prefix
         path: /
 {{- end }}
 {{- else }}
-{{- if (eq "/portal" .Values.jarvice_mc_portal.ingressPath) }}
+{{- if (eq "/portal" .Values.jarvice_bird_portal.ingressPath) }}
       - backend:
-          serviceName: jarvice-mc-portal
+          serviceName: jarvice-bird-portal
           servicePort: http
         path: /portal
       - backend:
-          serviceName: jarvice-mc-portal
+          serviceName: jarvice-bird-portal
           servicePort: http
         path: /static
       - backend:
-          serviceName: jarvice-mc-portal
+          serviceName: jarvice-bird-portal
           servicePort: http
         path: /index.html
 {{- else }}
       - backend:
-          serviceName: jarvice-mc-portal
+          serviceName: jarvice-bird-portal
           servicePort: http
         path: /
 {{- end }}
 {{- end }}
-{{- if ne "-" .Values.jarvice_mc_portal.ingressHost }}
-    host: '{{- .Values.jarvice_mc_portal.ingressHost -}}'
+{{- if ne "-" .Values.jarvice_bird_portal.ingressHost }}
+    host: '{{- .Values.jarvice_bird_portal.ingressHost -}}'
 {{- if or (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}
   tls:
   - hosts:
-    - '{{- .Values.jarvice_mc_portal.ingressHost -}}'
+    - '{{- .Values.jarvice_bird_portal.ingressHost -}}'
 {{- if and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key)) }}
     secretName: 'tls-jarvice'
 {{- else }}
-    secretName: 'tls-{{- .Values.jarvice_mc_portal.ingressHost -}}'
+    secretName: 'tls-{{- .Values.jarvice_bird_portal.ingressHost -}}'
 {{- end }}
 {{- end }}
 {{- end }}

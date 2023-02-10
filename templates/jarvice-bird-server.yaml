@@ -1,0 +1,233 @@
+{{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
+{{- if .Values.jarvice_bird_server.enabled }}
+{{- if and .Values.jarvice_bird_server.persistence.enabled (empty .Values.jarvice_bird_server.persistence.existingClaimName) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jarvice-bird-server-pvc
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-bird-server
+{{- if eq .Values.jarvice_bird_server.persistence.resourcePolicy "keep" }}
+  annotations:
+    helm.sh/resource-policy: keep
+{{- end }}
+spec:
+  accessModes:
+    - {{ .Values.jarvice_bird_server.persistence.accessMode }}
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: {{ .Values.jarvice_bird_server.persistence.size }}
+{{- if .Values.jarvice_bird_server.persistence.storageClass }}
+{{- if (eq "-" .Values.jarvice_bird_server.persistence.storageClass) }}
+  storageClassName: ""
+{{- else }}
+  storageClassName: "{{ .Values.jarvice_bird_server.persistence.storageClass }}"
+{{- end }}
+{{- end }}
+---
+{{- end }}
+{{- if gt (.Values.jarvice_bird_server.replicaCount | int) 1 }}
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+apiVersion: policy/v1
+{{- else }}
+apiVersion: policy/v1beta1
+{{- end }}
+kind: PodDisruptionBudget
+metadata:
+  name: jarvice-bird-server
+spec:
+  selector:
+    matchLabels:
+      deployment: jarvice-bird-server
+  minAvailable: {{ .Values.jarvice_bird_server.pdb.minAvailable }}
+---
+{{- end }}
+{{- if gt (.Values.jarvice_bird_server.replicaCountMax | int) (.Values.jarvice_bird_server.replicaCount | int) }}
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: jarvice-bird-server
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-bird-server
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: jarvice-bird-server
+  minReplicas: {{ .Values.jarvice_bird_server.replicaCount }}
+  maxReplicas: {{ .Values.jarvice_bird_server.replicaCountMax }}
+  metrics:
+    {{- toYaml .Values.jarvice_bird_server.autoscaling.metrics | indent 4 }}
+---
+{{- end}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jarvice-bird-server
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-bird-server
+    deployment: jarvice-bird-server
+    jarvice-system: core
+spec:
+  replicas: {{ .Values.jarvice_bird_server.replicaCount }}
+  selector:
+    matchLabels:
+      deployment: jarvice-bird-server
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-bird-server
+        deployment: jarvice-bird-server
+        jarvice-system: core
+      annotations:
+        deployment-date: {{ now | quote }}
+    spec:
+      serviceAccountName: jarvice-system
+{{- if (not (empty .Values.jarvice_bird_server.tolerations)) }}
+      tolerations: {{ .Values.jarvice_bird_server.tolerations }}
+{{- else if (not (empty .Values.jarvice.tolerations)) }}
+      tolerations: {{ .Values.jarvice.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice_bird_server.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice_bird_server.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.nodeSelector }}
+{{- end }}
+      affinity:
+{{- if (not (empty .Values.jarvice_bird_server.nodeAffinity)) }}
+        nodeAffinity: {{ .Values.jarvice_bird_server.nodeAffinity }}
+{{- else if (not (empty .Values.jarvice.nodeAffinity)) }}
+        nodeAffinity: {{ .Values.jarvice.nodeAffinity }}
+{{- end }}
+        podAntiAffinity:
+        {{- if eq .Values.jarvice_bird_server.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                deployment: jarvice-bird-server
+        {{- else if eq .Values.jarvice_bird_server.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  deployment: jarvice-bird-server
+        {{- end }}
+      imagePullSecrets:
+      - name: jarvice-docker
+      containers:
+      - name: jarvice-bird-server
+        image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-bird-server:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+{{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
+        imagePullPolicy: Always
+{{- else }}
+        imagePullPolicy: IfNotPresent
+{{- end }}
+        ports:
+          - name: http
+            containerPort: 9090
+        readinessProbe:
+          exec:
+            command:
+            - /bin/true
+          initialDelaySeconds: {{ .Values.jarvice_bird_server.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jarvice_bird_server.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jarvice_bird_server.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_bird_server.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_bird_server.readinessProbe.failureThreshold }}
+        livenessProbe:
+          exec:
+            command:
+            - /bin/true
+          initialDelaySeconds: {{ .Values.jarvice_bird_server.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jarvice_bird_server.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jarvice_bird_server.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_bird_server.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_bird_server.livenessProbe.failureThreshold }}
+        env:
+          - name: TOKEN_INFO_URI
+{{- if (not (empty .Values.jarvice_bird_server.env.TOKEN_INFO_URI)) }}
+            value: {{ .Values.jarvice_bird_server.env.TOKEN_INFO_URI }}
+{{- else }}
+{{- required "***** !!!!! A valid keycloak server is required.  Please provide a value for jarvice_bird_server.env.TOKEN_INFO_URI. !!!!! *****" .Values.jarvice_bird_server.env.TOKEN_INFO_URL }}
+{{- end }}
+          - name: KEYCLOAK_URI
+{{- if (not (empty .Values.jarvice_bird_server.env.KEYCLOAK_URI)) }}
+            value: {{ .Values.jarvice_bird_server.env.KEYCLOAK_URI }}
+{{- else }}
+{{- required "***** !!!!! A valid keycloak server is required.  Please provide a value for jarvice_bird_server.env.KEYCLOAK_URI. !!!!! *****" .Values.jarvice_bird_server.env.KEYCLOAK_URI }}
+{{- end }}
+          - name: CLIENT_ID
+{{- if empty .Values.jarvice_bird_server.env.CLIENT_ID }}
+            value: jarvice
+{{- else }}
+            value: "{{ .Values.jarvice_bird_server.env.CLIENT_ID }}"
+{{- end }}
+          - name: PORT
+            value: "9090"
+          - name: TENANT_SCHEMAS
+{{- if empty .Values.jarvice_bird_server.env.TENANT_SCHEMAS }}
+            value: jarvice
+{{- else }}
+            value: "{{ .Values.jarvice_bird_server.env.TENANT_SCHEMAS }}"
+{{- end }}
+        volumeMounts:
+{{- if .Values.jarvice_bird_server.persistence.enabled }}
+        - mountPath: /home/bird/.bird
+          name: jarvice-bird-server
+{{- end }}
+{{- if (not (empty .Values.jarvice_bird_server.java.cacert.configMap)) }}
+        - name: jarvice-java-cacert
+          mountPath: /etc/ssl/certs/java/cacerts
+          subPath: cacerts
+          readOnly: true
+{{- end }}
+        resources:
+{{ toYaml .Values.jarvice_bird.resources | indent 10 }}
+      volumes:
+{{- if .Values.jarvice_bird_server.persistence.enabled }}
+        - name : jarvice-bird-server
+          persistentVolumeClaim:
+{{- if (empty .Values.jarvice_bird_server.persistence.existingClaimName) }}
+            claimName: jarvice-bird-server-pvc
+{{- else }}
+            claimName: {{ .Values.jarvice_bird_server.persistence.existingClaimName }}
+{{- end }}
+{{- end }}
+{{- if (not (empty .Values.jarvice_bird_server.java.cacert.configMap)) }}
+        - name: jarvice-java-cacert
+          configMap:
+            name: {{ .Values.jarvice_bird_server.java.cacert.configMap }}
+            optional: true
+            defaultMode: 444
+{{- end }}
+      securityContext:
+        fsGroup: {{ .Values.jarvice_bird_server.securityContext.fsGroup }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-bird-server
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-bird-server
+spec:
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 9090
+    targetPort: http
+    name: http
+  selector:
+    deployment: jarvice-bird-server
+---
+{{- end }}
+{{- end }}
