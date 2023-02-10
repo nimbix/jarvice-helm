@@ -25,7 +25,7 @@ Options:
     --pass <admin_pass>                    Keyclaok admin pass
                                            (Default: $keycloak_pass)
     --cert-issuer <cert-manager_issuer>    cert-manager issuer for ingress
-                                           (Default: $keycloak_cert_issuer) 
+                                           (Default: $keycloak_cert_issuer)
     --realm <json_file>                    Keycloak realm export json file (required)
     --ingress <host_ingress>               Ingress host for Keycloak (required)
     --ingress-class                        K8s ingress class (optional)

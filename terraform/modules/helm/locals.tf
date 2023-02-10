@@ -55,12 +55,6 @@ ingress:
   - hosts:
     - ${local.keycloak_ingress}
     secretName: tls-${local.keycloak_ingress}
-# image:
-#   repository: us-docker.pkg.dev/jarvice-system/images/jarvice-keycloak
-#   tag: jarvice-development
-#   pullPolicy: Always
-# imagePullSecrets:
-#   - name: jarvice-docker
 EOF
 }
 
