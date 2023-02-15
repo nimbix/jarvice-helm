@@ -22,8 +22,8 @@ global = {  # Global config options can be overridden in cluster configs
     }
 
     helm = {
-        # keycloak = {
-        #     enabled = true
+        keycloak = {
+            enabled = false
         #     repository = "https://codecentric.github.io/helm-charts/"
         #     version = "17.0.3"
         #     keycloak_realm = # "realm.json"
@@ -31,7 +31,7 @@ global = {  # Global config options can be overridden in cluster configs
         #     keycloak_pass = "Pass1234"
         #     keycloak_ingress = # "keycloak.mydomain.com"
         #     keycloak_cert_issert = # "letsencrypt-staging"
-        # },
+        },
         jarvice = {
             repository = "https://nimbix.github.io/jarvice-helm/"
             # null version installs latest release from the helm repository.
@@ -437,6 +437,16 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
         }
 
         helm = {
+            # keycloak = {
+            #     enabled = true
+            #     repository = "https://codecentric.github.io/helm-charts/"
+            #     version = "17.0.3"
+            #     keycloak_realm = # "keycloak/realm.json"
+            #     keycloak_user = # "jarvice"
+            #     keycloak_pass = # "Pass1234"
+            #     keycloak_ingress = # "keycloak.mydomain.com"
+            #     keycloak_cert_issert = # "letsencrypt-staging"
+            # },
             jarvice = {
                 # version = "3.0.0-1.XXXXXXXXXXXX"  # Override global version
                 namespace = "jarvice-system"
@@ -774,6 +784,9 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
 
                     #Define custom ami_id for compute nodes. Leave commented out to pull in newest version of the AMI which will recreate pool.
                     #ami_id
+
+                    #Indicate whether the node pool should have a GPU capable AWS ami.
+                    #gpu = "true"
                 }
             },
             #jxecompute01 = {
@@ -789,17 +802,35 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
             #        # EFA requires k8s ver >= 1.19.  Supported instance types:
             #        # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/efa.html#efa-instance-types (four p4d.24xlarge EFA interfaces not yet supported)
             #        #interface_type = "efa"
+            # 
+            #        #Define custom ami_id for compute nodes. Leave commented out to pull in newest version of the AMI which will recreate pool.
+            #        #ami_id
+
+            #        #Indicate whether the node pool should have a GPU capable AWS ami.
+            #        #gpu = "true"
             #    }
             #},
         }
 
         helm = {
+            # keycloak = {
+            #     enabled = true
+            #     repository = "https://codecentric.github.io/helm-charts/"
+            #     version = "17.0.3"
+            #     keycloak_realm = # "keycloak/realm.json"
+            #     keycloak_user = # "jarvice"
+            #     keycloak_pass = # "Pass1234"
+            #     keycloak_ingress = # "keycloak.mydomain.com"
+            #     keycloak_cert_issert = # "letsencrypt-staging"
+            # },        
             jarvice = {
                 # version = "3.0.0-1.XXXXXXXXXXXX"  # Override global version
                 namespace = "jarvice-system"
 
                 # global values_yaml take precedence over cluster
                 # values_file (values_file ignored if not found)
+                # user_cacert = "/etc/ssl/certs/ca-certificates.crt"
+                # user_java_cacert = "/etc/ssl/certs/java/cacerts"
                 values_file = "override-tf.eks.<region>.<cluster_name>.yaml"  # "override-tf.eks.us-west-2.tf-jarvice.yaml"
                 # user_cacert = "/etc/ssl/certs/ca-certificates.crt"
                 # user_java_cacert = "/etc/ssl/certs/java/cacerts"

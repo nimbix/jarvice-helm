@@ -7,6 +7,10 @@ locals {
 
     jarvice_chart_is_dir = local.jarvice_chart_version == null ? false : fileexists("${pathexpand(local.jarvice_chart_version)}/Chart.yaml")
 
+    jarvice_user_cacert = contains(keys(var.jarvice), "user_cacert") ? var.jarvice["user_cacert"] : "ca-certificate.crt"
+
+    jarvice_user_java_cacert = contains(keys(var.jarvice), "user_java_cacert") ? var.jarvice["user_java_cacert"] : "cacerts"
+
     keycloak_chart_repository = contains(keys(var.keycloak), "repository") ? var.keycloak["repository"] : contains(keys(var.global), "repository") ? var.global["repository"] : "https://codecentric.github.io/helm-charts/"
 
     keycloak_chart_version = contains(keys(var.keycloak), "version") ? var.keycloak["version"] : var.global["version"]
