@@ -22,16 +22,16 @@ global = {  # Global config options can be overridden in cluster configs
     }
 
     helm = {
-        # keycloak = {
-        #     enabled = true
+        keycloak = {
+            enabled = false
         #     repository = "https://codecentric.github.io/helm-charts/"
         #     version = "17.0.3"
-        #     keycloak_realm = # "keycloak/realm.json"
-        #     keycloak_user = # "jarvice"
-        #     keycloak_pass = # "Pass1234"
+        #     keycloak_realm = # "realm.json"
+        #     keycloak_user = "jarvice"
+        #     keycloak_pass = "Pass1234"
         #     keycloak_ingress = # "keycloak.mydomain.com"
         #     keycloak_cert_issert = # "letsencrypt-staging"
-        # },
+        },
         jarvice = {
             repository = "https://nimbix.github.io/jarvice-helm/"
             # null version installs latest release from the helm repository.
@@ -121,7 +121,8 @@ k8s = {  # Deploy JARVICE to pre-existing K8s clusters
                 # global values_yaml take precedence over cluster
                 # values_file (values_file ignored if not found)
                 values_file = "override-tf.k8s.<cluster_name>.yaml"  # "override-tf.k8s.tf-jarvice.yaml"
-
+                # user_cacert = "/etc/ssl/certs/ca-certificates.crt"
+                # user_java_cacert = "/etc/ssl/certs/java/cacerts"
                 values_yaml = <<EOF
 # values_yaml - takes precedence over values_file and global values_yaml
 
@@ -263,7 +264,8 @@ EOF
                 # global values_yaml take precedence over cluster
                 # values_file (values_file ignored if not found)
                 values_file = "override-tf.k8s.<cluster_name>.yaml"  # "override-tf.k8s.tf-jarvice-downstream.yaml"
-
+                # user_cacert = "/etc/ssl/certs/ca-certificates.crt"
+                # user_java_cacert = "/etc/ssl/certs/java/cacerts"
                 values_yaml = <<EOF
 # values_yaml - takes precedence over values_file and global values_yaml
 
@@ -639,7 +641,8 @@ EOF
                 # global values_yaml take precedence over cluster
                 # values_file (values_file ignored if not found)
                 values_file = "override-tf.gke.<region>.<cluster_name>.yaml"  # "override-tf.gke.us-west1.tf-jarvice-downstream.yaml"
-
+                # user_cacert = "/etc/ssl/certs/ca-certificates.crt"
+                # user_java_cacert = "/etc/ssl/certs/java/cacerts"
                 values_yaml = <<EOF
 # values_yaml - takes precedence over values_file and global values_yaml
 
@@ -829,7 +832,8 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
                 # user_cacert = "/etc/ssl/certs/ca-certificates.crt"
                 # user_java_cacert = "/etc/ssl/certs/java/cacerts"
                 values_file = "override-tf.eks.<region>.<cluster_name>.yaml"  # "override-tf.eks.us-west-2.tf-jarvice.yaml"
-
+                # user_cacert = "/etc/ssl/certs/ca-certificates.crt"
+                # user_java_cacert = "/etc/ssl/certs/java/cacerts"
                 values_yaml = <<EOF
 # values_yaml - takes precedence over values_file and global values_yaml
 
@@ -1003,7 +1007,8 @@ EOF
                 # global values_yaml take precedence over cluster
                 # values_file (values_file ignored if not found)
                 values_file = "override-tf.eks.<region>.<cluster_name>.yaml"  # "override-tf.eks.us-west-2.tf-jarvice-downstream.yaml"
-
+                # user_cacert = "/etc/ssl/certs/ca-certificates.crt"
+                # user_java_cacert = "/etc/ssl/certs/java/cacerts"
                 values_yaml = <<EOF
 # values_yaml - takes precedence over values_file and global values_yaml
 
@@ -1143,7 +1148,8 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
                 # global values_yaml take precedence over cluster
                 # values_file (values_file ignored if not found)
                 values_file = "override-tf.aks.<region>.<cluster_name>.yaml"  # "override-tf.aks.westus2.tf-jarvice.yaml"
-
+                # user_cacert = "/etc/ssl/certs/ca-certificates.crt"
+                # user_java_cacert = "/etc/ssl/certs/java/cacerts"
                 values_yaml = <<EOF
 # values_yaml - takes precedence over values_file and global values_yaml
 
@@ -1300,7 +1306,8 @@ EOF
                 # global values_yaml take precedence over cluster
                 # values_file (values_file ignored if not found)
                 values_file = "override-tf.aks.<region>.<cluster_name>.yaml"  # "override-tf.aks.westus2.tf-jarvice-downstream.yaml"
-
+                # user_cacert = "/etc/ssl/certs/ca-certificates.crt"
+                # user_java_cacert = "/etc/ssl/certs/java/cacerts"
                 values_yaml = <<EOF
 # values_yaml - takes precedence over values_file and global values_yaml
 
