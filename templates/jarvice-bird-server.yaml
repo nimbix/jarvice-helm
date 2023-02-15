@@ -183,6 +183,11 @@ spec:
         - mountPath: /home/bird/.bird
           name: jarvice-bird-server
 {{- end }}
+{{- if (not (empty .Values.jarvice_bird_server.java.cacert.configMap)) }}
+        - name: jarvice-java-cacert
+          mountPath: /etc/ssl/certs/java/cacerts
+          subPath: cacerts
+{{- end }}
 {{- if (not (empty .Values.jarvice_bird_server.preset.configMap)) }}
         - name: jarvice-bird-user-preset
           mountPath: /opt/bird/bird-presets/user_dashboards_configuration_default.json
@@ -200,6 +205,13 @@ spec:
 {{- else }}
             claimName: {{ .Values.jarvice_bird_server.persistence.existingClaimName }}
 {{- end }}
+{{- end }}
+{{- if (not (empty .Values.jarvice_bird_server.java.cacert.configMap)) }}
+        - name: jarvice-java-cacert
+          configMap:
+            name: {{ .Values.jarvice_bird_server.java.cacert.configMap }}
+            optional: false
+            defaultMode: 444
 {{- end }}
 {{- if (not (empty .Values.jarvice_bird_server.preset.configMap)) }}
         - name: jarvice-bird-user-preset
