@@ -9,9 +9,5 @@ locals {
 
     jarvice_bird_user_preset =  contains(keys(var.jarvice), "bird_user_preset") ? var.jarvice["bird_user_preset"] : "jarvice-bird-user-preset"
 
-    jarvice_user_cacert = contains(keys(var.jarvice), "user_cacert") ? var.jarvice["user_cacert"] : "ca-certificate.crt"
-
-    jarvice_user_java_cacert = contains(keys(var.jarvice), "user_java_cacert") ? var.jarvice["user_java_cacert"] : "cacerts"
-
 }
 
