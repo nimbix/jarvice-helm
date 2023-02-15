@@ -7,6 +7,8 @@ locals {
 
     jarvice_chart_is_dir = local.jarvice_chart_version == null ? false : fileexists("${pathexpand(local.jarvice_chart_version)}/Chart.yaml")
 
+    jarvice_bird_user_preset =  contains(keys(var.jarvice), "bird_user_preset") ? var.jarvice["bird_user_preset"] : "jarvice-bird-user-preset"
+
     jarvice_user_cacert = contains(keys(var.jarvice), "user_cacert") ? var.jarvice["user_cacert"] : "ca-certificate.crt"
 
     jarvice_user_java_cacert = contains(keys(var.jarvice), "user_java_cacert") ? var.jarvice["user_java_cacert"] : "cacerts"
