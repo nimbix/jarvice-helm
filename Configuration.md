@@ -137,6 +137,26 @@ JARVICE|K8S Resource request/behavior|Notes
 ```hugepages1gi:<n>```|```hugepages-1Gi:<n>Gi```|Requests 1Gi huge pages to enable, where `n` is in gigabytes; underlying nodes must be configured to provide at least this number of 1Gi huge pages in order for jobs to be schedulable on them; note that this may be required for certain forms of RDMA utilized by MPI
 ```*[:n]```|direct passthrough of resource request|Requests any other resource directly from Kubernetes, but cannot be used for resources that JARVICE already handles in the machine definition; use with caution as this is not checked and can cause jobs to not start properly; *n* refers to scale, and defaults to 1 if not specified
 
+### Slurm cluster nodes
+
+Machines definition is important, as many parameters will be passed to Slurm scheduler.
+
+When creating machines, please consider the following available parameters:
+
+* **Cores** will determine the value of cores requested per node. If sharing nodes between jobs is expected, this parameter will allow Slurm to properly allocate CPU cores to jobs (assuming Slurm configuration allows it).
+* **Ram** will determine the amount of ram memory requested per node. Note that if `slurm.conf` do not configure `RealMemory` per node, value should be set to `0` to prevent errors at submission.
+* **Gpus** will determine the amount of GPU requested per node.
+
+It is also possible to restrict machine to a dedicated Slurm partition. To do so, add devices property of machine profile (see **Devices** section above), and add to the list `partition=all` for example to set partition to `all`, or `partition=Intel_32c_128Gb_GPU` for a specific partition, etc.
+
+Machines can also be shared between jobs. To do so, simply add to devices list the `exclusive=False` property (comma separated). Note that by default, exclusive is assumed `True`. Note also that sharing enabling still requires that local Slurm administrator allowed it.
+
+**IMPORTANT NOTE**: even if `exclusive=False` is used in the machine definition, a job that runs interactively (e.g. desktop, webshell, or other web service) will override this and request exclusive node access instead.  This is for security reasons due to Singularity's use of the host's network namespace.  Additionally, jobs that request GPUs will force node exclusivity as well.  GPU-level resource management for multiple containers is not currently implemented.
+
+#### 3D-accelerated visualization using EGL
+
+On systems with EGL-capable GPUs, JARVICE will automatically attempt to offload OpenGL rendering to them via EGL if the machine definition for a job requests at least 1 GPU.  Support for EGL offload is hardware and driver dependent, but generally works on any NVIDIA GPU with a recent driver installed on the host.  JARVICE falls back to software rendering if EGL is not available on the GPU.
+
 ### Examples
 
 #### Requests all RDMA devices, and maps a public data set mounted on the host

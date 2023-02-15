@@ -15,6 +15,10 @@ variable "jarvice" {
     type = map(string)
 }
 
+variable "keycloak" {
+    type = map(string)
+}
+
 variable "common_values_yaml" {
     type = string
 }

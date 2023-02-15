@@ -115,6 +115,46 @@ resource "helm_release" "traefik" {
     depends_on = [helm_release.aws_load_balancer_controller, helm_release.external_dns]
 }
 
+resource "kubernetes_namespace" "jarvice_ns" {
+    count = fileexists(local.jarvice_user_cacert) || fileexists(local.jarvice_user_java_cacert) ? 1 : 0
+
+    metadata {
+        name = var.jarvice["namespace"]
+    }
+}
+
+resource "kubernetes_config_map" "jarvice_user_cacert" {
+    count = fileexists(local.jarvice_user_cacert) ? 1 : 0
+
+    metadata {
+        name = "jarvice-cacert"
+        namespace = var.jarvice["namespace"]
+    }
+
+    data = {
+        "ca-certificates.crt" = "${file(local.jarvice_user_cacert)}"
+    }
+
+    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik, kubernetes_namespace.jarvice_ns]
+
+}
+
+resource "kubernetes_config_map" "jarvice_java_cacert" {
+    count = fileexists(local.jarvice_user_java_cacert) ? 1 : 0
+
+    metadata {
+        name = "jarvice-java-cacert"
+        namespace = var.jarvice["namespace"]
+    }
+
+    binary_data = {
+        "cacerts" = "${filebase64(local.jarvice_user_java_cacert)}"
+    }
+
+    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik, kubernetes_namespace.jarvice_ns]
+
+}
+
 resource "helm_release" "jarvice" {
     name = "jarvice"
     repository = local.jarvice_chart_is_dir ? null : local.jarvice_chart_repository
@@ -140,6 +180,44 @@ resource "helm_release" "jarvice" {
         var.jarvice["values_yaml"]
     ]
 
-    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik]
+    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik, kubernetes_config_map.jarvice_java_cacert, kubernetes_config_map.jarvice_user_cacert]
 }
 
+resource "kubernetes_config_map" "jarvice_keycloak_realm" {
+    count = var.keycloak.enabled ? 1 : 0
+
+    metadata {
+        name = "jarvice-keycloak-realm"
+        namespace = var.jarvice["namespace"]
+    }
+
+    data = {
+        "realm.json" = "${file(local.keycloak_realm_json)}"
+    }
+
+    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik, helm_release.jarvice]
+
+}
+
+resource "helm_release" "jarvice_keycloak" {
+    count = var.keycloak.enabled ? 1 : 0
+
+    name = "jarvice-keycloak"
+    repository = local.keycloak_chart_repository
+    chart = "keycloak"
+    version = local.keycloak_chart_version
+
+    namespace = var.jarvice["namespace"]
+    reuse_values = false
+    reset_values = true
+    max_history = 12
+    render_subchart_notes = false
+    timeout = 600
+    wait = false
+
+    values = [
+        local.keycloak_values_yaml
+    ]
+
+    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik, helm_release.jarvice, kubernetes_config_map.jarvice_keycloak_realm]
+}
