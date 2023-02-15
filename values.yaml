@@ -1261,6 +1261,8 @@ jarvice_bird_server: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     TENANT_SCHEMAS: jarvice
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
+  preset:
+    configMap: # jarvice-bird-user-preset
   java:
     cacert:
       configMap: # jarvice-java-cacert
