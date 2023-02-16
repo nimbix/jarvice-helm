@@ -127,6 +127,10 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202302161750
+
+* (JAR-6771) Fixed GPU compute and 3D offload initialization bug when using the `jarvice.JARVICE_APP_ALLOW_ROOT_INIT` option set to `"true"`.
+
 ## 3.21.9-1.202302101633
 
 * (JAR-4255) Fixed subsequent login failure when deleting default vault for a user in *Administration->Users*.
