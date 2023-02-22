@@ -127,6 +127,10 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202302221615
+
+* (JAR-6780) Fixed permission issues when using the `jarvice.JARVICE_APP_ALLOW_ROOT_INIT` option set to `"true"`.
+
 ## 3.21.9-1.202302161750
 
 * (JAR-6771) Fixed GPU compute and 3D offload initialization bug when using the `jarvice.JARVICE_APP_ALLOW_ROOT_INIT` option set to `"true"`.
