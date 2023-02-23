@@ -124,6 +124,12 @@ spec:
             value: "{{ .Values.jarvice.JARVICE_REGISTRY_PROXY_REPOS }}"
 {{- end }}
 {{- end }}
+          - name: JARVICE_PVCRUN_EXPIRE_SECS
+{{- if (not (empty .Values.jarvice.JARVICE_PVCRUN_EXPIRE_SECS)) }}
+            value: "{{ .Values.jarvice.JARVICE_PVCRUN_EXPIRE_SECS }}"
+{{- else }}
+            value: "90"
+{{- end }}
           - name: JARVICE_PVCRUN_CPU_REQUEST
 {{- if empty .Values.jarvice.JARVICE_PVCRUN_CPU_REQUEST }}
             value: "200m"
