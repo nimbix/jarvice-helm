@@ -142,11 +142,27 @@ Parameter|Cluster|Description|Default|Notes
 ---|---|---|---|---
 `jarvice.JARVICE_SCHED_PASS_WORKERS`|Upstream|Maximum number of parallel threads for job status processing and notifications|8|Increase for more parallelism, but note that this may overwhelm the `jarvice-k8s-scheduler` service if it doesn't have enough replicas, as well as the Kubernetes API itself if it's not tuned for performance
 `jarvice.JARVICE_SCHED_PASS_BUDGET`|Upstream|Maximum time, in seconds, spent on examining job status before skipping to the next pass|30|Increase to process more jobs per pass, but note that this may slow down the rate at which newly queued jobs are examined; not recommended to use values less than 30 or more than 120
+`jarvice.JARVICE_SCHED_PASS_NEW_GRACE_SECS`|Upstream|Maximum time, in seconds, to allow newly queued jobs to enqueue downstream before triggering auto-cancellation|30|Increase if downstream is likely to see submission storms (e.g. many jobs enqueue simultaneously), especially if you experience newly queued jobs automatically cancelling, but note that certain legitimate job start failures may take additional time to detect (e.g. containers failed to pull, etc.)
 `jarvice.JARVICE_POD_SCHED_WORKERS`|Downstream (or default)|Maximum number of parallel threads for job pod binding|8|Increase to bind newly queued jobs faster to available nodes, possibly resulting in faster starts (assuming containers are cached, etc.), but note that this may overwhelm the Kubernetes API itself during job submission storms if it's not tuned for performance
 
 ### Notes
 
 1. Both `jarvice-sched-pass` and `jarvice-pod-scheduler` should be run in "info" logging mode, or levels 20 (or lower) via `jarvice.JARVICE_SCHED_PASS_LOGLEVEL` and `jarvice.JARVICE_POD_SCHED_LOGLEVEL`, respectively, when performance tuning
-2. `jarvice-sched-pass` logging (via the `component=jarvice-scheduler` selector) will indicate how many jobs are skipped/left to a future pass due to pass budget or failures
+2. `jarvice-sched-pass` logging (via the `component=jarvice-scheduler` selector) will indicate how many jobs are skipped/left to a future pass due to pass budget or failures, as well as any jobs auto-cancelling due to exceeding their newly queued job grace period; auto-cancellation warnings will begin halfway into the grace period and be visible in log level 30 (warning)
 3. Try increasing `jarvice-k8s-scheduler` replicas if too many jobs are skipped or you notice timeout errors in the `jarvice-scheduler` logs (via the `component=jarvice-scheduler` selector)
 4. Email notifications sent from `jarvice-sched-pass` are pushed in parallel and the SMTP relay must be able to handle this.  Otherwise notifications may be lost.  Note that these notifications can also become a bottleneck during job submission or finalization storms.  To increase performance, consider disabling these notifications by setting `jarvice.JARVICE_MAIL_SERVER` to an empty value.  Alternatively, configure a `postfix` (or similar) relay with the proper settings to accept large volumes of mails but queue and retry on errors correctly.
+
+### Testing
+
+The `0job` pseudo-device can be added to a machine definition's *devices* section either on its own or as part of a list of devices to simulate enqueuing delays downstream and test the newly queued job grace period configured with `jarvice.JARVICE_SCHED_PASS_NEW_GRACE_SECS`.  The corresponding job object's `parallelism` key can be edited after submission to trigger enqueuing pods for it, by performing a `kubectl edit job` on the respective job in the jobs namespace (`jarvice-system-jobs` by default).  Here is `jarvice-sched-pass` logging example of a job queued with a machine definition specifying `0job` and not having its parallelism increased before the grace period expires for it:
+
+```
+2023-03-01 01:26:26,736 [211] WARNING New job 122196 will exceed its newly-queued job grace period in ~14 second(s)!
+2023-03-01 01:26:32,936 [242] WARNING New job 122196 will exceed its newly-queued job grace period in ~8 second(s)!
+2023-03-01 01:26:39,084 [257] WARNING New job 122196 will exceed its newly-queued job grace period in ~1 second(s)!
+2023-03-01 01:26:45,150 [272] WARNING New job 122196 not enqueued downstream, garbage collecting...
+```
+
+Note that after the default 30 second grace period, the job was garbage collected.
+
+The `0job` pseudo-device should only be used for testing mechanisms to detect the need to increase the grace period, not for production!

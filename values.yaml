@@ -70,8 +70,9 @@ jarvice:
   JARVICE_PVC_VAULT_SUBPATH:      # optional subpath (supports substitutions)
   JARVICE_PVC_VAULT_ZONE:         # optional zone ID for vault (defaults to 0 - default)
 
-  JARVICE_PVCRUN_CPU_REQUEST: "200m"  # cpu request for file lister
-  JARVICE_PVCRUN_CPU_LIMIT: "500m"    # cpu limit for file lister
+  JARVICE_PVCRUN_CPU_REQUEST: "200m"  # cpu request for file lister - set to "1" for large single volumes shared by many users
+  JARVICE_PVCRUN_CPU_LIMIT: "500m"    # cpu limit for file lister - set to "2" for large single volumes shared by many users
+  JARVICE_PVCRUN_EXPIRE_SECS: "90"    # how long to keep file lister pods running idle before terminating
 
   JARVICE_EPHEMERAL_VAULT_ZONE:   # (defaults to -1 if not set)
   JARVICE_DAL_HOOK_META:          # opaque (unset by default)
@@ -122,6 +123,10 @@ jarvice:
 
   # time budget in seconds alloted to an upstream scheduler pass
   JARVICE_SCHED_PASS_BUDGET:  # defaults to 30
+
+  # grace period to allow newly queued jobs to enqueue downstream before
+  # auto-cancellation
+  JARVICE_SCHED_PASS_NEW_GRACE_SECS:  # defaults to 30
 
   # downstream pod scheduler maximum number of parallel worker threads
   JARVICE_POD_SCHED_WORKERS:  # defaults to 8
@@ -1261,6 +1266,8 @@ jarvice_bird_server: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     TENANT_SCHEMAS: jarvice
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
+  preset:
+    configMap: # jarvice-bird-user-preset
   java:
     cacert:
       configMap: # jarvice-java-cacert
@@ -1323,6 +1330,8 @@ jarvice_bird_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     JARVICE_KEYCLOAK_URL: # jarvice-keycloak.my-domain.com/auth
     JARVICE_KEYCLOAK_CLIENT_ID: jarvice
     JARVICE_KEYCLOAK_REALM: jarvice
+    JARVICE_KEYCLOAK_ADMIN_USER: jarvice
+    JARVICE_KEYCLOAK_ADMIN_PASS: Pass1234
     JARVICE_USER_DEFAULT_ENABLED: True
     JARVICE_USER_DEFAULT_DEVELOPER: True
     JARVICE_PORTAL_JOB_TERMINATE_LIMIT: 100

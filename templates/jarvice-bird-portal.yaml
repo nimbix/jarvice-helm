@@ -333,6 +333,19 @@ spec:
 {{- else }}
             value: "{{ .Values.jarvice_bird_portal.env.JARVICE_KEYCLOAK_REALM }}"
 {{- end }}
+          - name: JARVICE_KEYCLOAK_ADMIN_USER
+{{- if empty .Values.jarvice_bird_portal.env.JARVICE_KEYCLOAK_ADMIN_USER }}
+            value: jarvice
+{{- else }}
+            value: "{{ .Values.jarvice_bird_portal.env.JARVICE_KEYCLOAK_ADMIN_USER }}"
+{{- end }}
+{{- if (not (empty .Values.jarvice_bird_portal.env.JARVICE_KEYCLOAK_ADMIN_PASS)) }}
+          - name: JARVICE_KEYCLOAK_ADMIN_PASS
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-keycloak-admin
+                key: JARVICE_KEYCLOAK_ADMIN_PASS
+{{- end }}
 {{- if (not (empty .Values.jarvice.JARVICE_LICENSE_MANAGER_KEY)) }}
           - name: JARVICE_LICENSE_MANAGER_KEY
             valueFrom:
