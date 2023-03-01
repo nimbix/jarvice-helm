@@ -55,7 +55,7 @@ spec:
         - name: ca-jarvice-user
           configMap:
             name: {{ .Values.jarvice.cacert.configMap }}
-            optional: true
+            optional: false
             defaultMode: 444
 {{- end }}
 {{- if (not (empty .Values.jarvice_license_manager.env.JARVICE_HOSTALIASES)) }}
