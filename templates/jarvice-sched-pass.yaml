@@ -198,6 +198,10 @@ spec:
           - name: JARVICE_SCHED_PASS_BUDGET
             value: "{{ .Values.jarvice.JARVICE_SCHED_PASS_BUDGET }}"
 {{- end }}
+{{- if (not (empty .Values.jarvice.JARVICE_SCHED_PASS_NEW_GRACE_SECS)) }}
+          - name: JARVICE_SCHED_PASS_NEW_GRACE_SECS
+            value: "{{ .Values.jarvice.JARVICE_SCHED_PASS_NEW_GRACE_SECS }}"
+{{- end }}
 {{- if (not (empty .Values.jarvice.JARVICE_HTTP_PROXY)) }}
           - name: http_proxy
             value: "{{ .Values.jarvice.JARVICE_HTTP_PROXY }}"
