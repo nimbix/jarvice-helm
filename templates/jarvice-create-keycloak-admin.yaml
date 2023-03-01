@@ -1,0 +1,60 @@
+{{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
+{{- if or .Values.keycloak.enabled (and .Values.jarvice_dal.env.JARVICE_ROOT_USER_PASSWD .Values.jarvice_bird_portal.enabled) }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: jarvice-create-keycloak-realm-admin
+  namespace: jarvice-system
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "3"
+    "helm.sh/hook-delete-policy": hook-succeeded
+  labels:
+    app: jarvice
+spec:
+  template:
+    metadata:
+      name: jarvice-create-keycloak-realm-admin
+      labels:
+        app: jarvice
+    spec:
+      containers:
+        - name: jarvice-create-keycloak-realm-admin
+          env:
+          - name: JARVICE_REALM_ADMIN
+            value: {{ .Values.keycloak.env.JARVICE_REALM_ADMIN }}
+          - name: JARVICE_REALM_ADMIN_PASSWD
+            value: {{ .Values.keycloak.env.JARVICE_REALM_ADMIN_PASSWD }}
+          {{- if .Values.keycloak.enabled }}
+          - name: JARVICE_KEYCLOAK_USER
+            value: {{ .Values.keycloak.env.JARVICE_KEYCLOAK_ADMIN }}
+          - name: JARVICE_KEYCLOAK_PASSWD
+            value: {{ .Values.keycloak.env.JARVICE_KEYCLOAK_ADMIN_PASSWD }}
+          {{- end }}
+          {{- if .Values.jarvice_dal.env.JARVICE_ROOT_USER_CREATE }}
+          {{- if (not (empty .Values.jarvice_dal.env.JARVICE_ROOT_USER_PASSWD)) }}
+          - name: JARVICE_ROOT_USER_PASSWD
+            value: 
+          {{- else }}
+          {{- required "***** !!!!! JARVICE root password required.  Please provide a value for jarvice_dal.env.JARVICE_ROOT_USER_PASSWD. !!!!! *****" .Values.jarvice_dal.env.JARVICE_ROOT_USER_PASSWD }}
+          {{- end }}
+          {{- end }}
+          image: "alpine/k8s:1.21.13"
+          imagePullPolicy: "IfNotPresent"
+          command:
+          - /bin/sh
+          - -c
+          - >              
+              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && while [[ "$(curl -s -o /dev/null -m 3 -L -w ''%{http_code}'' http://jarvice-keycloak-http/auth/realms/master)" != "200" ]]; do echo "Waiting for keycloak" && sleep 30; done;
+              sleep 15;
+              set -e;
+              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && token=$(curl -v "http://jarvice-keycloak-http/auth/realms/master/protocol/openid-connect/token" -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "username=$JARVICE_KEYCLOAK_USER" --data-urlencode "password=$JARVICE_KEYCLOAK_PASSWD" --data-urlencode "grant_type=password" --data-urlencode "client_id=admin-cli" | awk '{ gsub(/[",:]/," ");  for(i=1;i<=NF;i++)if($i~/access_token/) print $(i+1)}');
+              sleep 5;
+              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && curl -v "http://jarvice-keycloak-http/auth/admin/realms/jarvice/users" -H 'Content-Type: application/json' -H "Authorization: Bearer $token" --data-raw "{ \"username\": \"$JARVICE_REALM_ADMIN\", \"email\": \"admin@localhost\", \"enabled\": true, \"credentials\": [ { \"type\": \"password\", \"value\": \"$JARVICE_REALM_ADMIN_PASSWD\", \"temporary\": false} ], \"firstName\": \"JXE\", \"lastName\": \"realm admin\"}";
+              sleep 5;
+              [ ! -z "$JARVICE_ROOT_USER_PASSWD" ] && token=$(curl -v "http://jarvice-keycloak-http/auth/realms/jarvice/protocol/openid-connect/token" -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "username=$JARVICE_REALM_ADMIN" --data-urlencode "password=$JARVICE_REALM_ADMIN_PASSWD" --data-urlencode "grant_type=password" --data-urlencode "client_id=admin-cli" | awk '{ gsub(/[",:]/," ");  for(i=1;i<=NF;i++)if($i~/access_token/) print $(i+1)}');
+              sleep 5;
+              [ ! -z "$JARVICE_ROOT_USER_PASSWD" ] && curl -v "http://jarvice-keycloak-http/auth/admin/realms/jarvice/users" -H 'Content-Type: application/json' -H "Authorization: Bearer \$token" --data-raw "{ \"username\": \"root\", \"email\": \"root@localhost\", \"enabled\": true, \"credentials\": [ { \"type\": \"password\", \"value\": \"$JARVICE_ROOT_USER_PASSWD\", \"temporary\": false} ], \"firstName\": \"JXE\", \"lastName\": \"root user\"}";
+      restartPolicy: OnFailure
+{{- end }}
+{{- end }}
