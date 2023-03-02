@@ -127,6 +127,13 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202303021959
+
+* (JAR-4894) Allow configurable resource requests, limits, and expiration for file listing services, to better support large shared single volumes.  Please see [Improve file lister performance for shared vaults](Storage.md#improve-file-lister-performance-for-shared-vaults) for details.
+* (JAR-5467) AppDef "v2" is now the default for newly created apps in the *PushToCompute* view.  For details on "v2" apps, please see the [JARVICE Applications Push to Compute tutorial](https://jarvice.readthedocs.io/en/latest/apps_tutorial/).
+* (JAR-6712) Added support for `meta` JSON key at the top level of AppDefs which can be an arbitrary string for external use; this metadata is available when querying the service catalog using the `/jarvice/apps` API endpoint as well.
+* (JAR-6782) Added newly queued job grace period before auto-cancellation for jobs that take too long to enqueue on Kubernetes clusters.  Please see [Advanced: Scheduler Performance Tuning](Scaling.md#advanced%3A-scheduler-performance-tuning) for details.
+
 ## 3.21.9-1.202302250249
 
 * (JAR-6823) Fixed EGL rendering issue with certain applications in v2 mode due to misconfigured system libraries.
