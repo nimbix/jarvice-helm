@@ -534,19 +534,12 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
 
 keycloak:
   enabled: false
+  create_realm: false
   env:
     JARVICE_REALM_ADMIN: nimbix # jarvice realm admin username
     JARVICE_REALM_ADMIN_PASSWD: abc1234! # jarvice realm admin password
     JARVICE_KEYCLOAK_ADMIN: jarvice # keycloak master realm username
     JARVICE_KEYCLOAK_ADMIN_PASSWD: Pass1234 # keycloak master realm password
-  extraVolumes: |
-    - name: jarvice-realm
-      configMap:
-        name: jarvice-keycloak-realm
-  extraVolumeMounts: |
-    - name: jarvice-realm
-      mountPath: "/realm/"
-      readOnly: true
   extraEnv: |
     - name: KEYCLOAK_USER
       value: "jarvice"
