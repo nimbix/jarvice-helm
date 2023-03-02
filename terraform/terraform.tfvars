@@ -22,16 +22,6 @@ global = {  # Global config options can be overridden in cluster configs
     }
 
     helm = {
-        keycloak = {
-            enabled = false
-        #     repository = "https://codecentric.github.io/helm-charts/"
-        #     version = "17.0.3"
-        #     keycloak_realm = # "realm.json"
-        #     keycloak_user = "jarvice"
-        #     keycloak_pass = "Pass1234"
-        #     keycloak_ingress = # "keycloak.mydomain.com"
-        #     keycloak_cert_issert = # "letsencrypt-staging"
-        },
         jarvice = {
             repository = "https://nimbix.github.io/jarvice-helm/"
             # null version installs latest release from the helm repository.
@@ -437,16 +427,6 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
         }
 
         helm = {
-            # keycloak = {
-            #     enabled = true
-            #     repository = "https://codecentric.github.io/helm-charts/"
-            #     version = "17.0.3"
-            #     keycloak_realm = # "keycloak/realm.json"
-            #     keycloak_user = # "jarvice"
-            #     keycloak_pass = # "Pass1234"
-            #     keycloak_ingress = # "keycloak.mydomain.com"
-            #     keycloak_cert_issert = # "letsencrypt-staging"
-            # },
             jarvice = {
                 # version = "3.0.0-1.XXXXXXXXXXXX"  # Override global version
                 namespace = "jarvice-system"
@@ -551,6 +531,45 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
     #sshConf:
       #user: # user to ssh into slurm headnode (e.g. nimbix)
       #pkey: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
+
+keycloak:
+  enabled: false
+  env:
+    JARVICE_REALM_ADMIN: nimbix # jarvice realm admin username
+    JARVICE_REALM_ADMIN_PASSWD: abc1234! # jarvice realm admin password
+    JARVICE_KEYCLOAK_ADMIN: jarvice # keycloak master realm username
+    JARVICE_KEYCLOAK_ADMIN_PASSWD: Pass1234 # keycloak master realm password
+  extraVolumes: |
+    - name: jarvice-realm
+      configMap:
+        name: jarvice-keycloak-realm
+  extraVolumeMounts: |
+    - name: jarvice-realm
+      mountPath: "/realm/"
+      readOnly: true
+  extraEnv: |
+    - name: KEYCLOAK_USER
+      value: "jarvice"
+    - name: KEYCLOAK_PASSWORD
+      value: "Pass1234"
+    - name: PROXY_ADDRESS_FORWARDING
+      value: "true"
+    - name: KEYCLOAK_IMPORT
+      value: /realm/realm.json
+  ingress:
+    enabled: true
+    annotations:
+      cert-manager.io/issuer: # letsencrypt-staging
+    ingressClassName: traefik
+    rules:
+    - host: # ingress host
+      paths:
+      - path: /
+        pathType: Prefix
+    tls:
+    - hosts:
+      - # ingress host
+      secretName: # ingress host (tls-<ingress-host>)
 EOF
             }
         }
@@ -813,24 +832,12 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
         }
 
         helm = {
-            # keycloak = {
-            #     enabled = true
-            #     repository = "https://codecentric.github.io/helm-charts/"
-            #     version = "17.0.3"
-            #     keycloak_realm = # "keycloak/realm.json"
-            #     keycloak_user = # "jarvice"
-            #     keycloak_pass = # "Pass1234"
-            #     keycloak_ingress = # "keycloak.mydomain.com"
-            #     keycloak_cert_issert = # "letsencrypt-staging"
-            # },        
             jarvice = {
                 # version = "3.0.0-1.XXXXXXXXXXXX"  # Override global version
                 namespace = "jarvice-system"
 
                 # global values_yaml take precedence over cluster
                 # values_file (values_file ignored if not found)
-                # user_cacert = "/etc/ssl/certs/ca-certificates.crt"
-                # user_java_cacert = "/etc/ssl/certs/java/cacerts"
                 values_file = "override-tf.eks.<region>.<cluster_name>.yaml"  # "override-tf.eks.us-west-2.tf-jarvice.yaml"
                 # user_cacert = "/etc/ssl/certs/ca-certificates.crt"
                 # user_java_cacert = "/etc/ssl/certs/java/cacerts"

@@ -156,7 +156,7 @@ resource "kubernetes_config_map" "jarvice_user_cacert" {
         "ca-certificates.crt" = "${file(local.jarvice_user_cacert)}"
     }
 
-    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik]
+    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik, helm_release.jarvice]
 
 }
 
@@ -172,61 +172,6 @@ resource "kubernetes_config_map" "jarvice_java_cacert" {
         "cacerts" = "${filebase64(local.jarvice_user_java_cacert)}"
     }
 
-    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik]
-
-}
-
-resource "kubernetes_config_map" "jarvice_keycloak_realm" {
-    count = var.keycloak.enabled ? 1 : 0
-
-    metadata {
-        name = "jarvice-keycloak-realm"
-        namespace = var.jarvice["namespace"]
-    }
-
-    data = {
-        "realm.json" = "${file(local.keycloak_realm_json)}"
-    }
-
     depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik, helm_release.jarvice]
 
-}
-
-resource "kubernetes_config_map" "jarvice_bird_user_preset" {
-    count = fileexists(local.jarvice_bird_user_preset) ? 1 : 0
-
-    metadata {
-        name = "jarvice-bird-user-preset"
-        namespace = var.jarvice["namespace"]
-    }
-
-    data = {
-        "user_dashboards_configuration_default.json" = "${file(local.jarvice_bird_user_preset)}"
-    }
-
-    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik, helm_release.jarvice]
-
-}
-
-resource "helm_release" "jarvice_keycloak" {
-    count = var.keycloak.enabled ? 1 : 0
-
-    name = "jarvice-keycloak"
-    repository = local.keycloak_chart_repository
-    chart = "keycloak"
-    version = local.keycloak_chart_version
-
-    namespace = var.jarvice["namespace"]
-    reuse_values = false
-    reset_values = true
-    max_history = 12
-    render_subchart_notes = false
-    timeout = 600
-    wait = false
-
-    values = [
-        local.keycloak_values_yaml
-    ]
-
-    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik, helm_release.jarvice, kubernetes_config_map.jarvice_keycloak_realm]
 }
