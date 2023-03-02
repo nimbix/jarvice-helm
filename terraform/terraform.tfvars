@@ -547,8 +547,6 @@ keycloak:
       value: "Pass1234"
     - name: PROXY_ADDRESS_FORWARDING
       value: "true"
-    - name: KEYCLOAK_IMPORT
-      value: /realm/realm.json
   ingress:
     enabled: true
     annotations:
