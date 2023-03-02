@@ -234,7 +234,6 @@ module "helm" {
     # JARVICE settings
     jarvice = merge(var.cluster.helm.jarvice, {"values_file"=module.common.jarvice_values_file})
     global = var.global.helm.jarvice
-    keycloak = var.global.helm.keycloak
     common_values_yaml = <<EOF
 ${module.common.cluster_values_yaml}
 EOF

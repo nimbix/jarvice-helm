@@ -21,3 +21,8 @@ sources:
 
 engine: gotpl
 kubeVersion: ">=1.14.0-0"
+dependencies:
+    - name: keycloak
+      repository: "https://codecentric.github.io/helm-charts/"
+      version: "17.0.3"
+      condition: keycloak.enabled

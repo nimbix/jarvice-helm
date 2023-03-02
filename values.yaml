@@ -1351,3 +1351,7 @@ jarvice_bird_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     JARVICE_DISABLE_API_SUBST_WARNING: # ""
     # If a non-empty string is passed, the MC portal will use this URL for build and pull web links shown to the user
     JARVICE_API_PUBLIC_URL: # https://<jarvice_api.ingressHost><jarvice_api.ingressPath>
+
+keycloak:
+  enabled: false
+  create_realm: false

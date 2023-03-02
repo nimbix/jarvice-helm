@@ -86,7 +86,7 @@ spec:
         - name: ca-jarvice-user
           configMap:
             name: {{ .Values.jarvice.cacert.configMap }}
-            optional: true
+            optional: false
             defaultMode: 444
 {{- end }}
       containers:
