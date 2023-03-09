@@ -12,7 +12,7 @@
 
 ## Overview
 
-JARVICE provides mechanisms to limit concurrent usage of resources across global infrastructure.  These mechanisms are called *Limits*, and operate in the control plane at a "meta-scheduling" level.  Limits are placed on infrastructure, both on specific resources (e.g. machine types) and across all resources (e.g. concurrent CPU limits).  They apply to tenants, or teams of end-users, and to indivdual end-users.  There are two general levels of limits, both offering the same configuration capabilities:
+JARVICE provides mechanisms to limit concurrent usage of resources across global infrastructure.  These mechanisms are called *Limits*, and operate in the control plane at a "meta-scheduling" level.  Limits are placed on infrastructure, both on specific resources (e.g. machine types) and across all resources (e.g. concurrent CPU limits).  They apply to tenants, or teams of end-users, and to individual end-users.  There are two general levels of limits, both offering the same configuration capabilities:
 
 1. **Administrator limits** - govern tenants/teams either individually (by "payer") or groups (by "billing code")
 2. **Self-service limits** - tenant/team administrators can further apply granular limits at the team level or end-user level within the constraints of any Administrator limits applied
@@ -91,11 +91,11 @@ System administrators can see this substatus in job details in the *Administrati
 
 The **mL** setting can be applied per cluster in the *Administration->Clusters* view.  A value greater than 0 will be used in *MIN()* calculations for concurrent CPU limits, when applied.  For example, if a specific job is governed by a 16 concurrent CPU limit, but submitted on a downstream cluster with an *mL* value of 8, the limit will be adjusted to 8 concurrent CPUs.  This value can be used to govern small downstream clusters without using specific per-machine limits, especially in situations where users submit jobs to multiple concurrent clusters.  For example, a team administrator may want to limit a given user (or entire team) to 128 concurrent CPUs, regardless of which downstream clusters jobs are submitted to.  Users may be limited to 8 concurrent CPUs on a specific small downstream cluster, but able to consume a further 120 concurrent CPUs on larger clusters simultaneously.
 
-**IMPORTANT NOTE:** *mL* values apply **only** when concurrent CPU limits apply; otherwise ordinary infrastructure capacity is the initial arbitrer of resource availability.  *mL* values apply in both system administrator and self-service limits which define a concurrent CPU limit.
+**IMPORTANT NOTE:** *mL* values apply **only** when concurrent CPU limits apply; otherwise ordinary infrastructure capacity is the initial arbiter of resource availability.  *mL* values apply in both system administrator and self-service limits which define a concurrent CPU limit.
 
 ## Additional Notes
 
 1. For the purpose of limits, cores and CPUs are used interchangeably; concurrent CPU constraints are calculated with the *cores* property of a given machine definition, as defined in the *Administration->Machines* view.
 2. A specific team user can be overridden to exceed the team constraints, and is evaluated separately; system administrator limits should be used to govern the payer or billing code below this to enforce maximum limits, if desired.
 3. In multi-zone deployments, self-service limits can only operate on machine types the tenant has access to.
-4. All limits enforce concurrency, not total use over a period of time, and will not terminate jobs once released to be processed; for cost controls, on deployments where machines are priced, JARVICE will estimate the maximum montly spend for given limits as a guide.
+4. All limits enforce concurrency, not total use over a period of time, and will not terminate jobs once released to be processed; for cost controls, on deployments where machines are priced, JARVICE will estimate the maximum monthly spend for given limits as a guide.
