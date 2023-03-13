@@ -179,10 +179,8 @@ spec:
             value: "{{ .Values.jarvice_bird_server.env.TENANT_SCHEMAS }}"
 {{- end }}
         volumeMounts:
-{{- if .Values.jarvice_bird_server.persistence.enabled }}
         - mountPath: /home/bird/.bird
           name: jarvice-bird-server
-{{- end }}
 {{- if (not (empty .Values.jarvice_bird_server.java.configMap)) }}
         - name: jarvice-java-cacert
           mountPath: /etc/ssl/certs/java/cacerts
@@ -197,15 +195,9 @@ spec:
         resources:
 {{ toYaml .Values.jarvice_bird.resources | indent 10 }}
       volumes:
-{{- if .Values.jarvice_bird_server.persistence.enabled }}
         - name : jarvice-bird-server
-          persistentVolumeClaim:
-{{- if (empty .Values.jarvice_bird_server.persistence.existingClaimName) }}
-            claimName: jarvice-bird-server-pvc
-{{- else }}
-            claimName: {{ .Values.jarvice_bird_server.persistence.existingClaimName }}
-{{- end }}
-{{- end }}
+          emptyDir:
+            sizeLimit: 100Mi
 {{- if (not (empty .Values.jarvice_bird_server.java.configMap)) }}
         - name: jarvice-java-cacert
           configMap:
