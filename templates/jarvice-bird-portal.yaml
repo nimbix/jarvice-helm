@@ -149,6 +149,8 @@ spec:
           successThreshold: {{ .Values.jarvice_bird_portal.livenessProbe.successThreshold }}
           failureThreshold: {{ .Values.jarvice_bird_portal.livenessProbe.failureThreshold }}
         env:
+          - name: REQUESTS_CA_BUNDLE
+            value: "/etc/ssl/certs/ca-certificates.crt"
           - name: JARVICE_SYSTEM_K8S
 {{- if empty .Values.jarvice.JARVICE_SYSTEM_K8S }}
             value: "true"
