@@ -1,33 +1,5 @@
 {{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if .Values.jarvice_bird_server.enabled }}
-{{- if and .Values.jarvice_bird_server.persistence.enabled (empty .Values.jarvice_bird_server.persistence.existingClaimName) }}
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: jarvice-bird-server-pvc
-  labels:
-    {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-bird-server
-{{- if eq .Values.jarvice_bird_server.persistence.resourcePolicy "keep" }}
-  annotations:
-    helm.sh/resource-policy: keep
-{{- end }}
-spec:
-  accessModes:
-    - {{ .Values.jarvice_bird_server.persistence.accessMode }}
-  volumeMode: Filesystem
-  resources:
-    requests:
-      storage: {{ .Values.jarvice_bird_server.persistence.size }}
-{{- if .Values.jarvice_bird_server.persistence.storageClass }}
-{{- if (eq "-" .Values.jarvice_bird_server.persistence.storageClass) }}
-  storageClassName: ""
-{{- else }}
-  storageClassName: "{{ .Values.jarvice_bird_server.persistence.storageClass }}"
-{{- end }}
-{{- end }}
----
-{{- end }}
 {{- if gt (.Values.jarvice_bird_server.replicaCount | int) 1 }}
 {{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
 apiVersion: policy/v1
