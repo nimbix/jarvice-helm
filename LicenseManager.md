@@ -2,7 +2,19 @@
 
 A comprehensive mechanism for queuing jobs based on license token availability.
 
-## Contents
+## Note about Slurm-managed compute clusters
+
+When submitting jobs on a Slurm downstream cluster, JARVICE passes license token requests to Slurm's `sbatch` command using the `-L` flag, exactly as entered by the user at job submission time in the task builder's *OPTIONAL* tab or via the `/jarvice/submit` API's `licenses` key.  License management configuration is the responsibility of the Slurm system administrator.  For information about configuring and operating this feature in Slurm, please see [Licenses Guide](https://slurm.schedmd.com/licenses.html) in the *Slurm workload manager Documentation*.
+
+### Additional notes
+
+1. When combining Slurm and Kubernetes compute clusters with jobs using the same license pools, `jarvice-license-manager` for Kubernetes will automatically take into account any token checkouts that take place outside of JARVICE jobs run on Kubernetes.  Slurm's respective mechanism requires [Remote Licenses](https://slurm.schedmd.com/licenses.html#remote_licenses) to be set up for this!
+2. When jobs queue for licenses on Slurm, this reason will not be apparent to end users in the portal's *Dashboard*.  Jobs will simply appear as queued with no further explanation.  Using the `squeue` command on Slurm login nodes will reveal the `(Licenses)` reason if jobs are waiting for license availability.
+3. The [Automatic License Feature Computation](#advanced-automatic-license-feature-computation) feature can still be used even if one or more downstream clusters are Slurm-based.  Other advanced features, however, require Kubernetes clusters.
+
+---
+
+## Contents (Kubernetes compute clusters)
 
 * [Overview](#overview)
     * [Use Cases](#use-cases)
