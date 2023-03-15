@@ -127,6 +127,12 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202303151623
+
+* (JAR-6370) Support for license-based queuing in Slurm downstreams.  Please see [Note about Slurm-managed compute clusters](LicenseManager.md#note-about-slurm-managed-compute-clusters) for additional details.
+* (JAR-6669) Support for establishing a per-cluster concurrent CPU restriction in order to support smaller downstream clusters with a common set of limits.  Please see [Per-cluster Concurrent CPU Restriction: mL](Limits.md#per-cluster-concurrent-cpu-restriction-ml) for additional details.
+* (JAR-6819) Added audit logging for when `jarvice-license-manager` suspends (and subsequently resumes) jobs.  Suspension logging will indicate which job triggered the suspension.
+
 ## 3.21.9-1.202303021959
 
 * (JAR-4894) Allow configurable resource requests, limits, and expiration for file listing services, to better support large shared single volumes.  Please see [Improve file lister performance for shared vaults](Storage.md#improve-file-lister-performance-for-shared-vaults) for details.
