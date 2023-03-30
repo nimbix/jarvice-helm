@@ -127,6 +127,11 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202303301627
+
+* (JAR-6941) Support for custom HTML in portal *About* page; please see [Customize JARVICE files via a ConfigMap](README.md#customize-jarvice-files-via-a-configmap) for details.
+* (JAR-6955) (JAR-7038) (JAR-7039) Slurm downstream support GA release.
+
 ## 3.21.9-1.202303151623
 
 * (JAR-6370) Support for license-based queuing in Slurm downstreams.  Please see [Note about Slurm-managed compute clusters](LicenseManager.md#note-about-slurm-managed-compute-clusters) for additional details.
