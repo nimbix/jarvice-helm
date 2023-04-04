@@ -1169,157 +1169,20 @@ jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   # antiAffinity default of "soft" prefers that pods run on diff nodes.
   # Set to "hard" to require pods to run on diff nodes.
   antiAffinity: "soft"
-  loadBalancerIP:
-  ingressHost: # jarvice-bird.my-domain.com
-  ingressPath: "/"  # Valid values are "/" (default) or "/bird"
-  ingressAnnotations: # '{"nginx.org/client-max-body-size": "0", "nginx.org/proxy-read-timeout": "3600", "nginx.org/proxy-send-timeout": "3600"}'
-  resources:
-    limits:
-      cpu: 1
-      memory: 1Gi
-  readinessProbe:
-    initialDelaySeconds: 5
-    periodSeconds: 30
-    timeoutSeconds: 3
-    successThreshold: 1
-    failureThreshold: 3
-  livenessProbe:
-    initialDelaySeconds: 30
-    periodSeconds: 60
-    timeoutSeconds: 3
-    successThreshold: 1
-    failureThreshold: 3
-  tolerations: # '[{"key": "node-role.jarvice.io/jarvice-bird", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-bird", "effect": "NoSchedule", "operator": "Exists"}]'
-  nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-bird", "operator": "Exists"}]}] }}'
-  nodeSelector: # '{"node-role.jarvice.io/jarvice-bird": "true"}'
   conf:
     configMap: # jarvice-bird-config
   nginx:
     configMap: # jarvice-bird-nginx-config
-  env:
-    KEYCLOAK_URL: # keycloak.my-domain.com/auth
-    KEYCLOAK_ID: jarvice
-    KEYCLOAK_REALM: jarvice
-  networkPolicy:
-    enabled: # Inherits from jarvice.networkPolicy.enabled if unset
-
-jarvice_bird_server: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
-  enabled: false
-  securityContext:
-    fsGroup: 890
-  replicaCount: 1
-  replicaCountMax: 1
-  # HorizontalPodAutoscaler is enabled when replicaCountMax > replicaCount
-  autoscaling:
-    metrics:
-      - type: Resource
-        resource:
-          name: cpu
-          target:
-            type: Utilization
-            averageUtilization: 60
-      - type: Resource
-        resource:
-          name: memory
-          target:
-            type: Utilization
-            averageUtilization: 60
-  # PodDisruptionBudget default requires 25% minimum of pods must be running
-  pdb:
-    minAvailable: "25%"
-  # antiAffinity default of "soft" prefers that pods run on diff nodes.
-  # Set to "hard" to require pods to run on diff nodes.
-  antiAffinity: "soft"
-  resources:
-    limits:
-      cpu: 1
-      memory: 1Gi
-  readinessProbe:
-    initialDelaySeconds: 5
-    periodSeconds: 30
-    timeoutSeconds: 3
-    successThreshold: 1
-    failureThreshold: 3
-  livenessProbe:
-    initialDelaySeconds: 30
-    periodSeconds: 60
-    timeoutSeconds: 3
-    successThreshold: 1
-    failureThreshold: 3
-  tolerations: # '[{"key": "node-role.jarvice.io/jarvice-bird-server", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-bird-server", "effect": "NoSchedule", "operator": "Exists"}]'
-  nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-bird-server", "operator": "Exists"}]}] }}'
-  nodeSelector: # '{"node-role.jarvice.io/jarvice-bird-server": "true"}'
-  env:
-    TOKEN_INFO_URI: # keycloak.my-domain.com/auth/realm/jarvice/protocol/openid-connect/token/introspect
-    KEYCLOAK_URI: # keycloak.my-domain.com/auth
-    CLIENT_ID: jarvice
-    TENANT_SCHEMAS: jarvice
-  networkPolicy:
-    enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   preset:
     configMap: # jarvice-bird-user-preset
   java:
     cacert:
       configMap: # jarvice-java-cacert
-
-jarvice_bird_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
-  enabled: false
-  replicaCount: 2
-  replicaCountMax: 6
-  # HorizontalPodAutoscaler is enabled when replicaCountMax > replicaCount
-  autoscaling:
-    metrics:
-      - type: Resource
-        resource:
-          name: cpu
-          target:
-            type: Utilization
-            averageUtilization: 60
-      - type: Resource
-        resource:
-          name: memory
-          target:
-            type: Utilization
-            averageUtilization: 60
-  # PodDisruptionBudget default requires 25% minimum of pods must be running
-  pdb:
-    minAvailable: "25%"
-  # antiAffinity default of "soft" prefers that pods run on diff nodes.
-  # Set to "hard" to require pods to run on diff nodes.
-  antiAffinity: "soft"
-  loadBalancerIP:
-  ingressHost: # jarvice.my-domain.com
-  ingressPath: "/"  # Valid values are "/" (default) or "/portal"
-  ingressAnnotations: # '{"nginx.org/client-max-body-size": "0", "nginx.org/proxy-read-timeout": "3600", "nginx.org/proxy-send-timeout": "3600"}'
-  resources:
-    limits:
-      cpu: 1
-      memory: 2Gi
-  readinessProbe:
-    initialDelaySeconds: 5
-    periodSeconds: 30
-    timeoutSeconds: 3
-    successThreshold: 1
-    failureThreshold: 3
-  livenessProbe:
-    initialDelaySeconds: 30
-    periodSeconds: 60
-    timeoutSeconds: 3
-    successThreshold: 1
-    failureThreshold: 3
-  tolerations: # '[{"key": "node-role.jarvice.io/jarvice-bird-portal", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-bird-portal", "effect": "NoSchedule", "operator": "Exists"}]'
-  nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-bird-portal", "operator": "Exists"}]}] }}'
-  nodeSelector: # '{"node-role.jarvice.io/jarvice-bird-portal": "true"}'
-  networkPolicy:
-    enabled: # Inherits from jarvice.networkPolicy.enabled if unset
-  # JARVICE_PORTAL_DBHOST inherits from jarvice.JARVICE_DBHOST if unset
-  # JARVICE_PORTAL_DBPASSWD inherits from jarvice.JARVICE_DBPASSWD if unset
-  # JARVICE_PORTAL_DBUSER inherits from jarvice.JARVICE_DBUSER if unset
-  # JARVICE_PORTAL_WEB_HOST inherits from jarvice_bird_portal.ingressHost/jarvice_bird_portal.ingressPath if unset
   env:
-    JARVICE_KEYCLOAK_URL: # jarvice-keycloak.my-domain.com/auth
-    JARVICE_KEYCLOAK_CLIENT_ID: jarvice
-    JARVICE_KEYCLOAK_REALM: jarvice
+    KEYCLOAK_URL: # keycloak.my-domain.com/auth
+    KEYCLOAK_ID: jarvice
+    KEYCLOAK_REALM: jarvice
+    JARVICE_BIRD_PORTAL_URL:
     JARVICE_KEYCLOAK_ADMIN_USER: jarvice
     JARVICE_KEYCLOAK_ADMIN_PASS: Pass1234
     JARVICE_USER_DEFAULT_ENABLED: True
@@ -1341,7 +1204,68 @@ jarvice_bird_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     JARVICE_DISABLE_API_SUBST_WARNING: # ""
     # If a non-empty string is passed, the MC portal will use this URL for build and pull web links shown to the user
     JARVICE_API_PUBLIC_URL: # https://<jarvice_api.ingressHost><jarvice_api.ingressPath>
-
+  networkPolicy:
+    enabled: # Inherits from jarvice.networkPolicy.enabled if unset
+  tolerations: # '[{"key": "node-role.jarvice.io/jarvice-bird", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-bird", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-bird", "operator": "Exists"}]}] }}'
+  nodeSelector: # '{"node-role.jarvice.io/jarvice-bird": "true"}'
+  loadBalancerIP:
+  ingressHost: # jarvice-bird.my-domain.com
+  ingressPath: "/"  # Valid values are "/" (default) or "/bird"
+  ingressAnnotations: # '{"nginx.org/client-max-body-size": "0", "nginx.org/proxy-read-timeout": "3600", "nginx.org/proxy-send-timeout": "3600"}'
+  bird:
+    resources:
+      limits:
+        cpu: 1
+        memory: 1Gi
+    readinessProbe:
+      initialDelaySeconds: 5
+      periodSeconds: 30
+      timeoutSeconds: 3
+      successThreshold: 1
+      failureThreshold: 3
+    livenessProbe:
+      initialDelaySeconds: 30
+      periodSeconds: 60
+      timeoutSeconds: 3
+      successThreshold: 1
+      failureThreshold: 3
+  server:
+    resources:
+      limits:
+        cpu: 1
+        memory: 1Gi
+    readinessProbe:
+      initialDelaySeconds: 5
+      periodSeconds: 30
+      timeoutSeconds: 3
+      successThreshold: 1
+      failureThreshold: 3
+    livenessProbe:
+      initialDelaySeconds: 30
+      periodSeconds: 60
+      timeoutSeconds: 3
+      successThreshold: 1
+      failureThreshold: 3
+    securityContext:
+      fsGroup: 890
+  portal:
+    resources:
+      limits:
+        cpu: 1
+        memory: 2Gi
+    readinessProbe:
+      initialDelaySeconds: 5
+      periodSeconds: 30
+      timeoutSeconds: 3
+      successThreshold: 1
+      failureThreshold: 3
+    livenessProbe:
+      initialDelaySeconds: 30
+      periodSeconds: 60
+      timeoutSeconds: 3
+      successThreshold: 1
+      failureThreshold: 3
 keycloak:
   enabled: false
   create_realm: false
