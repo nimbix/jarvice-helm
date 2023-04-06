@@ -1191,7 +1191,7 @@ jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     JARVICE_PORTAL_GSS_REALM:
     JARVICE_PORTAL_GSS_DOMAIN:
     JARVICE_PORTAL_GSS_LOG: # "debug"
-    JARVICE_PORTAL_WEB_HOST: # https://<jarvice_bird_portal.ingressHost><jarvice_bird_portal.ingressPath>
+    JARVICE_PORTAL_WEB_HOST: # https://<jarvice_bird_portal.ingressHost><jarvice_bird_portal.ingressPath>/portal
     # If null, JARVICE_PORTAL_MEMCACHED_LOCATIONS is auto-generated based on
     # jarvice_memcached.enabled/jarvice_memcached.replicaCount
     JARVICE_PORTAL_MEMCACHED_LOCATIONS: # jarvice-memcached-0.jarvice-memcached:11211,jarvice-memcached-1.jarvice-memcached:11211,jarvice-memcached-2.jarvice-memcached:11211

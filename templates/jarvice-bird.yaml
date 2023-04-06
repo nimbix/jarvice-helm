@@ -264,7 +264,7 @@ spec:
           failureThreshold: {{ .Values.jarvice_bird.server.livenessProbe.failureThreshold }}
         env:
           - name: TOKEN_INFO_URI
-            value: "{{ .Values.jarvice_bird.env.KEYCLOAK_URL }}/realm/{{ .Values.jarvice_bird.env.KEYCLOAK_REALM }}/{{ .Values.jarvice_bird.env.KEYCLOAK_URL }}"
+            value: "{{ .Values.jarvice_bird.env.KEYCLOAK_URL }}/realm/{{ .Values.jarvice_bird.env.KEYCLOAK_REALM }}/protocol/openid-connect/token/introspect"
           - name: KEYCLOAK_URI
             value: {{ .Values.jarvice_bird.env.KEYCLOAK_URL }}
           - name: CLIENT_ID
@@ -397,7 +397,7 @@ spec:
             value: "{{ .Values.jarvice_bird.env.JARVICE_PORTAL_WEB_HOST }}"
 {{- else if (not (empty .Values.jarvice_bird.ingressHost)) }}
           - name: JARVICE_PORTAL_WEB_HOST
-            value: 'https://{{- .Values.jarvice_bird.ingressHost -}}{{- .Values.jarvice_bird.ingressPath -}}'
+            value: 'https://{{- .Values.jarvice_bird.ingressHost -}}{{- .Values.jarvice_bird.ingressPath -}}/portal'
 {{- end }}
           - name: JARVICE_PORTAL_MEMCACHED_LOCATIONS
 {{- if and .Values.jarvice_memcached.enabled (empty .Values.jarvice_bird.env.JARVICE_PORTAL_MEMCACHED_LOCATIONS) }}
