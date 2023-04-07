@@ -1182,7 +1182,6 @@ jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     KEYCLOAK_URL: # keycloak.my-domain.com/auth
     KEYCLOAK_ID: jarvice
     KEYCLOAK_REALM: jarvice
-    JARVICE_BIRD_PORTAL_URL:
     JARVICE_KEYCLOAK_ADMIN_USER: jarvice
     JARVICE_KEYCLOAK_ADMIN_PASS: Pass1234
     JARVICE_USER_DEFAULT_ENABLED: True

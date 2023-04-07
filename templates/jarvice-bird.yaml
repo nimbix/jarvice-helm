@@ -328,8 +328,13 @@ spec:
           successThreshold: {{ .Values.jarvice_bird.portal.livenessProbe.successThreshold }}
           failureThreshold: {{ .Values.jarvice_bird.portal.livenessProbe.failureThreshold }}
         env:
+{{- if (not (empty .Values.jarvice_bird.env.JARVICE_BIRD_PORTAL_URL)) }}
           - name: JARVICE_BIRD_PORTAL_URL
             value: "{{ .Values.jarvice_bird.env.JARVICE_BIRD_PORTAL_URL }}"
+{{- else if (not (empty .Values.jarvice_bird.ingressHost)) }}
+          - name: JARVICE_BIRD_PORTAL_URL
+            value: 'https://{{- .Values.jarvice_bird.ingressHost -}}{{- .Values.jarvice_bird.ingressPath -}}'
+{{- end }}
           - name: REQUESTS_CA_BUNDLE
             value: "/etc/ssl/certs/ca-certificates.crt"
           - name: JARVICE_SYSTEM_K8S
@@ -397,7 +402,7 @@ spec:
             value: "{{ .Values.jarvice_bird.env.JARVICE_PORTAL_WEB_HOST }}"
 {{- else if (not (empty .Values.jarvice_bird.ingressHost)) }}
           - name: JARVICE_PORTAL_WEB_HOST
-            value: 'https://{{- .Values.jarvice_bird.ingressHost -}}{{- .Values.jarvice_bird.ingressPath -}}/portal'
+            value: 'https://{{- .Values.jarvice_bird.ingressHost -}}{{- .Values.jarvice_bird.ingressPath -}}portal'
 {{- end }}
           - name: JARVICE_PORTAL_MEMCACHED_LOCATIONS
 {{- if and .Values.jarvice_memcached.enabled (empty .Values.jarvice_bird.env.JARVICE_PORTAL_MEMCACHED_LOCATIONS) }}
