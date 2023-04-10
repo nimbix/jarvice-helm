@@ -1,5 +1,5 @@
 {{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
-{{- if .Values.keycloak.create_realm }}
+{{- if .Values.keycloakx.create_realm }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -41,13 +41,13 @@ spec:
           - name: JARVICE_PORTAL_URL
             value: {{ .Values.jarvice_mc_portal.ingressHost }}
           - name: JARVICE_REALM_ADMIN
-            value: {{ .Values.keycloak.env.JARVICE_REALM_ADMIN }}
+            value: {{ .Values.keycloakx.env.JARVICE_REALM_ADMIN }}
           - name: JARVICE_REALM_ADMIN_PASSWD
-            value: {{ .Values.keycloak.env.JARVICE_REALM_ADMIN_PASSWD }}
+            value: {{ .Values.keycloakx.env.JARVICE_REALM_ADMIN_PASSWD }}
           - name: JARVICE_KEYCLOAK_USER
-            value: {{ .Values.keycloak.env.JARVICE_KEYCLOAK_ADMIN }}
+            value: {{ .Values.keycloakx.env.JARVICE_KEYCLOAK_ADMIN }}
           - name: JARVICE_KEYCLOAK_PASSWD
-            value: {{ .Values.keycloak.env.JARVICE_KEYCLOAK_ADMIN_PASSWD }}
+            value: {{ .Values.keycloakx.env.JARVICE_KEYCLOAK_ADMIN_PASSWD }}
           {{- if .Values.jarvice_dal.env.JARVICE_ROOT_USER_CREATE }}
           {{- if (not (empty .Values.jarvice_dal.env.JARVICE_ROOT_USER_PASSWD)) }}
           - name: JARVICE_ROOT_USER_PASSWD

@@ -1268,3 +1268,5 @@ jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 keycloak:
   enabled: false
   create_realm: false
+postgresql:
+  enabled: false
