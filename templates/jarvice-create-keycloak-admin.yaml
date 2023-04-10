@@ -6,7 +6,7 @@ metadata:
   name: jarvice-create-keycloak-realm
   namespace: jarvice-system
   annotations:
-    "helm.sh/hook": post-install
+    "helm.sh/hook": post-upgrade
     "helm.sh/hook-weight": "3"
     "helm.sh/hook-delete-policy": hook-succeeded
   labels:
@@ -66,6 +66,7 @@ spec:
           - >
               [ ! -z "$JARVICE_KEYCLOAK_USER" ] && while [[ "$(curl -s -o /dev/null -m 3 -L -w ''%{http_code}'' ${KEYCLOAK_URL}/realms/master)" != "200" ]]; do echo "Waiting for keycloak" && sleep 30; done;
               sleep 15;
+              [ "$(curl -s -o /dev/null -m 3 -L -w ''%{http_code}'' ${KEYCLOAK_URL}/realms/jarvice)" == "200" ] && exit 0;
               [ ! -z "$JARVICE_KEYCLOAK_USER" ] && token=$(curl -s "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "username=$JARVICE_KEYCLOAK_USER" --data-urlencode "password=$JARVICE_KEYCLOAK_PASSWD" --data-urlencode "grant_type=password" --data-urlencode "client_id=admin-cli" | jq -r .access_token);
               sleep 5;
               [ ! -z "$JARVICE_KEYCLOAK_USER" ] && echo "Creating jarvice realm";
