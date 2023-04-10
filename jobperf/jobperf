@@ -30,11 +30,13 @@
 #
 
 import requests
+import sys
 import os
 import time
 import copy
 import argparse
 import logging as log
+import base64
 from multiprocessing.pool import ThreadPool
 
 
@@ -66,7 +68,7 @@ if __name__ == '__main__':
                         help=f'Container to use for jobs (default: {container}'
                         '); Note: specified container must have /bin/bash')
     parser.add_argument('-p', '--pullsecret', metavar='FILE',
-                        default=pullsecret,
+                        default=None,
                         help='File to use for container pull secret '
                         f'(default: {pullsecret} if present)')
     parser.add_argument('-t', '--timeout', metavar='SECONDS', default=30,
@@ -86,7 +88,26 @@ if __name__ == '__main__':
 
     apiurl = args.url
 
-    pullsecret = ''
+    log.basicConfig(format='%(levelname)s: %(message)s', level=(
+        log.DEBUG if args.debug else (log.WARNING if args.quiet else log.INFO))
+                    )
+
+    psbuf = ''
+    if args.pullsecret or os.path.exists(pullsecret):
+        pullsecret = args.pullsecret if args.pullsecret else pullsecret
+        try:
+            with open(pullsecret, 'rb') as f:
+                psbuf = f.read()
+        except Exception as e:
+            msg = f'Failed to read pull secret: {e}'
+            if args.pullsecret:
+                log.error(msg)
+                sys.exit(1)
+            else:
+                log.warning(msg)
+
+    if psbuf:
+        psbuf = base64.b64encode(psbuf).decode()
 
     # construct batch call
     apitext = '''{
@@ -108,11 +129,8 @@ if __name__ == '__main__':
             "readonly": true,
             "force": false
         }
-}''' % (args.machine, args.container, pullsecret, args.username, args.apikey,
+}''' % (args.machine, args.container, psbuf, args.username, args.apikey,
         args.vault)
-    log.basicConfig(format='%(levelname)s: %(message)s', level=(
-        log.DEBUG if args.debug else (log.WARNING if args.quiet else log.INFO))
-                    )
     log.debug('API payload for job submission:\n' + apitext + '\n')
     global submitcount
     submitcount = 0
