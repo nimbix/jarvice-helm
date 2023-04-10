@@ -29,9 +29,7 @@
 # policies, either expressed or implied, of Nimbix, Inc.
 #
 
-import json
 import requests
-import sys
 import os
 import time
 import copy
@@ -65,21 +63,21 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--vault', default='ephemeral',
                         help='Vault to use for jobs (default: ephemeral)')
     parser.add_argument('-c', '--container', default=container,
-                        help=
-                        f'Container to use for jobs (default: {container}); '
-                        'Note: specified container must have /bin/bash')
+                        help=f'Container to use for jobs (default: {container}'
+                        '); Note: specified container must have /bin/bash')
     parser.add_argument('-p', '--pullsecret', metavar='FILE',
                         default=pullsecret,
                         help='File to use for container pull secret '
                         f'(default: {pullsecret} if present)')
-    parser.add_argument('-t', '--timeout', metavar='SECONDS', default=15,
-                        help='API call timeout in seconds (default: 15)')
+    parser.add_argument('-t', '--timeout', metavar='SECONDS', default=30,
+                        type=int,
+                        help='API call timeout in seconds (default: 30)')
     parser.add_argument('-n', '--nowait', action='store_true',
                         help='Do not wait for jobs to start')
     parser.add_argument('-N', '--noterminate', action='store_true',
                         help='Do not request job termination')
-    parser.add_argument('-l', '--limit', default=16, type=int,
-                        help='API call concurrency limit (default: 16)')
+    parser.add_argument('-l', '--limit', default=8, type=int,
+                        help='API call concurrency limit (default: 8)')
     parser.add_argument('-d', '--debug', action='store_true',
                         help='Debug mode (verbose)')
     parser.add_argument('-q', '--quiet', action='store_true',
@@ -88,8 +86,9 @@ if __name__ == '__main__':
 
     apiurl = args.url
 
+    pullsecret = ''
+
     # construct batch call
-    # TODO: add pull secret
     apitext = '''{
         "machine": {
             "type": "%s",
@@ -97,7 +96,8 @@ if __name__ == '__main__':
         },
         "container": {
             "image": "%s",
-            "jobscript": "sleep infinity"
+            "jobscript": "sleep infinity",
+            "pullsecret": "%s"
         },
         "user": {
             "username": "%s",
@@ -108,7 +108,8 @@ if __name__ == '__main__':
             "readonly": true,
             "force": false
         }
-}''' % (args.machine, args.container, args.username, args.apikey, args.vault)
+}''' % (args.machine, args.container, pullsecret, args.username, args.apikey,
+        args.vault)
     log.basicConfig(format='%(levelname)s: %(message)s', level=(
         log.DEBUG if args.debug else (log.WARNING if args.quiet else log.INFO))
                     )
@@ -116,7 +117,7 @@ if __name__ == '__main__':
     global submitcount
     submitcount = 0
 
-    def submit1(l):
+    def submit1(i):
         global submitcount
         status = None
         try:
@@ -142,14 +143,17 @@ if __name__ == '__main__':
         try:
             r = requests.get(apiurl + '/jarvice/terminate?username=' +
                              args.username + '&apikey=' + args.apikey +
-                             '&number=' + str(j), timeout = args.timeout)
+                             '&number=' + str(j), timeout=args.timeout,
+                             verify=False)
             status = r.status_code
             assert status == 200
             log.debug(f'termination request successful for job {j}')
+            return j
         except Exception as e:
             log.warning(
-                f'Warning: failed to request termination for job {j}:' %
+                f'Failed to request termination for job {j}: %s' %
                 str(status) if status else str(e))
+            return 0
 
     log.info('Performance test parameters:\n' +
              f'  JARVICE API base URL: {args.url}\n' +
@@ -166,19 +170,20 @@ if __name__ == '__main__':
     if len(jobs) < args.count:
         log.warning('%d/%d job(s) failed to submit!' % (
             args.count - len(jobs), args.count))
+    submitcount = len(jobs)
     submitmark = timer('%d/%d job(s) successfully submitted' % (
-        len(jobs), args.count), start)
+        submitcount, args.count), start)
 
     if not args.nowait and len(jobs):
         print('\n*** WAITING FOR ALL JOBS TO START ***\n')
         pending = copy.deepcopy(jobs)
         while pending:
-            log.info('Checking job status in 5 seconds...')
             time.sleep(5)
             try:
                 r = requests.get(apiurl + '/jarvice/jobs?username=' +
-                                args.username + '&apikey=' + args.apikey,
-                                timeout=args.timeout)
+                                 args.username + '&apikey=' + args.apikey,
+                                 timeout=args.timeout,
+                                 verify=False)
                 assert r.status_code == 200
                 queue = r.json()
             except Exception as e:
@@ -194,17 +199,33 @@ if __name__ == '__main__':
                     pending.remove(i)
                     jobs.remove(i)
             log.info(f'{len(pending)} job(s) remain queued')
-        startmark = timer(f'All jobs either started or completed', start)
+        startmark = timer('All jobs either started or completed', start)
+        startcount = len(jobs)
     else:
         startmark = submitmark
+        startcount = 0
 
     if not args.noterminate and len(jobs):
         print('\n*** REQUESTING TERMINATION FOR ALL REMAINING JOBS ***\n')
         with ThreadPool(args.limit) as p:
-            p.map(terminate1, jobs)
-        timer(f'Termination requests sent for {len(jobs)} job(s)', startmark)
+            tjobs = set(p.map(terminate1, jobs))
+        if 0 in tjobs:
+            tjobs.remove(0)
+        termcount = len(tjobs)
+        if termcount < startcount:
+            log.warning('%d/%d job(s) failed to schedule termination' % (
+                startcount - termcount, startcount))
+        timer('%d/%d job(s) successfully scheduled for termination' % (
+            termcount, startcount), startmark)
+    else:
+        termcount = 0
 
     print('\n*** SUMMARY ***\n')
+    print('  # jobs submitted:             %d' % submitcount)
+    if startcount:
+        print('  # jobs started:               %d' % startcount)
+    if termcount:
+        print('  # jobs set for termination:   %d' % termcount)
     print('  Time to submit all jobs:      %.02lf second(s)' %
           (submitmark - start))
     if not args.nowait and len(jobs):
