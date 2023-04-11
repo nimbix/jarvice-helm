@@ -1265,7 +1265,7 @@ jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
       timeoutSeconds: 3
       successThreshold: 1
       failureThreshold: 3
-keycloak:
+keycloakx:
   enabled: false
   create_realm: false
 postgresql:
