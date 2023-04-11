@@ -1173,6 +1173,7 @@ The portal may be "skinned" with a custom look and feel by providing
 replacements for `default.png`, `favicon.png`, `logo.png`, `palette.json`,
 or `eula.txt`.
 
+To add custom HTML content on the About page, an about.html file is required in the jarvice-override-settings directory, with a configmap
 #### Step-by-step customization procedure for the aforementioned JARVICE settings
 
 Create directory for setting the JARVICE customizations:
