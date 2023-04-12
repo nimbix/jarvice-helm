@@ -1,0 +1,47 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+annotations:
+  tag: jarvice-master
+  version: 3.21.9-1.202304121617
+apiVersion: v2
+appVersion: 3.21.9
+dependencies:
+- - condition: keycloakx.enabled
+  name: keycloakx
+  repository: https://codecentric.github.io/helm-charts/
+  version: 2.1.0
+- - condition: postgresql.enabled
+  name: postgresql
+  repository: https://charts.bitnami.com/bitnami
+  version: 12.2.7
+description: JARVICE cloud platform
+home: http://www.nimbix.net/
+icon: https://github.com/nimbix/jarvice-helm/raw/master/skin-default/favicon.png
+keywords:
+- - JARVICE
+- - HPC
+- - cloud
+kubeVersion: '>=1.14.0-0'
+maintainers:
+- - email: support@nimbix.net
+  name: Nimbix, Inc.
+  url: http://www.nimbix.net/
+name: jarvice
+sources:
+- - https://github.com/nimbix/jarvice-helm
+version: 3.21.9-1.202304121617
+
+...
+files:
+  jarvice-3.21.9-1.202304121617.tgz: sha256:2bb0db6b4ec3943bec59bf406eab93d3ab8dbe1a95f60b06fe410b73eccb946f
+-----BEGIN PGP SIGNATURE-----
+
+wsBcBAEBCgAQBQJkNttwCRANj/zL34E/zwAA8oYIAHSg9DU64hio449UlGzH/KNc
+incufNOyEy4ezEJBjaveVztP1yZ0tkUXDiHWpPtnqywudkb2xjkx1hlM+TUO0TIb
+Q3myBObiY12S9vN34xUgYPegtfttiV8QVbtrtRIgYUXAgjBbcBRuQie702z/mFFY
+/mjnO+SULdkIwl4bfwawZ2Jl/uWpsRGWXVQjx8REPBGVSNl4n0iIkwtuCF+FkH8e
+hpt4qnwJIvtB4S81UR8KpnvzFkQlrRnkVqO0Z6EB9X5NV1p++mahIHeFJ4kZ18sl
+YiUj9xaC0vfvhKXgZrbcFg8Iz1MzJS+30pJTY+f+AggSzVq7aIXHRF8i6UB5WmI=
+=tcA8
+-----END PGP SIGNATURE-----
