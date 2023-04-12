@@ -127,6 +127,10 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202304121617
+
+* (JAR-7112) Fixed deadline (walltime limit) capabilities to avoid terminating jobs that are still queuing; also included small but significant performance improvement to general Kubernetes downstream scheduling.
+
 ## 3.21.9-1.202303301627
 
 * (JAR-6941) Support for custom HTML in portal *About* page; please see [Customize JARVICE files via a ConfigMap](README.md#customize-jarvice-files-via-a-configmap) for details.
