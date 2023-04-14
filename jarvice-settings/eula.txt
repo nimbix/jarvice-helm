@@ -30,7 +30,7 @@ You agree that we may modify this Agreement or any policy or other terms
 referenced in this Agreement (collectively, " Additional Policies " ) at any 
 time by posting a revised version of the Agreement or such Additional Policy 
 on the NIMBIX Website or our " Terms " page accessible at 
-http://www.nimbix.net/terms-conditions 
+https://atos.net/en/solutions/high-performance-computing-hpc/nimbix-terms-of-service
 
 By continuing to use or receive the Services after the effective date of any 
 revisions to this Agreement or any Additional Policies, you agree to be bound 
@@ -671,7 +671,7 @@ of your Applications or Your Content.
 any type of joint venture, creditor-debtor, escrow, partnership or any 
 employer/employee or fiduciary or franchise relationship between you and us.
 
-See more at: http://www.nimbix.net/terms-conditions
+See more at: https://atos.net/en/solutions/high-performance-computing-hpc/nimbix-terms-of-service
  
 You must agree to the terms and conditions before you can sign up
  
