@@ -1,0 +1,253 @@
+#!/usr/bin/python3
+#
+# Copyright (c) 2023, Nimbix, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+# The views and conclusions contained in the software and documentation are
+# those of the authors and should not be interpreted as representing official
+# policies, either expressed or implied, of Nimbix, Inc.
+#
+
+import requests
+import sys
+import os
+import time
+import copy
+import argparse
+import logging as log
+import base64
+from multiprocessing.pool import ThreadPool
+
+
+def timer(s, mark):
+    now = time.time()
+    log.info(s + (' in %.2lf second(s)' % (now - mark)))
+    return now
+
+
+if __name__ == '__main__':
+    requests.packages.urllib3.disable_warnings()
+    container = 'us-docker.pkg.dev/jarvice/images/ubuntu:focal'
+    pullsecret = os.path.expanduser('~/.docker/config.json')
+    parser = argparse.ArgumentParser(
+        prog='jobperf',
+        description='JARVICE job submission+start throughput benchmark',
+        epilog='Copyright (c) 2023 Nimbix, Inc.  All rights reserved.')
+    parser.add_argument('url', help='JARVICE API URL')
+    parser.add_argument('count', help='number of jobs to submit', type=int)
+    parser.add_argument('-u', '--username', required=True,
+                        help='JARVICE user to submit as')
+    parser.add_argument('-k', '--apikey', required=True,
+                        help='JARVICE API key to submit as')
+    parser.add_argument('-m', '--machine', default='n0',
+                        help='Machine type to submit to (default: n0)')
+    parser.add_argument('-v', '--vault', default='ephemeral',
+                        help='Vault to use for jobs (default: ephemeral)')
+    parser.add_argument('-c', '--container', default=container,
+                        help=f'Container to use for jobs (default: {container}'
+                        '); Note: specified container must have /bin/bash')
+    parser.add_argument('-p', '--pullsecret', metavar='FILE',
+                        default=None,
+                        help='File to use for container pull secret '
+                        f'(default: {pullsecret} if present)')
+    parser.add_argument('-t', '--timeout', metavar='SECONDS', default=30,
+                        type=int,
+                        help='API call timeout in seconds (default: 30)')
+    parser.add_argument('-n', '--nowait', action='store_true',
+                        help='Do not wait for jobs to start')
+    parser.add_argument('-N', '--noterminate', action='store_true',
+                        help='Do not request job termination')
+    parser.add_argument('-l', '--limit', default=8, type=int,
+                        help='API call concurrency limit (default: 8)')
+    parser.add_argument('-d', '--debug', action='store_true',
+                        help='Debug mode (verbose)')
+    parser.add_argument('-q', '--quiet', action='store_true',
+                        help='Quiet mode (print steps and summary only)')
+    args = parser.parse_args()
+
+    apiurl = args.url
+
+    log.basicConfig(format='%(levelname)s: %(message)s', level=(
+        log.DEBUG if args.debug else (log.WARNING if args.quiet else log.INFO))
+                    )
+
+    psbuf = ''
+    if args.pullsecret or os.path.exists(pullsecret):
+        pullsecret = args.pullsecret if args.pullsecret else pullsecret
+        try:
+            with open(pullsecret, 'rb') as f:
+                psbuf = f.read()
+        except Exception as e:
+            msg = f'Failed to read pull secret: {e}'
+            if args.pullsecret:
+                log.error(msg)
+                sys.exit(1)
+            else:
+                log.warning(msg)
+
+    if psbuf:
+        psbuf = base64.b64encode(psbuf).decode()
+
+    # construct batch call
+    apitext = '''{
+        "machine": {
+            "type": "%s",
+            "nodes": 1
+        },
+        "container": {
+            "image": "%s",
+            "jobscript": "sleep infinity",
+            "pullsecret": "%s"
+        },
+        "user": {
+            "username": "%s",
+            "apikey": "%s"
+        },
+        "vault": {
+            "name": "%s",
+            "readonly": true,
+            "force": false
+        }
+}''' % (args.machine, args.container, psbuf, args.username, args.apikey,
+        args.vault)
+    log.debug('API payload for job submission:\n' + apitext + '\n')
+    global submitcount
+    submitcount = 0
+
+    def submit1(i):
+        global submitcount
+        status = None
+        try:
+            r = requests.post(args.url + '/jarvice/batch', verify=False,
+                              data=apitext, timeout=args.timeout)
+            status = r.status_code
+            assert status == 200
+            jobnum = int(r.json()['number'])
+            log.debug(f'Submitted job {jobnum}')
+            submitcount += 1
+            if submitcount % args.limit == 0:
+                log.info('%d/%d job(s) successfully submitted' % (
+                    submitcount, args.count))
+            return jobnum
+        except Exception as e:
+            log.debug('exc', exc_info=True)
+            log.error('Failed to submit job: %s' % (
+                str(status) if status else str(e)))
+            return 0
+
+    def terminate1(j):
+        status = None
+        try:
+            r = requests.get(apiurl + '/jarvice/terminate?username=' +
+                             args.username + '&apikey=' + args.apikey +
+                             '&number=' + str(j), timeout=args.timeout,
+                             verify=False)
+            status = r.status_code
+            assert status == 200
+            log.debug(f'termination request successful for job {j}')
+            return j
+        except Exception as e:
+            log.warning(
+                f'Failed to request termination for job {j}: %s' %
+                str(status) if status else str(e))
+            return 0
+
+    log.info('Performance test parameters:\n' +
+             f'  JARVICE API base URL: {args.url}\n' +
+             f'  # of jobs:            {args.count}\n' +
+             f'  API request timeout:  {args.timeout} second(s)\n' +
+             f'  Request concurrency:  {args.limit} job(s)\n')
+
+    print('\n*** SUBMITTING ALL JOBS ***\n')
+    start = time.time()
+    with ThreadPool(args.limit) as p:
+        jobs = set(p.map(submit1, [0] * args.count))
+    if 0 in jobs:
+        jobs.remove(0)
+    if len(jobs) < args.count:
+        log.warning('%d/%d job(s) failed to submit!' % (
+            args.count - len(jobs), args.count))
+    submitcount = len(jobs)
+    submitmark = timer('%d/%d job(s) successfully submitted' % (
+        submitcount, args.count), start)
+
+    if not args.nowait and len(jobs):
+        print('\n*** WAITING FOR ALL JOBS TO START ***\n')
+        pending = copy.deepcopy(jobs)
+        while pending:
+            time.sleep(5)
+            try:
+                r = requests.get(apiurl + '/jarvice/jobs?username=' +
+                                 args.username + '&apikey=' + args.apikey,
+                                 timeout=args.timeout,
+                                 verify=False)
+                assert r.status_code == 200
+                queue = r.json()
+            except Exception as e:
+                log.warning('Failed to get job status: ' + str(e))
+                continue
+            for i in list(pending):
+                if str(i) in queue:
+                    if queue[str(i)]['job_status'] == 'PROCESSING STARTING':
+                        log.debug(f'Job {i} started')
+                        pending.remove(i)
+                else:
+                    log.warning(f'Job {i} neither queued nor running!')
+                    pending.remove(i)
+                    jobs.remove(i)
+            log.info(f'{len(pending)} job(s) remain queued')
+        startmark = timer('All jobs either started or completed', start)
+        startcount = len(jobs)
+    else:
+        startmark = submitmark
+        startcount = 0
+
+    if not args.noterminate and len(jobs):
+        print('\n*** REQUESTING TERMINATION FOR ALL REMAINING JOBS ***\n')
+        with ThreadPool(args.limit) as p:
+            tjobs = set(p.map(terminate1, jobs))
+        if 0 in tjobs:
+            tjobs.remove(0)
+        termcount = len(tjobs)
+        if termcount < startcount:
+            log.warning('%d/%d job(s) failed to schedule termination' % (
+                startcount - termcount, startcount))
+        timer('%d/%d job(s) successfully scheduled for termination' % (
+            termcount, startcount), startmark)
+    else:
+        termcount = 0
+
+    print('\n*** SUMMARY ***\n')
+    print('  # jobs submitted:             %d' % submitcount)
+    if startcount:
+        print('  # jobs started:               %d' % startcount)
+    if termcount:
+        print('  # jobs set for termination:   %d' % termcount)
+    print('  Time to submit all jobs:      %.02lf second(s)' %
+          (submitmark - start))
+    if not args.nowait and len(jobs):
+        print('  Time for all jobs to start:   %.02lf second(s)' %
+              (startmark - submitmark))
+        print('  Total time to submit + start: %.02lf second(s)\n' %
+              (startmark - start))
