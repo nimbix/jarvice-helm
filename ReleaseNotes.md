@@ -127,6 +127,71 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202303301627
+
+* (JAR-6941) Support for custom HTML in portal *About* page; please see [Customize JARVICE files via a ConfigMap](README.md#customize-jarvice-files-via-a-configmap) for details.
+* (JAR-6955) (JAR-7038) (JAR-7039) Slurm downstream support GA release.
+
+## 3.21.9-1.202303151623
+
+* (JAR-6370) Support for license-based queuing in Slurm downstreams.  Please see [Note about Slurm-managed compute clusters](LicenseManager.md#note-about-slurm-managed-compute-clusters) for additional details.
+* (JAR-6669) Support for establishing a per-cluster concurrent CPU restriction in order to support smaller downstream clusters with a common set of limits.  Please see [Per-cluster Concurrent CPU Restriction: mL](Limits.md#per-cluster-concurrent-cpu-restriction-ml) for additional details.
+* (JAR-6819) Added audit logging for when `jarvice-license-manager` suspends (and subsequently resumes) jobs.  Suspension logging will indicate which job triggered the suspension.
+
+## 3.21.9-1.202303021959
+
+* (JAR-4894) Allow configurable resource requests, limits, and expiration for file listing services, to better support large shared single volumes.  Please see [Improve file lister performance for shared vaults](Storage.md#improve-file-lister-performance-for-shared-vaults) for details.
+* (JAR-5467) AppDef "v2" is now the default for newly created apps in the *PushToCompute* view.  For details on "v2" apps, please see the [JARVICE Applications Push to Compute tutorial](https://jarvice.readthedocs.io/en/latest/apps_tutorial/).
+* (JAR-6712) Added support for `meta` JSON key at the top level of AppDefs which can be an arbitrary string for external use; this metadata is available when querying the service catalog using the `/jarvice/apps` API endpoint as well.
+* (JAR-6782) Added newly queued job grace period before auto-cancellation for jobs that take too long to enqueue on Kubernetes clusters.  Please see [Advanced: Scheduler Performance Tuning](Scaling.md#advanced%3A-scheduler-performance-tuning) for details.
+
+## 3.21.9-1.202302250249
+
+* (JAR-6823) Fixed EGL rendering issue with certain applications in v2 mode due to misconfigured system libraries.
+
+## 3.21.9-1.202302221615
+
+* (JAR-6780) Fixed permission issues when using the `jarvice.JARVICE_APP_ALLOW_ROOT_INIT` option set to `"true"`.
+
+## 3.21.9-1.202302161750
+
+* (JAR-6771) Fixed GPU compute and 3D offload initialization bug when using the `jarvice.JARVICE_APP_ALLOW_ROOT_INIT` option set to `"true"`.
+
+## 3.21.9-1.202302101633
+
+* (JAR-4255) Fixed subsequent login failure when deleting default vault for a user in *Administration->Users*.
+* (JAR-6080) Added `/jarvice/batch` endpoint to JARVICE API, to support submitting batch-only jobs referencing arbitrary containers (rather than apps in the catalog); note that cloning these jobs is not supported and inspecting the JSON in the portal from these jobs may not precisely match the submission payload.  For details please see the [JARVICE API](https://jarvice.readthedocs.io/en/latest/api) reference.
+* (JAR-6131) Portal performance improvements.
+* (JAR-6277) Experimental support for one or more downstream Slurm clusters, utilizing Singularity container engine for runtime.  For details please see the work-in-progress documentation in [JARVICE Slurm Scheduler Overview](SlurmScheduler.md)
+* (JAR-6689) Increased size of ephemeral user home directory in v2 apps to take advantage of the entire overlay and avoid application issues.
+* (JAR-6694) Improved robustness of SQL queries against certain versions of MySQL.
+
+## 3.21.9-1.202211231718
+
+* (JAR-5617) Improved web portal login speeds by optimizing whitelisted app queries.
+* (JAR-5961) Future architectural updates.
+* (JAR-6035) Prevent V2 apps from being sync'd to older systems via App Sync.
+
+## 3.21.9-1.202210191724
+
+* (JAR-5911) Restore compatibility with newer downstream endpoints during upgrades.
+
+## 3.21.9-1.202210121614
+
+* (JAR-5308) Updated `kubectl` authentication plugin for GKE to use `gke-gcloud-auth-plugin`.
+* (JAR-5502) Prevent clickjacking vulnerability via iframe in portal.
+* (JAR-5556) Made `interactive` key optional (defaulting to `false` for non-interactive endpoints) in the AppDef.
+* (JAR-5575) Increased resource requests and limits for `pvcrun` file lister, and made them configurable when more is needed; please see [Improve file lister performance for shared vaults](Storage.md#improve-file-lister-performance-for-shared-vaults) in the *User Storage Patterns and Configuration* guide for details.
+* (JAR-5576) Made the primary DN attribute configurable in *Account->LDAP* in order to support non-AD schemas.
+* (JAR-5584) Performance improvement in portal user stats.
+* (JAR-5623) Fixed bug where saving configuration in *Account->SAML* was failing with a null-related error.
+* (JAR-5680) Added job `substatus` to response JSON from `jarvice/status` API endpoint.
+
+## 3.21.9-1.202209141659 *(TECHNOLOGY PREVIEW RELEASE)*
+
+* (JAR-5471) Fixed issue with team admins getting the payer vault list instead of their own on the Account/Vaults view
+* (JAR-5614) Fixed bug with LDAP and SAML login URLs failing to launch  
+
 ## 3.21.9-1.202208311627 *(TECHNOLOGY PREVIEW RELEASE)*
 
 * (JAR-100) `jarvice-sched-pass` became its own component, for improved troubleshooting and scalability; see [Advanced: Scheduler Performance Tuning](Scaling.md#advanced-scheduler-performance-tuning) in the *Resource Planning and Scaling Guide* and [Job status problems](Troubleshooting.md#job-status-problems) in the *JARVICE Troubleshooting Guide* for more information.
