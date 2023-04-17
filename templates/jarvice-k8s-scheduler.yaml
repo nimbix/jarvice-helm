@@ -114,6 +114,10 @@ spec:
           successThreshold: {{ .Values.jarvice_k8s_scheduler.livenessProbe.successThreshold }}
           failureThreshold: {{ .Values.jarvice_k8s_scheduler.livenessProbe.failureThreshold }}
         env:
+{{- if .Values.jarvice_bird.enabled }}
+          - name: JARVICE_BIRD_API_URL
+            value: "{{ .Values.jarvice_bird.ingressHost }}/portal"
+{{- end }}
 {{- if .Values.jarvice_registry_proxy.enabled }}
           - name: JARVICE_REGISTRY_PROXY_PORT
             value: "{{ .Values.jarvice_registry_proxy.nodePort }}"

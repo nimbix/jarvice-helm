@@ -134,6 +134,10 @@ spec:
           successThreshold: {{ .Values.jarvice_api.livenessProbe.successThreshold }}
           failureThreshold: {{ .Values.jarvice_api.livenessProbe.failureThreshold }}
         env:
+{{- if .Values.jarvice_bird.enabled }}
+          - name: JARVICE_BIRD_API_URL
+            value: "{{ .Values.jarvice_bird.ingressHost }}/portal"
+{{- end }}
           - name: JARVICE_SYSTEM_K8S
 {{- if empty .Values.jarvice.JARVICE_SYSTEM_K8S }}
             value: "true"
