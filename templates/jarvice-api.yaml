@@ -17,7 +17,11 @@ spec:
 ---
 {{- end }}
 {{- if gt (.Values.jarvice_api.replicaCountMax | int) (.Values.jarvice_api.replicaCount | int) }}
+{{- if (semverCompare ">=1.26-0" .Capabilities.KubeVersion.GitVersion) }}
+apiVersion: autoscaling/v2
+{{- else }}
 apiVersion: autoscaling/v2beta2
+{{- end }}
 kind: HorizontalPodAutoscaler
 metadata:
   name: jarvice-api
