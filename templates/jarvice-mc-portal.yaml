@@ -17,7 +17,11 @@ spec:
 ---
 {{- end }}
 {{- if gt (.Values.jarvice_mc_portal.replicaCountMax | int) (.Values.jarvice_mc_portal.replicaCount | int) }}
+{{- if (semverCompare ">=1.26-0" .Capabilities.KubeVersion.GitVersion) }}
+apiVersion: autoscaling/v2
+{{- else }}
 apiVersion: autoscaling/v2beta2
+{{- end }}
 kind: HorizontalPodAutoscaler
 metadata:
   name: jarvice-mc-portal
