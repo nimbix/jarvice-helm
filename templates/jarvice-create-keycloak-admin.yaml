@@ -122,7 +122,7 @@ spec:
               [ ! -z "$JARVICE_KEYCLOAK_USER" ] && echo "Changing realm login theme to jarvice";
               [ ! -z "$JARVICE_KEYCLOAK_USER" ] && token=$(curl -s "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "username=$JARVICE_KEYCLOAK_USER" --data-urlencode "password=$JARVICE_KEYCLOAK_PASSWD" --data-urlencode "grant_type=password" --data-urlencode "client_id=admin-cli" | jq -r .access_token);
               sleep 5;
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && realm_settings=$(curl -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/jarvice" | jq '.loginTheme = "jarvice"' );
+              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && realm_settings=$(curl -s -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/jarvice" | jq '.loginTheme = "jarvice"' );
               [ ! -z "$JARVICE_KEYCLOAK_USER" ] && curl -s -o /dev/null -X PUT -d "$realm_settings" -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/jarvice";
               [ ! -z "$JARVICE_KEYCLOAK_USER" ] && echo "Creating jarvice realm admin user";
               [ ! -z "$JARVICE_KEYCLOAK_USER" ] && token=$(curl -s "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "username=$JARVICE_KEYCLOAK_USER" --data-urlencode "password=$JARVICE_KEYCLOAK_PASSWD" --data-urlencode "grant_type=password" --data-urlencode "client_id=admin-cli" | jq -r .access_token);
