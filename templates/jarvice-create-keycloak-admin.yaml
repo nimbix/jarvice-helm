@@ -57,7 +57,39 @@ spec:
           {{- end }}
           {{- end }}
           - name: KEYCLOAK_URL
-            value: {{ .Values.jarvice_bird.env.KEYCLOAK_URL }}
+            value: "{{ .Values.jarvice_bird.env.KEYCLOAK_URL }}"
+          - name: KEYCLOAK_RESET_PASSWORD_ALLOWED
+            value: "{{ .Values.keycloakx.login.KEYCLOAK_RESET_PASSWORD_ALLOWED }}"
+          - name: KEYCLOAK_REMEMBER_ME
+            value: "{{ .Values.keycloakx.login.KEYCLOAK_REMEMBER_ME }}"
+          {{- if (not (empty .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_FROM)) }}
+          - name: KEYCLOAK_SMTP_FROM
+            value: "{{ .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_FROM }}"
+          {{- end }}
+          {{- if (not (empty .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_HOST)) }}
+          - name: KEYCLOAK_SMTP_HOST
+            value: "{{ .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_HOST }}"
+          {{- end }}
+          {{- if (not (empty .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_PORT)) }}
+          - name: KEYCLOAK_SMTP_PORT
+            value: "{{ .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_PORT }}"
+          {{- end }}
+          {{- if (not (empty .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_START_TLS)) }}
+          - name: KEYCLOAK_SMTP_START_TLS
+            value: "{{ .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_START_TLS }}"
+          {{- end }}
+          {{- if (not (empty .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_AUTH)) }}
+          - name: KEYCLOAK_SMTP_AUTH
+            value: "{{ .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_AUTH }}"
+          {{- end }}
+          {{- if (not (empty .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_USER)) }}
+          - name: KEYCLOAK_SMTP_USER
+            value: "{{ .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_USER }}"
+          {{- end }}
+          {{- if (not (empty .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_PASSWORD)) }}
+          - name: KEYCLOAK_SMTP_PASSWORD
+            value: "{{ .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_PASSWORD }}"
+          {{- end }}
           image: "alpine/k8s:1.21.13"
           imagePullPolicy: "IfNotPresent"
           command:
@@ -122,7 +154,7 @@ spec:
               [ ! -z "$JARVICE_KEYCLOAK_USER" ] && echo "Changing realm login theme to jarvice";
               [ ! -z "$JARVICE_KEYCLOAK_USER" ] && token=$(curl -s "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "username=$JARVICE_KEYCLOAK_USER" --data-urlencode "password=$JARVICE_KEYCLOAK_PASSWD" --data-urlencode "grant_type=password" --data-urlencode "client_id=admin-cli" | jq -r .access_token);
               sleep 5;
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && realm_settings=$(curl -s -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/jarvice" | jq '.loginTheme = "jarvice"' );
+              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && realm_settings=$(curl -s -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/jarvice" | jq --arg rememberMe "$KEYCLOAK_REMEMBER_ME" --arg resetPasswordAllowed "$KEYCLOAK_RESET_PASSWORD_ALLOWED" --arg from "$KEYCLOAK_SMTP_FROM" --arg host "$KEYCLOAK_SMTP_HOST" --arg port "$KEYCLOAK_SMTP_PORT" --arg starttls "$KEYCLOAK_SMTP_START_TLS" --arg auth "$KEYCLOAK_SMTP_AUTH" --arg user "$KEYCLOAK_SMTP_USER" --arg password "$KEYCLOAK_SMTP_PASSWORD" '.smtpServer = { "from": $from, "host": $host, "port": $port, "starttls": $starttls,  "auth": $auth,  "user": $user,  "password": $password} | .rememberMe = $rememberMe | .resetPasswordAllowed = $resetPasswordAllowed | .loginTheme = "jarvice"' );
               [ ! -z "$JARVICE_KEYCLOAK_USER" ] && curl -s -o /dev/null -X PUT -d "$realm_settings" -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/jarvice";
               [ ! -z "$JARVICE_KEYCLOAK_USER" ] && echo "Creating jarvice realm admin user";
               [ ! -z "$JARVICE_KEYCLOAK_USER" ] && token=$(curl -s "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "username=$JARVICE_KEYCLOAK_USER" --data-urlencode "password=$JARVICE_KEYCLOAK_PASSWD" --data-urlencode "grant_type=password" --data-urlencode "client_id=admin-cli" | jq -r .access_token);
