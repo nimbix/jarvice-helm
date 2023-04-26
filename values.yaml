@@ -1268,5 +1268,16 @@ jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 keycloakx:
   enabled: false
   create_realm: false
+  login:
+    KEYCLOAK_RESET_PASSWORD_ALLOWED: true
+    KEYCLOAK_REMEMBER_ME: true
+  smtpServer: # smtp server settings for keycloak realm
+    KEYCLOAK_SMTP_FROM:      # donotreply@example.com
+    KEYCLOAK_SMTP_HOST:      # smtp.example.com
+    KEYCLOAK_SMTP_PORT:      # 587
+    KEYCLOAK_SMTP_START_TLS: # true
+    KEYCLOAK_SMTP_AUTH:      # true
+    KEYCLOAK_SMTP_USER:      # <user>@smtp.example.com
+    KEYCLOAK_SMTP_PASSWORD:  # smtp password
 postgresql:
   enabled: false
