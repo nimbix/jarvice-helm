@@ -805,7 +805,7 @@ jarvice_slurm_scheduler:
   env:
     JARVICE_SLURM_CLUSTER_PORT: 22   # slurm headnode ssh port
     JARVICE_SLURM_SCHED_LOGLEVEL: 30
-    JARVICE_SLURM_OVERLAY_SIZE: 128
+    JARVICE_SLURM_OVERLAY_SIZE: 640  # minimum 640MB recommended
     JARVICE_SLURM_HTTPS_PROXY: ""
     JARVICE_SLURM_HTTP_PROXY: ""
     JARVICE_SLURM_NO_PROXY: ""
@@ -819,7 +819,7 @@ jarvice_slurm_scheduler:
       # uncomment to override
       # JARVICE_SLURM_CLUSTER_PORT: 22   # slurm headnode ssh port
       # JARVICE_SLURM_SCHED_LOGLEVEL: 30
-      # JARVICE_SLURM_OVERLAY_SIZE: 128
+      # JARVICE_SLURM_OVERLAY_SIZE: 640
     sshConf:
       user: # user to ssh into slurm headnode (e.g. nimbix)
       pkey: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
