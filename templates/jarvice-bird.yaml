@@ -219,6 +219,9 @@ spec:
 {{- end }}
 {{- end }}
         volumeMounts:
+        - mountPath: /etc/jarvice/settings/jarvice-bird-portal
+          name: jarvice-settings
+          readOnly: true
         - mountPath: /etc/nginx/conf.d/
           name: nginx-config
           readOnly: true
@@ -286,6 +289,9 @@ spec:
             value: "{{ .Values.jarvice_bird.env.KEYCLOAK_REALM }}"
 {{- end }}
         volumeMounts:
+        - mountPath: /etc/jarvice/settings/jarvice-bird-portal
+          name: jarvice-settings
+          readOnly: true
         - mountPath: /home/bird/.bird
           name: jarvice-bird-server
 {{- if (not (empty .Values.jarvice_bird.java.configMap)) }}
@@ -543,10 +549,10 @@ spec:
 {{- end }}
         volumeMounts:
         - name: jarvice-settings
-          mountPath: /etc/jarvice/settings/jarvice-mc-portal
+          mountPath: /etc/jarvice/settings/jarvice-bird-portal
           readOnly: true
         - name: jarvice-secrets
-          mountPath: /etc/jarvice/secrets/jarvice-mc-portal
+          mountPath: /etc/jarvice/secrets/jarvice-bird-portal
           readOnly: true
         - name: krb5-keytab
           mountPath: /etc/krb5.keytab
