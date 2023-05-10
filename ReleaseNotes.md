@@ -126,6 +126,20 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202305101453 *(Next-generation UI portal TECH PREVIEW)*
+
+* (JAR-6818) Sign email addresses in new user invite URLs for additional security.
+* (JAR-6884) Preserve `${PATH}` in V2 app containers.
+* (JAR-6947) Preliminary support for Kubernetes 1.26 (experimental)
+* (JAR-7043) Slurm jobs fail sooner if errors occur during execution of script.
+* (JAR-7072) Initial support for next-generation ("BIRD") user interface portal; see the `jarvice-bird` section in [values.yaml](values.yaml) for details.
+* (JAR-7073) If enabled, new user invitations will be serviced automatically by new portal backend with functionally identical user experience and similar look and feel; new logins will be consistent on both portals unless passwords are later reset from any given portal.
+* (JAR-7116) Fixed bug with variable expansion in V2 apps.
+* (JAR-7150) Enable SFTP in V2 app containers requesting public IP addresses; note that only key authentication is supported for V2 apps, not password.
+* (JAR-7250) Additional `sbatch` parameters added for machine definitions, documentation forthcoming in a future release.
+* (JAR-7258) Support `walltime` limit parameter in job submission when using Slurm clusters.
+* (JAR-7259) Support for optional custom environment script in JARVICE-submitted Slurm jobs, documentation forthcoming in a future release.
+
 ## 3.21.9-1.202304121617
 
 * (JAR-7112) Fixed deadline (walltime limit) capabilities to avoid terminating jobs that are still queuing; also included small but significant performance improvement to general Kubernetes downstream scheduling.
