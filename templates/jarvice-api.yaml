@@ -17,7 +17,11 @@ spec:
 ---
 {{- end }}
 {{- if gt (.Values.jarvice_api.replicaCountMax | int) (.Values.jarvice_api.replicaCount | int) }}
+{{- if (semverCompare ">=1.26-0" .Capabilities.KubeVersion.GitVersion) }}
+apiVersion: autoscaling/v2
+{{- else }}
 apiVersion: autoscaling/v2beta2
+{{- end }}
 kind: HorizontalPodAutoscaler
 metadata:
   name: jarvice-api
@@ -134,6 +138,10 @@ spec:
           successThreshold: {{ .Values.jarvice_api.livenessProbe.successThreshold }}
           failureThreshold: {{ .Values.jarvice_api.livenessProbe.failureThreshold }}
         env:
+{{- if .Values.jarvice_bird.enabled }}
+          - name: JARVICE_BIRD_API_URL
+            value: "{{ .Values.jarvice_bird.ingressHost }}/portal"
+{{- end }}
           - name: JARVICE_SYSTEM_K8S
 {{- if empty .Values.jarvice.JARVICE_SYSTEM_K8S }}
             value: "true"

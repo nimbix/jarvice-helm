@@ -17,7 +17,11 @@ spec:
 ---
 {{- end }}
 {{- if gt (.Values.jarvice_bird.replicaCountMax | int) (.Values.jarvice_bird.replicaCount | int) }}
+{{- if (semverCompare ">=1.26-0" .Capabilities.KubeVersion.GitVersion) }}
+apiVersion: autoscaling/v2
+{{- else }}
 apiVersion: autoscaling/v2beta2
+{{- end }}
 kind: HorizontalPodAutoscaler
 metadata:
   name: jarvice-bird
@@ -539,10 +543,10 @@ spec:
 {{- end }}
         volumeMounts:
         - name: jarvice-settings
-          mountPath: /etc/jarvice/settings/jarvice-mc-portal
+          mountPath: /etc/jarvice/settings/jarvice-bird-portal
           readOnly: true
         - name: jarvice-secrets
-          mountPath: /etc/jarvice/secrets/jarvice-mc-portal
+          mountPath: /etc/jarvice/secrets/jarvice-bird-portal
           readOnly: true
         - name: krb5-keytab
           mountPath: /etc/krb5.keytab

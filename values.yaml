@@ -805,7 +805,7 @@ jarvice_slurm_scheduler:
   env:
     JARVICE_SLURM_CLUSTER_PORT: 22   # slurm headnode ssh port
     JARVICE_SLURM_SCHED_LOGLEVEL: 30
-    JARVICE_SLURM_OVERLAY_SIZE: 128
+    JARVICE_SLURM_OVERLAY_SIZE: 640  # minimum 640MB recommended
     JARVICE_SLURM_HTTPS_PROXY: ""
     JARVICE_SLURM_HTTP_PROXY: ""
     JARVICE_SLURM_NO_PROXY: ""
@@ -819,7 +819,7 @@ jarvice_slurm_scheduler:
       # uncomment to override
       # JARVICE_SLURM_CLUSTER_PORT: 22   # slurm headnode ssh port
       # JARVICE_SLURM_SCHED_LOGLEVEL: 30
-      # JARVICE_SLURM_OVERLAY_SIZE: 128
+      # JARVICE_SLURM_OVERLAY_SIZE: 640
     sshConf:
       user: # user to ssh into slurm headnode (e.g. nimbix)
       pkey: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
@@ -1268,5 +1268,16 @@ jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 keycloakx:
   enabled: false
   create_realm: false
+  login:
+    KEYCLOAK_RESET_PASSWORD_ALLOWED: true
+    KEYCLOAK_REMEMBER_ME: true
+  smtpServer: # smtp server settings for keycloak realm
+    KEYCLOAK_SMTP_FROM:      # donotreply@example.com
+    KEYCLOAK_SMTP_HOST:      # smtp.example.com
+    KEYCLOAK_SMTP_PORT:      # 587
+    KEYCLOAK_SMTP_START_TLS: # true
+    KEYCLOAK_SMTP_AUTH:      # true
+    KEYCLOAK_SMTP_USER:      # <user>@smtp.example.com
+    KEYCLOAK_SMTP_PASSWORD:  # smtp password
 postgresql:
   enabled: false
