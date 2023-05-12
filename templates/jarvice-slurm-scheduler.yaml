@@ -178,12 +178,20 @@ spec:
             valueFrom:
               secretKeyRef:
                 key: user
+{{- if (not (empty .sshConf.secret)) }}
+                name: "{{ .sshConf.secret }}"
+{{- else }}
                 name: jarvice-slurm-scheduler-{{ .name }}
+{{- end }}
           - name: JARVICE_SLURM_SSH_PKEY
             valueFrom:
               secretKeyRef:
                 key: pkey
+{{- if (not (empty .sshConf.secret)) }}
+                name: "{{ .sshConf.secret }}"
+{{- else }}
                 name: jarvice-slurm-scheduler-{{ .name }}
+{{- end }}
           - name: JARVICE_SLURM_SCHED_LOGLEVEL
 {{- if (not (empty .env.JARVICE_SLURM_SCHED_LOGLEVEL)) }}
             value: "{{ .env.JARVICE_SLURM_SCHED_LOGLEVEL }}"
