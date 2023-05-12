@@ -17,15 +17,15 @@ The following assumes the latest version of JARVICE is in use; this version will
 
 #### Latest Version Supported
 
-Kubernetes **1.22**; newer versions are not explicitly supported.  Using the latest patch release of each version is recommended but not required.
+Kubernetes **1.24**; newer versions are not explicitly supported.  Using the latest patch release of each version is recommended but not required.
 
 #### Previous Version(s) Supported
 
 Up to 3 previous minor revisions (from the one indicated in [Latest Version Supported](#latest-version-supported)) will be supported at any given time, unless otherwise noted.  Currently this list is limited to:
 
+* Kubernetes **1.23**
+* Kubernetes **1.22**
 * Kubernetes **1.21**
-* Kubernetes **1.20**
-* Kubernetes **1.19**
 
 ### External S3-compatible Object Storage Service Compatibility
 
@@ -41,7 +41,6 @@ Other providers may or may not be compatible, and are not officially supported.
 
 ### JARVICE HPC Pod Scheduler (jarvice-pod-scheduler)
 
-- Custom resource weighting is not yet implemented; all resource multipliers are set to 1 automatically.
 - Pod affinity, local volumes, or any mechanism that pins pods to specific nodes in the cluster is not supported; use node labels as machine properties to direct pods to sets of nodes instead, and use network-attached persistent storage only
 
 ### Downstream Deployments
