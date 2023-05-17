@@ -823,6 +823,10 @@ jarvice_slurm_scheduler:
     sshConf:
       user: # user to ssh into slurm headnode (e.g. nimbix)
       pkey: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
+      # Alternatively, define secret
+      # secret.Data["user"]: # user to ssh into slurm headnode (e.g. nimbix)
+      # secret.Data["pkey"]: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
+      secret:
     # local override values
     # replicaCount: 2
     # PodDisruptionBudget default requires 25% minimum of pods must be running
@@ -864,6 +868,10 @@ jarvice_slurm_scheduler:
   #   sshConf:
   #     user: # user to ssh into slurm headnode (e.g. nimbix)
   #     pkey: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
+  #     # Alternatively, define secret
+  #     # secret.Data["user"]: # user to ssh into slurm headnode (e.g. nimbix)
+  #     # secret.Data["pkey"]: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
+  #     secret:
 
 jarvice_pod_scheduler:
   enabled: true
