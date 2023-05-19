@@ -126,7 +126,7 @@ spec:
         - mountPath: /home
           name: homes
           readOnly: true
-{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
+{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
         - mountPath: /etc/ssl/certs/ca-certificates.crt
           subPath: ca-certificates.crt
           readOnly: true
@@ -135,10 +135,10 @@ spec:
         resources:
 {{ toYaml .Values.jarvice_idmapper.resources | indent 10 }}
       volumes:
-{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
+{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
         - name: ca-jarvice-user
           configMap:
-            name: {{ .Values.jarvice.cacert.configMap }}
+            name: {{ .Values.jarvice.cacert.user.configMap }}
             optional: true
             defaultMode: 444
 {{- end }}

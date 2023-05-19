@@ -51,10 +51,10 @@ spec:
           configMap:
             name: jarvice-license-manager
             optional: true
-{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
+{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
         - name: ca-jarvice-user
           configMap:
-            name: {{ .Values.jarvice.cacert.configMap }}
+            name: {{ .Values.jarvice.cacert.user.configMap }}
             optional: false
             defaultMode: 444
 {{- end }}
@@ -177,7 +177,7 @@ spec:
         - name: jarvice-etc
           mountPath: /jarvice/etc
           readOnly: true
-{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
+{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
         - name: ca-jarvice-user
           mountPath: /etc/ssl/certs/ca-certificates.crt
           subPath: ca-certificates.crt

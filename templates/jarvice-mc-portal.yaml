@@ -114,10 +114,10 @@ spec:
             - key: krb5.keytab
               mode: 0644
               path: krb5.keytab
-{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
+{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
         - name: ca-jarvice-user
           configMap:
-            name: {{ .Values.jarvice.cacert.configMap }}
+            name: {{ .Values.jarvice.cacert.user.configMap }}
             optional: false
             defaultMode: 444
 {{- end }}
@@ -355,7 +355,7 @@ spec:
           mountPath: /etc/krb5.keytab
           subPath: krb5.keytab
           readOnly: true
-{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
+{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
         - name: ca-jarvice-user
           mountPath: /etc/ssl/certs/ca-certificates.crt
           subPath: ca-certificates.crt

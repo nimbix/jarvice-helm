@@ -142,36 +142,3 @@ resource "helm_release" "jarvice" {
 
     depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik]
 }
-
-
-resource "kubernetes_config_map" "jarvice_user_cacert" {
-    count = fileexists(local.jarvice_user_cacert) ? 1 : 0
-
-    metadata {
-        name = "jarvice-cacert"
-        namespace = var.jarvice["namespace"]
-    }
-
-    data = {
-        "ca-certificates.crt" = "${file(local.jarvice_user_cacert)}"
-    }
-
-    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik, helm_release.jarvice]
-
-}
-
-resource "kubernetes_config_map" "jarvice_java_cacert" {
-    count = fileexists(local.jarvice_user_java_cacert) ? 1 : 0
-
-    metadata {
-        name = "jarvice-java-cacert"
-        namespace = var.jarvice["namespace"]
-    }
-
-    binary_data = {
-        "cacerts" = "${filebase64(local.jarvice_user_java_cacert)}"
-    }
-
-    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik, helm_release.jarvice]
-
-}

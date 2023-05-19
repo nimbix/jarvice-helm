@@ -107,11 +107,11 @@ spec:
 {{- end }}
       imagePullSecrets:
       - name: jarvice-docker
-{{- if (not (empty $.Values.jarvice.cacert.configMap)) }}
+{{- if (not (empty $.Values.jarvice.cacert.user.configMap)) }}
       volumes:
       - name: ca-jarvice-user
         configMap:
-          name: {{ $.Values.jarvice.cacert.configMap }}
+          name: {{ $.Values.jarvice.cacert.user.configMap }}
           optional: false
           defaultMode: 444
 {{- end }}
@@ -321,7 +321,7 @@ spec:
 {{- else }}
             value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SINGULARITY_TMPDIR }}"
 {{- end }}
-{{- if (not (empty $.Values.jarvice.cacert.configMap)) }}
+{{- if (not (empty $.Values.jarvice.cacert.user.configMap)) }}
         volumeMounts:
         - name: ca-jarvice-user
           mountPath: /etc/ssl/certs/ca-certificates.crt

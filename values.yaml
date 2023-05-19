@@ -172,7 +172,12 @@ jarvice:
   # jarvice.cacert.configMap:
   # TODO docs
   cacert:
-    configMap: # jarvice-cacert
+    user:
+      configMap: # jarvice-cacert
+      file: # /etc/ssl/certs/ca-certificates.crt
+    java:
+      configMap: # jarvice-java-cacert
+      file: # java keystore
 
   JARVICE_SYSTEM_NAMESPACE: # auto-detected, should not need to be updated
   JARVICE_JOBS_NAMESPACE: # auto-set, should not need to be updated

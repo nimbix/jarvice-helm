@@ -72,11 +72,11 @@ spec:
       imagePullSecrets:
       - name: jarvice-docker
 {{- end }}
-{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
+{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
       volumes:
       - name: ca-jarvice-user
         configMap:
-          name: {{ .Values.jarvice.cacert.configMap }}
+          name: {{ .Values.jarvice.cacert.user.configMap }}
           optional: true
           defaultMode: 444
 {{- end }}
@@ -97,7 +97,7 @@ spec:
             port: smtp
           initialDelaySeconds: {{ .Values.jarvice_smtpd.livenessProbe.initialDelaySeconds }}
           timeoutSeconds: {{ .Values.jarvice_smtpd.livenessProbe.timeoutSeconds }}
-{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
+{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
         volumeMounts:
         - name: ca-jarvice-user
           mountPath: /etc/ssl/certs/ca-certificates.crt

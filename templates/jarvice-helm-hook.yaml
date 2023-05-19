@@ -1,14 +1,42 @@
+{{- if (not (empty .Values.cacert.user.file)) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.jarvice.cacert.user.configMap }}
+  namespace: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+  annotations:
+    helm.sh/hook: pre-install
+    helm.sh/hook-delete-policy: before-hook-creation
+    helm.sh/hook-weight: "-10"
+data:
+  ca-certificates.crt: {{ .Values.jarvice.cacert.user.file }}
+---
+{{- end }}
+{{- if (not (empty .Values.jarvice.cacert.java.file)) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.jarvice.cacert.java.configMap }}
+  namespace: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+  annotations:
+    helm.sh/hook: pre-install
+    helm.sh/hook-delete-policy: before-hook-creation
+    helm.sh/hook-weight: "-10"
+data:
+  cacerts: {{ .Values.jarvice.cacert.java.file }}
+---
+{{- end }}
 {{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if .Values.keycloakx.create_realm }}
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: jarvice-create-keycloak-realm
-  namespace: jarvice-system
+  namespace: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
   annotations:
-    "helm.sh/hook": post-upgrade
+    "helm.sh/hook": post-upgrade,post-install
     "helm.sh/hook-weight": "3"
-    "helm.sh/hook-delete-policy": hook-succeeded
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
   labels:
     app: jarvice
 spec:
@@ -18,17 +46,17 @@ spec:
       labels:
         app: jarvice
     spec:
-{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
+{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
       volumes:
       - name: ca-jarvice-user
         configMap:
-          name: {{ .Values.jarvice.cacert.configMap }}
+          name: {{ .Values.jarvice.cacert.user.configMap }}
           optional: false
           defaultMode: 444
 {{- end }}
       containers:
         - name: jarvice-create-keycloak-realm
-{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
+{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
           volumeMounts:
           - name: ca-jarvice-user
             mountPath: /etc/ssl/certs/ca-certificates.crt
