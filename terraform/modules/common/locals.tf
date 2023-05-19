@@ -63,8 +63,6 @@ EOF
 locals {
     ssh_public_key_file = lookup(var.cluster.meta, "ssh_public_key", null) != null ? lookup(var.cluster.meta, "ssh_public_key", null) : lookup(var.global.meta, "ssh_public_key", null)
     ssh_public_key = local.ssh_public_key_file == null ? "" : fileexists(local.ssh_public_key_file) ? file(local.ssh_public_key_file) : ""
-    user_cacert = fileexists(local.jarvice_user_cacert) ? file(local.jarvice_user_cacert) : ""
-    java_cacert = fileexists(local.jarvice_user_java_cacert) ? filebase64(local.jarvice_user_java_cacert) : ""
 }
 
 locals {
@@ -86,14 +84,6 @@ jarvice:
     nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}] }}'
     lxcfs:
       enabled: true
-
-  cacert:
-    user:
-      configMap: jarvice-cacert
-      file: ${local.user_cacert}
-    java:
-      configMap: jarvice-java-cacert
-      file: ${local.java_cacert}
 
 jarvice_db:
   persistence:

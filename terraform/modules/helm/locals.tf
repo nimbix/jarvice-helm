@@ -12,3 +12,21 @@ locals {
     jarvice_user_java_cacert = contains(keys(var.jarvice), "user_java_cacert") ? var.jarvice["user_java_cacert"] : "cacerts"
 }
 
+locals {
+    user_cacert = fileexists(local.jarvice_user_cacert) ? file(local.jarvice_user_cacert) : ""
+    java_cacert = fileexists(local.jarvice_user_java_cacert) ? filebase64(local.jarvice_user_java_cacert) : ""
+}
+
+locals {
+    cluster_values_yaml = <<EOF
+# common cluster override values
+jarvice:
+  cacert:
+    user:
+      configMap: jarvice-cacert
+      file: ${local.user_cacert}
+    java:
+      configMap: jarvice-java-cacert
+      file: ${local.java_cacert}
+EOF
+}
