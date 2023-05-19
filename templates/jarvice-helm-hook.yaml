@@ -1,31 +1,3 @@
-{{- if (not (empty .Values.cacert.user.file)) }}
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ .Values.jarvice.cacert.user.configMap }}
-  namespace: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
-  annotations:
-    helm.sh/hook: pre-install
-    helm.sh/hook-delete-policy: before-hook-creation
-    helm.sh/hook-weight: "-10"
-data:
-  ca-certificates.crt: {{ .Values.jarvice.cacert.user.file }}
----
-{{- end }}
-{{- if (not (empty .Values.jarvice.cacert.java.file)) }}
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ .Values.jarvice.cacert.java.configMap }}
-  namespace: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
-  annotations:
-    helm.sh/hook: pre-install
-    helm.sh/hook-delete-policy: before-hook-creation
-    helm.sh/hook-weight: "-10"
-data:
-  cacerts: {{ .Values.jarvice.cacert.java.file }}
----
-{{- end }}
 {{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if .Values.keycloakx.create_realm }}
 apiVersion: batch/v1

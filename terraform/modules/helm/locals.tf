@@ -18,15 +18,18 @@ locals {
 }
 
 locals {
-    cluster_values_yaml = <<EOF
-# common cluster override values
+    user_cacert_values_yaml =  <<EOF
 jarvice:
   cacert:
     user:
       configMap: jarvice-cacert
-      file: ${local.user_cacert}
+EOF
+
+    java_cacert_values_yaml = <<EOF
+jarvice:
+  cacert:
     java:
       configMap: jarvice-java-cacert
-      file: ${local.java_cacert}
 EOF
+
 }
