@@ -1276,6 +1276,7 @@ jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
       timeoutSeconds: 3
       successThreshold: 1
       failureThreshold: 3
+
 keycloakx:
   enabled: false
   create_realm: false
@@ -1290,5 +1291,97 @@ keycloakx:
     KEYCLOAK_SMTP_AUTH:      # true
     KEYCLOAK_SMTP_USER:      # <user>@smtp.example.com
     KEYCLOAK_SMTP_PASSWORD:  # smtp password
+  env:
+    JARVICE_KEYCLOAK_ADMIN: jarvice
+    JARVICE_KEYCLOAK_ADMIN_PASSWD: Pass1234
+    JARVICE_REALM_ADMIN: nimbix
+    JARVICE_REALM_ADMIN_PASSWD: abc1234!
+  image:
+    repository: us-docker.pkg.dev/jarvice-system/images/jarvice-keycloak
+    tag: jarvice-master
+  imagePullSecrets:
+  - name: jarvice-docker
+  tolerations:
+  - key: node-role.jarvice.io/jarvice-system
+    effect: NoSchedule
+    operator: Exists
+  - key: node-role.kubernetes.io/jarvice-system
+    effect: NoSchedule
+    operator: Exists
+  command:
+    - "/opt/keycloak/bin/kc.sh"
+    - "--verbose"
+    - "start"
+    - "--http-enabled=true"
+    - "--http-port=8080"
+    - "--hostname-strict=false"
+    - "--hostname-strict-https=false"
+    - "--spi-events-listener-jboss-logging-success-level=info"
+    - "--spi-events-listener-jboss-logging-error-level=warn"
+    - "--spi-login-protocol-openid-connect-legacy-logout-redirect-uri=true"
+  extraEnv: |
+    - name: KC_DB_URL
+      value: jdbc:mariadb://jarvice-db:3306/keycloak?ssl=allow&createDatabaseIfNotExist=true
+    - name: KEYCLOAK_ADMIN
+      valueFrom:
+        secretKeyRef:
+          name: {{ include "keycloak.fullname" . }}-admin-creds
+          key: user
+    - name: KEYCLOAK_ADMIN_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: {{ include "keycloak.fullname" . }}-admin-creds
+          key: password
+    - name: JAVA_OPTS_APPEND
+      value: >-
+        -XX:+UseContainerSupport
+        -XX:MaxRAMPercentage=50.0
+        -Djava.awt.headless=true
+        -Djgroups.dns.query={{ include "keycloak.fullname" . }}-headless
+  dbchecker:
+    enabled: true
+  database:
+    vendor: mariadb
+    hostname: jarvice-db
+    port: 3306
+    username: root
+    password: Pass1234
+    database: keycloak
+  secrets:
+    admin-creds:
+      annotations:
+        my-test-annotation: Test secret for {{ include "keycloak.fullname" . }}
+      stringData:
+        user: jarvice
+        password: Pass1234
+  ingress:
+    # If `true`, an Ingress is created
+    enabled: true
+    # The name of the Ingress Class associated with this ingress
+    ingressClassName: "traefik"
+    # The Service port targeted by the Ingress
+    servicePort: http
+    # Ingress annotations
+    annotations:
+      # cert-manager.io/issuer: letsencrypt-staging
+      ## Resolve HTTP 502 error using ingress-nginx:
+      ## See https://www.ibm.com/support/pages/502-error-ingress-keycloak-response
+      # nginx.ingress.kubernetes.io/proxy-buffer-size: 128k
+    # Additional Ingress labels
+    labels: {}
+    # List of rules for the Ingress
+    rules:
+      -
+        # Ingress host
+        host: # keycloak.example.com
+        # Paths for the host
+        paths:
+          - path: /
+            pathType: Prefix
+    # TLS configuration
+    tls:
+      - hosts:
+          - # keycloak.example.com
+        secretName: # "tls-keycloak.example.com"
 postgresql:
   enabled: false

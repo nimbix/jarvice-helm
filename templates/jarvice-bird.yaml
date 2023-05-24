@@ -574,7 +574,7 @@ spec:
   type: ClusterIP
   ports:
   - protocol: TCP
-    port: 80
+    port: 8000
     targetPort: http
     name: http
   - protocol: TCP
@@ -609,6 +609,8 @@ spec:
     ports:
     - protocol: TCP
       port: 8080
+    - protocol: TCP
+      port: 8000
 {{- end }}
 ---
 {{- end }}
