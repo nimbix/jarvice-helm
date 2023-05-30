@@ -1370,7 +1370,7 @@ keycloakx:
     rules:
       -
         # Ingress host
-        host: # keycloak.example.com
+        host: keycloak.example.com
         # Paths for the host
         paths:
           - path: /
@@ -1378,7 +1378,7 @@ keycloakx:
     # TLS configuration
     tls:
       - hosts:
-          - # keycloak.example.com
-        secretName: # "tls-keycloak.example.com"
+          - keycloak.example.com
+        secretName: "tls-keycloak.example.com"
 postgresql:
   enabled: false
