@@ -62,7 +62,7 @@ EOF
 
 locals {
     ssh_public_key_file = lookup(var.cluster.meta, "ssh_public_key", null) != null ? lookup(var.cluster.meta, "ssh_public_key", null) : lookup(var.global.meta, "ssh_public_key", null)
-    ssh_public_key = local.ssh_public_key_file == null ? "" : fileexists(local.ssh_public_key_file) ? file(local.ssh_public_key_file) : ""
+    ssh_public_key = local.ssh_public_key_file == null ? "" : fileexists(local.ssh_public_key_file) ? trimspace(file(local.ssh_public_key_file)) : ""
 }
 
 locals {
