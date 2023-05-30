@@ -121,20 +121,20 @@ spec:
 {{- else }}
           name: "{{ .Values.jarvice_bird.nginx.configMap }}"
 {{- end }}
-{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
+{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
       - name: ca-jarvice-user
         configMap:
-          name: "{{ .Values.jarvice.cacert.configMap }}"
+          name: "{{ .Values.jarvice.cacert.user.configMap }}"
           optional: false
           defaultMode: 444
 {{- end }}
       - name : jarvice-bird-server
         emptyDir:
           sizeLimit: 100Mi
-{{- if (not (empty .Values.jarvice_bird.java.configMap)) }}
+{{- if (not (empty .Values.jarvice.cacert.java.configMap)) }}
       - name: jarvice-java-cacert
         configMap:
-          name: {{ .Values.jarvice_bird.java.configMap }}
+          name: {{ .Values.jarvice.cacert.java.configMap }}
           optional: false
           defaultMode: 444
 {{- end }}
@@ -233,7 +233,7 @@ spec:
           name: bird-config
           readOnly: true
           subPath: config.json
-{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
+{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
         - name: ca-jarvice-user
           mountPath: /etc/ssl/certs/ca-certificates.crt
           subPath: ca-certificates.crt
@@ -294,7 +294,7 @@ spec:
           readOnly: true
         - mountPath: /home/bird/.bird
           name: jarvice-bird-server
-{{- if (not (empty .Values.jarvice_bird.java.configMap)) }}
+{{- if (not (empty .Values.jarvice.cacert.java.configMap)) }}
         - name: jarvice-java-cacert
           mountPath: /etc/ssl/certs/java/cacerts
           subPath: cacerts
@@ -558,7 +558,7 @@ spec:
           mountPath: /etc/krb5.keytab
           subPath: krb5.keytab
           readOnly: true
-{{- if (not (empty .Values.jarvice.cacert.configMap)) }}
+{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
         - name: ca-jarvice-user
           mountPath: /etc/ssl/certs/ca-certificates.crt
           subPath: ca-certificates.crt
@@ -580,7 +580,7 @@ spec:
   type: ClusterIP
   ports:
   - protocol: TCP
-    port: 80
+    port: 8000
     targetPort: http
     name: http
   - protocol: TCP
@@ -615,6 +615,8 @@ spec:
     ports:
     - protocol: TCP
       port: 8080
+    - protocol: TCP
+      port: 8000
 {{- end }}
 ---
 {{- end }}

@@ -113,4 +113,3 @@ EOF
 locals {
     cluster_output_message = local.jarvice_cluster_type == "downstream" ? "Add the downstream cluster URL to an upstream JARVICE cluster" : "Open the portal URL to initialize JARVICE"
 }
-

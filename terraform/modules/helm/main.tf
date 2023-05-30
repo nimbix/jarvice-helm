@@ -115,6 +115,54 @@ resource "helm_release" "traefik" {
     depends_on = [helm_release.aws_load_balancer_controller, helm_release.external_dns]
 }
 
+resource "helm_release" "namespace" {
+    count = 1
+
+    name = var.jarvice["namespace"]
+    repository = "https://ameijer.github.io/k8s-as-helm"
+    chart = "namespace"
+    version = "1.1.0"
+    reuse_values = false
+    reset_values = true
+    max_history = 12
+    render_subchart_notes = false
+    timeout = 600
+
+    depends_on = [helm_release.aws_load_balancer_controller, helm_release.external_dns]
+}
+
+resource "kubernetes_config_map" "jarvice_user_cacert" {
+    count = fileexists(local.jarvice_user_cacert) ? 1 : 0
+
+    metadata {
+        name = "jarvice-cacert"
+        namespace = var.jarvice["namespace"]
+    }
+
+    data = {
+        "ca-certificates.crt" = "${file(local.jarvice_user_cacert)}"
+    }
+
+    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik, helm_release.namespace]
+
+}
+
+resource "kubernetes_config_map" "jarvice_java_cacert" {
+    count = fileexists(local.jarvice_user_java_cacert) ? 1 : 0
+
+    metadata {
+        name = "jarvice-java-cacert"
+        namespace = var.jarvice["namespace"]
+    }
+
+    binary_data = {
+        "cacerts" = "${filebase64(local.jarvice_user_java_cacert)}"
+    }
+
+    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik, helm_release.namespace]
+
+}
+
 resource "helm_release" "jarvice" {
     name = "jarvice"
     repository = local.jarvice_chart_is_dir ? null : local.jarvice_chart_repository
@@ -135,43 +183,12 @@ resource "helm_release" "jarvice" {
         fileexists(var.global["values_file"]) ? "# Values from file: ${var.global["values_file"]}\n\n${file(var.global["values_file"])}" : "",
         fileexists(var.jarvice["values_file"]) ? "# Values from file: ${var.jarvice["values_file"]}\n\n${file(var.jarvice["values_file"])}" : "",
         var.common_values_yaml,
+        fileexists(local.jarvice_user_cacert) ? local.user_cacert_values_yaml : "",
+        fileexists(local.jarvice_user_java_cacert) ? local.java_cacert_values_yaml : "",
         var.cluster_values_yaml,
         var.global["values_yaml"],
         var.jarvice["values_yaml"]
     ]
 
-    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik]
-}
-
-
-resource "kubernetes_config_map" "jarvice_user_cacert" {
-    count = fileexists(local.jarvice_user_cacert) ? 1 : 0
-
-    metadata {
-        name = "jarvice-cacert"
-        namespace = var.jarvice["namespace"]
-    }
-
-    data = {
-        "ca-certificates.crt" = "${file(local.jarvice_user_cacert)}"
-    }
-
-    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik, helm_release.jarvice]
-
-}
-
-resource "kubernetes_config_map" "jarvice_java_cacert" {
-    count = fileexists(local.jarvice_user_java_cacert) ? 1 : 0
-
-    metadata {
-        name = "jarvice-java-cacert"
-        namespace = var.jarvice["namespace"]
-    }
-
-    binary_data = {
-        "cacerts" = "${filebase64(local.jarvice_user_java_cacert)}"
-    }
-
-    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik, helm_release.jarvice]
-
+    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik, kubernetes_config_map.jarvice_user_cacert, kubernetes_config_map.jarvice_java_cacert]
 }

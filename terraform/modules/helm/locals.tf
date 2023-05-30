@@ -12,3 +12,24 @@ locals {
     jarvice_user_java_cacert = contains(keys(var.jarvice), "user_java_cacert") ? var.jarvice["user_java_cacert"] : "cacerts"
 }
 
+locals {
+    user_cacert = fileexists(local.jarvice_user_cacert) ? file(local.jarvice_user_cacert) : ""
+    java_cacert = fileexists(local.jarvice_user_java_cacert) ? filebase64(local.jarvice_user_java_cacert) : ""
+}
+
+locals {
+    user_cacert_values_yaml =  <<EOF
+jarvice:
+  cacert:
+    user:
+      configMap: jarvice-cacert
+EOF
+
+    java_cacert_values_yaml = <<EOF
+jarvice:
+  cacert:
+    java:
+      configMap: jarvice-java-cacert
+EOF
+
+}
