@@ -1,4 +1,4 @@
-# main.tf - GKE module
+# main.tf - GKE v2 module
 
 terraform {
     required_providers {
@@ -90,9 +90,7 @@ resource "google_container_cluster" "jarvice" {
 
         metadata = {
             disable-legacy-endpoints = "true"
-            ssh-keys = <<EOF
-${local.username}:${module.common.ssh_public_key}
-EOF
+            ssh-keys = "${local.username}:${module.common.ssh_public_key}"
         }
 
         #workload_metadata_config {
@@ -169,9 +167,7 @@ resource "google_container_node_pool" "jarvice_system" {
 
         metadata = {
             disable-legacy-endpoints = "true"
-            ssh-keys = <<EOF
-${local.username}:${module.common.ssh_public_key}
-EOF
+            ssh-keys = "${local.username}:${module.common.ssh_public_key}"
         }
 
         labels = {
@@ -225,9 +221,7 @@ resource "google_container_node_pool" "jarvice_dockerbuild" {
 
         metadata = {
             disable-legacy-endpoints = "true"
-            ssh-keys = <<EOF
-${local.username}:${module.common.ssh_public_key}
-EOF
+            ssh-keys = "${local.username}:${module.common.ssh_public_key}"
         }
 
         labels = {
@@ -286,9 +280,7 @@ resource "google_container_node_pool" "jarvice_images_pull" {
 
         metadata = {
             disable-legacy-endpoints = "true"
-            ssh-keys = <<EOF
-${local.username}:${module.common.ssh_public_key}
-EOF
+            ssh-keys = "${local.username}:${module.common.ssh_public_key}"
         }
 
         labels = {
@@ -367,9 +359,7 @@ resource "google_container_node_pool" "jarvice_compute" {
 
         metadata = {
             disable-legacy-endpoints = "true"
-            ssh-keys = <<EOF
-${local.username}:${module.common.ssh_public_key}
-EOF
+            ssh-keys = "${local.username}:${module.common.ssh_public_key}"
         }
 
         labels = merge(

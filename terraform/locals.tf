@@ -11,6 +11,11 @@ locals {
             key => var.gke[key] if var.gke[key].enabled == true
     }
 
+    gkev2 = {
+        for key in keys(var.gkev2):
+            key => var.gkev2[key] if var.gkev2[key].enabled == true
+    }
+
     eks = {
         for key in keys(var.eks):
             key => var.eks[key] if var.eks[key].enabled == true
