@@ -6,7 +6,7 @@ terraform {
 
     # Make sure all providers are downloaded with the initial init
     required_providers {
-        google = "~> 4.1"
+        google = "~> 4.66.0"
         aws = "~> 3.64"
         azurerm = "~> 2.84"
 
@@ -185,6 +185,65 @@ module "${key}" {
 
 output "${key}" {
     value = format("\n\nGKE Cluster Configuration: %s\n%s\n", "${key}", module.${key}.cluster_info)
+}
+output "${key}_slurm" {
+    value = module.${key}.slurm_info
+}
+%{ endfor }
+###################
+# GKE clusters v2 #
+###################
+%{ for key in keys(local.gkev2) }
+# GKE cluster configuration: ${key}
+provider "google" {
+    alias = "${key}"
+
+    region = local.gkev2["${key}"].location["region"]
+    project = local.gkev2["${key}"].auth["project"]
+    credentials = local.gkev2["${key}"].auth["credentials"]
+}
+
+provider "kubernetes" {
+    alias = "${key}"
+
+    host = module.${key}.kube_config["host"]
+    cluster_ca_certificate = base64decode(module.${key}.kube_config["cluster_ca_certificate"])
+    client_certificate = base64decode(module.${key}.kube_config["client_certificate"])
+    client_key = base64decode(module.${key}.kube_config["client_key"])
+    token = module.${key}.kube_config["token"]
+}
+
+provider "helm" {
+    alias = "${key}"
+
+    kubernetes {
+        host = module.${key}.kube_config["host"]
+        cluster_ca_certificate = base64decode(module.${key}.kube_config["cluster_ca_certificate"])
+        client_certificate = base64decode(module.${key}.kube_config["client_certificate"])
+        client_key = base64decode(module.${key}.kube_config["client_key"])
+        token = module.${key}.kube_config["token"]
+    }
+}
+%{ endfor }
+
+%{ for key in keys(local.gkev2) }
+# GKE v2 cluster configuration: ${key}
+module "${key}" {
+    source = "./modules/gkev2"
+
+    cluster = local.gkev2["${key}"]
+    global = var.global
+
+    providers = {
+        google = google.${key}
+        kubernetes = kubernetes.${key}
+        helm = helm.${key}
+    }
+    depends_on = [local_file.clusters]
+}
+
+output "${key}" {
+    value = format("\n\nGKE v2 Cluster Configuration: %s\n%s\n", "${key}", module.${key}.cluster_info)
 }
 output "${key}_slurm" {
     value = module.${key}.slurm_info
