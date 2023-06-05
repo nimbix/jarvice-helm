@@ -100,7 +100,7 @@ if __name__ == '__main__':
                     metadata=k8s.client.V1ObjectMeta(
                         name=i, labels={'app': 'crudperf'}),
                     data={'foo': 'bar'}))
-            log.debug('Created ConfigMap {i}')
+            log.debug(f'Created ConfigMap {i}')
             createcount += 1
             if createcount % 25 == 0:
                 log.info('%d/%d ConfigMap(s) successfully created' % (
@@ -117,7 +117,7 @@ if __name__ == '__main__':
             cm = core.read_namespaced_config_map(i, args.namespace)
             cm.data['patched'] = 'yes'
             core.patch_namespaced_config_map(i, args.namespace, cm)
-            log.debug('Patched ConfigMap {i}')
+            log.debug(f'Patched ConfigMap {i}')
             patchcount += 1
             if patchcount % 25 == 0:
                 log.info('%d/%d ConfigMap(s) successfully patched' % (
@@ -134,7 +134,7 @@ if __name__ == '__main__':
             core.delete_namespaced_config_map(
                 i, args.namespace, body=k8s.client.V1DeleteOptions(
                     grace_period_seconds=0, propagation_policy='Foreground'))
-            log.debug('Requested deletion of ConfigMap {i}')
+            log.debug(f'Requested deletion of ConfigMap {i}')
             deletecount += 1
             if deletecount % 25 == 0:
                 log.info('%d/%d ConfigMap(s) requested for delete' % (
