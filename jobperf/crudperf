@@ -60,7 +60,7 @@ if __name__ == '__main__':
     parser.add_argument('-n', '--namespace', required=False,
                         default='default',
                         help='Kubernetes namespace to use ("default")')
-    parser.add_argument('-i', '--limit',
+    parser.add_argument('-l', '--limit',
                         help='API concurrency limit (default: 8)',
                         default=8, type=int)
     parser.add_argument('-d', '--debug', action='store_true',
