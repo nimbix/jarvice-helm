@@ -345,10 +345,10 @@ EOF
 }
 
 #################################
-### Google Cloud GKE clusters ###
+### Google Cloud GKE V2 clusters ###
 #################################
-gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
-    gke_cluster_00 = {
+gkev2 = {  # Provision GKE infrastructure/clusters and deploy JARVICE
+    gkev2_cluster_00 = {
         enabled = false
 
         auth = {  # Optional, null values are replaced with gcloud CLI defaults
@@ -433,7 +433,7 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
 
                 # global values_yaml take precedence over cluster
                 # values_file (values_file ignored if not found)
-                values_file = "override-tf.gke.<region>.<cluster_name>.yaml"  # "override-tf.gke.us-west1.tf-jarvice.yaml"
+                values_file = "override-tf.gkev2.<region>.<cluster_name>.yaml"  # "override-tf.gkev2.us-west1.tf-jarvice.yaml"
                 # user_cacert = "/etc/ssl/certs/ca-certificates.crt"
                 # user_java_cacert = "/etc/ssl/certs/java/cacerts"
                 values_yaml = <<EOF
@@ -565,7 +565,7 @@ EOF
             }
         }
     },
-    gke_cluster_01 = {
+    gkev2_cluster_01 = {
         enabled = false
 
         auth = {  # Optional, null values are replaced with gcloud CLI defaults
@@ -650,7 +650,7 @@ EOF
 
                 # global values_yaml take precedence over cluster
                 # values_file (values_file ignored if not found)
-                values_file = "override-tf.gke.<region>.<cluster_name>.yaml"  # "override-tf.gke.us-west1.tf-jarvice-downstream.yaml"
+                values_file = "override-tf.gkev2.<region>.<cluster_name>.yaml"  # "override-tf.gkev2.us-west1.tf-jarvice-downstream.yaml"
                 # user_cacert = "/etc/ssl/certs/ca-certificates.crt"
                 # user_java_cacert = "/etc/ssl/certs/java/cacerts"
                 values_yaml = <<EOF
