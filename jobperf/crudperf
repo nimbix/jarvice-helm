@@ -31,12 +31,9 @@
 
 import kubernetes as k8s
 import sys
-import os
 import time
-import copy
 import argparse
 import logging as log
-import base64
 from multiprocessing.pool import ThreadPool
 
 createcount = 0
@@ -91,6 +88,7 @@ if __name__ == '__main__':
                 log.error(f'Failed to configure Kubernetes client: {e}')
                 sys.exit(1)
     core = k8s.client.CoreV1Api()
+    log.getLogger('kubernetes').setLevel(log.WARNING)
 
     cms = [f'crudperf{x}' for x in range(0, args.count)]
 
