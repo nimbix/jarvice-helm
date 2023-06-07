@@ -90,7 +90,9 @@ resource "google_container_cluster" "jarvice" {
 
         metadata = {
             disable-legacy-endpoints = "true"
-            ssh-keys = "${local.username}:${module.common.ssh_public_key}"
+            ssh-keys = <<EOF
+${local.username}:${module.common.ssh_public_key}
+EOF
         }
 
         #workload_metadata_config {
@@ -167,7 +169,9 @@ resource "google_container_node_pool" "jarvice_system" {
 
         metadata = {
             disable-legacy-endpoints = "true"
-            ssh-keys = "${local.username}:${module.common.ssh_public_key}"
+            ssh-keys = <<EOF
+${local.username}:${module.common.ssh_public_key}
+EOF
         }
 
         labels = {
@@ -221,7 +225,9 @@ resource "google_container_node_pool" "jarvice_dockerbuild" {
 
         metadata = {
             disable-legacy-endpoints = "true"
-            ssh-keys = "${local.username}:${module.common.ssh_public_key}"
+            ssh-keys = <<EOF
+${local.username}:${module.common.ssh_public_key}
+EOF
         }
 
         labels = {
@@ -280,7 +286,9 @@ resource "google_container_node_pool" "jarvice_images_pull" {
 
         metadata = {
             disable-legacy-endpoints = "true"
-            ssh-keys = "${local.username}:${module.common.ssh_public_key}"
+            ssh-keys = <<EOF
+${local.username}:${module.common.ssh_public_key}
+EOF
         }
 
         labels = {
@@ -359,7 +367,9 @@ resource "google_container_node_pool" "jarvice_compute" {
 
         metadata = {
             disable-legacy-endpoints = "true"
-            ssh-keys = "${local.username}:${module.common.ssh_public_key}"
+            ssh-keys = <<EOF
+${local.username}:${module.common.ssh_public_key}
+EOF
         }
 
         labels = merge(

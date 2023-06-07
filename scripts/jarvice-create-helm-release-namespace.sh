@@ -16,7 +16,9 @@ Options:
 
 Note:
 
-    Terraform cluster is set in override.auto.tfvar
+    Terraform cluster is set in override.auto.tfvar.
+
+    gke_cluster_00 is the Terraform cluster in the sample below:
 
 #################################
 ### Google Cloud GKE clusters ###
@@ -25,7 +27,7 @@ gke = {  # Provision GKE infrastructure/clusters and deploy JARVICE
     gke_cluster_00 = {
 
     }
-}  
+}
 EOF
 }
 
@@ -95,3 +97,4 @@ $HELM install $NAMESPACE namespace \
   --repo https://ameijer.github.io/k8s-as-helm \
   --version 1.1.0
 $TERRAFORM import "$terraform_state" default/$NAMESPACE
+

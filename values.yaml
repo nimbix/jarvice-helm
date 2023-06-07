@@ -387,6 +387,8 @@ jarvice_db_dump: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   schedule: "0 4 * * *"
   successfulJobsHistoryLimit: 3
   failedJobsHistoryLimit: 1
+  keycloak:
+    enabled: false
   deleteOldBackups:
     enabled: true
     keep: 14  # Number of dumps to keep

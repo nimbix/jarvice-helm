@@ -156,11 +156,24 @@ data:
         --password="$JARVICE_SITE_DBPASSWD" \
         --host="$JARVICE_SITE_DBHOST" nimbix | gzip >$file
     echo; echo "* Successfully dumped JARVICE database from $JARVICE_SYSTEM_NAMESPACE namespace to $file..."
+{{- if .Values.jarvice_db_dump.keycloak.enabled }}
+    dump_dir=/jarvice-db-dump
+    file=$dump_dir/${JARVICE_SYSTEM_NAMESPACE}_keycloak-$(date +%Y%m%d%H%M%S).sql.gz
+    echo "* Dumping keycloak database from $JARVICE_SYSTEM_NAMESPACE namespace to $file..."
+    mariadb-dump --verbose \
+        --user="$JARVICE_SITE_DBUSER" \
+        --password="$JARVICE_SITE_DBPASSWD" \
+        --host="$JARVICE_SITE_DBHOST" keycloak | gzip >$file
+    echo; echo "* Successfully dumped keycloak database from $JARVICE_SYSTEM_NAMESPACE namespace to $file..."
+{{- end }}
 {{- if .Values.jarvice_db_dump.deleteOldBackups.enabled }}
     set +e
     rmfiles=$(ls -1 -d -t -r $dump_dir/$JARVICE_SYSTEM_NAMESPACE-*.sql.gz \
                 2>/dev/null | \
                 head -n -{{ .Values.jarvice_db_dump.deleteOldBackups.keep }})
+    rmfiles+=" $(ls -1 -d -t -r $dump_dir/${JARVICE_SYSTEM_NAMESPACE}_keycloak-*.sql.gz \
+                2>/dev/null | \
+                head -n -{{ .Values.jarvice_db_dump.deleteOldBackups.keep }})"
     if [ -n "$rmfiles" ]; then
         set -e
         echo; echo "* Cleaning up old backups..."
