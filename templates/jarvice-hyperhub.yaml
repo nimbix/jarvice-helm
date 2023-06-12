@@ -1,0 +1,276 @@
+{{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
+{{- if .Values.jarvice_hyperhub.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice0hyperhub
+    deployment: jarvice-hyperhub
+  name: jarvice-hyperhub
+spec:
+  replicas: {{ .Values.jarvice_hyperhub.replicaCount }}
+  selector:
+    matchLabels:
+      deployment: jarvice-hyperhub
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" . | indent 8 }}
+        component: jarvice-hyperhub
+        deployment: jarvice-hyperhub
+    spec:
+      serviceAccountName: jarvice-system
+
+{{- if (not (empty .Values.jarvice_hyperhub.tolerations)) }}
+      tolerations: {{ .Values.jarvice_hyperhub.tolerations }}
+{{- else if (not (empty .Values.jarvice.tolerations)) }}
+      tolerations: {{ .Values.jarvice.tolerations }}
+{{- end }}
+{{- if (not (empty .Values.jarvice_hyperhub.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice_hyperhub.nodeSelector }}
+{{- else if (not (empty .Values.jarvice.nodeSelector)) }}
+      nodeSelector: {{ .Values.jarvice.nodeSelector }}
+{{- end }}
+      affinity:
+{{- if (not (empty .Values.jarvice_hyperhub.nodeAffinity)) }}
+        nodeAffinity: {{ .Values.jarvice_hyperhub.nodeAffinity }}
+{{- else if (not (empty .Values.jarvice.nodeAffinity)) }}
+        nodeAffinity: {{ .Values.jarvice.nodeAffinity }}
+{{- end }}
+        podAntiAffinity:
+        {{- if eq .Values.jarvice_hyperhub.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                deployment: jarvice-hyperhub
+        {{- else if eq .Values.jarvice_hyperhub.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  deployment: jarvice-hyperhub
+        {{- end }}
+      imagePullSecrets:
+      - name: jarvice-docker
+      volumes:
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: jarvice-hyperhub-config.json
+            path: config.json
+{{- if empty .Values.jarvice_hyperhub.conf.configMap }}
+          name: jarvice-hyperhub-config
+{{- else }}
+          name: "{{ .Values.jarvice_hyperhub.conf.configMap }}"
+{{- end }}
+        name: hyperhub-config
+      - configMap:
+          defaultMode: 420
+          items:
+          - key: jarvice-hyperhub-nginx.conf
+            path: default.conf
+{{- if empty .Values.jarvice_hyperhub.nginx.configMap }}
+          name: jarvice-hyperhub-nginx-config
+{{- else }}
+          name: "{{ .Values.jarvice_hyperhub.nginx.configMap }}"
+{{- end }}
+        name: nginx-config
+      containers:
+      - name: jarvice-hyperhub
+        image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-hyperhub:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+{{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
+        imagePullPolicy: Always
+{{- else }}
+        imagePullPolicy: IfNotPresent
+{{- end }}
+        ports:
+        - containerPort: 8000
+          name: http
+          protocol: TCP
+        readinessProbe:
+          exec:
+            command:
+            - /bin/true
+          initialDelaySeconds: {{ .Values.jarvice_hyperhub.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jarvice_hyperhub.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jarvice_hyperhub.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_hyperhub.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_hyperhub.readinessProbe.failureThreshold }}
+        livenessProbe:
+          exec:
+            command:
+            - /bin/true
+          initialDelaySeconds: {{ .Values.jarvice_hyperhub.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jarvice_hyperhub.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jarvice_hyperhub.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_hyperhub.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_hyperhub.livenessProbe.failureThreshold }}
+        volumeMounts:
+        - mountPath: /etc/nginx/conf.d/
+          name: nginx-config
+          readOnly: true
+        - mountPath: /usr/share/nginx/html/web-ui-grid/config/config.json
+          name: hyperhub-config
+          readOnly: true
+          subPath: config.json
+        - mountPath: /usr/share/nginx/html/config/config.json
+          name: hyperhub-config
+          readOnly: true
+          subPath: config.json
+        resources:
+{{ toYaml .Values.jarvice_hyperhub.resources | indent 10 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-hyperhub
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: hyperhub
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8000
+    protocol: TCP
+    targetPort: http
+  selector:
+    deployment: jarvice-hyperhub
+---
+{{- if or .Values.jarvice_hyperhub.networkPolicy.enabled (and (eq "<nil>" (toString .Values.jarvice_hyperhub.networkPolicy.enabled)) .Values.jarvice.networkPolicy.enabled) }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: jarvice-hyperhub
+spec:
+  podSelector:
+    matchLabels:
+      deployment: jarvice-hyperhub
+  policyTypes:
+  - Ingress
+  ingress:
+{{- if (empty .Values.jarvice_hyperhub.ingressHost) }}
+  - {}
+{{- else }}
+  - from:
+    - namespaceSelector: {}
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 8000
+{{- end }}
+---
+{{- end }}
+{{- if (empty .Values.jarvice_hyperhub.ingressHost) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-hyperhub-lb
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-hyperhub
+spec:
+  type: LoadBalancer
+  loadBalancerIP: {{ .Values.jarvice_hyperhub.loadBalancerIP }}
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+    name: http
+  selector:
+    deployment: jarvice-hyperhub
+---
+{{- else }}
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+apiVersion: networking.k8s.io/v1
+{{- else }}
+apiVersion: networking.k8s.io/v1beta1
+{{- end }}
+kind: Ingress
+metadata:
+  name: jarvice-hyperhub
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-hyperhub
+  annotations:
+{{- if (not (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion)) }}
+{{- if (not (empty .Values.jarvice.ingress.class)) }}
+    kubernetes.io/ingress.class: {{ .Values.jarvice.ingress.class }}
+{{- end }}
+{{- end }}
+{{- if and (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (empty .Values.jarvice.ingress.tls.crt) (empty .Values.jarvice.ingress.tls.key)) }}
+    cert-manager.io/issuer: {{ .Values.jarvice.ingress.tls.issuer.name }}
+{{- else if and (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) (and (empty .Values.jarvice.ingress.tls.crt) (empty .Values.jarvice.ingress.tls.key)) }}
+    cert-manager.io/cluster-issuer: {{ .Values.jarvice.ingress.tls.cluster_issuer.name }}
+{{- end }}
+{{- if .Values.jarvice_hyperhub.ingressAnnotations }}
+{{- if (kindIs "string" .Values.jarvice_hyperhub.ingressAnnotations) }}
+{{ toYaml (fromJson .Values.jarvice_hyperhub.ingressAnnotations) | indent 4 }}
+{{- else }}
+{{ toYaml .Values.jarvice_hyperhub.ingressAnnotations | indent 4 }}
+{{- end }}
+{{- end }}
+spec:
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+{{- if (not (empty .Values.jarvice.ingress.class)) }}
+  ingressClassName: {{ .Values.jarvice.ingress.class }}
+{{- end }}
+{{- end }}
+  rules:
+  - http:
+      paths:
+{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+      - backend:
+          service:
+            name: jarvice-hyperhub
+            port:
+              name: http
+        pathType: Prefix
+        path: /
+{{- else }}
+      - backend:
+          serviceName: jarvice-hyperhub
+          servicePort: http
+        path: /
+{{- end }}
+{{- if ne "-" .Values.jarvice_hyperhub.ingressHost }}
+    host: '{{- .Values.jarvice_hyperhub.ingressHost -}}'
+{{- if or (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}
+  tls:
+  - hosts:
+    - '{{- .Values.jarvice_hyperhub.ingressHost -}}'
+{{- if and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key)) }}
+    secretName: 'tls-jarvice'
+{{- else }}
+    secretName: 'tls-{{- .Values.jarvice_hyperhub.ingressHost -}}'
+{{- end }}
+{{- end }}
+{{- end }}
+---
+{{- end }}
+{{- if empty .Values.jarvice_hyperhub.nginx.configMap }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jarvice-hyperhub-nginx-config
+data:
+  jarvice-hyperhub-nginx.conf: |-
+{{ .Files.Get "files/jarvice-hyperhub-nginx.conf" | indent 4 }}
+---
+{{- end }}
+{{- if empty .Values.jarvice_hyperhub.conf.configMap }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jarvice-hyperhub-config
+data:
+  jarvice-hyperhub-config.json: |-
+{{ .Files.Get "files/jarvice-hyperhub-config.json" | indent 4 }}
+---
+{{- end }}
+{{- end }}
+{{- end }}
