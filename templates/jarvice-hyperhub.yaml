@@ -120,7 +120,7 @@ spec:
         - mountPath: /usr/share/nginx/html/config/config.json
           name: hyperhub-config
           readOnly: true
-          subPath: config.json        
+          subPath: config.json
         resources:
 {{ toYaml .Values.jarvice_hyperhub.resources | indent 10 }}
 ---
