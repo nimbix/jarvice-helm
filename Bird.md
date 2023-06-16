@@ -12,7 +12,7 @@ Identity and Access Management provided by [Keycloak](https://keycloak.org).
     - [Configure Keycloak SMTP server](#configure-keycloak-smtp-server)
     - [Keycloakx sample helm values](#keycloakx-sample-helm-values)
     - [Backup Keycloak database](#backup-keycloak-database)
-    - [Use external Keycloak deployment](#use-external-keycloak-deployment)    
+    - [Use external Keycloak deployment](#use-external-keycloak-deployment)
 * [JARVICE BIRD configuration](#jarvice-bird-configuration)
     - [Environment variables](#environment-variables)
     - [BIRD sample helm values](#bird-sample-helm-values)
@@ -73,7 +73,7 @@ keycloakx:
     JARVICE_KEYCLOAK_ADMIN: jarvice
     JARVICE_KEYCLOAK_ADMIN_PASSWD: Pass1234
     JARVICE_REALM_ADMIN: nimbix
-    JARVICE_REALM_ADMIN_PASSWD: abc1234!  
+    JARVICE_REALM_ADMIN_PASSWD: abc1234!
   smtpServer: # smtp server settings for keycloak realm
     KEYCLOAK_SMTP_FROM:      donotreply@example.com
     KEYCLOAK_SMTP_HOST:      smtp.example.com
@@ -93,7 +93,7 @@ keycloakx:
         # Paths for the host
         paths:
           - path: /
-            pathType: Prefix        
+            pathType: Prefix
     # TLS configuration
     tls:
       - hosts:
@@ -148,7 +148,7 @@ jarvice_bird:
 
 ## Migration from MC portal
 
-Existing JARVICE users will need to be imported into Keycloak when migrating from the MC portal. 
+Existing JARVICE users will need to be imported into Keycloak when migrating from the MC portal.
 
 ### Standard users
 
