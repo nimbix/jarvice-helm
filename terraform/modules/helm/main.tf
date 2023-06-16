@@ -116,7 +116,7 @@ resource "helm_release" "traefik" {
 }
 
 resource "helm_release" "namespace" {
-    count = 1
+    count =  fileexists(local.jarvice_user_cacert) || fileexists(local.jarvice_user_java_cacert) ? 1 : 0
 
     name = var.jarvice["namespace"]
     repository = "https://ameijer.github.io/k8s-as-helm"
