@@ -41,6 +41,19 @@ Environment|Value|Description/Notes
 `JARVICE_SLURM_OVERLAY_SIZE`|integer|Overlay size of running singularity images
 `JARVICE_SINGULARITY_VERBOSE`|boolean|Verbosity flag of singularity jobs execution
 
+### Singularity builds and setuid
+
+By default, singularity ships setuid flag, allowing usage of overlayfs for standard users.
+However, if singularity was built without setuid feature, overlayfs is no more available.
+
+The slurm scheduler provides a degraded mode for such singularity builds, using writable-tmpfs feature instead of overlayfs. Be aware that not all applications of HyperHub will be compatible with this mode.
+
+To enable such feature:
+
+* `JARVICE_SLURM_OVERLAY_SIZE` **must** be set to `0`
+* singularity version **must** be at least 3.11.3
+* `sessiondir max size` in singularity.conf file must be set to at least `640`
+
 #### Example Helm Values
 
 ##### Upstream

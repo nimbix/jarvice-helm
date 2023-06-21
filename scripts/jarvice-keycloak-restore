@@ -1,0 +1,63 @@
+#!/bin/bash
+
+namespace=jarvice-system
+file=${namespace}_keycloak.sql.gz
+
+function usage {
+    cat <<EOF
+Usage:
+    $0 [options]
+
+Options:
+    --namespace <kube_namespace>    Kubernetes namespace of JARVICE deployment
+                                    (Default: $namespace)
+    --file <sql_backup_file>        Backup file to restore from (gzipped)
+                                    (Default: $file)
+
+Example:
+    $0 --namespace jarvice-system --file $file
+EOF
+}
+
+KUBECTL=$(type -p kubectl)
+if [ -z "$KUBECTL" ]; then
+    cat <<EOF
+Could not find 'kubectl' in PATH.  It may not be installed.
+Run 'install-kubectl' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        --help)
+            usage
+            exit 0
+            ;;
+        --namespace)
+            namespace=$2
+            shift; shift
+            ;;
+        --file)
+            file=$2
+            shift; shift
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+pod=$($KUBECTL -n $namespace get pods \
+        -l component=jarvice-dal \
+        --field-selector=status.phase=Running \
+        -o jsonpath={.items[0].metadata.name})
+[ -z "$pod" ] && echo "* Could not find jarvice-dal pod in $namespace namespace...Exiting..." && exit 1
+cmd='mysql '
+cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
+cmd+=' --host="$JARVICE_SITE_DBHOST" keycloak'
+echo "* Restoring keycloak database to $namespace namespace from $file..."
+$KUBECTL -n $namespace exec --stdin $pod -- bash -c "$cmd" <<<"$(zcat $file)"
+echo; echo "* Successfully restored keycloak database to $namespace namespace from $file..."
+

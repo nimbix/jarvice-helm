@@ -146,11 +146,25 @@ When creating machines, please consider the following available parameters:
 * **Ram** will determine the amount of ram memory requested per node. Note that if `slurm.conf` do not configure `RealMemory` per node, value should be set to `0` to prevent errors at submission.
 * **Gpus** will determine the amount of GPU requested per node.
 
-It is also possible to restrict machine to a dedicated Slurm partition. To do so, add devices property of machine profile (see **Devices** section above), and add to the list `partition=all` for example to set partition to `all`, or `partition=Intel_32c_128Gb_GPU` for a specific partition, etc.
+It is also possible to restrict machine to a dedicated Slurm partition. To do so, add devices property of machine profile (see **Devices** section above), and add to the list `partition=all` for example to set partition to `all`, or `partition=Intel_32c_128Gb_GPU` for a specific partition, etc. Note that devices parameters are comma separated.
 
 Machines can also be shared between jobs. To do so, simply add to devices list the `exclusive=False` property (comma separated). Note that by default, exclusive is assumed `True`. Note also that sharing enabling still requires that local Slurm administrator allowed it.
 
+If needed, it is also possible to pass specific parameters to sbatch call (qos, account, etc) using the `sbatch_` prefix as device parameter. For example, to set qos as BIG for this machine, add in the comma separated devices list `sbatch_qos=BIG` which will result in `sbatch --qos=BIG ...` at sbatch call.
+
 **IMPORTANT NOTE**: even if `exclusive=False` is used in the machine definition, a job that runs interactively (e.g. desktop, webshell, or other web service) will override this and request exclusive node access instead.  This is for security reasons due to Singularity's use of the host's network namespace.  Additionally, jobs that request GPUs will force node exclusivity as well.  GPU-level resource management for multiple containers is not currently implemented.
+
+#### Overlayfs size
+
+While default overlayfs image size is set by `JARVICE_SLURM_OVERLAY_SIZE` global variable, it is possible to define overlayfs size per machine, by setting `overlay=XXX` in machine devices comma separated parameters, with `XXX` the overlay size in mb. This parameter will precedence the global variable, and allow fine grained machine definition.
+
+Note that if set to `0`, like with `JARVICE_SLURM_OVERLAY_SIZE` variable, scheduler will attempt to use writable-tmpfs singularity feature instead of overlayfs. This degraded mode allow some applications to run when singularity binary is not shipped with setuid feature.
+
+#### Custom sbatch environment
+
+On some system, it might be needed to load a specific environment for Slurm job's execution (a good example would be to load singularity via an Lmod module).
+
+It is possible to load an environment during job, before any action (even before singularity execution), by adding a specific file to be sourced (must be source-able via "source" bash command) at job beginning. This file must be called `.jarvice_custom_env` and be placed inside `JARVICE_SLURM_SCRATCH_DIR` (which by default is the nimbix user's $HOME folder).
 
 #### 3D-accelerated visualization using EGL
 
