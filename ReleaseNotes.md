@@ -126,6 +126,17 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202306211440
+
+* Next-generation user interface portal generally available but disabled by default; see [BIRD portal](Bird.md) for details on enabling and configuring.
+* (7251) Optional support for existing Kubernetes secret for SSH user name/private key combination when configuring Slurm schedulers; see `jarvice_slurm_scheduler.schedulers` section in [values.yaml](values.yaml) for details.
+* (7270) Added documentation for new Slurm downstream scheduler features; see [Slurm cluster nodes](Configuration.md#slurm-cluster-nodes) in *JARVICE System Configuration Notes* for details.
+* (7297) Added support for ed25519 SSH keys for user private key when using Slurm scheduler; this format is detected automatically based on the private key's value.
+* (7302) (7303) (7304) Future data model and scheduling support for self-service tenant admin job queue management.
+* (7350) Improved cleanup after image conversion errors with Singularity for Slurm downstream clusters.
+* (7355) Fixed bugs applying settings *ConfigMap* to portal.
+* (7358) Support for unprivileged Singularity binaries which cannot use the overlay functionality; note that this may result in compatibility issues with certain applications; see [Singularity builds and setuid](SlurmScheduler.md#singularity-builds-and-setuid) for details.
+
 ## 3.21.9-1.202305101453 *(Next-generation UI portal TECH PREVIEW)*
 
 * (JAR-6818) Sign email addresses in new user invite URLs for additional security.
