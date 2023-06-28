@@ -126,6 +126,11 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202306281533
+
+* (JAR-7484) Fixed problem with `ldconfig` failures when using `nvidia-container-cli` with GPU-enabled jobs.
+* (JAR-7488) Removed reporting of privileged public apps as well as app container addresses when using unauthenticated `/jarvice/apps` endpoint of `jarvice-api`.
+
 ## 3.21.9-1.202306211440
 
 * Next-generation user interface portal generally available but disabled by default; see [BIRD portal](Bird.md) for details on enabling and configuring.
