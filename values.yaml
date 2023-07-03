@@ -992,6 +992,8 @@ jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   nodeSelector: # '{"node-role.jarvice.io/jarvice-api": "true"}'
   env:
     JARVICE_API_POOL_SIZE: 4
+    JARVICE_API_TIMEOUT: 1000
+    JARVICE_API_MAX_CNCR: 16
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
 
