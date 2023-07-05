@@ -126,6 +126,36 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202307051453
+
+* (JAR-5754) Added `jarvice.JARVICE_API_TIMEOUT` and `jarvice.JARVICE_API_MAX_CNCR` to [values.yaml](values.yaml).
+* (JAR-6821) Return the JARVICE deployment version tag in `/jarvice/ready` endpoint of `jarvice-api`
+* (JAR-6822) Return the JARVICE deployment version tag in `/ready` endpoint of all control plane components served via public Ingress (e.g. downstream scheduler).
+* (JAR-7149) Rendering issue - dummy scrollbar.
+* (JAR-7189) Fixed bug where license manager configuration couldn't be deleted if it would've left the entire configuration empty.
+* (JAR-7305) Expose tenant priority in job details for admins.
+* (JAR-7306) Allow sort by tenant priority in team jobs queue view.
+* (JAR-7307) Allow team admins to change job priority.
+* (JAR-7309) Update Account->Team Restrictions column logic.
+* (JAR-7357) Improved cleanup of Singularity overlay images on Slurm clusters.
+* (JAR-7367) Fixed bug sourcing custom environment on Slurm clusters.
+* (JAR-7420) Account/Team Summary: "More" button on active jobs should redirect to Dasboard/Team Jobs.
+* (JAR-7426) Don't show "Invalid Command" banner on apps whose commands cant be run.
+* (JAR-7436) Regular team member does not have Account->Summary when Allowed by Team Admin.
+* (JAR-7443) Demoting a team admin does not remove Saml admin privilege.
+* (JAR-7451) Fixed table filter behaviour.
+* (JAR-7478) Add steps to add keycloak cert to bird UI.
+* (JAR-7493) Admin/Users Show only payers not filtered after refresh.
+* (JAR-7494) Admin/Users Vaults in dark mode.
+* (JAR-7495) Recent apps -tooltip position.
+* (JAR-7498) Team jobs - if two users run jobs view is empty.
+* (JAR-7502) Fix issue with SAML config parsing - allowing Keycloak to handle the configuration.
+* (JAR-7506) Fixed missing scratch directories in writable tmpfs for Singularity without setuid privileges on Slurm clusters.
+* (JAR-7507) Fixed missing non-RSA key support in SSH proxy for remote visualization in Slurm clusters.
+* (JAR-7510) Fixed Administrator apps detail showing interpolated AppDef.
+* (JAR-7518) Increase visibility of Zone selector.
+* (JAR-7524) Pagination change Default settings.
+
 ## 3.21.9-1.202306281533
 
 * (JAR-7484) Fixed problem with `ldconfig` failures when using `nvidia-container-cli` with GPU-enabled jobs.
