@@ -358,7 +358,7 @@ gkev2 = {  # Provision GKE infrastructure/clusters and deploy JARVICE
 
         meta = {
             cluster_name = "tf-jarvice"
-            kubernetes_version = "1.21"
+            kubernetes_version = "1.24"
 
             # Sync ingress hosts to zones/domains managed w/ Google Cloud DNS
             #dns_manage_records = "true"
@@ -532,23 +532,34 @@ gkev2 = {  # Provision GKE infrastructure/clusters and deploy JARVICE
       #user: # user to ssh into slurm headnode (e.g. nimbix)
       #pkey: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
 
-keycloak:
+jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: false
-  create_realm: false
+  conf:
+    configMap: # jarvice-bird-config
+  nginx:
+    configMap: # jarvice-bird-nginx-config
+  preset:
+    configMap: # jarvice-bird-user-preset
   env:
-    JARVICE_REALM_ADMIN: nimbix # jarvice realm admin username
-    JARVICE_REALM_ADMIN_PASSWD: abc1234! # jarvice realm admin password
-    JARVICE_KEYCLOAK_ADMIN: jarvice # keycloak master realm username
-    JARVICE_KEYCLOAK_ADMIN_PASSWD: Pass1234 # keycloak master realm password
-  extraEnv: |
-    - name: KEYCLOAK_USER
-      value: "jarvice"
-    - name: KEYCLOAK_PASSWORD
-      value: "Pass1234"
-    - name: PROXY_ADDRESS_FORWARDING
-      value: "true"
+    KEYCLOAK_URL: # keycloak.my-domain.com/auth
+    JARVICE_KEYCLOAK_ADMIN_USER: nimbix
+    JARVICE_KEYCLOAK_ADMIN_PASS: Pass1234
+  ingressHost: # jarvice-bird.my-domain.com
+  ingressPath: "/"  # Valid values are "/" (default) or "/bird"
+
+keycloakx:
+  enabled: false
+  create_realm: true
+  smtpServer:
+    KEYCLOAK_SMTP_FROM:      # donotreply@example.com
+    KEYCLOAK_SMTP_HOST:      # smtp.example.com
+    KEYCLOAK_SMTP_PORT:      # 587
+    KEYCLOAK_SMTP_START_TLS: # true
+    KEYCLOAK_SMTP_AUTH:      # true
+    KEYCLOAK_SMTP_USER:      # <user>@smtp.example.com
+    KEYCLOAK_SMTP_PASSWORD:  # smtp password
   ingress:
-    enabled: true
+    enabled: false
     annotations:
       cert-manager.io/issuer: # letsencrypt-staging
     ingressClassName: traefik
@@ -575,7 +586,7 @@ EOF
 
         meta = {
             cluster_name = "tf-jarvice-downstream"
-            kubernetes_version = "1.21"
+            kubernetes_version = "1.24"
 
             # Sync ingress hosts to zones/domains managed w/ Google Cloud DNS
             #dns_manage_records = "true"
@@ -745,7 +756,7 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
 
         meta = {
             cluster_name = "tf-jarvice"
-            kubernetes_version = "1.21"
+            kubernetes_version = "1.24"
             #arch = "arm64"  # Uncomment to deploy an arm64 cluster
 
             # Sync ingress hosts to zones/domains managed w/ AWS Route53 DNS
@@ -918,6 +929,48 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
     #sshConf:
       #user: # user to ssh into slurm headnode (e.g. nimbix)
       #pkey: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
+
+jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  enabled: false
+  conf:
+    configMap: # jarvice-bird-config
+  nginx:
+    configMap: # jarvice-bird-nginx-config
+  preset:
+    configMap: # jarvice-bird-user-preset
+  env:
+    KEYCLOAK_URL: # keycloak.my-domain.com/auth
+    JARVICE_KEYCLOAK_ADMIN_USER: nimbix
+    JARVICE_KEYCLOAK_ADMIN_PASS: Pass1234
+  ingressHost: # jarvice-bird.my-domain.com
+  ingressPath: "/"  # Valid values are "/" (default) or "/bird"
+
+keycloakx:
+  enabled: false
+  create_realm: true
+  smtpServer:
+    KEYCLOAK_SMTP_FROM:      # donotreply@example.com
+    KEYCLOAK_SMTP_HOST:      # smtp.example.com
+    KEYCLOAK_SMTP_PORT:      # 587
+    KEYCLOAK_SMTP_START_TLS: # true
+    KEYCLOAK_SMTP_AUTH:      # true
+    KEYCLOAK_SMTP_USER:      # <user>@smtp.example.com
+    KEYCLOAK_SMTP_PASSWORD:  # smtp password
+  ingress:
+    enabled: false
+    annotations:
+      cert-manager.io/issuer: # letsencrypt-staging
+    ingressClassName: traefik
+    rules:
+    - host: # ingress host
+      paths:
+      - path: /
+        pathType: Prefix
+    tls:
+    - hosts:
+      - # ingress host
+      secretName: # ingress host (tls-<ingress-host>)
+
 EOF
             }
         }
@@ -932,7 +985,7 @@ EOF
 
         meta = {
             cluster_name = "tf-jarvice-downstream"
-            kubernetes_version = "1.21"
+            kubernetes_version = "1.24"
             #arch = "arm64"  # Uncomment to deploy an arm64 cluster
 
             # Sync ingress hosts to zones/domains managed w/ AWS Route53 DNS
@@ -1088,7 +1141,7 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
 
         meta = {
             cluster_name = "tf-jarvice"
-            kubernetes_version = "1.21"
+            kubernetes_version = "1.24"
 
             # Sync ingress hosts to zones/domains managed w/ Azure DNS
             #dns_manage_records = "true"
@@ -1234,6 +1287,47 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
     #sshConf:
       #user: # user to ssh into slurm headnode (e.g. nimbix)
       #pkey: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
+
+jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
+  enabled: false
+  conf:
+    configMap: # jarvice-bird-config
+  nginx:
+    configMap: # jarvice-bird-nginx-config
+  preset:
+    configMap: # jarvice-bird-user-preset
+  env:
+    KEYCLOAK_URL: # keycloak.my-domain.com/auth
+    JARVICE_KEYCLOAK_ADMIN_USER: nimbix
+    JARVICE_KEYCLOAK_ADMIN_PASS: Pass1234
+  ingressHost: # jarvice-bird.my-domain.com
+  ingressPath: "/"  # Valid values are "/" (default) or "/bird"
+
+keycloakx:
+  enabled: false
+  create_realm: true
+  smtpServer:
+    KEYCLOAK_SMTP_FROM:      # donotreply@example.com
+    KEYCLOAK_SMTP_HOST:      # smtp.example.com
+    KEYCLOAK_SMTP_PORT:      # 587
+    KEYCLOAK_SMTP_START_TLS: # true
+    KEYCLOAK_SMTP_AUTH:      # true
+    KEYCLOAK_SMTP_USER:      # <user>@smtp.example.com
+    KEYCLOAK_SMTP_PASSWORD:  # smtp password
+  ingress:
+    enabled: false
+    annotations:
+      cert-manager.io/issuer: # letsencrypt-staging
+    ingressClassName: traefik
+    rules:
+    - host: # ingress host
+      paths:
+      - path: /
+        pathType: Prefix
+    tls:
+    - hosts:
+      - # ingress host
+      secretName: # ingress host (tls-<ingress-host>)
 EOF
             }
         }
@@ -1246,7 +1340,7 @@ EOF
 
         meta = {
             cluster_name = "tf-jarvice-downstream"
-            kubernetes_version = "1.21"
+            kubernetes_version = "1.24"
 
             # Sync ingress hosts to zones/domains managed w/ Azure DNS
             #dns_manage_records = "true"
