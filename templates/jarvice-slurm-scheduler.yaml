@@ -297,28 +297,38 @@ spec:
 {{- end }}
 {{- end }}
 {{- if (not (empty .env.JARVICE_SLURM_HTTPS_PROXY)) }}
+          - name: JARVICE_SLURM_HTTPS_PROXY
             value: "{{ .env.JARVICE_SLURM_HTTPS_PROXY }}"
 {{- else }}
+          - name: JARVICE_SLURM_HTTPS_PROXY
             value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_HTTPS_PROXY }}"
 {{- end }}
 {{- if (not (empty .env.JARVICE_SLURM_HTTP_PROXY)) }}
+          - name: JARVICE_SLURM_HTTP_PROXY
             value: "{{ .env.JARVICE_SLURM_HTTP_PROXY }}"
 {{- else }}
+          - name: JARVICE_SLURM_HTTP_PROXY
             value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_HTTP_PROXY }}"
 {{- end }}
 {{- if (not (empty .env.JARVICE_SLURM_NO_PROXY)) }}
+          - name: JARVICE_SLURM_NO_PROXY
             value: "{{ .env.JARVICE_SLURM_NO_PROXY }}"
 {{- else }}
+          - name: JARVICE_SLURM_NO_PROXY
             value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_NO_PROXY }}"
 {{- end }}
 {{- if (not (empty .env.JARVICE_SINGULARITY_VERBOSE)) }}
+          - name: JARVICE_SINGULARITY_VERBOSE
             value: "{{ .env.JARVICE_SINGULARITY_VERBOSE }}"
 {{- else }}
+          - name: JARVICE_SINGULARITY_VERBOSE
             value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SINGULARITY_VERBOSE }}"
 {{- end }}
 {{- if (not (empty .env.JARVICE_SINGULARITY_TMPDIR)) }}
+          - name: JARVICE_SINGULARITY_TMPDIR
             value: "{{ .env.JARVICE_SINGULARITY_TMPDIR }}"
 {{- else }}
+          - name: JARVICE_SINGULARITY_TMPDIR
             value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SINGULARITY_TMPDIR }}"
 {{- end }}
 {{- if (not (empty $.Values.jarvice.cacert.user.configMap)) }}
