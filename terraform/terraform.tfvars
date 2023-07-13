@@ -794,9 +794,8 @@ eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
 
                     #Define custom ami_id for compute nodes. Leave commented out to pull in newest version of the AMI which will recreate pool.
                     #ami_id
-
-                    #Indicate whether the node pool should have a GPU capable AWS ami.
-                    #gpu = "true"
+                    #Indicate whether the node pool should have a GPU capable AWS ami by setting the number of GPU's present.
+                    #gpu = "1"
                 }
             },
             #jxecompute01 = {
