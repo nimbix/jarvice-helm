@@ -673,6 +673,36 @@ spec:
   - http:
       paths:
 {{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
+{{- if (ne "/" .Values.jarvice_bird.ingressPath) }}
+      - backend:
+          service:
+            name: jarvice-bird
+            port:
+              name: http
+        pathType: Prefix
+        path: "{{ .Values.jarvice_bird.ingressPath }}"
+      - backend:
+          service:
+            name: jarvice-bird
+            port:
+              name: http-portal
+        pathType: Prefix
+        path: "{{ .Values.jarvice_bird.ingressPath }}/portal"
+      - backend:
+          service:
+            name: jarvice-bird
+            port:
+              name: http-portal
+        pathType: Prefix
+        path: "{{ .Values.jarvice_bird.ingressPath }}/static"
+      - backend:
+          service:
+            name: jarvice-bird
+            port:
+              name: http-portal
+        pathType: Prefix
+        path: "{{ .Values.jarvice_bird.ingressPath }}/index.html"
+{{- else }}
       - backend:
           service:
             name: jarvice-bird
@@ -701,6 +731,25 @@ spec:
               name: http-portal
         pathType: Prefix
         path: /index.html
+{{- end }}
+{{- else }}
+{{- if (ne "/" .Values.jarvice_bird.ingressPath) }}
+      - backend:
+          serviceName: jarvice-bird
+          servicePort: http
+        path: "{{ .Values.jarvice_bird.ingressPath }}"
+      - backend:
+          serviceName: jarvice-bird
+          servicePort: http-portal
+        path: "{{ .Values.jarvice_bird.ingressPath }}/portal"
+      - backend:
+          serviceName: jarvice-bird
+          servicePort: http-portal
+        path: "{{ .Values.jarvice_bird.ingressPath }}/static"
+      - backend:
+          serviceName: jarvice-bird
+          servicePort: http-portal
+        path: "{{ .Values.jarvice_bird.ingressPath }}/index.html"
 {{- else }}
       - backend:
           serviceName: jarvice-bird
@@ -718,6 +767,7 @@ spec:
           serviceName: jarvice-bird
           servicePort: http-portal
         path: /index.html
+{{- end }}
 {{- end }}
 {{- if ne "-" .Values.jarvice_bird.ingressHost }}
     host: '{{- .Values.jarvice_bird.ingressHost -}}'

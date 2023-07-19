@@ -549,7 +549,7 @@ jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 
 keycloakx:
   enabled: false
-  create_realm: true
+  create_realm: false
   smtpServer:
     KEYCLOAK_SMTP_FROM:      # donotreply@example.com
     KEYCLOAK_SMTP_HOST:      # smtp.example.com
@@ -947,7 +947,7 @@ jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 
 keycloakx:
   enabled: false
-  create_realm: true
+  create_realm: false
   smtpServer:
     KEYCLOAK_SMTP_FROM:      # donotreply@example.com
     KEYCLOAK_SMTP_HOST:      # smtp.example.com
@@ -1305,7 +1305,7 @@ jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 
 keycloakx:
   enabled: false
-  create_realm: true
+  create_realm: false
   smtpServer:
     KEYCLOAK_SMTP_FROM:      # donotreply@example.com
     KEYCLOAK_SMTP_HOST:      # smtp.example.com
