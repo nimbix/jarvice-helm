@@ -90,7 +90,7 @@ spec:
           - name: KEYCLOAK_SMTP_PASSWORD
             value: "{{ .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_PASSWORD }}"
           {{- end }}
-          image: "alpine/k8s:1.21.13"
+          image: "{{ .Values.keycloakx.helm_hook.image }}"
           imagePullPolicy: "IfNotPresent"
           command:
           - /bin/sh
