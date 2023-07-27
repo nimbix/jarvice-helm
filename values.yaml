@@ -1334,6 +1334,8 @@ jarvice_hyperhub: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 keycloakx:
   enabled: false
   create_realm: false
+  helm_hook:
+    image: us-docker.pkg.dev/jarvice/images/alpine-k8s:1.21.13
   login:
     KEYCLOAK_RESET_PASSWORD_ALLOWED: true
     KEYCLOAK_REMEMBER_ME: true
