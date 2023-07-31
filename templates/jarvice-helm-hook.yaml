@@ -188,7 +188,7 @@ spec:
               [ ! -z "$JARVICE_ROOT_USER_PASSWD" ] && curl -s -H "Authorization: Bearer $token" -H "Content-Type: application/json" -d "$admin_role" "${KEYCLOAK_URL}/admin/realms/jarvice/users/$user/role-mappings/clients/${jxe_client_id}";
       restartPolicy: OnFailure
 {{- if (not (empty .Values.tolerations)) }}
-      tolerations: {{ .Values.jarvice_api.tolerations }}
+      tolerations: {{ .Values.tolerations }}
 {{- end }}
 {{- end }}
 {{- end }}
