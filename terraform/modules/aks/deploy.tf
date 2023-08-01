@@ -169,6 +169,15 @@ cainjector:
     - key: node-role.kubernetes.io/jarvice-system
       effect: NoSchedule
       operator: Exists
+
+startupapicheck:
+  tolerations:
+    - key: node-role.jarvice.io/jarvice-system
+      effect: NoSchedule
+      operator: Exists
+    - key: node-role.kubernetes.io/jarvice-system
+      effect: NoSchedule
+      operator: Exists
 EOF
         },
         "traefik" = {
