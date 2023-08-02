@@ -37,9 +37,9 @@ spec:
 {{- end }}
           env:
           - name: JARVICE_BIRD_URL
-            value: {{ .Values.jarvice_bird.ingressHost }}
+            value: "{{ .Values.jarvice_bird.ingressHost }}{{ .Values.jarvice_bird.ingressPath }}"
           - name: JARVICE_PORTAL_URL
-            value: {{ .Values.jarvice_mc_portal.ingressHost }}
+            value: "{{ .Values.jarvice_mc_portal.ingressHost }}{{ .Values.jarvice_bird.ingressPath }}"
           - name: JARVICE_REALM_ADMIN
             value: {{ .Values.keycloakx.env.JARVICE_REALM_ADMIN }}
           - name: JARVICE_REALM_ADMIN_PASSWD
@@ -90,7 +90,7 @@ spec:
           - name: KEYCLOAK_SMTP_PASSWORD
             value: "{{ .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_PASSWORD }}"
           {{- end }}
-          image: "alpine/k8s:1.21.13"
+          image: "{{ .Values.keycloakx.helm_hook.image }}"
           imagePullPolicy: "IfNotPresent"
           command:
           - /bin/sh
@@ -188,7 +188,7 @@ spec:
               [ ! -z "$JARVICE_ROOT_USER_PASSWD" ] && curl -s -H "Authorization: Bearer $token" -H "Content-Type: application/json" -d "$admin_role" "${KEYCLOAK_URL}/admin/realms/jarvice/users/$user/role-mappings/clients/${jxe_client_id}";
       restartPolicy: OnFailure
 {{- if (not (empty .Values.tolerations)) }}
-      tolerations: {{ .Values.jarvice_api.tolerations }}
+      tolerations: {{ .Values.tolerations }}
 {{- end }}
 {{- end }}
 {{- end }}
