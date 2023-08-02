@@ -126,6 +126,30 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202308021521
+
+* (JAR-7368) Helm does not export singularity verbose.
+* (JAR-7407) Add Theme Editor.
+* (JAR-7427) SAML users are kept logged in for the entire duration of browser session (or tab).
+* (JAR-7442) Fix issue with restricted Team member still having access to other apps unless they refresh page.
+* (JAR-7496) Limit dashboards menu width.
+* (JAR-7516) Fix Admin Manage Apps Error handling when save fails.
+* (JAR-7517) Admin Users: Change 'Login' to 'Username' and 'User name' to 'Full Name'
+* (JAR-7521) Admin Users UI: Team members should inherit fields from payer.
+* (JAR-7522) API: Admin->Metadata shows Keycloak auth error.
+* (JAR-7525) Fixed timeout error shown for user trying to relogin on a timedout login screen.
+* (JAR-7542) Compute/PTC - Fix filter by category logic.
+* (JAR-7547) Allow ungroup view on Team Jobs.
+* (JAR-7550) Updated terraform tfvars for BIRD UI.
+* (JAR-7551) On Team Jobs, allow all jobs to be visible on the page.
+* (JAR-7580) Add BIRD UI containers to jarvice-pull-system-images.
+* (JAR-7676) Divide long menu into categories using divider.
+* (JAR-7677) Add 9-dot icon on topbar.
+* (JAR-7701) Check and merge OpenAPI documentation for Jarvice API.
+* (JAR-7726) Fix License Included not displayed PTC.
+* (JAR-7727) Admin/Billing - Optional filters error.
+* (JAR-7735) Fix typo for helm hook job.
+
 ## 3.21.9-1.202307051453
 
 * (JAR-5754) Added `jarvice.JARVICE_API_TIMEOUT` and `jarvice.JARVICE_API_MAX_CNCR` to [values.yaml](values.yaml).
