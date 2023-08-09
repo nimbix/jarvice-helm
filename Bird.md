@@ -16,6 +16,9 @@ Identity and Access Management provided by [Keycloak](https://keycloak.org).
 * [JARVICE BIRD configuration](#jarvice-bird-configuration)
     - [Environment variables](#environment-variables)
     - [BIRD sample helm values](#bird-sample-helm-values)
+* [Add Keycloak certificate to BIRD portal (Optional)](#add-keycloak-certificate-to-bird-portal-optional)
+    - [Helm deployments](#helm-deployments)
+    - [Terraform deployments](#terraform-deployments)
 * [Migration from mc portal](#migration-from-mc-protal)
     - [Standard users](#standard-users)
     - [LDAP/SAML configuration](#ldapsaml-configuration)
@@ -144,6 +147,69 @@ jarvice_bird:
     KEYCLOAK_URL: https://keycloak.example.com/auth
     JARVICE_KEYCLOAK_ADMIN_USER: nimbix
     JARVICE_KEYCLOAK_ADMIN_PASS: abc1234!
+```
+
+## Add Keycloak certificate to BIRD portal (Optional)
+
+Keycloak deployments that do not use public certificates will not be trusted by the BIRD portal. The certificate assigned to the Keycloak server will need to be added to the BIRD portal. `openssl` and `keytool` can be used to add certificates to the system-wide keystore.
+
+### Helm deployments
+
+```bash
+temp=$(mktemp -d)
+server="keycloak.example.com"
+debian="/etc/ssl/certs/java/cacerts"
+# redhat="/etc/pki/ca-trust/extracted/java/cacerts"
+JARVICE_SYSTEM_NAMESPACE="javice-system"
+cp ${debian} $temp/cacert
+openssl s_client -connect ${server}:443 -showcerts < /dev/null \
+    | openssl x509 -out ${temp}/keycloakcert
+keytool -import -trustcacerts -keystore ${temp}/cacerts -storepass changeit -file ${temp}/keycloakcert
+kubectl -n jarvice-system create configmap jarvice-java-cacert --from-file ${temp}/cacerts
+rm -rf ${temp}
+```
+
+Set `jarvice.cacert.java` helm value to `jarvice-java-cacert`.
+
+### Terraform deployments
+
+```bash
+temp=$(mktemp -d)
+terraform_dir="${HOME}/jarvice-helm/terraform"
+server="keycloak.example.com"
+debian="/etc/ssl/certs/java/cacerts"
+# redhat="/etc/pki/ca-trust/extracted/java/cacerts"
+JARVICE_SYSTEM_NAMESPACE="javice-system"
+cp ${debian} $temp/cacert
+openssl s_client -connect ${server}:443 -showcerts < /dev/null \
+    | openssl x509 -out ${temp}/keycloakcert
+keytool -import -trustcacerts -keystore ${temp}/cacerts -storepass changeit -file ${temp}/keycloakcert
+mv ${temp}/cacerts ${terraform_dir}
+rm -rf ${temp}
+```
+
+Set the clusters `user_java_cacert` value in `override.auto.tfvars`:
+
+```json
+gkev2 = {  # Provision GKE infrastructure/clusters and deploy JARVICE
+    gkev2_cluster_00 = {
+        enabled = true
+
+        helm = {
+            jarvice = {
+                # version = "3.0.0-1.XXXXXXXXXXXX"  # Override global version
+                namespace = "jarvice-system"
+
+                # global values_yaml take precedence over cluster
+                # values_file (values_file ignored if not found)
+                values_file = "override-tf.gke.<region>.<cluster_name>.yaml"  # "override-tf.gke.us-west1.tf-jarvice.yaml"
+                user_java_cacert = <terraform-dir>/cacerts # "${HOME}/jarvice-helm/terraform/cacerts"
+                values_yaml = <<EOF
+EOF
+            }
+        }
+    }
+}
 ```
 
 ## Migration from MC portal

@@ -155,6 +155,12 @@ If needed, it is also possible to pass specific parameters to sbatch call (qos, 
 
 **IMPORTANT NOTE**: even if `exclusive=False` is used in the machine definition, a job that runs interactively (e.g. desktop, webshell, or other web service) will override this and request exclusive node access instead.  This is for security reasons due to Singularity's use of the host's network namespace.  Additionally, jobs that request GPUs will force node exclusivity as well.  GPU-level resource management for multiple containers is not currently implemented.
 
+#### Overlayfs size
+
+While default overlayfs image size is set by `JARVICE_SLURM_OVERLAY_SIZE` global variable, it is possible to define overlayfs size per machine, by setting `overlay=XXX` in machine devices comma separated parameters, with `XXX` the overlay size in mb. This parameter will precedence the global variable, and allow fine grained machine definition.
+
+Note that if set to `0`, like with `JARVICE_SLURM_OVERLAY_SIZE` variable, scheduler will attempt to use writable-tmpfs singularity feature instead of overlayfs. This degraded mode allow some applications to run when singularity binary is not shipped with setuid feature.
+
 #### Custom sbatch environment
 
 On some system, it might be needed to load a specific environment for Slurm job's execution (a good example would be to load singularity via an Lmod module).
