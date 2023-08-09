@@ -37,7 +37,11 @@ spec:
 {{- end }}
           env:
           - name: JARVICE_BIRD_URL
+{{- if (not (eq "/" .Values.jarvice_bird.ingressPath)) }}
             value: "{{ .Values.jarvice_bird.ingressHost }}{{ .Values.jarvice_bird.ingressPath }}"
+{{- else }}
+            value: "{{ .Values.jarvice_bird.ingressHost }}"
+{{- end }}
           - name: JARVICE_PORTAL_URL
             value: "{{ .Values.jarvice_mc_portal.ingressHost }}{{ .Values.jarvice_bird.ingressPath }}"
           - name: JARVICE_REALM_ADMIN
