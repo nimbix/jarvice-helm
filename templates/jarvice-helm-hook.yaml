@@ -187,8 +187,8 @@ spec:
               [ ! -z "$JARVICE_ROOT_USER_PASSWD" ] && user=$(curl -s -H "Authorization: Bearer $token" "${KEYCLOAK_URL}/admin/realms/jarvice/users" | jq -r '.[] | select(.username=="root") | .id');
               [ ! -z "$JARVICE_ROOT_USER_PASSWD" ] && curl -s -H "Authorization: Bearer $token" -H "Content-Type: application/json" -d "$admin_role" "${KEYCLOAK_URL}/admin/realms/jarvice/users/$user/role-mappings/clients/${jxe_client_id}";
       restartPolicy: OnFailure
-{{- if (not (empty .Values.tolerations)) }}
-      tolerations: {{ .Values.tolerations }}
+{{- if (not (empty .Values.jarvice.tolerations)) }}
+      tolerations: {{ .Values.jarvice.tolerations }}
 {{- end }}
 {{- end }}
 {{- end }}
