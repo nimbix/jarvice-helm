@@ -5,6 +5,12 @@ metadata:
   name: {{ .Values.jarvice_db.persistence.storageClass }}
 reclaimPolicy: Delete
 provisioner: {{ .Values.jarvice_db.persistence.storageClassProvisioner }}
+{{- if (eq "ebs.csi.aws.com" .Values.jarvice_db.persistence.storageClassProvisioner) }}
+parameters:
+  type: gp2
+mountOptions:
+  - debug
+{{- end }}
 {{- if (eq "kubernetes.io/aws-ebs" .Values.jarvice_db.persistence.storageClassProvisioner) }}
 parameters:
   type: gp2
@@ -34,6 +40,12 @@ metadata:
   name: {{ .Values.jarvice.JARVICE_PVC_VAULT_STORAGECLASS }}
 reclaimPolicy: Delete
 provisioner: {{ .Values.jarvice.JARVICE_PVC_VAULT_STORAGECLASS_PROVISIONER }}
+{{- if (eq "ebs.csi.aws.com" .Values.jarvice_db.persistence.storageClassProvisioner) }}
+parameters:
+  type: gp2
+mountOptions:
+  - debug
+{{- end }}
 {{- if (eq "kubernetes.io/aws-ebs" .Values.jarvice.JARVICE_PVC_VAULT_STORAGECLASS_PROVISIONER) }}
 parameters:
   type: gp2
@@ -63,6 +75,12 @@ metadata:
   name: {{ .Values.jarvice_dockerbuild.persistence.storageClass }}
 reclaimPolicy: Delete
 provisioner: {{ .Values.jarvice_dockerbuild.persistence.storageClassProvisioner }}
+{{- if (eq "ebs.csi.aws.com" .Values.jarvice_db.persistence.storageClassProvisioner) }}
+parameters:
+  type: gp2
+mountOptions:
+  - debug
+{{- end }}
 {{- if (eq "kubernetes.io/aws-ebs" .Values.jarvice_dockerbuild.persistence.storageClassProvisioner) }}
 parameters:
   type: gp2

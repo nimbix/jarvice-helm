@@ -311,6 +311,68 @@ output "${key}_slurm" {
     value = module.${key}.slurm_info
 }
 %{ endfor }
+###################
+# EKS clusters v2 #
+###################
+%{ for key in keys(local.eksv2) }
+# EKS cluster configuration: ${key}
+provider "aws" {
+    alias = "${key}"
+
+    region  = local.eksv2["${key}"].location["region"]
+    access_key  = local.eksv2["${key}"].auth["access_key"]
+    secret_key  = local.eksv2["${key}"].auth["secret_key"]
+    ignore_tags {
+      key_prefixes = lookup(local.eksv2["${key}"].meta, "allow_cluster_join", "") == "true" ? ["kubernetes.io/"] : []
+    }
+}
+
+provider "kubernetes" {
+    alias = "${key}"
+
+    host = module.${key}.kube_config["host"]
+    cluster_ca_certificate = base64decode(module.${key}.kube_config["cluster_ca_certificate"])
+    client_certificate = base64decode(module.${key}.kube_config["client_certificate"])
+    client_key = base64decode(module.${key}.kube_config["client_key"])
+    token = module.${key}.kube_config["token"]
+}
+
+provider "helm" {
+    alias = "${key}"
+
+    kubernetes {
+        host = module.${key}.kube_config["host"]
+        cluster_ca_certificate = base64decode(module.${key}.kube_config["cluster_ca_certificate"])
+        client_certificate = base64decode(module.${key}.kube_config["client_certificate"])
+        client_key = base64decode(module.${key}.kube_config["client_key"])
+        token = module.${key}.kube_config["token"]
+    }
+}
+%{ endfor }
+
+%{ for key in keys(local.eksv2) }
+# EKS v2 cluster configuration: ${key}
+module "${key}" {
+    source = "./modules/eksv2"
+
+    cluster = local.eksv2["${key}"]
+    global = var.global
+
+    providers = {
+        aws = aws.${key}
+        kubernetes = kubernetes.${key}
+        helm = helm.${key}
+    }
+    depends_on = [local_file.clusters]
+}
+
+output "${key}" {
+    value = format("\n\nEKS v2 Cluster Configuration: %s\n%s\n", "${key}", module.${key}.cluster_info)
+}
+output "${key}_slurm" {
+    value = module.${key}.slurm_info
+}
+%{ endfor }
 ################
 # AKS clusters #
 ################
