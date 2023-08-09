@@ -742,11 +742,11 @@ EOF
 }
 
 
-###########################
-### Amazon EKS clusters ###
-###########################
-eks = {  # Provision EKS infrastructure/clusters and deploy JARVICE
-    eks_cluster_00 = {
+##############################
+### Amazon EKS v2 clusters ###
+##############################
+eksv2 = {  # Provision EKS infrastructure/clusters and deploy JARVICE
+    eksv2_cluster_00 = {
         enabled = false
 
         auth = {  # Optional, null values are replaced with aws CLI defaults
@@ -974,7 +974,7 @@ EOF
             }
         }
     },
-    eks_cluster_01 = {
+    eksv2_cluster_01 = {
         enabled = false
 
         auth = {  # Optional, null values are replaced with aws CLI defaults
