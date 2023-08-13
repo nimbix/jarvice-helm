@@ -2,6 +2,7 @@
 
 version_tag=
 load_balancer_ip=
+load_balancer_external_ip=
 node_port=
 replicas=3
 memory_request=1Gi
@@ -19,6 +20,7 @@ Options:
     --load-balancer-ip <ip_addr>    Static IP for ingress controller service*
     --node-port <node_port>         NodePort for ingress controller service*
                                     (Valid port range: 30000-32767)
+    -load-balancer-external-ip      External IP for ingress controller service*
     --replicas <replicas>           Number of pod replicas to run
                                     (Default: $replicas)
     --memory-request <memory>       Memory request for each pod
@@ -34,7 +36,7 @@ Options:
     --version-tag <tag>             Traefik version
                                     (Default: $version_tag)
 
-* One of --load-balancer-ip or --node-port is required
+* One of --load-balancer-ip, --load-balancer-external-ip, or --node-port is required
 
 Example deployment using LoadBalancer service:
     $0 --load-balancer-ip 10.20.0.10
@@ -72,6 +74,10 @@ while [ $# -gt 0 ]; do
             load_balancer_ip=$2
             shift; shift
             ;;
+	--load-balancer-external-ip)
+            load_balancer_external_ip=$2
+	    shift; shift
+	    ;;
         --node-port)
             node_port=$2
             shift; shift
@@ -111,8 +117,8 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-[ -z "$load_balancer_ip" -a -z "$node_port" ] && usage && exit 1
-[ -n "$load_balancer_ip" -a -n "$node_port" ] && usage && exit 1
+[ -z "$load_balancer_ip" -a -z "$node_port" -a -z "$load_balancer_external_ip" ] && usage && exit 1
+[ -n "$load_balancer_ip" -a -n "$node_port" -a -n "$load_balancer_external_ip" ] && usage && exit 1
 
 set -e
 
@@ -123,6 +129,8 @@ $KUBECTL create namespace $namespace 2>/dev/null || /bin/true
 echo
 if [ -n "$node_port" ]; then
     ip_args="--set service.type=NodePort --set ports.traefik.expose=true --set ports.traefik.nodePort=$node_port"
+elif [ -n "$load_balancer_external_ip" ]; then
+    ip_args="--set service.type=LoadBalancer --set service.spec.externalIPs[0]=$load_balancer_external_ip"
 else
     ip_args="--set service.type=LoadBalancer --set service.spec.loadBalancerIP=$load_balancer_ip"
 fi
