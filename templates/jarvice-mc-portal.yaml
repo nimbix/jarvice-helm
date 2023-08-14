@@ -466,28 +466,28 @@ spec:
   - http:
       paths:
 {{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
-{{- if (ne "/" .Values.jarvice_mc_portal.ingressPath) }}
+{{- if (eq "/portal" .Values.jarvice_mc_portal.ingressPath) }}
       - backend:
           service:
             name: jarvice-mc-portal
             port:
               name: http
         pathType: Prefix
-        path: "{{ .Values.jarvice_mc_portal.ingressPath }}"
+        path: /portal
       - backend:
           service:
             name: jarvice-mc-portal
             port:
               name: http
         pathType: Prefix
-        path: "{{ .Values.jarvice_mc_portal.ingressPath }}/static"
+        path: /static
       - backend:
           service:
             name: jarvice-mc-portal
             port:
               name: http
         pathType: Prefix
-        path: "{{ .Values.jarvice_mc_portal.ingressPath }}/index.html"
+        path: /index.html
 {{- else }}
       - backend:
           service:
@@ -498,19 +498,19 @@ spec:
         path: /
 {{- end }}
 {{- else }}
-{{- if (ne "/" .Values.jarvice_mc_portal.ingressPath) }}
+{{- if (eq "/portal" .Values.jarvice_mc_portal.ingressPath) }}
       - backend:
           serviceName: jarvice-mc-portal
           servicePort: http
-        path: "{{ .Values.jarvice_mc_portal.ingressPath }}"
+        path: /portal
       - backend:
           serviceName: jarvice-mc-portal
           servicePort: http
-        path: "{{ .Values.jarvice_mc_portal.ingressPath }}/static"
+        path: /static
       - backend:
           serviceName: jarvice-mc-portal
           servicePort: http
-        path: "{{ .Values.jarvice_mc_portal.ingressPath }}/index.html"
+        path: /index.html
 {{- else }}
       - backend:
           serviceName: jarvice-mc-portal
