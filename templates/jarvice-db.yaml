@@ -117,12 +117,12 @@ spec:
                 key: JARVICE_DBPASSWD
 {{- end }}
 {{- end }}
+        resources:
+{{ toYaml .Values.jarvice_db.resources | indent 10 }}
 {{- if .Values.jarvice_db.persistence.enabled }}
         volumeMounts:
         - mountPath: /var/lib/mysql
           name: db-data-vol
-        resources:
-{{ toYaml .Values.jarvice_db.resources | indent 10 }}
       volumes:
         - name: db-data-vol
           persistentVolumeClaim:
