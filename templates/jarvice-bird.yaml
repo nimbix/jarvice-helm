@@ -338,6 +338,8 @@ spec:
 {{- else if (not (empty .Values.jarvice_bird.ingressHost)) }}
           - name: JARVICE_BIRD_PORTAL_URL
             value: 'https://{{- .Values.jarvice_bird.ingressHost -}}{{- .Values.jarvice_bird.ingressPath -}}'
+{{- else }}
+{{- required "***** !!!!! JARVICE_BIRD_PORTAL_URL required. Please provide a value for jarvice_bird.env.JARVICE_BIRD_PORTAL_URL. !!!!! *****" .Values.jarvice_bird.env.JARVICE_BIRD_PORTAL_URL }}
 {{- end }}
           - name: REQUESTS_CA_BUNDLE
             value: "/etc/ssl/certs/ca-certificates.crt"
@@ -806,3 +808,4 @@ data:
 {{- end }}
 {{- end }}
 {{- end }}
+
