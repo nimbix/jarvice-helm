@@ -23,13 +23,30 @@ resource "helm_release" "aws_load_balancer_controller" {
     values = [var.charts["aws-load-balancer-controller"]["values"]]
 }
 
+resource "helm_release" "aws_ebs_csi_driver" {
+    count = contains(keys(var.charts), "aws-ebs-csi-driver") ? 1 : 0
+
+    name = "aws-ebs-csi-driver"
+    repository = "https://kubernetes-sigs.github.io/aws-ebs-csi-driver"
+    chart = "aws-ebs-csi-driver"
+    version = "2.21.0"
+    namespace = "kube-system"
+    reuse_values = false
+    reset_values = true
+    max_history = 12
+    render_subchart_notes = false
+    timeout = 600
+
+    values = [var.charts["aws-ebs-csi-driver"]["values"]]
+}
+
 resource "helm_release" "cluster_autoscaler" {
     count = contains(keys(var.charts), "cluster-autoscaler") ? 1 : 0
 
     name = "cluster-autoscaler"
     repository = "https://kubernetes.github.io/autoscaler"
     chart = "cluster-autoscaler"
-    version = "9.10.8"
+    version = "9.18.1"
     namespace = "kube-system"
     reuse_values = false
     reset_values = true
