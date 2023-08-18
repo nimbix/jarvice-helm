@@ -21,6 +21,11 @@ locals {
             key => var.eks[key] if var.eks[key].enabled == true
     }
 
+    eksv2 = {
+        for key in keys(var.eksv2):
+            key => var.eksv2[key] if var.eksv2[key].enabled == true
+    }
+
     aks = {
         for key in keys(var.aks):
             key => var.aks[key] if var.aks[key].enabled == true
