@@ -126,6 +126,70 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202307051453
+
+* (JAR-5754) Added `jarvice.JARVICE_API_TIMEOUT` and `jarvice.JARVICE_API_MAX_CNCR` to [values.yaml](values.yaml).
+* (JAR-6821) Return the JARVICE deployment version tag in `/jarvice/ready` endpoint of `jarvice-api`
+* (JAR-6822) Return the JARVICE deployment version tag in `/ready` endpoint of all control plane components served via public Ingress (e.g. downstream scheduler).
+* (JAR-7149) Rendering issue - dummy scrollbar.
+* (JAR-7189) Fixed bug where license manager configuration couldn't be deleted if it would've left the entire configuration empty.
+* (JAR-7305) Expose tenant priority in job details for admins.
+* (JAR-7306) Allow sort by tenant priority in team jobs queue view.
+* (JAR-7307) Allow team admins to change job priority.
+* (JAR-7309) Update Account->Team Restrictions column logic.
+* (JAR-7357) Improved cleanup of Singularity overlay images on Slurm clusters.
+* (JAR-7367) Fixed bug sourcing custom environment on Slurm clusters.
+* (JAR-7420) Account/Team Summary: "More" button on active jobs should redirect to Dasboard/Team Jobs.
+* (JAR-7426) Don't show "Invalid Command" banner on apps whose commands cant be run.
+* (JAR-7436) Regular team member does not have Account->Summary when Allowed by Team Admin.
+* (JAR-7443) Demoting a team admin does not remove Saml admin privilege.
+* (JAR-7451) Fixed table filter behaviour.
+* (JAR-7478) Add steps to add keycloak cert to bird UI.
+* (JAR-7493) Admin/Users Show only payers not filtered after refresh.
+* (JAR-7494) Admin/Users Vaults in dark mode.
+* (JAR-7495) Recent apps -tooltip position.
+* (JAR-7498) Team jobs - if two users run jobs view is empty.
+* (JAR-7502) Fix issue with SAML config parsing - allowing Keycloak to handle the configuration.
+* (JAR-7506) Fixed missing scratch directories in writable tmpfs for Singularity without setuid privileges on Slurm clusters.
+* (JAR-7507) Fixed missing non-RSA key support in SSH proxy for remote visualization in Slurm clusters.
+* (JAR-7510) Fixed Administrator apps detail showing interpolated AppDef.
+* (JAR-7518) Increase visibility of Zone selector.
+* (JAR-7524) Pagination change Default settings.
+
+## 3.21.9-1.202306281533
+
+* (JAR-7484) Fixed problem with `ldconfig` failures when using `nvidia-container-cli` with GPU-enabled jobs.
+* (JAR-7488) Removed reporting of privileged public apps as well as app container addresses when using unauthenticated `/jarvice/apps` endpoint of `jarvice-api`.
+
+## 3.21.9-1.202306211440
+
+* Next-generation user interface portal generally available but disabled by default; see [BIRD portal](Bird.md) for details on enabling and configuring.
+* (7251) Optional support for existing Kubernetes secret for SSH user name/private key combination when configuring Slurm schedulers; see `jarvice_slurm_scheduler.schedulers` section in [values.yaml](values.yaml) for details.
+* (7270) Added documentation for new Slurm downstream scheduler features; see [Slurm cluster nodes](Configuration.md#slurm-cluster-nodes) in *JARVICE System Configuration Notes* for details.
+* (7297) Added support for ed25519 SSH keys for user private key when using Slurm scheduler; this format is detected automatically based on the private key's value.
+* (7302) (7303) (7304) Future data model and scheduling support for self-service tenant admin job queue management.
+* (7350) Improved cleanup after image conversion errors with Singularity for Slurm downstream clusters.
+* (7355) Fixed bugs applying settings *ConfigMap* to portal.
+* (7358) Support for unprivileged Singularity binaries which cannot use the overlay functionality; note that this may result in compatibility issues with certain applications; see [Singularity builds and setuid](SlurmScheduler.md#singularity-builds-and-setuid) for details.
+
+## 3.21.9-1.202305101453 *(Next-generation UI portal TECH PREVIEW)*
+
+* (JAR-6818) Sign email addresses in new user invite URLs for additional security.
+* (JAR-6884) Preserve `${PATH}` in V2 app containers.
+* (JAR-6947) Preliminary support for Kubernetes 1.26 (experimental)
+* (JAR-7043) Slurm jobs fail sooner if errors occur during execution of script.
+* (JAR-7072) Initial support for next-generation ("BIRD") user interface portal; see the `jarvice-bird` section in [values.yaml](values.yaml) for details.
+* (JAR-7073) If enabled, new user invitations will be serviced automatically by new portal backend with functionally identical user experience and similar look and feel; new logins will be consistent on both portals unless passwords are later reset from any given portal.
+* (JAR-7116) Fixed bug with variable expansion in V2 apps.
+* (JAR-7150) Enable SFTP in V2 app containers requesting public IP addresses; note that only key authentication is supported for V2 apps, not password.
+* (JAR-7250) Additional `sbatch` parameters added for machine definitions, documentation forthcoming in a future release.
+* (JAR-7258) Support `walltime` limit parameter in job submission when using Slurm clusters.
+* (JAR-7259) Support for optional custom environment script in JARVICE-submitted Slurm jobs, documentation forthcoming in a future release.
+
+## 3.21.9-1.202304121617
+
+* (JAR-7112) Fixed deadline (walltime limit) capabilities to avoid terminating jobs that are still queuing; also included small but significant performance improvement to general Kubernetes downstream scheduling.
+
 ## 3.21.9-1.202303301627
 
 * (JAR-6941) Support for custom HTML in portal *About* page; please see [Customize JARVICE files via a ConfigMap](README.md#customize-jarvice-files-via-a-configmap) for details.
