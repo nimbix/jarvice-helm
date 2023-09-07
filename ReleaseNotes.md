@@ -146,6 +146,7 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 * (JAR-7808) Add externalIP support to traefik deploy script.
 * (JAR-7810) Correctly apply resources settings for jarvice-db service from override file.
 * (JAR-7833) Portal: Request IP checkbox not shown for v2 apps with interactive endpoints.
+* (JAR-7846) Fixed issue with User signup success email template.
 
 ## 3.21.9-1.202308021521
 
