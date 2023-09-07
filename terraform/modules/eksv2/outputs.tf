@@ -1,4 +1,4 @@
-# outputs.tf - EKS module outputs
+# outputs.tf - EKS v2 module outputs
 
 resource "local_file" "kube_config" {
     filename = pathexpand(local.kube_config["config_path"])

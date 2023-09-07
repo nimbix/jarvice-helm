@@ -1,4 +1,4 @@
-# deploy.tf - EKS module kubernetes/helm components deployment for JARVICE
+# deploy.tf - EKS v2 module kubernetes/helm components deployment for JARVICE
 
 module "common" {
     source = "../common"
@@ -8,8 +8,8 @@ module "common" {
 
     system_nodes_type_upstream = lookup(var.cluster.meta, "arch", "") == "arm64" ? "m6g.4xlarge" : "m5.4xlarge"
     system_nodes_type_downstream = lookup(var.cluster.meta, "arch", "") == "arm64" ? "m6g.xlarge" : "m5.xlarge"
-    storage_class_provisioner = "kubernetes.io/aws-ebs"
-    storage_class_provisioner_dockerbuild = "kubernetes.io/aws-ebs"
+    storage_class_provisioner = "ebs.csi.aws.com"
+    storage_class_provisioner_dockerbuild = "ebs.csi.aws.com"
 }
 
 resource "aws_eip" "jarvice" {
@@ -57,6 +57,15 @@ locals {
 
 locals {
     charts = {
+        "aws-ebs-csi-driver" = {
+            "values" = <<EOF
+controller:
+  serviceAccount:
+    annotations:
+        eks.amazonaws.com/role-arn: "${module.iam_assumable_role_admin_aws_ebs_csi_driver.iam_role_arn}"
+    autoMountServiceAccountToken: true
+EOF
+        },
         "aws-load-balancer-controller" = {
             "values" = <<EOF
 image:
@@ -288,15 +297,6 @@ cainjector:
     - key: node-role.kubernetes.io/jarvice-system
       effect: NoSchedule
       operator: Exists
-
-startupapicheck:
-  tolerations:
-    - key: node-role.jarvice.io/jarvice-system
-      effect: NoSchedule
-      operator: Exists
-    - key: node-role.kubernetes.io/jarvice-system
-      effect: NoSchedule
-      operator: Exists
 EOF
         },
         "traefik" =  {
@@ -412,7 +412,7 @@ module "helm" {
 ${module.common.cluster_values_yaml}
 EOF
     cluster_values_yaml = <<EOF
-# EKS cluster override values
+# EKS V2 cluster override values
 ${local.jarvice_ingress}
 EOF
 
