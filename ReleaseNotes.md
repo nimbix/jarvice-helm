@@ -126,6 +126,27 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202309071538
+
+* (JAR-6820) Audit log endpoint for jarvice-api
+* (JAR-7046) Portal: Sysadmin feature to force Keycloak password reset for any user.
+* (JAR-7544) Queue limits are enforced for per-payer job priorities.
+* (JAR-7597) Tag jobs to allow easy sorting by bare metal sys admin on Slurm downstream clusters.
+* (JAR-7736) Portal - Allow custom About Page content.
+* (JAR-7737) Update cert-manager tolerationS.
+* (JAR-7739) v2 apps: support SSH with password if possible.
+* (JAR-7744) Billing Multiselect dropdown does not show selected options.
+* (JAR-7779) Make Jarvice BIRD deployment air gap friendly.
+* (JAR-7782) Create EKSv2 terraform module supporting EBS Container Storage Interface required for k8s 1.23+.
+* (JAR-7783) UI - PTC - limit icon size.
+* (JAR-7788) Add banner to help debug on Slurm downstream cluster jobs.
+* (JAR-7790) Minor helm updates for BIRD UI.
+* (JAR-7801) Internal support for future "zone admin" feature.
+* (JAR-7807) bird-portal should not change to ready state if keycloak admin credentials are invalid.
+* (JAR-7808) Add externalIP support to traefik deploy script.
+* (JAR-7810) Correctly apply resources settings for jarvice-db service from override file.
+* (JAR-7833) Portal: Request IP checkbox not shown for v2 apps with interactive endpoints.
+
 ## 3.21.9-1.202308021521
 
 * (JAR-7368) Helm does not export singularity verbose.
