@@ -33,7 +33,7 @@ When user requests an interactive job, a specific proxy pod is running on the Sl
 
              ┌──────────────────┐        ┌──────────────────────────┐        ┌─────────────────────┐        ┌─────────────────────┐
              │                  │  http  │                          │  ssh   │                     │        │                     │
-             │ Jarvice Upstream ├───────►│ Jarvice Slurm Downstream ├───────►│ Slurm cluster login │        │ Slurm cluster login │
+             │ Jarvice Upstream ├───────►│ Jarvice Slurm Downstream ├───────►│ Slurm cluster login │        │ Slurm job worker    │
              │                  │        │                          │        │                     │        │                     │
              │                  │ ┌──────┼──   job proxy pod   ◄────┼────────┼──────   socat     ◄─┼────────┼─ http (novnc/gotty) │
              │                  │ │ http │                          │  ssh   │                     │        │                     │
