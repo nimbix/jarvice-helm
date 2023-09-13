@@ -482,7 +482,8 @@ resource "kubernetes_daemonset" "aws_efa_k8s_device_plugin" {
                                         "hpc6a.48xlarge",
                                         "dl1.24xlarge",
                                         "g5.48xlarge",
-                                        "p4de.24xlarge"
+                                        "p4de.24xlarge",
+                                        "hpc7a.96xlarge"
                                     ]
                                 }
                                 match_expressions {
@@ -504,7 +505,9 @@ resource "kubernetes_daemonset" "aws_efa_k8s_device_plugin" {
                                         "hpc6a.48xlarge",
                                         "dl1.24xlarge",
                                         "g5.48xlarge",
-                                        "p4de.24xlarge"
+                                        "p4de.24xlarge",
+                                        "hpc7a.96xlarge"
+
                                     ]
                                 }
                             }
