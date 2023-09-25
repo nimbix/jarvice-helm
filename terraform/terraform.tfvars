@@ -364,7 +364,10 @@ gkev2 = {  # Provision GKE infrastructure/clusters and deploy JARVICE
             #dns_manage_records = "true"
             # Google Cloud project which contains the DNS zone for domain(s)
             #dns_zone_project = "tf-jarvice"  # If diff than cluster's project
-
+            #Service account to be used for deployment if not defined it will be set to default.
+            #service_account = "securityAccountName@projectName.iam.gserviceaccount.com"
+            #KMS key to be used for disk encryption if not defined it will be created automatically.
+            #kms_key = "projects/projectName/locations/us-central1/keyRings/keyRingName/cryptoKeys/keyName"
             ssh_public_key = null  # global setting used if null specified
         }
 
