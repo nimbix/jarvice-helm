@@ -33,11 +33,15 @@ locals {
         "https://www.googleapis.com/auth/cloud-platform"
     ]
 
-    project_services = [
+    project_services = lookup(var.cluster["meta"], "dns_zone_project", null) != null ? [
         "compute.googleapis.com",
         "container.googleapis.com",
         "containerfilesystem.googleapis.com",
         "dns.googleapis.com"
+    ]:[
+        "compute.googleapis.com",
+        "container.googleapis.com",
+        "containerfilesystem.googleapis.com"
     ]
 
     username = "kubernetes-admin"
@@ -79,13 +83,12 @@ resource "google_container_cluster" "jarvice" {
     initial_node_count = 2
     remove_default_node_pool = false
     enable_shielded_nodes = true
-
     node_config {
         machine_type = "n1-standard-1"
-
+        boot_disk_kms_key = lookup(var.cluster.meta, "kms_key",  null)
         image_type = "UBUNTU_CONTAINERD"
 
-        service_account = "default"
+        service_account = coalesce(lookup(var.cluster.meta, "service_account",  null), "default")
         oauth_scopes = local.oauth_scopes
 
         metadata = {
@@ -161,8 +164,8 @@ resource "google_container_node_pool" "jarvice_system" {
         machine_type = module.common.system_nodes_type
 
         image_type = "UBUNTU_CONTAINERD"
-
-        service_account = "default"
+        boot_disk_kms_key = lookup(var.cluster.meta, "kms_key",  null)
+        service_account = coalesce(lookup(var.cluster.meta, "service_account",  null), "default")
         oauth_scopes = local.oauth_scopes
 
         metadata = {
@@ -213,10 +216,10 @@ resource "google_container_node_pool" "jarvice_dockerbuild" {
 
     node_config {
         machine_type = var.cluster.dockerbuild_node_pool["nodes_type"]
-
+        boot_disk_kms_key = lookup(var.cluster.meta, "kms_key",  null)
         image_type = "UBUNTU_CONTAINERD"
 
-        service_account = "default"
+        service_account = coalesce(lookup(var.cluster.meta, "service_account",  null), "default")
         oauth_scopes = local.oauth_scopes
 
         metadata = {
@@ -269,13 +272,13 @@ resource "google_container_node_pool" "jarvice_images_pull" {
         machine_type = "n1-standard-8"
         disk_size_gb = 500
         disk_type = "pd-ssd"
-
+        boot_disk_kms_key = lookup(var.cluster.meta, "kms_key",  null)
         image_type = "COS_CONTAINERD"
         gcfs_config {
             enabled = true
         }
 
-        service_account = "default"
+        service_account = coalesce(lookup(var.cluster.meta, "service_account",  null), "default")
         oauth_scopes = local.oauth_scopes
 
         metadata = {
@@ -335,6 +338,7 @@ resource "google_container_node_pool" "jarvice_compute" {
 
     node_config {
         machine_type = each.value["nodes_type"]
+        boot_disk_kms_key = lookup(var.cluster.meta, "kms_key",  null)
         disk_size_gb = each.value["nodes_disk_size_gb"]
         disk_type = lookup(each.value.meta, "disk_type", "pd-standard")
 
@@ -354,7 +358,7 @@ resource "google_container_node_pool" "jarvice_compute" {
             count = lookup(each.value.meta, "accelerator_count", 0)
         }
 
-        service_account = "default"
+        service_account = coalesce(lookup(var.cluster.meta, "service_account",  null), "default")
         oauth_scopes = local.oauth_scopes
 
         metadata = {
