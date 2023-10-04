@@ -55,6 +55,13 @@ resource "google_project_service" "project_services" {
     disable_on_destroy = false
 }
 
+resource "google_compute_network" "compute_network" {
+    count = lookup(var.cluster["meta"], "create_network", false) ? 1:0    
+    project                 = local.project
+    name                    = lookup(var.cluster["meta"], "network", null)
+    auto_create_subnetworks = lookup(var.cluster["meta"], "auto_create_subnetworks", true)
+}
+
 data "google_client_config" "jarvice" {
 }
 
@@ -87,7 +94,9 @@ resource "google_container_cluster" "jarvice" {
         machine_type = "n1-standard-1"
         boot_disk_kms_key = lookup(var.cluster.meta, "kms_key",  null)
         image_type = "UBUNTU_CONTAINERD"
-
+        shielded_instance_config {
+            enable_secure_boot = true
+        }
         service_account = coalesce(lookup(var.cluster.meta, "service_account",  null), "default")
         oauth_scopes = local.oauth_scopes
 
@@ -111,8 +120,8 @@ resource "google_container_cluster" "jarvice" {
     #    identity_namespace = "${local.project}.svc.id.goog"
     #}
 
-    network = "default"
-    subnetwork = "default"
+    network = coalesce(lookup(var.cluster.meta, "network",  null), "default")
+    subnetwork = coalesce(lookup(var.cluster.meta, "subnetwork",  null), "default")
 
     ip_allocation_policy {
         cluster_ipv4_cidr_block = ""
@@ -133,7 +142,7 @@ resource "google_container_cluster" "jarvice" {
         "cluster_name" = var.cluster.meta["cluster_name"]
     }
 
-    depends_on = [google_project_service.project_services]
+    depends_on = [google_project_service.project_services, google_compute_network.compute_network ]
 
     lifecycle {
         #ignore_changes = [min_master_version, node_version, enable_shielded_nodes, node_config[0].workload_metadata_config, workload_identity_config]
@@ -167,7 +176,9 @@ resource "google_container_node_pool" "jarvice_system" {
         boot_disk_kms_key = lookup(var.cluster.meta, "kms_key",  null)
         service_account = coalesce(lookup(var.cluster.meta, "service_account",  null), "default")
         oauth_scopes = local.oauth_scopes
-
+        shielded_instance_config {
+            enable_secure_boot = true
+        }
         metadata = {
             disable-legacy-endpoints = "true"
             ssh-keys = "${local.username}:${module.common.ssh_public_key}"
@@ -221,7 +232,9 @@ resource "google_container_node_pool" "jarvice_dockerbuild" {
 
         service_account = coalesce(lookup(var.cluster.meta, "service_account",  null), "default")
         oauth_scopes = local.oauth_scopes
-
+        shielded_instance_config {
+            enable_secure_boot = true
+        }
         metadata = {
             disable-legacy-endpoints = "true"
             ssh-keys = "${local.username}:${module.common.ssh_public_key}"
@@ -280,6 +293,9 @@ resource "google_container_node_pool" "jarvice_images_pull" {
 
         service_account = coalesce(lookup(var.cluster.meta, "service_account",  null), "default")
         oauth_scopes = local.oauth_scopes
+        shielded_instance_config {
+            enable_secure_boot = true
+        }
 
         metadata = {
             disable-legacy-endpoints = "true"
@@ -360,6 +376,9 @@ resource "google_container_node_pool" "jarvice_compute" {
 
         service_account = coalesce(lookup(var.cluster.meta, "service_account",  null), "default")
         oauth_scopes = local.oauth_scopes
+        shielded_instance_config {
+            enable_secure_boot = true
+        }
 
         metadata = {
             disable-legacy-endpoints = "true"
