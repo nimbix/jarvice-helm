@@ -368,6 +368,11 @@ gkev2 = {  # Provision GKE infrastructure/clusters and deploy JARVICE
             #service_account = "securityAccountName@projectName.iam.gserviceaccount.com"
             #KMS key to be used for disk encryption if not defined it will be created automatically.
             #kms_key = "projects/projectName/locations/us-central1/keyRings/keyRingName/cryptoKeys/keyName"
+            # The network and subnetwork names for the GKE cluster.
+            #network = "default"
+            #subnetwork = "default"
+            # The above networks can be created automatically by setting create_network = "true". The default value is false.
+            #create_network = "true"
             ssh_public_key = null  # global setting used if null specified
         }
 
