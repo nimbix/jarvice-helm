@@ -636,8 +636,8 @@ resource "aws_iam_policy" "aws_ebs_csi_driver" {
                     "ec2:CreateTags"
                 ],
                 "Resource": [
-                    "arn:aws:ec2:*:*:volume/*",
-                    "arn:aws:ec2:*:*:snapshot/*"
+                    "arn:${local.arn_partition}:ec2:*:*:volume/*",
+                    "arn:${local.arn_partition}:ec2:*:*:snapshot/*"
                 ],
                 "Condition": {
                     "StringEquals": {
@@ -678,8 +678,8 @@ resource "aws_iam_policy" "aws_ebs_csi_driver" {
                     "ec2:DeleteTags"
                 ],
                 "Resource": [
-                    "arn:aws:ec2:*:*:volume/*",
-                    "arn:aws:ec2:*:*:snapshot/*"
+                    "arn:${local.arn_partition}:ec2:*:*:volume/*",
+                    "arn:${local.arn_partition}:ec2:*:*:snapshot/*"
                 ]
             },
             {
