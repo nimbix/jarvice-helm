@@ -79,7 +79,26 @@ resource "google_container_cluster" "jarvice" {
     release_channel {
         channel = coalesce(lookup(var.cluster.meta, "release_channel",  null), "UNSPECIFIED")
     }
-
+    dynamic "private_cluster_config" {
+        for_each = lookup(var.cluster.meta, "enable_private_nodes", false) ? ["this"] : []
+        content {
+            enable_private_nodes = true
+            enable_private_endpoint = lookup(var.cluster.meta, "enable_private_endpoint",  false)
+            master_ipv4_cidr_block = lookup(var.cluster.meta, "master_ipv4_cidr_block", "192.168.1.0/28")
+        }
+    }
+    dynamic "master_authorized_networks_config" {
+        for_each = lookup(var.cluster.meta, "enable_private_endpoint", false) ? ["this"] : []
+        content {
+            dynamic "cidr_blocks" {
+                for_each = jsondecode(try(var.cluster.meta.master_authorized_cidr_blocks, "[]"))
+                content {
+                    cidr_block = cidr_blocks.value.cidr_block
+                    display_name = cidr_blocks.value.name
+                }
+            }
+        }
+    }
     initial_node_count = 2
     remove_default_node_pool = false
     enable_shielded_nodes = true
