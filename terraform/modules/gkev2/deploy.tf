@@ -96,7 +96,7 @@ tolerations:
 EOF
         }
 },
-{
+lookup(var.cluster["meta"], "disable_cert_manager", false) ? {}:{
         "cert-manager" = {
             "values" = <<EOF
 installCRDs: true
@@ -178,7 +178,71 @@ startupapicheck:
       operator: Exists
 EOF
         },
-        "traefik" = {
+},
+{
+        "traefik" = lookup(var.cluster["meta"], "traefik_repo", null) != null ? {
+            "values" = <<EOF
+image:
+  name: "${lookup(var.cluster["meta"], "traefik_repo", null)}"
+  #name: "us-docker.pkg.dev/jarvice/images/traefik"
+  tag: "2.5.4"
+deployment:
+  replicas: 2
+
+ingressClass:
+  enabled: true
+
+ingressRoute:
+  dashboard:
+    enabled: false
+
+providers:
+  kubernetesIngress:
+    publishedService:
+      enabled: true
+
+additionalArguments:
+  - "--serverstransport.insecureskipverify=true"
+
+ports:
+  web:
+    redirectTo: websecure
+  websecure:
+    tls:
+      enabled: true
+
+service:
+  spec:
+    ${local.load_balancer_ip}
+
+resources:
+  requests:
+    cpu: "1"
+    memory: "1Gi"
+  limits:
+    cpu: "1"
+    memory: "1Gi"
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: node-role.jarvice.io/jarvice-system
+          operator: Exists
+      - matchExpressions:
+        - key: node-role.kubernetes.io/jarvice-system
+          operator: Exists
+
+tolerations:
+  - key: node-role.jarvice.io/jarvice-system
+    effect: NoSchedule
+    operator: Exists
+  - key: node-role.kubernetes.io/jarvice-system
+    effect: NoSchedule
+    operator: Exists
+EOF
+        }:{
             "values" = <<EOF
 deployment:
   replicas: 2
@@ -236,7 +300,7 @@ tolerations:
     effect: NoSchedule
     operator: Exists
 EOF
-        }
+}
     }
 )
 }
