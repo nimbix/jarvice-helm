@@ -126,6 +126,32 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202310261643
+
+* (JAR-7581) Create "short queue" via license manager licfeatures hook script.
+* (JAR-7741) (JAR-8013) Eviden theme.
+* (JAR-7802) (JAR-7803) (JAR-7804) (JAR-7805) (JAR-7806) (JAR-7961) (JAR-8029) (JAR-8066) (JAR-8073) (JAR-8092) (JAR-8093) (JAR-8097) (JAR-8098) Added Zone Admin feature; system administrators can now delegate self-service management to an entire zone from the *Administration->Zones* view, including whether or not a zone has access to legacy apps (v1), which is the default.  Delegated zone administrators have an administration widget in their dashboards and can act on elements such as jobs, machine definitions, and billing reports for the respective zone.
+* (JAR-7859) Update Keycloak LDAP and SAML config to allow partial setups.
+* (JAR-7900) Allow the Team Jobs username column to be adjustable.
+* (JAR-7902) UI Dashboard History long label overwrites next column content.
+* (JAR-7904) Dashboard Team Jobs landing page should not be collapsed.
+* (JAR-7905) Dashboard Team Jobs remember the choice for Group by user.
+* (JAR-7906) Dashboard Team Jobs Group by User default should be turned off.
+* (JAR-7907) Dashboard Team Jobs missing terminate a single job option. 
+* (JAR-7909) Dashboard Team Jobs Application name should replace application id.
+* (JAR-7910) Dashboard Team Jobs Machine column is missing.
+* (JAR-7911) Dashboard Team Jobs Status unnecessary if all are running.
+* (JAR-7912) Dashboard Team Jobs Clone is not necessary.
+* (JAR-7913) Dashboard Team Jobs Impersonate function missing.
+* (JAR-7914) Dashboard Team Jobs Command is unnecessary.
+* (JAR-7915) Dashboard Team Jobs Start time for submitted should be -:-:- .
+* (JAR-7938) Portal: Fix issue with creating new zone.
+* (JAR-7974) Make Job Control icons bigger on new UI.
+* (JAR-7976) Batch output from jobs shows special characters (\n) removing the format from stdout.
+* (JAR-8065) UI: SysAdmin sees multiple Administration icons.
+* (JAR-8068) Remove jarvice client ADMIN role from keycloak.
+* (JAR-8084) UI: Zone name text longer than the button.
+
 ## 3.21.9-1.202309071538
 
 * (JAR-6820) Audit log endpoint for jarvice-api
