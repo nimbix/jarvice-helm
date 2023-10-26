@@ -16,16 +16,19 @@ resource "google_service_account" "external_dns" {
     account_id = replace(substr("${var.cluster.meta["cluster_name"]}-external-dns", 0, 30), "/[^a-z0-9]$/", "")
     display_name = substr("JARVICE ExternalDNS service account for GKE v2 cluster: ${var.cluster.meta["cluster_name"]}", 0, 100)
     project = lookup(var.cluster["meta"], "dns_zone_project", null)
+    count = "${ lookup(var.cluster["meta"], "dns_manage_records", false) ? 1 : 0}"
 }
 
 resource "google_project_iam_member" "external_dns_admin" {
     role = "roles/dns.admin"
-    member = "serviceAccount:${google_service_account.external_dns.email}"
+    member = "serviceAccount:${google_service_account.external_dns[0].email}"
     project = lookup(var.cluster["meta"], "dns_zone_project", local.project)
+    count = "${ lookup(var.cluster["meta"], "dns_manage_records", false) ? 1 : 0}"
 }
 
 resource "google_service_account_key" "external_dns" {
-    service_account_id = google_service_account.external_dns.name
+    service_account_id = google_service_account.external_dns[0].name
+    count = "${ lookup(var.cluster["meta"], "dns_manage_records", false) ? 1 : 0}"
 }
 
 #resource "google_service_account_iam_member" "external_dns_workload_identity_user" {
@@ -44,7 +47,7 @@ resource "google_compute_address" "jarvice" {
 locals {
     load_balancer_ip = lookup(var.cluster["meta"], "use_static_ip", null) != "false" ? "loadBalancerIP: ${google_compute_address.jarvice.address}" : ""
 
-    charts = {
+    charts = merge(lookup(var.cluster["meta"], "dns_manage_records", false) ? {
         "external-dns" = {
             "values" = <<EOF
 image:
@@ -60,7 +63,7 @@ provider: google
 google:
   project: "${lookup(var.cluster["meta"], "dns_zone_project", local.project)}"
   serviceAccountKey: |
-    ${indent(4, base64decode(google_service_account_key.external_dns.private_key))}
+    ${indent(4, base64decode(google_service_account_key.external_dns[0].private_key))}
 
 dryRun: ${lookup(var.cluster["meta"], "dns_manage_records", "false") != "true" ? "true" : "false" }
 
@@ -87,11 +90,13 @@ tolerations:
     effect: NoSchedule
     operator: Exists
 
-#serviceAccount:
-#  annotations:
-#    iam.gke.io/gcp-service-account: "${google_service_account.external_dns.email}"
+# serviceAccount:
+#   annotations:
+#     iam.gke.io/gcp-service-account: ${lookup(var.cluster["meta"], "dns_manage_records", false) ? "NoEmail":"${google_service_account.external_dns[0].email}"}
 EOF
-        },
+        }
+}:{},
+{
         "cert-manager" = {
             "values" = <<EOF
 installCRDs: true
@@ -233,8 +238,8 @@ tolerations:
 EOF
         }
     }
+)
 }
-
 module "helm" {
     source = "../helm"
 
