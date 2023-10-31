@@ -263,6 +263,12 @@ spec:
             value: "{{ .Values.jarvice.JARVICE_LRJ_PAYER_BLACKLIST }}"
           - name: JARVICE_LRJ_CURRENCY_FMT
             value: "{{ .Values.jarvice.JARVICE_LRJ_CURRENCY_FMT }}"
+{{- if and (not (empty .Values.jarvice_scheduler.env.JARVICE_QUEUE_RESTRICT_NAME)) (not (empty .Values.jarvice_scheduler.env.JARVICE_QUEUE_RESTRICT_WALLTIME)) }}
+          - name: JARVICE_QUEUE_RESTRICT_NAME
+            value: "{{ .Values.jarvice_scheduler.env.JARVICE_QUEUE_RESTRICT_NAME }}"
+          - name: JARVICE_QUEUE_RESTRICT_WALLTIME
+            value: "{{ .Values.jarvice_scheduler.env.JARVICE_QUEUE_RESTRICT_WALLTIME }}"
+{{- end }}
         volumeMounts:
         - name: jarvice-settings
           mountPath: /etc/jarvice/settings
