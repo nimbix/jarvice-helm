@@ -692,6 +692,8 @@ jarvice_scheduler: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   env:
     JARVICE_SCHED_PASS_INTERVAL: 5
     JARVICE_SCHED_CLUSTERS_TIMEOUT: 20
+    JARVICE_QUEUE_RESTRICT_NAME: # HPC queue to limit walltime
+    JARVICE_QUEUE_RESTRICT_WALLTIME: # walltime to set for jobs in restrict queue "HH:MM:SS"
 
 jarvice_sched_pass: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
