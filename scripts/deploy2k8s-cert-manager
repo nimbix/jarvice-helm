@@ -1,6 +1,7 @@
 #!/bin/bash
 
 version_tag=
+chart_version="v1.6.1"
 namespace=cert-manager
 
 function usage {
@@ -12,6 +13,8 @@ Options:
     --version-tag <tag>             cert-manager version (optional)
     --namespace <kube_namespace>    Kubernetes namespace to deploy to
                                     (Default: $namespace)
+    --chart-version <version>       cert-manager Helm chart version
+                                    (Default: $chart_version)
 
 Example:
     $0 --version-tag v1.1.0
@@ -42,6 +45,10 @@ while [ $# -gt 0 ]; do
             usage
             exit 0
             ;;
+        --chart-version)
+            chart_version=$2
+            shift; shift
+            ;;
         --version-tag)
             version_tag=$2
             shift; shift
@@ -66,7 +73,7 @@ $KUBECTL create namespace $namespace 2>/dev/null || /bin/true
 echo
 echo "* Deploying..."
 repo=https://charts.jetstack.io
-$HELM upgrade cert-manager cert-manager --repo $repo \
+$HELM upgrade cert-manager cert-manager --repo $repo --version $chart_version \
     --namespace $namespace --install --reset-values \
     \
     --set installCRDs=true \
