@@ -1,6 +1,7 @@
 #!/bin/bash
 
 version_tag=
+chart_version=10.7.1
 load_balancer_ip=
 load_balancer_external_ip=
 node_port=
@@ -33,6 +34,8 @@ Options:
                                     (Default: $cpu_limit)
     --namespace <kube_namespace>    Kubernetes namespace to deploy to
                                     (Default: $namespace)
+    --chart-version <version>       Traefik Helm chart version
+                                    (Default: $chart_version)
     --version-tag <tag>             Traefik version
                                     (Default: $version_tag)
 
@@ -106,6 +109,10 @@ while [ $# -gt 0 ]; do
             namespace=$2
             shift; shift
             ;;
+        --chart-version)
+            chart_version=$2
+            shift; shift
+            ;;
         --version-tag)
             version_tag=$2
             shift; shift
@@ -135,7 +142,7 @@ else
     ip_args="--set service.type=LoadBalancer --set service.spec.loadBalancerIP=$load_balancer_ip"
 fi
 repo=https://helm.traefik.io/traefik
-$HELM upgrade traefik traefik --repo $repo \
+$HELM upgrade traefik traefik --repo $repo --version $chart_version \
     --namespace $namespace --install --reset-values \
     \
     --set image.tag="$version_tag" \
