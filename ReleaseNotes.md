@@ -126,6 +126,19 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202311081510
+
+* (JAR-6665) Allow option for user to inherit team default white list
+* (JAR-7950) Fix invalid redirect_url & backchannel logout url in auto generated jarvice Keycloak client config
+* (JAR-8027) jarvice-api: support job priority during job submission for payers and team admins
+* (JAR-8066) ZoneAdmin fix bug with auto complete list only showing 25 users
+* (JAR-8072) SlurmScheduler support FQDN hosts
+* (JAR-8101) Fix endless failure login loop when impersonating user
+* (JAR-8102) Check zone admin status on heartbeat and enforce refresh if changed
+* (JAR-8133) Add restrict queue environment variables to helm
+* (JAR-8139) Pin helm chart version in script/deploy2k8-* scripts
+* (JAR-8143) Hide edit dashboard for normal user
+
 ## 3.21.9-1.202310261643
 
 * (JAR-7581) Create "short queue" via license manager licfeatures hook script.
