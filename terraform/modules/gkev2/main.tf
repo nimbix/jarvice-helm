@@ -115,8 +115,8 @@ resource "google_container_cluster" "jarvice" {
     subnetwork = "default"
 
     ip_allocation_policy {
-        cluster_ipv4_cidr_block = ""
-        services_ipv4_cidr_block = ""
+        cluster_ipv4_cidr_block = coalesce(lookup(var.cluster.meta, "cluster_ipv4_cidr_block",  null), "")
+        services_ipv4_cidr_block = coalesce(lookup(var.cluster.meta, "services_ipv4_cidr_block",  null), "")
     }
     default_max_pods_per_node = 110
 
