@@ -359,16 +359,38 @@ gkev2 = {  # Provision GKE infrastructure/clusters and deploy JARVICE
         meta = {
             cluster_name = "tf-jarvice"
             kubernetes_version = "1.24"
-
+            # Set the service account if unset terraform will create one for the deployment.
+            #service_account = "SERVICE_ACCOUNT_NAME@PROJECT_NAME.iam.gserviceaccount.com"
+            # KMS key for disk encryption. Leave unset if KMS keys are google managed.
+            #kms_key = "projects/KEYRING_PROJECT/locations/us-central1/keyRings/KEYRING_NAME/cryptoKeys/KEY_NAME"
+            # The network and subnetwork names for the GKE cluster. If not defined will use default network. 
+            # If create_network is set to true the network and subnetwork should be the same name.
+            #network = "default"
+            #subnetwork = "default"
+            # Set to true to automatically create the above networks.
+            #create_network = true
+            # Set to true to make node network private.
+            #enable_private_nodes = true
+            # To set enable_private_endpoint to true you must also define
+            # master_authorized_cidr_blocks as a json string with double
+            # quotes escaped like the below example.
+            # The master_authorized_cidr_blocks need to be a reserved
+            # network that has access to the private endpoint if you have
+            # chosen to use a private_endpoint.
+            #enable_private_endpoint = true
+            #master_authorized_cidr_blocks = "[{\"name\":\"all\", \"cidr_block\":\"0.0.0.0/0\"},{\"name\":\"local\", \"cidr_block\":\"10.0.0.0/32\"}]"
+            # Alternate traefik repo when he default repository is not accessible in the cluster
+            #traefik_repo = "us-docker.pkg.dev/jarvice/images/traefik"
+            # Disable cert manager deployment and avoid the service account it creates for GCP Assured
+            #disable_cert_manager = true
+            # Private network cidr blocks for cluster
+            #master_ipv4_cidr_block = "192.168.1.0/28"
+            #cluster_ipv4_cidr_block = "10.92.0.0/20"
+            #services_ipv4_cidr_block = "10.94.0.0/24"
             # Sync ingress hosts to zones/domains managed w/ Google Cloud DNS
             #dns_manage_records = "true"
             # Google Cloud project which contains the DNS zone for domain(s)
             #dns_zone_project = "tf-jarvice"  # If diff than cluster's project
-            # The network and subnetwork names for the GKE cluster.
-            #network = "default"
-            #subnetwork = "default"
-            # The above networks can be created automatically by setting create_network = "true". The default value is false.
-            #create_network = "true"
             ssh_public_key = null  # global setting used if null specified
         }
 
