@@ -492,15 +492,17 @@ EOF
                     }
                 }
                 network_interfaces = [
-                    {
-                      device_index = 0
-                      associate_public_ip_address = true
-                      interface_type = lookup(pool.meta, "interface_type", null) == "efa" ? "efa" : null
-                      security_groups = lookup(pool.meta, "interface_type", null) == "efa" ? ["${aws_security_group.efa.id}", "${aws_security_group.ssh.id}"] : ["${aws_security_group.ssh.id}"] 
-                      #subnet_id = lookup(pool.meta, "zones", null) == null ? (
-                      #      local.vpc.private_subnets[0]
-                      #      ) : (local.vpc.private_subnets[index(local.vpc.azs, pool.meta["zones"])])
-                    }
+                    for index in range(lookup(pool.meta, "interface_count", 1)) :
+                     {
+                     device_index = index
+                     network_card_index = index
+                     associate_public_ip_address = can(lookup(pool.meta, "interface_count")) ? null : true
+                     interface_type = lookup(pool.meta, "interface_type", null) == "efa" ? "efa" : null
+                     security_groups = lookup(pool.meta, "interface_type", null) == "efa" ? ["${aws_security_group.efa.id}", "${aws_security_group.ssh.id}"] : ["${aws_security_group.ssh.id}"]
+                     subnet_id = lookup(pool.meta, "zones", null) == null ? (
+                            local.vpc.private_subnets[0]
+                            ) : (local.vpc.private_subnets[index(local.vpc.azs, pool.meta["zones"])])
+                     }
                 ]
                 placement_group = lookup(pool.meta, "interface_type", null) == "efa" ? [for k,v in aws_placement_group.efa : v.id if v.name == "${var.cluster.meta["cluster_name"]}-${pool_name}"][0] : null
                 enable_bootstrap_user_data = true
