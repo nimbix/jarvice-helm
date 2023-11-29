@@ -2,7 +2,7 @@
 # use kubectl auth plugin after auth-provider is removed in k8s 1.26
 locals {
   version_a = split(".", var.cluster.meta["kubernetes_version"])
-  version_b = split(".", "1.26.0")
+  version_b = split(".", "1.23.0")
   version-test = [
     for i, j in reverse(range(length(local.version_a)))
     : signum(local.version_b[i] - tonumber(local.version_a[i])) * pow(10, j)
