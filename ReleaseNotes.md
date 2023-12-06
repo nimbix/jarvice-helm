@@ -126,6 +126,24 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.21.9-1.202312061620
+
+* (JAR-5243) Billing code showing a job in current month even though it completed in previous month
+* (JAR-7421) Account/Limits - Hide "Per User" checkbox unless its the "Team default" limit
+* (JAR-7444) Project selection does not show up for team member
+* (JAR-7584) Move k8s support to 1.26
+* (JAR-8039) Enable SAML login for Google
+* (JAR-8081) UI: Don't show errors when job-runtime-info polling fails (seen during job termination)
+* (JAR-8095) Multi-tenant support has a race condition
+* (JAR-8128) Change k8s API deprecation check to version 1.23 for gke terraform module
+* (JAR-8137) pod-scheduler: account for resource-less containers to avoid OutOfCpu evictions
+* (JAR-8138) UI: Notifications - 400 Error when entering phone number without selecting provider
+* (JAR-8141) UI: Account SSH Keys cannot be validated correctly
+* (JAR-8150) Add general-purpose job submission validation hook script
+* (JAR-8153) UI: SAML page buttons alignment
+* (JAR-8170) Update DAL to Django 4.2
+* (JAR-8219) Fix pullsecret check for /jarvice/batch
+
 ## 3.21.9-1.202311081510
 
 * (JAR-6665) Allow option for user to inherit team default white list
