@@ -381,7 +381,7 @@ spec:
             value: "{{ .Values.jarvice.JARVICE_API_PUBLIC_URL }}"
 {{- else if (not (empty .Values.jarvice_api.ingressHost)) }}
           - name: JARVICE_API_PUBLIC_URL
-            value: 'https://{{- .Values.jarvice_api.ingressHost -}}{{- .Values.jarvice_api.ingressPath -}}'
+            value: 'https://{{- .Values.jarvice_api.ingressHost -}}{{- eq .Values.jarvice_api.ingressPath "/" | ternary "" ".Values.jarvice_api.ingressPath" -}}'
 {{- end }}
           - name: JARVICE_USER_DEFAULT_ENABLED
             value: "{{ .Values.jarvice_bird.env.JARVICE_USER_DEFAULT_ENABLED }}"
