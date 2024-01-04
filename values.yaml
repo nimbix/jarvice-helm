@@ -771,8 +771,8 @@ jarvice_k8s_scheduler:
     JARVICE_UNFS_REQUEST_CPU: 1
     JARVICE_UNFS_EXPIRE_SECS: 90
     JARVICE_UNFS_NODE_SELECTOR: # '{"node-role.jarvice.io/jarvice-storage": "true"}' # '{"node-role.kubernetes.io/jarvice-storage": "true"}'
-    JARVICE_UNFS3_IMAGE: us-docker.pkg.dev/jarvice/images/unfs3:20190318-1 # change if mirroring locally
-    JARVICE_PVCLS_IMAGE: us-docker.pkg.dev/jarvice/images/alpine:3.8 # change if mirroring locally
+    JARVICE_UNFS3_IMAGE: us-docker.pkg.dev/jarvice/images/unfs3:20231221-1 # change if mirroring locally
+    JARVICE_PVCLS_IMAGE: us-docker.pkg.dev/jarvice/images/alpine:3.18 # change if mirroring locally
     JARVICE_SCHED_JOB_UID:  # set to numeric value to override UID for jobs
     JARVICE_SCHED_JOB_GID:  # set to numeric value to override GID for jobs
 
@@ -1196,8 +1196,8 @@ jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     KEYCLOAK_URL: # keycloak.my-domain.com/auth
     KEYCLOAK_ID: jarvice
     KEYCLOAK_REALM: jarvice
-    JARVICE_KEYCLOAK_ADMIN_USER: jarvice
-    JARVICE_KEYCLOAK_ADMIN_PASS: Pass1234
+    JARVICE_KEYCLOAK_ADMIN_USER: nimbix
+    JARVICE_KEYCLOAK_ADMIN_PASS: abc1234!
     JARVICE_USER_DEFAULT_ENABLED: True
     JARVICE_USER_DEFAULT_DEVELOPER: True
     JARVICE_PORTAL_JOB_TERMINATE_LIMIT: 100
