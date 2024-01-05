@@ -115,7 +115,7 @@ spec:
           defaultMode: 420
           items:
           - key: jarvice-bird-nginx.conf
-            path: default.conf
+            path: default.conf.template
 {{- if empty .Values.jarvice_bird.nginx.configMap }}
           name: jarvice-bird-nginx-config
 {{- else }}
@@ -169,6 +169,13 @@ spec:
 {{- else }}
         imagePullPolicy: IfNotPresent
 {{- end }}
+        command:
+          - sh
+        args:
+          - -c
+          - |
+            /docker-entrypoint.d/*-envsubst-on-templates.sh
+            /usr/local/bin/docker-entrypoint.sh
         ports:
           - name: http
             containerPort: 8000
@@ -191,8 +198,12 @@ spec:
           successThreshold: {{ .Values.jarvice_bird.bird.livenessProbe.successThreshold }}
           failureThreshold: {{ .Values.jarvice_bird.bird.livenessProbe.failureThreshold }}
         env:
-          - name: JARVICE_SYSTEM_NAMESPACE
-            value: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+          - name: JARVICE_SERVER_PROXY
+{{- if empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+            value: "http://jarvice-bird-server.{{ .Release.Namespace }}.svc.cluster.local:9090/"
+{{- else }}
+            value: "http://jarvice-bird-server.{{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}.svc.cluster.local:9090/"
+{{- end }}
           - name: KEYCLOAK_URL
 {{- if (not (empty .Values.jarvice_bird.env.KEYCLOAK_URL)) }}
             value: {{ .Values.jarvice_bird.env.KEYCLOAK_URL }} # https://jarvice-kc.jarvicedev.com/auth
@@ -221,7 +232,7 @@ spec:
 {{- end }}
 {{- end }}
         volumeMounts:
-        - mountPath: /etc/nginx/conf.d/
+        - mountPath: /etc/nginx/templates/
           name: nginx-config
           readOnly: true
         - mountPath: /usr/share/nginx/html/web-ui-grid/config/config.json
@@ -501,8 +512,6 @@ spec:
 {{- end }}
         resources:
 {{ toYaml .Values.jarvice_bird.portal.resources | indent 10 }}
-      securityContext:
-        fsGroup: {{ .Values.jarvice_bird.server.securityContext.fsGroup }}
 ---
 {{- if and .Values.jarvice_bird.server.persistence.enabled (empty .Values.jarvice_bird.server.persistence.existingClaimName) }}
 apiVersion: v1
@@ -600,6 +609,13 @@ spec:
           optional: false
           defaultMode: 444
 {{- end }}
+      initContainers:
+      - name: chown
+        image: {{ .Values.jarvice_k8s_scheduler.env.JARVICE_PVCLS_IMAGE }}
+        command: ['sh', '-c', 'chown 890:890 /home/bird']
+        volumeMounts:
+        - mountPath: /home/bird
+          name: jarvice-bird-server
       containers:
       - name: jarvice-bird-server
         image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-bird-server:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
@@ -649,7 +665,7 @@ spec:
             value: "{{ .Values.jarvice_bird.env.KEYCLOAK_REALM }}"
 {{- end }}
         volumeMounts:
-        - mountPath: /home/bird/.bird
+        - mountPath: /home/bird
           name: jarvice-bird-server
 {{- if (not (empty .Values.jarvice.cacert.java.configMap)) }}
         - name: jarvice-java-cacert
@@ -664,6 +680,8 @@ spec:
 {{- end }}
         resources:
 {{ toYaml .Values.jarvice_bird.server.resources | indent 10 }}
+        securityContext:
+          fsGroup: {{ .Values.jarvice_bird.server.securityContext.fsGroup }}
 ---
 apiVersion: v1
 kind: Service
@@ -802,27 +820,6 @@ spec:
               name: http
         pathType: Prefix
         path: "{{ .Values.jarvice_bird.ingressPath }}"
-      - backend:
-          service:
-            name: jarvice-bird
-            port:
-              name: http-portal
-        pathType: Prefix
-        path: "{{ .Values.jarvice_bird.ingressPath }}/portal"
-      - backend:
-          service:
-            name: jarvice-bird
-            port:
-              name: http-portal
-        pathType: Prefix
-        path: "{{ .Values.jarvice_bird.ingressPath }}/static"
-      - backend:
-          service:
-            name: jarvice-bird
-            port:
-              name: http-portal
-        pathType: Prefix
-        path: "{{ .Values.jarvice_bird.ingressPath }}/index.html"
 {{- else }}
       - backend:
           service:
@@ -831,27 +828,6 @@ spec:
               name: http
         pathType: Prefix
         path: /
-      - backend:
-          service:
-            name: jarvice-bird
-            port:
-              name: http-portal
-        pathType: Prefix
-        path: /portal
-      - backend:
-          service:
-            name: jarvice-bird
-            port:
-              name: http-portal
-        pathType: Prefix
-        path: /static
-      - backend:
-          service:
-            name: jarvice-bird
-            port:
-              name: http-portal
-        pathType: Prefix
-        path: /index.html
 {{- end }}
 {{- else }}
 {{- if (ne "/" .Values.jarvice_bird.ingressPath) }}
@@ -859,35 +835,11 @@ spec:
           serviceName: jarvice-bird
           servicePort: http
         path: "{{ .Values.jarvice_bird.ingressPath }}"
-      - backend:
-          serviceName: jarvice-bird
-          servicePort: http-portal
-        path: "{{ .Values.jarvice_bird.ingressPath }}/portal"
-      - backend:
-          serviceName: jarvice-bird
-          servicePort: http-portal
-        path: "{{ .Values.jarvice_bird.ingressPath }}/static"
-      - backend:
-          serviceName: jarvice-bird
-          servicePort: http-portal
-        path: "{{ .Values.jarvice_bird.ingressPath }}/index.html"
 {{- else }}
       - backend:
           serviceName: jarvice-bird
           servicePort: http
         path: /
-      - backend:
-          serviceName: jarvice-bird
-          servicePort: http-portal
-        path: /portal
-      - backend:
-          serviceName: jarvice-bird
-          servicePort: http-portal
-        path: /static
-      - backend:
-          serviceName: jarvice-bird
-          servicePort: http-portal
-        path: /index.html
 {{- end }}
 {{- end }}
 {{- if ne "-" .Values.jarvice_bird.ingressHost }}
@@ -922,7 +874,7 @@ metadata:
   name: jarvice-bird-nginx-config
 data:
   jarvice-bird-nginx.conf: |-
-{{ .Files.Get "files/jarvice-bird-nginx.conf" | indent 4 }}
+{{ .Files.Get "files/jarvice-bird-nginx.conf.template" | indent 4 }}
 ---
 {{- end }}
 {{- end }}
