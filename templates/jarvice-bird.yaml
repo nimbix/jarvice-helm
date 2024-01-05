@@ -698,10 +698,6 @@ spec:
     targetPort: http
     name: http
   - protocol: TCP
-    port: 9090
-    targetPort: http-server
-    name: http-server
-  - protocol: TCP
     port: 8080
     targetPort: http-portal
     name: http-portal
