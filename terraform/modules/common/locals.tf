@@ -85,6 +85,12 @@ jarvice:
     lxcfs:
       enabled: true
 
+jarvice_bird:
+  server:
+    persistence:
+      enabled: true
+      storageClassProvisioner: ${var.storage_class_provisioner}
+
 jarvice_db:
   persistence:
     enabled: true
