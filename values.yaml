@@ -1245,7 +1245,7 @@ jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
       failureThreshold: 3
   server:
     persistence:
-      enabled: true
+      enabled: false
       # Set to "keep" to prevent removal of jarvice-bird-server-pvc on helm delete
       resourcePolicy: ""  # "keep"
       # Use empty existingClaimName for dynamic provisioning via storageClass
