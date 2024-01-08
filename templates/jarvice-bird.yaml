@@ -583,10 +583,10 @@ spec:
       imagePullSecrets:
       - name: jarvice-docker
       volumes:
-{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
-      - name: ca-jarvice-user
+{{- if (not (empty .Values.jarvice.cacert.java.configMap)) }}
+      - name: jarvice-java-cacert
         configMap:
-          name: "{{ .Values.jarvice.cacert.user.configMap }}"
+          name: {{ .Values.jarvice.cacert.java.configMap }}
           optional: false
           defaultMode: 444
 {{- end }}
