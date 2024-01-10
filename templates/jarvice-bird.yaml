@@ -680,8 +680,8 @@ spec:
 {{- end }}
         resources:
 {{ toYaml .Values.jarvice_bird.server.resources | indent 10 }}
-        securityContext:
-          fsGroup: {{ .Values.jarvice_bird.server.securityContext.fsGroup }}
+      securityContext:
+        fsGroup: {{ .Values.jarvice_bird.server.securityContext.fsGroup }}
 ---
 apiVersion: v1
 kind: Service
