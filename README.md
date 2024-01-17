@@ -64,6 +64,7 @@ $ git clone https://github.com/nimbix/jarvice-helm.git
     - [Install a dynamic storage provisioner](#install-a-dynamic-storage-provisioner)
     - [Set up database backups](#set-up-database-backups)
     - [Customize JARVICE files via a ConfigMap](#customize-jarvice-files-via-a-configmap)
+    - [Customize Keycloak login and email theme](#cutomize-keycloak-login-and-email-theme)
     - [View status of the installed kubernetes objects](#view-status-of-the-installed-kubernetes-objects)
     - [Retreive IP addresses for accessing JARVICE](#retreive-ip-addresses-for-accessing-jarvice)
     - [Deploy "EFK" Stack](#deploy-efk-stack)
@@ -1214,6 +1215,95 @@ $ kubectl --namespace jarvice-system delete pods -l component=jarvice-scheduler
 Reload jarvice-dal pods (only to apply dal_hook\*.sh updates):
 ```bash
 $ kubectl --namespace jarvice-system delete pods -l component=jarvice-dal
+```
+
+### Customize Keycloak login and email theme
+
+The Keycloak login and email themes can be customized using initContainers with settings provided by `jarvice-settings` configMap.
+
+#### Step 1) Adding initContainers to `keycloakx` section of `values.yaml`
+
+```bash
+  extraInitContainers: |
+    - name: get-bird-theme
+      image: us-docker.pkg.dev/jarvice-system/images/jarvice-keycloak:jarvice-master
+      imagePullPolicy: Always
+      command:
+        - sh
+      args:
+        - -c
+        - |
+          cp /opt/keycloak/providers/*.jar /theme
+      volumeMounts:
+        - name: theme-init
+          mountPath: /theme
+    - name: build-custom-theme
+      env:
+        - name: KEYCLOAK_BEFORE_LOGO
+          value: "keycloak_theme_before.png"
+        - name: KEYCLOAK_AFTER_LOGO
+          value: "keycloak_theme_after.png"
+      image: us-docker.pkg.dev/jarvice/images/eclipse-temurin:11-jdk-ubi9-minimal
+      imagePullPolicy: Always
+      command:
+        - sh
+      args:
+        - -c
+        - |
+          set -e
+          chown root:root /theme/*.*
+          cd /theme
+          jar xf bird-keycloak-themes.jar
+          rm -rf theme/oldatos
+          rm -rf bird-keycloak-themes.jar
+          # uncomment to customize login theme
+          #rm theme/eviden/login/resources/img/*.*
+          #cp /jarvice-settings/favicon.ico theme/eviden/login/resources/img/
+          #cp /jarvice-settings/$KEYCLOAK_BEFORE_LOGO theme/eviden/login/resources/img/
+          #cp /jarvice-settings/$KEYCLOAK_AFTER_LOGO theme/eviden/login/resources/img/
+          #cp /jarvice-settings/keycloak-bg.jpg theme/eviden/login/resources/img/
+          #sed -i "s|Software-Suites-black.svg|$KEYCLOAK_BEFORE_LOGO|" theme/eviden/login/resources/css/login.css
+          #sed -i "s|eviden.svg|$KEYCLOAK_AFTER_LOGO|" theme/eviden/login/resources/css/login.css
+          # uncomment to customize email theme
+          #mkdir -p theme/eviden/email/messages
+          #echo 'parent=keycloak' > theme/eviden/email/theme.properties
+          #echo 'import=common/keycloak' >> theme/eviden/email/theme.properties
+          #cp /jarvice-settings/messages_en.properties theme/eviden/email/messages
+          #sed -i "s|\"login\"|\"login\", \"email\"|" META-INF/keycloak-themes.json
+          jar cf bird-keycloak-themes.jar theme/ META-INF/
+          rm -rf theme/ META-INF/
+      volumeMounts:
+        - name: theme-init
+          mountPath: /theme
+        - name: theme-config
+          mountPath: /jarvice-settings
+  extraVolumes: |
+    - name: theme-init
+      emptyDir: {}
+    - name: theme-config
+      configMap:
+        name: jarvice-settings
+        optional: true
+  extraVolumeMounts: |
+    - name: theme-init
+      mountPath: "/opt/keycloak/providers"
+      readOnly: true
+```
+
+#### Step 2) Provide override files in `jarvice-settings`:
+
+##### Keycloak login theme
+* `favicon.ico` favicon used for webpages
+* `keycloak_theme_before.png` logo or branding for top-left of login page (png/svg format preferred)
+* `keycloak_theme_after.png` logo or branding for top-right of login page (png/svg format preferred)
+* `keycloak-bg.jpg` background image for login page (1920x1080 resolution recommended)
+##### Keycloak email theme
+* `messeges_en.properties` Keycloak email messages.
+```bash
+/* sample messeges_en.properties */
+passwordResetSubject=My password recovery
+passwordResetBody=Reset password link: {0}
+passwordResetBodyHtml=<a href="{0}">Reset password</a>
 ```
 
 ### View status of the installed kubernetes objects
