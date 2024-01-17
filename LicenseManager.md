@@ -373,17 +373,59 @@ If a single application needs to consider multiple license server addresses for 
 
 ---
 
-## Advanced: Automatic License Feature Computation
+### Advanced: JARVICE Scheduler Hook Scripts
 
-The JARVICE scheduler provides a mechanism to hook a custom script before job submission in order to compute appropriate license feature requests.  This can be used to enforce license queuing policies even if users omit or mistake features when submitting jobs.
+The JARVICE scheduler provides a mechanism to hook customs script before job submission in order to compute appropriate license feature requests and validate job submissions.  This can be used to enforce license queuing policies even if users omit or mistake features when submitting jobs.
 
-The JARVICE scheduler supports `bash`, `tcsh`, or `python3` scripts for this mechanism.  Scripts are executable and must refer to the appropriate shell in the first line, such as `#!/bin/tcsh`, `#!/bin/bash`, or `#!/usr/bin/python3`.  The hook mechanism passes information into the script during job submission identifying various attributes such as user, application, command line arguments, and scale, and expects the script to output the appropriate license features to use, in the *feature:count* format (e.g. `mmsim:4`).  JARVICE then patches the request into the job before completing the submission.  The hook script may also fail submission by simply returning a non-zero value.
+The JARVICE scheduler supports `bash`, `tcsh`, or `python3` scripts for this mechanism.  Scripts are executable and must refer to the appropriate shell in the first line, such as `#!/bin/tcsh`, `#!/bin/bash`, or `#!/usr/bin/python3`.  The hook mechanism passes information into the script during job submission identifying various attributes such as user, application, command line arguments, and scale.
 
-Hook scripts are connected to the JARVICE scheduler service (upstream) via the `jarvice-settings` *ConfigMap*, using a file called `licfeatures`.  Both the *ConfigMap* and the script itself are optional and are only called if found.  It is possible to create (or re-create) the *ConfigMap* without restarting the service to make updates, but please note it may take Kubernetes a few seconds (typically up to a minute) to apply the changes.  Also note that this *ConfigMap* may include other files for other parts of the system, as described in [Customize JARVICE files via a ConfigMap](README.md#customize-jarvice-files-via-a-configmap).
+Hook scripts are connected to the JARVICE scheduler service (upstream) via the `jarvice-settings` *ConfigMap*, using a file called `licfeatures` or `subhook`.  Both the *ConfigMap* and the script itself are optional and are only called if found.  It is possible to create (or re-create) the *ConfigMap* without restarting the service to make updates, but please note it may take Kubernetes a few seconds (typically up to a minute) to apply the changes.  Also note that this *ConfigMap* may include other files for other parts of the system, as described in [Customize JARVICE files via a ConfigMap](README.md#customize-jarvice-files-via-a-configmap).
 
 Finally, note that the script will run as `root` within the `jarvice-scheduler` container, but will not have access to any filesystem(s) outside the container unless the deployment is specifically patched to provide them.  As a best practice, keep the filesystem interaction in this script to a minimum.  It should mainly include conditional logic based on string/environment parsing, and arithmetic.
 
-### Example `licfeatures` Script and `jarvice-settings` *ConfigMap*
+### Hook Script Environment
+
+The following table explains the environment the JARVICE scheduler passes to the hook scripts for each job.  Note that all environment variables are set, even if to empty values where appropriate.
+
+Variable|Description
+---|---
+`"$@"` (`bash`) or `"$*"`|command-line arguments passed to the job, including the executable entry point to run; useful to deduce the specific solver being executed along with its parameters, in order to determine appropriate features
+`${JOB_USER}`|the JARVICE user name of the user submitting the job
+`${JOB_IDUSER}`|the mapped or identity policy affected user name; note that this may be the same as `${JOB_USER}` unless `jarvice-idmapper` is in use or the account's administrator(s) defined an explicit setting in the *Account->Identity* view
+`${JOB_PROJECT}`|the job's selected project name, if any; note that this will contain the "payer" account's prefix (e.g. if a user is part of a team owned by payer `hpcgroup`, and they select project `cfd1`, this value will be `hpcgroup-cfd1`)
+`${JOB_LABEL}` | job label set by user
+`${JOB_PRIORITY}` | job priority
+`${JOB_QUEUE}` | HPC queue
+`${JOB_WALLTIME}` | maximum compute time a job is allowed to run
+`${JOB_LICENSES}`|the requested license feature(s) and count(s), if any
+`${JOB_APP}`|the JARVICE application ID for the job being submitted; this is the same as the `app` key in the job submission JSON, and can be inspected in the task builder before submitting a job
+`${JOB_NODES}`|the number of nodes the job is requesting
+`${JOB_CORESPER}`|the number of cores per node the job is requesting (typically as defined in the machine definition for the respective machine request)
+`${JOB_CORES}`|the total number of cores the job is requesting, across all node(s)
+`${JOB_GPUSPER}`|the number of GPUs the job is requesting; note that this may be 0 if no GPUs are defined in the respective machine definition
+`${JOB_GPUS}`|the total number of GPUs the job is requesting, across all node(s)
+`${JOB_RAMPER}`|the RAM per node (in gigabytes) the job is requesting, as defined in the machine definition
+`${JOB_RAM}`|the total amount of RAM (in gigabytes) the job is requesting, across all node(s)
+`${JOB_MACHINE}`|the name of the machine type the job is requesting
+`${JOB_SCHED_ID}`|the numeric "scheduler ID" the job is requesting; this number is found in the *Administration->Clusters* view; this may be useful to prevent certain solver features from running on certain clusters due to license restrictions
+
+### Automatic License Feature Computation
+
+The `jarvice-scheduler` expects the script to output the appropriate license features to use, in the feature:count format (e.g. `mmsim:4``). JARVICE then patches the request into the job before completing the submission. The hook script may also fail submission by simply returning a non-zero value. 
+
+If the script returns 0, JARVICE expects `stdout` to contain the license feature request to patch the job submission with, which will in turn be visible to `jarvice-license-manager` if that user account is connected to a license server under its watch.  The script may output nothing to `stdout`, which tells JARVICE to remove all license feature requests that may have been specified.
+
+If the script returns non-zero, JARVICE will fail the job submission informing the user that it was not able to compute license features.  The script should log the actual problem to `stderr` (`&2`) so system administrators may inspect the logs as described [below](#logging-considerations-for-jarvice-scheduler).
+
+### Job Submission Validation
+
+The `jarvice-scheduler` expects the script to output `TRUE` for valid jobs which should accepted for scheduling.  The hook script may also fail submission by simply returning a non-zero value.
+
+The hook script can notify the user why a job request has been rejected by writing the reason to `stdout`.
+
+If the script returns non-zero, JARVICE will fail the job submission informing the user that the job is invalid.  The script should log the actual problem to `stderr` (`&2`) so system administrators may inspect the logs as described [below](#logging-considerations-for-jarvice-scheduler).
+
+### Example `licfeatures` Script
 
 The following sample script demonstrates patching feature requests as well as invalidating job submissions.  Please note that it is for illustration purposes only.  The script file should be named `licfeatures`.
 
@@ -403,14 +445,31 @@ echo $JOB_LICENSES
 exit 0
 ```
 
-Note that all informational/debug messages are logged to `&2` (`stderr`), as JARVICE interprets anything written to `stdout` as actual license features and counts.  Anything written to `stderr` can be found in the `jarvice-scheduler` component logs, and easily tailed with the `kubectl` command as:
+### Example `subhook` Script
+
+The following sample script demonstrates job validation.  The script file should be named `subhook`.
+
+```bash
+#!/bin/bash
+
+echo "-- entered validation script --" >&2
+env |grep ^JOB_ >&2
+echo "command line: $@" >&2
+if [ -z "$JOB_WALLTIME" ]; then
+    echo "Job walltime not set!" >&2
+    echo "Job walltime not set!"
+    exit 1
+fi
+echo "TRUE"
+exit 0
+```
+
+### Logging Considerations for `jarvice-scheduler`
+
+Note that all informational/debug messages are logged to `&2` (`stderr`), as JARVICE interprets anything written to `stdout` as actions that need to be taken for a given job.  Anything written to `stderr` can be found in the `jarvice-scheduler` component logs, and easily tailed with the `kubectl` command as:
 ```
 kubectl logs -n jarvice-system -l component=jarvice-scheduler -f
 ```
-
-If the script returns 0, JARVICE expects `stdout` to contain the license feature request to patch the job submission with, which will in turn be visible to `jarvice-license-manager` if that user account is connected to a license server under its watch.  The script may output nothing to `stdout`, which tells JARVICE to remove all license feature requests that may have been specified.
-
-Finally, if the script returns non-zero, JARVICE will fail the job submission informing the user that it was not able to compute license features.  The script should log the actual problem to `stderr` (`&2`) so system administrators may inspect the logs as described above.
 
 To "connect" this script to the scheduler, simply create (or re-create) the `jarvice-settings` *ConfigMap* from a directory containing the script (`jarvice-settings` in the example below), which should be named `licfeatures` - e.g.:
 ```
@@ -421,7 +480,7 @@ Note that the above fails if the *ConfigMap* already exists.  Delete it first if
 kubectl delete configmap jarvice-settings -n jarvice-system
 ```
 
-To test the example, submit a job with the string `badlic:1` populated in the *License Features* field in the *OPTIONAL* tab of the task builder.  The submission will fail.  Next, submit a job on a multi-CPU machine or set of machines with the license feature string `normal:1`.  If you later clone this job, you will see the *License Feature* value was patched with the total number of CPUs selected for the job.
+To test the `licfeatures` example, submit a job with the string `badlic:1` populated in the *License Features* field in the *OPTIONAL* tab of the task builder.  The submission will fail.  Next, submit a job on a multi-CPU machine or set of machines with the license feature string `normal:1`.  If you later clone this job, you will see the *License Feature* value was patched with the total number of CPUs selected for the job.
 
 The following log snippet from the `jarvice-scheduler` component demonstrates execution of the sample script:
 
@@ -446,29 +505,7 @@ The following log snippet from the `jarvice-scheduler` component demonstrates ex
 
 If running `jarvice-scheduler` in log level 10, you will also see it log the new (computed) license feature request as `normal:2` immediately after the script exits.
 
-### `licfeatures` Script Environment
-
-The following table explains the environment the JARVICE scheduler passes to the `licfeatures` script which it can then use to compute the appropriate license features to request for a given job.  Note that all environment variables are set, even if to empty values where appropriate.
-
-Variable|Description
----|---
-`"$@"` (`bash`) or `"$*"`|command-line arguments passed to the job, including the executable entry point to run; useful to deduce the specific solver being executed along with its parameters, in order to determine appropriate features
-`${JOB_USER}`|the JARVICE user name of the user submitting the job
-`${JOB_IDUSER}`|the mapped or identity policy affected user name; note that this may be the same as `${JOB_USER}` unless `jarvice-idmapper` is in use or the account's administrator(s) defined an explicit setting in the *Account->Identity* view
-`${JOB_PROJECT}`|the job's selected project name, if any; note that this will contain the "payer" account's prefix (e.g. if a user is part of a team owned by payer `hpcgroup`, and they select project `cfd1`, this value will be `hpcgroup-cfd1`)
-`${JOB_LICENSES}`|the requested license feature(s) and count(s), if any
-`${JOB_APP}`|the JARVICE application ID for the job being submitted; this is the same as the `app` key in the job submission JSON, and can be inspected in the task builder before submitting a job
-`${JOB_NODES}`|the number of nodes the job is requesting
-`${JOB_CORESPER}`|the number of cores per node the job is requesting (typically as defined in the machine definition for the respective machine request)
-`${JOB_CORES}`|the total number of cores the job is requesting, across all node(s)
-`${JOB_GPUSPER}`|the number of GPUs the job is requesting; note that this may be 0 if no GPUs are defined in the respective machine definition
-`${JOB_GPUS}`|the total number of GPUs the job is requesting, across all node(s)
-`${JOB_RAMPER}`|the RAM per node (in gigabytes) the job is requesting, as defined in the machine definition
-`${JOB_RAM}`|the total amount of RAM (in gigabytes) the job is requesting, across all node(s)
-`${JOB_MACHINE}`|the name of the machine type the job is requesting
-`${JOB_SCHED_ID}`|the numeric "scheduler ID" the job is requesting; this number is found in the *Administration->Clusters* view; this may be useful to prevent certain solver features from running on certain clusters due to license restrictions
-
-### Additional Notes for the `licfeatures` Script
+### Additional Notes for Hook Scripts
 
 1. `licfeatures` is not executed in a critical section, meaning multiple instances may be running concurrently within a given `jarvice-scheduler` pod or across multiple ones; for this reason, `licfeatures` should be stateless and "single pass"
 2. As described above, great care should be taken not to output anything to `stdout` other than the final license feature(s) and count(s); JARVICE will error check the value and job submission may fail otherwise
