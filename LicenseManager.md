@@ -373,7 +373,7 @@ If a single application needs to consider multiple license server addresses for 
 
 ---
 
-### Advanced: JARVICE Scheduler Hook Scripts
+## Advanced: JARVICE Scheduler Hook Scripts
 
 The JARVICE scheduler provides a mechanism to hook customs script before job submission in order to compute appropriate license feature requests and validate job submissions.  This can be used to enforce license queuing policies even if users omit or mistake features when submitting jobs.
 
@@ -411,7 +411,7 @@ Variable|Description
 
 ### Automatic License Feature Computation
 
-The `jarvice-scheduler` expects the script to output the appropriate license features to use, in the feature:count format (e.g. `mmsim:4``). JARVICE then patches the request into the job before completing the submission. The hook script may also fail submission by simply returning a non-zero value. 
+The `jarvice-scheduler` expects the script to output the appropriate license features to use, in the feature:count format (e.g. `mmsim:4``). JARVICE then patches the request into the job before completing the submission. The hook script may also fail submission by simply returning a non-zero value.
 
 If the script returns 0, JARVICE expects `stdout` to contain the license feature request to patch the job submission with, which will in turn be visible to `jarvice-license-manager` if that user account is connected to a license server under its watch.  The script may output nothing to `stdout`, which tells JARVICE to remove all license feature requests that may have been specified.
 
@@ -458,7 +458,7 @@ echo "command line: $@" >&2
 if [ -z "$JOB_WALLTIME" ]; then
     echo "Job walltime not set!" >&2
     echo "Job walltime not set!"
-    exit 1
+    exit 0
 fi
 echo "TRUE"
 exit 0

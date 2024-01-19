@@ -1350,36 +1350,6 @@ for more details on further configuring an Elasticsearch based stack.
 
 ------------------------------------------------------------------------------
 
-### Job Validation Script
-
-
-
-#### Job Validation Script Environment
-
-The following table explains the environment the JARVICE scheduler passes to the `subhook` script which it can then use to validate incoming job request.  Note that all environment variables are set, even if to empty values where appropriate.
-
-Variable|Description
----|---
-`"$@"` (`bash`) or `"$*"`|command-line arguments passed to the job, including the executable entry point to run; useful to deduce the specific solver being executed along with its parameters, in order to determine appropriate features
-`${JOB_USER}`|the JARVICE user name of the user submitting the job
-`${JOB_IDUSER}`|the mapped or identity policy affected user name; note that this may be the same as `${JOB_USER}` unless `jarvice-idmapper` is in use or the account's administrator(s) defined an explicit setting in the *Account->Identity* view
-`${JOB_PROJECT}`|the job's selected project name, if any; note that this will contain the "payer" account's prefix (e.g. if a user is part of a team owned by payer `hpcgroup`, and they select project `cfd1`, this value will be `hpcgroup-cfd1`)
-`${JOB_LABEL}` | job label set by user
-`${JOB_PRIORITY}` | job priority
-`${JOB_QUEUE}` | HPC queue
-`${JOB_WALLTIME}` | maximum compute time a job is allowed to run
-`${JOB_LICENSES}`|the requested license feature(s) and count(s), if any
-`${JOB_APP}`|the JARVICE application ID for the job being submitted; this is the same as the `app` key in the job submission JSON, and can be inspected in the task builder before submitting a job
-`${JOB_NODES}`|the number of nodes the job is requesting
-`${JOB_CORESPER}`|the number of cores per node the job is requesting (typically as defined in the machine definition for the respective machine request)
-`${JOB_CORES}`|the total number of cores the job is requesting, across all node(s)
-`${JOB_GPUSPER}`|the number of GPUs the job is requesting; note that this may be 0 if no GPUs are defined in the respective machine definition
-`${JOB_GPUS}`|the total number of GPUs the job is requesting, across all node(s)
-`${JOB_RAMPER}`|the RAM per node (in gigabytes) the job is requesting, as defined in the machine definition
-`${JOB_RAM}`|the total amount of RAM (in gigabytes) the job is requesting, across all node(s)
-`${JOB_MACHINE}`|the name of the machine type the job is requesting
-`${JOB_SCHED_ID}`|the numeric "scheduler ID" the job is requesting; this number is found in the *Administration->Clusters* view; this may be useful to prevent certain solver features from running on certain clusters due to license restrictions
-
 ## Additional Resources
 
 - [Release Notes](ReleaseNotes.md)
