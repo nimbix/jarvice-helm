@@ -126,6 +126,28 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.24.0-202401181754
+
+* (JAR-6946) Use persistent PVC for bird server db
+* (JAR-7519) Fixed bug where user by zone drop down lists zones that have been deleted
+* (JAR-7523) Add Disable Notifications feature for sysadmins
+* (JAR-7847) Add the Wall time to Team Jobs dashboard or Team Summary
+* (JAR-7948) Remove unused routes from jarvice-bird ingress
+* (JAR-7972) Allow jarvice-bird Keycloak client to deploy in realms other than 'jarvice'
+* (JAR-7975) Fix error when pulling image from PushToCompute
+* (JAR-7977) Fix error when clicking on active job logs for a submitted job
+* (JAR-8136) Fix error preventing PushToCompute App icon from updating after successful save
+* (JAR-8213) Update docker-unfs3 container to Alpine 3.18
+* (JAR-8214) Enable custom Keyloack email theme
+* (JAR-8223) Move back button on application builder UI
+* (JAR-8230) Enable custom Keycloak login theme
+* (JAR-8245) Fix team limits to include all team member zones
+* (JAR-8246) Fix sidenav rendering
+* (JAR-8280) Correct job details shown to System Administrators
+* (JAR-8296) Remove unused packages from jarvice-bird
+* (JAR-8308) Remove root path from JARVICE_API_PUBLIC_URL
+* (JAR-8311) Automatically refresh Admin/Machines page
+
 ## 3.21.9-1.202312061620
 
 * (JAR-5243) Billing code showing a job in current month even though it completed in previous month
