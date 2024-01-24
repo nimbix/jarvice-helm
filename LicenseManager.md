@@ -375,7 +375,7 @@ If a single application needs to consider multiple license server addresses for 
 
 ## Advanced: JARVICE Scheduler Hook Scripts
 
-The JARVICE scheduler provides a mechanism to hook customs script before job submission in order to compute appropriate license feature requests and validate job submissions.  This can be used to enforce license queuing policies even if users omit or mistake features when submitting jobs.
+The JARVICE scheduler provides a mechanism to hook custom scripts before job submission in order to compute appropriate license feature requests and/or validate job submissions.  This can be used to enforce license queuing policies even if users omit or mistake features when submitting jobs.
 
 The JARVICE scheduler supports `bash`, `tcsh`, or `python3` scripts for this mechanism.  Scripts are executable and must refer to the appropriate shell in the first line, such as `#!/bin/tcsh`, `#!/bin/bash`, or `#!/usr/bin/python3`.  The hook mechanism passes information into the script during job submission identifying various attributes such as user, application, command line arguments, and scale.
 
