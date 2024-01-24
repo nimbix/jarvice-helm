@@ -419,7 +419,7 @@ If the script returns non-zero, JARVICE will fail the job submission informing t
 
 ### Job Submission Validation
 
-The `jarvice-scheduler` expects the script to output `TRUE` for valid jobs which should accepted for scheduling.  The hook script may also fail submission by simply returning a non-zero value.
+The `jarvice-scheduler` expects the script to output `TRUE` for valid jobs which should be accepted for scheduling.  The hook script may also fail submission by simply returning a non-zero value.
 
 The hook script can notify the user why a job request has been rejected by writing the reason to `stdout`.
 
