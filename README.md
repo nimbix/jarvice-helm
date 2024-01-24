@@ -68,6 +68,7 @@ $ git clone https://github.com/nimbix/jarvice-helm.git
     - [View status of the installed kubernetes objects](#view-status-of-the-installed-kubernetes-objects)
     - [Retreive IP addresses for accessing JARVICE](#retreive-ip-addresses-for-accessing-jarvice)
     - [Deploy "EFK" Stack](#deploy-efk-stack)
+    - [Job submission validation hook script](./LicenseManager.md#advanced-jarvice-scheduler-hook-scripts)
 * [Additional Resources](#additional-resources)
 
 ------------------------------------------------------------------------------
