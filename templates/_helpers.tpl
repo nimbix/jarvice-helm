@@ -82,12 +82,10 @@ JARVICE tag for images
 JARVICE version for images
 */}}
 {{- define "jarvice.version" -}}
-{{- if semverCompare "^0.1" .Chart.Version -}}
 {{- if (not (empty .Values.jarvice.JARVICE_IMAGES_VERSION)) -}}
 {{- printf "-%s" .Values.jarvice.JARVICE_IMAGES_VERSION -}}
-{{- end -}}
-{{- else -}}
-{{- printf "-%s" .Chart.Version | trimSuffix "-development" | trimSuffix "-testing" -}}
+{{- else if (not (empty .Chart.Annotations.version)) -}}
+{{- printf "-%s" .Chart.Annotations.version | trimSuffix "-development" | trimSuffix "-testing" -}}
 {{- end -}}
 {{- end -}}
 
