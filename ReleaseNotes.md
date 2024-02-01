@@ -126,6 +126,21 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.24.1-202401311639
+
+* (JAR-7949) Add Vendor option to LDAP federation on Account->LDAP page
+* (JAR-8150) Add general-purpose job submission validation hook script
+* (JAR-8280) Correct job details shown to System Administrators
+* (JAR-8321) Fix PushToCompute bug that clears out application certification
+* (JAR-8325) Update bird nginx config to proxy /portal to port 8080
+* (JAR-8327) Fix bug with FQDN support with slurm scheduler
+* (JAR-8329) Fix jobtail display to show unicode characters correctly
+* (JAR-8330) Update recent apps on BIRD UI
+* (JAR-8345) Fix team limits for Machines in Cluster 0 under Account->Team
+* (JAR-8351) Fix generator for container image tags in jarvice-helm
+* (JAR-8358) Add missing toleration constraint for proxy pod on slurm scheduler
+* (JAR-8376) Optionally move UI submenus to the right using dashboard editor
+
 ## 3.24.0-202401181754
 
 * (JAR-6946) Use persistent PVC for bird server db
