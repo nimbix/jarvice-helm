@@ -126,6 +126,15 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.24.2-202402151917
+
+* (JAR-8357) Remember dashboard navigation history
+* (JAR-8364) (JAR-8420) (JAR-8425) Fix various vulnerabilities on Material Compute UI
+* (JAR-8371) Get global theme from java-web-ui-server
+* (JAR-8453) Fix SAML config failure for some configurations
+* (JAR-8466) Package OpenMPI with UCX
+* (JAR-8471) Add XRT reset for jobs using a Xilinx FPGA
+
 ## 3.24.1-202401311639
 
 * (JAR-7949) Add Vendor option to LDAP federation on Account->LDAP page
