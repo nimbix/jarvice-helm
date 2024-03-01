@@ -126,6 +126,17 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.24.3-202402282109
+
+* (JAR-7845) Prevent SAML/LDAP login if email is already in use
+* (JAR-8356) gkev2 terraform module optionally uses different service account for compute node groups
+* (JAR-8412) (JAR-8430) (JAR-8440) (JAR-8445) (JAR-8435) (JAR-8519) Address various vulnerabilities
+* (JAR-8467) Export theme to json file
+* (JAR-8469) (JAR-8470) Fix issue where job help HTML doesn't show up
+* (JAR-8484) Add timeout for FPGA reset when using Xilinx accelerators
+* (JAR-8486) Correct theme editor settings for dark mode
+* (JAR-8488) Optionally block cloud metadata server (GKE and EKS) from JARVICE jobs
+
 ## 3.24.2-202402151917
 
 * (JAR-8357) Remember dashboard navigation history
