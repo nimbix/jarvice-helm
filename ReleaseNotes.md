@@ -126,6 +126,24 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.24.4-202403251918
+
+* (JAR-8186) Allow apps to disable public IP ingress in interactive endpoints via AppDef
+* (JAR-8283) Add wall time field to Team Jobs view
+* (JAR-8502) Fix incorrect AppDef command name in job builder on BIRD UI
+* (JAR-8507) Fix core slider on job builder for BIRD UI
+* (JAR-8508) Fix job clone on BIRD UI to use correct machine type
+* (JAR-8509) (JAR-8203) Fix bug in appsync preventing deletion of out dated application
+* (JAR-8513) Dashboard transition to Current page after job submission on BIRD UI
+* (JAR-8519) Verify vault share settings during job submission
+* (JAR-8524) Add topbar color to theme editor
+* (JAR-8553) Allow LDAP bind user to use generic string
+* (JAR-8557) Preserve AppDef ordering returned by /jarvice/apps
+* (JAR-8565) Fix bug not displaying all application on Administration->Applications page
+* (JAR-8599) Fix JARVICE_API_PUBLIC_URL substitution in jarvice-helm chart
+* (JAR-8611) Fix /jarvice/apps handling of Google Artifact Docker registries
+* (JAR-8614) Update dependencies for OpenMPI
+
 ## 3.24.3-202402282109
 
 * (JAR-7845) Prevent SAML/LDAP login if email is already in use
