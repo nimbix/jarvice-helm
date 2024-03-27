@@ -6,7 +6,7 @@ entries:
       version: 3.24.4-202403251918
     apiVersion: v2
     appVersion: 3.24.4-202403251918
-    created: "2024-03-27T15:45:15.34505601Z"
+    created: "2024-03-27T15:45:19.418291871Z"
     dependencies:
     - condition: keycloakx.enabled
       name: keycloakx
@@ -37,10 +37,44 @@ entries:
     version: 3.24.4
   - annotations:
       tag: jarvice-master
+      version: 3.24.4-202403251918
+    apiVersion: v2
+    appVersion: 3.24.4-202403251918
+    created: "2024-03-27T15:45:19.357207447Z"
+    dependencies:
+    - condition: keycloakx.enabled
+      name: keycloakx
+      repository: https://codecentric.github.io/helm-charts/
+      version: 2.1.0
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 12.2.7
+    description: JARVICE cloud platform
+    digest: 1a4d795afe277637b94e08cf78da56c9a7457fe3919df3b06013b6b20c633a12
+    home: http://www.nimbix.net/
+    icon: https://github.com/nimbix/jarvice-helm/raw/master/skin-default/favicon.png
+    keywords:
+    - JARVICE
+    - HPC
+    - cloud
+    kubeVersion: '>=1.14.0-0'
+    maintainers:
+    - email: support@nimbix.net
+      name: Nimbix, Inc.
+      url: http://www.nimbix.net/
+    name: jarvice
+    sources:
+    - https://github.com/nimbix/jarvice-helm
+    urls:
+    - https://nimbix.github.io/jarvice-helm/jarvice-3.24.4-202403251918.tgz
+    version: 3.24.4-202403251918
+  - annotations:
+      tag: jarvice-master
       version: 3.24.3-202402282109
     apiVersion: v2
     appVersion: 3.24.3-202402282109
-    created: "2024-03-27T15:45:15.287810737Z"
+    created: "2024-03-27T15:45:19.321108905Z"
     dependencies:
     - condition: keycloakx.enabled
       name: keycloakx
@@ -74,7 +108,7 @@ entries:
       version: 3.24.3-202402282109
     apiVersion: v2
     appVersion: 3.24.3-202402282109
-    created: "2024-03-27T15:45:15.252258692Z"
+    created: "2024-03-27T15:45:19.265781252Z"
     dependencies:
     - condition: keycloakx.enabled
       name: keycloakx
@@ -108,7 +142,7 @@ entries:
       version: 3.24.2-202402151917
     apiVersion: v2
     appVersion: 3.24.2-202402151917
-    created: "2024-03-27T15:45:15.217154909Z"
+    created: "2024-03-27T15:45:19.232029708Z"
     dependencies:
     - condition: keycloakx.enabled
       name: keycloakx
@@ -142,7 +176,7 @@ entries:
       version: 3.24.2-202402151917
     apiVersion: v2
     appVersion: 3.24.2-202402151917
-    created: "2024-03-27T15:45:15.160568737Z"
+    created: "2024-03-27T15:45:19.173587063Z"
     dependencies:
     - condition: keycloakx.enabled
       name: keycloakx
@@ -176,7 +210,7 @@ entries:
       version: 3.24.1-202401311639
     apiVersion: v2
     appVersion: 3.24.1-202401311639
-    created: "2024-03-27T15:45:15.12147524Z"
+    created: "2024-03-27T15:45:19.13921951Z"
     dependencies:
     - condition: keycloakx.enabled
       name: keycloakx
@@ -210,7 +244,7 @@ entries:
       version: 3.24.1-202401311639
     apiVersion: v2
     appVersion: 3.24.1-202401311639
-    created: "2024-03-27T15:45:15.051386747Z"
+    created: "2024-03-27T15:45:19.080033485Z"
     dependencies:
     - condition: keycloakx.enabled
       name: keycloakx
@@ -244,7 +278,7 @@ entries:
       version: 3.24.0-202401181754
     apiVersion: v2
     appVersion: 3.24.0-202401181754
-    created: "2024-03-27T15:45:14.980993645Z"
+    created: "2024-03-27T15:45:19.042270234Z"
     dependencies:
     - condition: keycloakx.enabled
       name: keycloakx
@@ -278,7 +312,7 @@ entries:
       version: 3.24.0-202401181754
     apiVersion: v2
     appVersion: 3.24.0-202401181754
-    created: "2024-03-27T15:45:14.91711452Z"
+    created: "2024-03-27T15:45:18.981853144Z"
     dependencies:
     - condition: keycloakx.enabled
       name: keycloakx
@@ -312,7 +346,7 @@ entries:
       version: 3.21.9-1.202312061620
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:14.848606726Z"
+    created: "2024-03-27T15:45:18.947932889Z"
     dependencies:
     - condition: keycloakx.enabled
       name: keycloakx
@@ -346,7 +380,7 @@ entries:
       version: 3.21.9-1.202311081510
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:14.790907324Z"
+    created: "2024-03-27T15:45:18.911948422Z"
     dependencies:
     - condition: keycloakx.enabled
       name: keycloakx
@@ -380,7 +414,7 @@ entries:
       version: 3.21.9-1.202310261643
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:14.725401671Z"
+    created: "2024-03-27T15:45:18.854763545Z"
     dependencies:
     - condition: keycloakx.enabled
       name: keycloakx
@@ -414,7 +448,7 @@ entries:
       version: 3.21.9-1.202309071538
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:14.659257362Z"
+    created: "2024-03-27T15:45:18.817056518Z"
     dependencies:
     - condition: keycloakx.enabled
       name: keycloakx
@@ -448,7 +482,7 @@ entries:
       version: 3.21.9-1.202308021521
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:14.604833773Z"
+    created: "2024-03-27T15:45:18.75982006Z"
     dependencies:
     - condition: keycloakx.enabled
       name: keycloakx
@@ -482,7 +516,7 @@ entries:
       version: 3.21.9-1.202307051453
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:14.530661227Z"
+    created: "2024-03-27T15:45:18.722590548Z"
     dependencies:
     - condition: keycloakx.enabled
       name: keycloakx
@@ -516,7 +550,7 @@ entries:
       version: 3.21.9-1.202306281533
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:14.475958194Z"
+    created: "2024-03-27T15:45:18.671424335Z"
     dependencies:
     - condition: keycloakx.enabled
       name: keycloakx
@@ -550,7 +584,7 @@ entries:
       version: 3.21.9-1.202306211440
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:14.438998466Z"
+    created: "2024-03-27T15:45:18.637584748Z"
     dependencies:
     - condition: keycloakx.enabled
       name: keycloakx
@@ -584,7 +618,7 @@ entries:
       version: 3.21.9-1.202306011924
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:14.404893261Z"
+    created: "2024-03-27T15:45:18.574690402Z"
     dependencies:
     - condition: keycloakx.enabled
       name: keycloakx
@@ -618,7 +652,7 @@ entries:
       version: 3.21.9-1.202305101453
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:14.350969222Z"
+    created: "2024-03-27T15:45:18.539176999Z"
     dependencies:
     - condition: keycloakx.enabled
       name: keycloakx
@@ -652,7 +686,7 @@ entries:
       version: 3.21.9-1.202304121617
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:14.317289033Z"
+    created: "2024-03-27T15:45:18.503961925Z"
     dependencies:
     - condition: keycloakx.enabled
       name: keycloakx
@@ -686,7 +720,7 @@ entries:
       version: 3.21.9-1.202303301627
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:14.259801823Z"
+    created: "2024-03-27T15:45:18.451648835Z"
     dependencies:
     - condition: keycloak.enabled
       name: keycloak
@@ -716,7 +750,7 @@ entries:
       version: 3.21.9-1.202303211726
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:14.227746955Z"
+    created: "2024-03-27T15:45:18.418200423Z"
     dependencies:
     - condition: keycloak.enabled
       name: keycloak
@@ -746,7 +780,7 @@ entries:
       version: 3.21.9-1.202303151623
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:14.182267091Z"
+    created: "2024-03-27T15:45:18.367162743Z"
     dependencies:
     - condition: keycloak.enabled
       name: keycloak
@@ -776,7 +810,7 @@ entries:
       version: 3.21.9-1.202303021959
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:14.150758066Z"
+    created: "2024-03-27T15:45:18.336303777Z"
     dependencies:
     - condition: keycloak.enabled
       name: keycloak
@@ -806,7 +840,7 @@ entries:
       version: 3.21.9-1.202302250249
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:14.092831191Z"
+    created: "2024-03-27T15:45:18.30478239Z"
     description: JARVICE cloud platform
     digest: 621c7db66a68f536ac49a1b3c9df6b8c8740de4a79d99767544a6ff286eb1e30
     home: http://www.nimbix.net/
@@ -831,7 +865,7 @@ entries:
       version: 3.21.9-1.202302221615
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:14.056127382Z"
+    created: "2024-03-27T15:45:18.259431358Z"
     description: JARVICE cloud platform
     digest: f61fe0c4827090e329b9fb14e1fb2c6843629f5a7308e2bc8a32ac5069d95865
     home: http://www.nimbix.net/
@@ -856,7 +890,7 @@ entries:
       version: 3.21.9-1.202302161750
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:14.024141282Z"
+    created: "2024-03-27T15:45:18.234697273Z"
     description: JARVICE cloud platform
     digest: 0384695ef46861e2c483d2c1f19e9de7d7d2c116f591d6aee24377315e9e8c65
     home: http://www.nimbix.net/
@@ -881,7 +915,7 @@ entries:
       version: 3.21.9-1.202302101633
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.97916887Z"
+    created: "2024-03-27T15:45:18.210856653Z"
     description: JARVICE cloud platform
     digest: bd81d5c928409b5f0de3bf881e195deaa3200840d493233f1c5f4c875e9ce121
     home: http://www.nimbix.net/
@@ -906,7 +940,7 @@ entries:
       version: 3.21.9-1.202211231718
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.954682471Z"
+    created: "2024-03-27T15:45:18.162059078Z"
     description: JARVICE cloud platform
     digest: 4fb334701b6d4043cb045c9030193074100db3abb46f59daab897db5aaa10c11
     home: http://www.nimbix.net/
@@ -931,7 +965,7 @@ entries:
       version: 3.21.9-1.202210191724
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.929911998Z"
+    created: "2024-03-27T15:45:18.142445879Z"
     description: JARVICE cloud platform
     digest: 66f7155da97de55bb79fd3dd6df1198bea228c5e80bd28c4f6fb8a3ab036e8dd
     home: http://www.nimbix.net/
@@ -956,7 +990,7 @@ entries:
       version: 3.21.9-1.202210121614
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.906338195Z"
+    created: "2024-03-27T15:45:18.119431396Z"
     description: JARVICE cloud platform
     digest: 4ea6a624b987c722dea1fd4bee5a9d0d6fc3b89eea2c31de15978214a4ef38c8
     home: http://www.nimbix.net/
@@ -981,7 +1015,7 @@ entries:
       version: 3.21.9-1.202209141659
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.861575719Z"
+    created: "2024-03-27T15:45:18.074074258Z"
     description: JARVICE cloud platform
     digest: 37cee8044e7adce7885865a3101f4722dfae1c50bb3982af7595e501baf9ec30
     home: http://www.nimbix.net/
@@ -1006,7 +1040,7 @@ entries:
       version: 3.21.9-1.202208311627
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.838658277Z"
+    created: "2024-03-27T15:45:18.048514576Z"
     description: JARVICE cloud platform
     digest: b13ac9773a8b6f54db65ef94bf8d92d91156393a091af12982f484d22f6bc35b
     home: http://www.nimbix.net/
@@ -1031,7 +1065,7 @@ entries:
       version: 3.21.9-1.202208171639
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.812335815Z"
+    created: "2024-03-27T15:45:18.025133915Z"
     description: JARVICE cloud platform
     digest: 649b2e2de2a520b6d294804316e6f29d6c5fdd7edc1c3966d39fc4be3ff97a50
     home: http://www.nimbix.net/
@@ -1056,7 +1090,7 @@ entries:
       version: 3.21.9-1.202207251527
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.765839164Z"
+    created: "2024-03-27T15:45:17.976128985Z"
     description: JARVICE cloud platform
     digest: 0cacf409b9d00bb4816a606d578dd4d011222980b4a3b2e0ac997062732c3329
     home: http://www.nimbix.net/
@@ -1081,7 +1115,7 @@ entries:
       version: 3.21.9-1.202207201613
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.74338358Z"
+    created: "2024-03-27T15:45:17.956570306Z"
     description: JARVICE cloud platform
     digest: 7820c912e8dfafd26213ce0d96ff24e133427fb68c95cc340dc932d7bb20c44b
     home: http://www.nimbix.net/
@@ -1106,7 +1140,7 @@ entries:
       version: 3.21.9-1.202207071522
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.717104578Z"
+    created: "2024-03-27T15:45:17.936029902Z"
     description: JARVICE cloud platform
     digest: 6e80b114f72d9a44ea9e019ffc4a7ca5863cf96a293b31f2b683eee1aac2ff78
     home: http://www.nimbix.net/
@@ -1131,7 +1165,7 @@ entries:
       version: 3.21.9-1.202206081546
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.677455064Z"
+    created: "2024-03-27T15:45:17.911346665Z"
     description: JARVICE cloud platform
     digest: 1c4dbb379b91c9f48db5b537f9c010d49689af4a46b512c0dd331932c2892849
     home: http://www.nimbix.net/
@@ -1156,7 +1190,7 @@ entries:
       version: 3.21.9-1.202204271651
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.655750418Z"
+    created: "2024-03-27T15:45:17.874882067Z"
     description: JARVICE cloud platform
     digest: ff54abdda9309bc737e0cf9d8b0837b4a5fd9d17f87436f88996bb42bdd4d697
     home: http://www.nimbix.net/
@@ -1181,7 +1215,7 @@ entries:
       version: 3.21.9-1.202203301625
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.634285315Z"
+    created: "2024-03-27T15:45:17.851818763Z"
     description: JARVICE cloud platform
     digest: a55b505c7ba29f2682998b32a591005ac478c73cdec328b73216bd278e15556d
     home: http://www.nimbix.net/
@@ -1206,7 +1240,7 @@ entries:
       version: 3.21.9-1.202201191724
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.612578444Z"
+    created: "2024-03-27T15:45:17.820208232Z"
     description: JARVICE cloud platform
     digest: ae24c596c545e99b82edde7712dbd4b4f393aae69c172f8664004ce6170ebe9c
     home: http://www.nimbix.net/
@@ -1231,7 +1265,7 @@ entries:
       version: 3.21.9-1.202112081812
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.570157601Z"
+    created: "2024-03-27T15:45:17.772368243Z"
     description: JARVICE cloud platform
     digest: 3aba2292cd9ccb911d797c56fb2ce81d09bccd419d8ac6501902666c6e2f9079
     home: http://www.nimbix.net/
@@ -1256,7 +1290,7 @@ entries:
       version: 3.21.9-1.202111241749
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.55158647Z"
+    created: "2024-03-27T15:45:17.752244725Z"
     description: JARVICE cloud platform
     digest: 4612291471471840df0003869ba3d4c0fb77712dfc7e3a450d64f7926ed78f8d
     home: http://www.nimbix.net/
@@ -1281,7 +1315,7 @@ entries:
       version: 3.21.9-1.202111101808
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.532313329Z"
+    created: "2024-03-27T15:45:17.732114437Z"
     description: JARVICE cloud platform
     digest: 88368ba44e0e3854a90e4f754c1a2af31c143b33cc0642d59d271e494c798e2c
     home: http://www.nimbix.net/
@@ -1306,7 +1340,7 @@ entries:
       version: 3.21.9-1.202110271630
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.511436876Z"
+    created: "2024-03-27T15:45:17.712344923Z"
     description: JARVICE cloud platform
     digest: 72d1c805a4555dbbb84dcad0b336782edc85c9d3e70c32b6c825981bf3e03b8f
     home: http://www.nimbix.net/
@@ -1331,7 +1365,7 @@ entries:
       version: 3.21.9-1.202110141638
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.490132716Z"
+    created: "2024-03-27T15:45:17.669673062Z"
     description: JARVICE cloud platform
     digest: 3d56f4f759ee9dde16b5966be0749b881ddc752e2f746ccf34d035cd186d9983
     home: http://www.nimbix.net/
@@ -1356,7 +1390,7 @@ entries:
       version: 3.21.9-1.202109301638
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.463840813Z"
+    created: "2024-03-27T15:45:17.650696249Z"
     description: JARVICE cloud platform
     digest: 5582f6d197066b99342528fac525cb9b989fab7e0b38ec108b247ae72dd58ad7
     home: http://www.nimbix.net/
@@ -1381,7 +1415,7 @@ entries:
       version: 3.21.9-1.202109171659
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.42141158Z"
+    created: "2024-03-27T15:45:17.632059497Z"
     description: JARVICE cloud platform
     digest: 393704d7cc7e9d07e73c015b5d0f4eafeb8a8245654d1bf464ceedb4ee90c3dc
     home: http://www.nimbix.net/
@@ -1406,7 +1440,7 @@ entries:
       version: 3.21.9-1.202108181638
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.368638424Z"
+    created: "2024-03-27T15:45:17.613542584Z"
     description: JARVICE cloud platform
     digest: 8129f622617a2430b2bc9c21dd9c712f98c779d55cd27e2eafc971f7a7003385
     home: http://www.nimbix.net/
@@ -1431,7 +1465,7 @@ entries:
       version: 3.21.9-1.202107211903
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.348926728Z"
+    created: "2024-03-27T15:45:17.572222736Z"
     description: JARVICE cloud platform
     digest: 8dc69b423c8da949ee73587cd7af9d1a03dc7fe1ea52f58b464986b45f63a811
     home: http://www.nimbix.net/
@@ -1456,7 +1490,7 @@ entries:
       version: 3.21.9-1.202107121913
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.331387516Z"
+    created: "2024-03-27T15:45:17.55222311Z"
     description: JARVICE cloud platform
     digest: 2e9eac47a1e40f099666bbf0c690697efab5a33cbb5ce6194e49092c411146dd
     home: http://www.nimbix.net/
@@ -1481,7 +1515,7 @@ entries:
       version: 3.21.9-1.202107071928
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.309712945Z"
+    created: "2024-03-27T15:45:17.53345385Z"
     description: JARVICE cloud platform
     digest: f0cbbea34041379fc2e7dcd85d1b2feb7de36cf102648409474d431e81a23041
     home: http://www.nimbix.net/
@@ -1506,7 +1540,7 @@ entries:
       version: 3.21.9-1.202106231923
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.268024875Z"
+    created: "2024-03-27T15:45:17.514234458Z"
     description: JARVICE cloud platform
     digest: d24962bd1b8769f93a66f47a003d1dd2d32ba1abaf4773b8bb84f54eca8585d2
     home: http://www.nimbix.net/
@@ -1531,7 +1565,7 @@ entries:
       version: 3.21.9-1.202106161847
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.249205103Z"
+    created: "2024-03-27T15:45:17.475048174Z"
     description: JARVICE cloud platform
     digest: 0af0fe34a5bf4af8ba21df7466e0fc6fec53f33f528a14b60806f21e53733bb5
     home: http://www.nimbix.net/
@@ -1556,7 +1590,7 @@ entries:
       version: 3.21.9-1.202104281919
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.229183569Z"
+    created: "2024-03-27T15:45:17.450819915Z"
     description: JARVICE cloud platform
     digest: a8c1cc7a4be2bcb66ff3e00c2ee60eedbaf9d1303e2cb13080e6106f82c58759
     home: http://www.nimbix.net/
@@ -1581,7 +1615,7 @@ entries:
       version: 3.21.9-1.202104192100
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.211551504Z"
+    created: "2024-03-27T15:45:17.433007275Z"
     description: JARVICE cloud platform
     digest: adbd82b594e952f5ffc893e7bca745c480a3559865b47c5e851fc66617f4bb9c
     home: http://www.nimbix.net/
@@ -1606,7 +1640,7 @@ entries:
       version: 3.21.9-1.202104151840
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.173985338Z"
+    created: "2024-03-27T15:45:17.4183135Z"
     description: JARVICE cloud platform
     digest: b3034275b23aa12907164e1459beb29caf4197aaf9521f73267c749503927648
     home: http://www.nimbix.net/
@@ -1631,7 +1665,7 @@ entries:
       version: 3.21.9-1.202104011842
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.154548015Z"
+    created: "2024-03-27T15:45:17.372140139Z"
     description: JARVICE cloud platform
     digest: ed84462b982a59a4bad1d30dc13d63c674be83ed668cb9c207ab72065d82e6fc
     home: http://www.nimbix.net/
@@ -1656,7 +1690,7 @@ entries:
       version: 3.21.9-1.202103171856
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.136181106Z"
+    created: "2024-03-27T15:45:17.354145428Z"
     description: JARVICE cloud platform
     digest: b9780b16ee40bc80842dfedce709a10d96e2a51a42337bf56d82fc12d4c5c1da
     home: http://www.nimbix.net/
@@ -1681,7 +1715,7 @@ entries:
       version: 3.21.9-1.202103031953
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.116764003Z"
+    created: "2024-03-27T15:45:17.339803074Z"
     description: JARVICE cloud platform
     digest: fb3278eed18a171fa1eb4b7af66d9a5fd3ca9ec78ebb0301e495bb2a90c2deea
     home: http://www.nimbix.net/
@@ -1706,7 +1740,7 @@ entries:
       version: 3.21.9-1.202102222036
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.094241611Z"
+    created: "2024-03-27T15:45:17.321533462Z"
     description: JARVICE cloud platform
     digest: 547f6c4b6df22f6febaece5feb8c8bb2c31db66ab231f34fe24ec75f210838d8
     home: http://www.nimbix.net/
@@ -1731,7 +1765,7 @@ entries:
       version: 3.21.9-1.202102032013
     apiVersion: v2
     appVersion: 3.21.9
-    created: "2024-03-27T15:45:13.076446028Z"
+    created: "2024-03-27T15:45:17.30401286Z"
     description: JARVICE cloud platform
     digest: 198efab510ba003e338c228d6fbdcdad701d5fb1ec4b911196f213a05c32a8f6
     home: http://www.nimbix.net/
@@ -1756,7 +1790,7 @@ entries:
       version: 3.21.0-4.202112081735
     apiVersion: v2
     appVersion: 3.21.0
-    created: "2024-03-27T15:45:13.050903882Z"
+    created: "2024-03-27T15:45:17.26507236Z"
     description: JARVICE cloud platform
     digest: 0afcd539bf562d994e2eed97110ec3b03baf11abeed1520dc2df7a6382b2ad98
     home: http://www.nimbix.net/
@@ -1781,7 +1815,7 @@ entries:
       version: 3.21.0-4.202109171654
     apiVersion: v2
     appVersion: 3.21.0
-    created: "2024-03-27T15:45:13.00671467Z"
+    created: "2024-03-27T15:45:17.247958967Z"
     description: JARVICE cloud platform
     digest: 6ccbb946439797f787ac62a8d8a496323f40029e5bc106f06dad8740e676d8f0
     home: http://www.nimbix.net/
@@ -1806,7 +1840,7 @@ entries:
       version: 3.21.0-3.202107011959
     apiVersion: v2
     appVersion: 3.21.0
-    created: "2024-03-27T15:45:12.97222071Z"
+    created: "2024-03-27T15:45:17.230916113Z"
     description: JARVICE cloud platform
     digest: a213a8a52628cbfaccbc66bec1e37d90e8950717a2db314f3da14fccfa7c30a5
     home: http://www.nimbix.net/
@@ -1831,7 +1865,7 @@ entries:
       version: 3.21.0-1.202104261600
     apiVersion: v2
     appVersion: 3.21.0
-    created: "2024-03-27T15:45:12.951768528Z"
+    created: "2024-03-27T15:45:17.213892205Z"
     description: JARVICE cloud platform
     digest: 3bdb1134d7d8eb5fc2b49983e162f6ee2a66a48144ae61013a771ecc7de93c64
     home: http://www.nimbix.net/
@@ -1856,7 +1890,7 @@ entries:
       version: 3.21.0-1.202103121945
     apiVersion: v2
     appVersion: 3.21.0
-    created: "2024-03-27T15:45:12.93198256Z"
+    created: "2024-03-27T15:45:17.174271222Z"
     description: JARVICE cloud platform
     digest: 9779c36a180315de2be1bb778dc692d082a0a685d47f1bf8c7e475818d64746d
     home: http://www.nimbix.net/
@@ -1881,7 +1915,7 @@ entries:
       version: 3.21.0-0.202102032037
     apiVersion: v2
     appVersion: 3.21.0
-    created: "2024-03-27T15:45:12.912457158Z"
+    created: "2024-03-27T15:45:17.156451095Z"
     description: JARVICE cloud platform
     digest: d67ef0625d3e7deeb774b540bc564e112b7ce8dbe67b61bebf182ab26787914b
     home: http://www.nimbix.net/
@@ -1906,7 +1940,7 @@ entries:
       version: 3.0.0-1.202101202004
     apiVersion: v2
     appVersion: 3.0.0
-    created: "2024-03-27T15:45:12.882086692Z"
+    created: "2024-03-27T15:45:17.142630966Z"
     description: JARVICE cloud platform
     digest: fdedc295070d0b99393a5f7c16ebcc2238f1154ffb48b39cf4d96abfb6b79b34
     home: http://www.nimbix.net/
@@ -1931,7 +1965,7 @@ entries:
       version: 3.0.0-1.202101062006
     apiVersion: v2
     appVersion: 3.0.0
-    created: "2024-03-27T15:45:12.859539815Z"
+    created: "2024-03-27T15:45:17.125007383Z"
     description: JARVICE cloud platform
     digest: 383217b2d67b3724fece90183cfb233079a6f457fc7792ff9601592d21803741
     home: http://www.nimbix.net/
@@ -1956,7 +1990,7 @@ entries:
       version: 3.0.0-1.202012232023
     apiVersion: v2
     appVersion: 3.0.0
-    created: "2024-03-27T15:45:12.839818387Z"
+    created: "2024-03-27T15:45:17.110855014Z"
     description: JARVICE cloud platform
     digest: 01d3298516e8cb14ecfb6cea1e025a6be1fd304074011bf85e9483fcee3c3105
     home: http://www.nimbix.net/
@@ -1981,7 +2015,7 @@ entries:
       version: 3.0.0-1.202012092030
     apiVersion: v2
     appVersion: 3.0.0
-    created: "2024-03-27T15:45:12.815267375Z"
+    created: "2024-03-27T15:45:17.079431785Z"
     description: JARVICE cloud platform
     digest: 64d81348ff552fe8799024326c07ffe0249f273ed7f2804d683df593555a9f3f
     home: http://www.nimbix.net/
@@ -2006,7 +2040,7 @@ entries:
       version: 3.0.0-1.202011252103
     apiVersion: v2
     appVersion: 3.0.0
-    created: "2024-03-27T15:45:12.779649515Z"
+    created: "2024-03-27T15:45:17.066451279Z"
     description: JARVICE cloud platform
     digest: d57684d676d541a8d07f2378ac59310792034fded37867c9ead8d94f19141d60
     home: http://www.nimbix.net/
@@ -2031,7 +2065,7 @@ entries:
       version: 3.0.0-1.202011121727
     apiVersion: v2
     appVersion: 3.0.0
-    created: "2024-03-27T15:45:12.767756082Z"
+    created: "2024-03-27T15:45:17.057437001Z"
     description: JARVICE cloud platform
     digest: 2fe32f6f0665ccc54bdc6f6d4f60ba953df9b1b35e0ae51f0d7a456a9e2dab32
     home: http://www.nimbix.net/
@@ -2056,7 +2090,7 @@ entries:
       version: 3.0.0-1.202011112040
     apiVersion: v2
     appVersion: 3.0.0
-    created: "2024-03-27T15:45:12.758939976Z"
+    created: "2024-03-27T15:45:17.042285733Z"
     description: JARVICE cloud platform
     digest: 70e1df0eb694ed2933ebbdf010de4f385f71125db42c2477c8e90222f26984be
     home: http://www.nimbix.net/
@@ -2081,7 +2115,7 @@ entries:
       version: 3.0.0-1.202010282029
     apiVersion: v2
     appVersion: 3.0.0
-    created: "2024-03-27T15:45:12.747341911Z"
+    created: "2024-03-27T15:45:17.030466701Z"
     description: JARVICE cloud platform
     digest: a32da89d52d7f6a541ce10596a028eb81401d31dc32cc7ffc6e04c8e6677a0b5
     home: http://www.nimbix.net/
@@ -2106,7 +2140,7 @@ entries:
       version: 3.0.0-1.202010141909
     apiVersion: v2
     appVersion: 3.0.0
-    created: "2024-03-27T15:45:12.738882757Z"
+    created: "2024-03-27T15:45:17.022004208Z"
     description: JARVICE cloud platform
     digest: be86b115ca9988f530e84815caef8a681bf8fdc771ef278958e570ed54f30d73
     home: http://www.nimbix.net/
@@ -2131,7 +2165,7 @@ entries:
       version: 3.0.0-1.202009301931
     apiVersion: v2
     appVersion: 3.0.0
-    created: "2024-03-27T15:45:12.726821005Z"
+    created: "2024-03-27T15:45:17.011122777Z"
     description: JARVICE cloud platform
     digest: 2b78e7eb9e0876f95eaeca1bd04aeff2b21a007ca86652dbfc4cc631fe2a5357
     home: http://www.nimbix.net/
@@ -2156,7 +2190,7 @@ entries:
       version: 3.0.0-1.202009041653
     apiVersion: v2
     appVersion: 3.0.0
-    created: "2024-03-27T15:45:12.717869507Z"
+    created: "2024-03-27T15:45:16.983015267Z"
     description: JARVICE cloud platform
     digest: efc3c3c832b814a4926e41d61c92fd27d998d7f6fb3fd51055d0cf311fa1687f
     home: http://www.nimbix.net/
@@ -2181,7 +2215,7 @@ entries:
       version: 3.0.0-1.202009021933
     apiVersion: v2
     appVersion: 3.0.0
-    created: "2024-03-27T15:45:12.705482014Z"
+    created: "2024-03-27T15:45:16.97399323Z"
     description: JARVICE cloud platform
     digest: aa3ed6c280fdefde7e050b6293d21a7bece899a7e4c19c18e93486ce04f3246c
     home: http://www.nimbix.net/
@@ -2206,7 +2240,7 @@ entries:
       version: 3.0.0-1.202008191936
     apiVersion: v2
     appVersion: 3.0.0
-    created: "2024-03-27T15:45:12.679140743Z"
+    created: "2024-03-27T15:45:16.963646214Z"
     description: JARVICE cloud platform
     digest: 2aadf14d7e2abe0c321d45210fdb2aa2509378b1eac0efa64805814c9627c544
     home: http://www.nimbix.net/
@@ -2226,4 +2260,4 @@ entries:
     urls:
     - https://nimbix.github.io/jarvice-helm/jarvice-3.0.0-1.202008191936.tgz
     version: 3.0.0-1.202008191936
-generated: "2024-03-27T15:45:12.667314477Z"
+generated: "2024-03-27T15:45:16.952461001Z"
