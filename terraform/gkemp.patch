@@ -1,0 +1,102 @@
+diff --git a/terraform/modules/gkev2/deploy.tf b/terraform/modules/gkev2/deploy.tf
+index c90c065..7efcafa 100755
+--- a/terraform/modules/gkev2/deploy.tf
++++ b/terraform/modules/gkev2/deploy.tf
+@@ -47,7 +47,9 @@ resource "google_compute_address" "jarvice" {
+ locals {
+     load_balancer_ip = lookup(var.cluster["meta"], "use_static_ip", null) != "false" ? "loadBalancerIP: ${google_compute_address.jarvice.address}" : ""
+ 
+-    charts = merge(lookup(var.cluster["meta"], "dns_manage_records", false) ? {
++    charts = merge(lookup(var.cluster["meta"], "jarvice", false) ? {
++        "jarvice" = {}}:{},
++lookup(var.cluster["meta"], "dns_manage_records", false) ? {
+         "external-dns" = {
+             "values" = <<EOF
+ image:
+diff --git a/terraform/modules/gkev2/outputs.tf b/terraform/modules/gkev2/outputs.tf
+index 26a1500..7745100 100644
+--- a/terraform/modules/gkev2/outputs.tf
++++ b/terraform/modules/gkev2/outputs.tf
+@@ -78,8 +78,8 @@ output "kube_config" {
+ }
+ 
+ locals {
+-    helm_jarvice_values = yamldecode(module.helm.metadata["jarvice"]["values"])
+-    ingress_host = lookup(local.helm_jarvice_values["jarvice"], "JARVICE_CLUSTER_TYPE", "upstream") == "downstream" ? local.helm_jarvice_values["jarvice_k8s_scheduler"]["ingressHost"] : local.helm_jarvice_values["jarvice_mc_portal"]["ingressHost"]
++    helm_jarvice_values = "" # module.helm.metadata["jarvice"] != null ? yamldecode(module.helm.metadata["jarvice"]["values"]) : ""
++    ingress_host = local.helm_jarvice_values != "" ? (lookup(local.helm_jarvice_values["jarvice"], "JARVICE_CLUSTER_TYPE", "upstream") == "downstream" ? local.helm_jarvice_values["jarvice_k8s_scheduler"]["ingressHost"] : local.helm_jarvice_values["jarvice_mc_portal"]["ingressHost"]) : ""
+     slurm_downstream_message =<<EOF
+ ===============================================================================
+ 
+@@ -87,7 +87,7 @@ locals {
+ GKE cluster location: ${var.cluster.location["region"]}
+ 
+        JARVICE chart: ${module.helm.jarvice_chart["version"]}
+-   JARVICE namespace: ${module.helm.metadata["jarvice"]["namespace"]}
++   JARVICE namespace: module.helm.metadata["jarvice"] != null ? yamldecode(module.helm.metadata["jarvice"]["namespace"]) : ""
+ 
+ Execute the following to begin using kubectl/helm with the new cluster:
+ 
+@@ -98,7 +98,7 @@ EOF
+ }
+ 
+ output "cluster_info" {
+-    value = (lookup(local.helm_jarvice_values["jarvice"], "JARVICE_CLUSTER_TYPE", "upstream") == "downstream") && !module.common.jarvice_k8s_helm_values.enabled ?local.slurm_downstream_message:<<EOF
++    value = local.helm_jarvice_values != "" ? ((lookup(local.helm_jarvice_values["jarvice"], "JARVICE_CLUSTER_TYPE", "upstream") == "downstream") && !module.common.jarvice_k8s_helm_values.enabled ?local.slurm_downstream_message:<<EOF
+ ===============================================================================
+ 
+     GKE cluster name: ${var.cluster.meta["cluster_name"]}
+@@ -117,6 +117,7 @@ https://${local.ingress_host}/
+ 
+ ===============================================================================
+ EOF
++) : ""
+ 
+     depends_on = [module.helm]
+ }
+diff --git a/terraform/modules/helm/main.tf b/terraform/modules/helm/main.tf
+index 52a4012..a14a07c 100755
+--- a/terraform/modules/helm/main.tf
++++ b/terraform/modules/helm/main.tf
+@@ -181,6 +181,8 @@ resource "kubernetes_config_map" "jarvice_java_cacert" {
+ }
+ 
+ resource "helm_release" "jarvice" {
++    count = contains(keys(var.charts), "jarvice") ? 1 : 0
++
+     name = "jarvice"
+     repository = local.jarvice_chart_is_dir ? null : local.jarvice_chart_repository
+     chart = local.jarvice_chart_is_dir ? pathexpand(local.jarvice_chart_version) : "jarvice"
+diff --git a/terraform/modules/helm/outputs.tf b/terraform/modules/helm/outputs.tf
+index 555bf64..582c09e 100644
+--- a/terraform/modules/helm/outputs.tf
++++ b/terraform/modules/helm/outputs.tf
+@@ -5,14 +5,14 @@ output "metadata" {
+         "cluster-autoscaler" = contains(keys(var.charts), "cluster-autoscaler") && length(helm_release.cluster_autoscaler) > 0 ? helm_release.cluster_autoscaler[0].metadata[0] : null,
+         "external-dns" = contains(keys(var.charts), "external-dns") && length(helm_release.external_dns) > 0 ? helm_release.external_dns[0].metadata[0] : null,
+         "traefik" = contains(keys(var.charts), "traefik") && length(helm_release.traefik) > 0 ? helm_release.traefik[0].metadata[0] : null,
+-        "jarvice" = helm_release.jarvice.metadata[0]
++        "jarvice" = contains(keys(var.charts), "jarvice") && length(helm_release.jarvice) > 0 ? helm_release.jarvice[0] : null
+     }
+ }
+ 
+ output "jarvice_chart" {
+     value = {
+         "repository" = local.jarvice_chart_is_dir ? null : local.jarvice_chart_repository,
+-        "version" = local.jarvice_chart_version != null ? local.jarvice_chart_version : helm_release.jarvice.metadata[0]["version"]
++        "version" = local.jarvice_chart_version != null ? local.jarvice_chart_version : contains(keys(var.charts), "jarvice") && length(helm_release.jarvice) > 0 ? helm_release.jarvice[0].metadata[0]["version"] : ""
+     }
+ }
+ 
+diff --git a/terraform/terraform.tfvars b/terraform/terraform.tfvars
+index 7dbff91..b2488c5 100755
+--- a/terraform/terraform.tfvars
++++ b/terraform/terraform.tfvars
+@@ -357,6 +357,7 @@ gkev2 = {  # Provision GKE infrastructure/clusters and deploy JARVICE
+         }
+ 
+         meta = {
++            jarvice = false
+             cluster_name = "tf-jarvice"
+             kubernetes_version = "1.24"
+ 

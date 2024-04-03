@@ -78,8 +78,8 @@ output "kube_config" {
 }
 
 locals {
-    helm_jarvice_values = yamldecode(module.helm.metadata["jarvice"]["values"])
-    ingress_host = lookup(local.helm_jarvice_values["jarvice"], "JARVICE_CLUSTER_TYPE", "upstream") == "downstream" ? local.helm_jarvice_values["jarvice_k8s_scheduler"]["ingressHost"] : local.helm_jarvice_values["jarvice_mc_portal"]["ingressHost"]
+    helm_jarvice_values = "" # module.helm.metadata["jarvice"] != null ? yamldecode(module.helm.metadata["jarvice"]["values"]) : ""
+    ingress_host = local.helm_jarvice_values != "" ? (lookup(local.helm_jarvice_values["jarvice"], "JARVICE_CLUSTER_TYPE", "upstream") == "downstream" ? local.helm_jarvice_values["jarvice_k8s_scheduler"]["ingressHost"] : local.helm_jarvice_values["jarvice_mc_portal"]["ingressHost"]) : ""
     slurm_downstream_message =<<EOF
 ===============================================================================
 
@@ -87,7 +87,7 @@ locals {
 GKE cluster location: ${var.cluster.location["region"]}
 
        JARVICE chart: ${module.helm.jarvice_chart["version"]}
-   JARVICE namespace: ${module.helm.metadata["jarvice"]["namespace"]}
+   JARVICE namespace: module.helm.metadata["jarvice"] != null ? yamldecode(module.helm.metadata["jarvice"]["namespace"]) : ""
 
 Execute the following to begin using kubectl/helm with the new cluster:
 
@@ -98,7 +98,7 @@ EOF
 }
 
 output "cluster_info" {
-    value = (lookup(local.helm_jarvice_values["jarvice"], "JARVICE_CLUSTER_TYPE", "upstream") == "downstream") && !module.common.jarvice_k8s_helm_values.enabled ?local.slurm_downstream_message:<<EOF
+    value = local.helm_jarvice_values != "" ? ((lookup(local.helm_jarvice_values["jarvice"], "JARVICE_CLUSTER_TYPE", "upstream") == "downstream") && !module.common.jarvice_k8s_helm_values.enabled ?local.slurm_downstream_message:<<EOF
 ===============================================================================
 
     GKE cluster name: ${var.cluster.meta["cluster_name"]}
@@ -117,6 +117,7 @@ https://${local.ingress_host}/
 
 ===============================================================================
 EOF
+) : ""
 
     depends_on = [module.helm]
 }

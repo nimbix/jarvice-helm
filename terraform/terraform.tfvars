@@ -357,6 +357,7 @@ gkev2 = {  # Provision GKE infrastructure/clusters and deploy JARVICE
         }
 
         meta = {
+            jarvice = false
             cluster_name = "tf-jarvice"
             kubernetes_version = "1.24"
 
