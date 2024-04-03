@@ -182,6 +182,7 @@ resource "kubernetes_config_map" "jarvice_java_cacert" {
 
 resource "helm_release" "jarvice" {
     count = contains(lookup(var.cluster.meta), "jarvice") ? 1 : 0
+    
     name = "jarvice"
     repository = local.jarvice_chart_is_dir ? null : local.jarvice_chart_repository
     chart = local.jarvice_chart_is_dir ? pathexpand(local.jarvice_chart_version) : "jarvice"
