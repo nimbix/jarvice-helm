@@ -79,7 +79,7 @@ output "kube_config" {
 
 locals {
     helm_jarvice_values = module.helm.metadata["jarvice"] != null ? yamldecode(module.helm.metadata["jarvice"]["values"]) : null
-    ingress_host = lookup(var.cluster.meta, "jarvice", "false") ? lookup(local.helm_jarvice_values["jarvice"], "JARVICE_CLUSTER_TYPE", "upstream") == "downstream" ? local.helm_jarvice_values["jarvice_k8s_scheduler"]["ingressHost"] : local.helm_jarvice_values["jarvice_mc_portal"]["ingressHost"] : ""
+    ingress_host = lookup(var.cluster.meta, "jarvice", "false") ? lookup(local.helm_jarvice_values["jarvice"], "JARVICE_CLUSTER_TYPE", "upstream") == "downstream" ? local.helm_jarvice_values["jarvice_k8s_scheduler"]["ingressHost"] : local.helm_jarvice_values["jarvice_bird"]["ingressHost"] : ""
     slurm_downstream_message = (lookup(var.cluster.meta, "jarvice", "false") ? <<EOF
 ===============================================================================
 
