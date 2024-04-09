@@ -47,7 +47,10 @@ resource "google_compute_address" "jarvice" {
 locals {
     load_balancer_ip = lookup(var.cluster["meta"], "use_static_ip", null) != "false" ? "loadBalancerIP: ${google_compute_address.jarvice.address}" : ""
 
-    charts = merge(lookup(var.cluster["meta"], "dns_manage_records", false) ? {
+    charts = merge(lookup(var.cluster["meta"], "jarvice", false) ? {
+        "jarvice" = {}
+}:{},
+lookup(var.cluster["meta"], "dns_manage_records", false) ? {
         "external-dns" = {
             "values" = <<EOF
 image:

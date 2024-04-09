@@ -78,9 +78,9 @@ output "kube_config" {
 }
 
 locals {
-    helm_jarvice_values = yamldecode(module.helm.metadata["jarvice"]["values"])
-    ingress_host = lookup(local.helm_jarvice_values["jarvice"], "JARVICE_CLUSTER_TYPE", "upstream") == "downstream" ? local.helm_jarvice_values["jarvice_k8s_scheduler"]["ingressHost"] : local.helm_jarvice_values["jarvice_mc_portal"]["ingressHost"]
-    slurm_downstream_message =<<EOF
+    helm_jarvice_values = module.helm.metadata["jarvice"] != null ? yamldecode(module.helm.metadata["jarvice"]["values"]) : null
+    ingress_host = lookup(var.cluster.meta, "jarvice", "false") ? lookup(local.helm_jarvice_values["jarvice"], "JARVICE_CLUSTER_TYPE", "upstream") == "downstream" ? local.helm_jarvice_values["jarvice_k8s_scheduler"]["ingressHost"] : local.helm_jarvice_values["jarvice_mc_portal"]["ingressHost"] : ""
+    slurm_downstream_message = (lookup(var.cluster.meta, "jarvice", "false") ? <<EOF
 ===============================================================================
 
     GKE cluster name: ${var.cluster.meta["cluster_name"]}
@@ -95,17 +95,19 @@ export KUBECONFIG=${local.kube_config["config_path"]}
 
 ===============================================================================
 EOF
+: ""
+)
 }
 
 output "cluster_info" {
-    value = (lookup(local.helm_jarvice_values["jarvice"], "JARVICE_CLUSTER_TYPE", "upstream") == "downstream") && !module.common.jarvice_k8s_helm_values.enabled ?local.slurm_downstream_message:<<EOF
+    value = local.helm_jarvice_values != null ? ((lookup(local.helm_jarvice_values["jarvice"], "JARVICE_CLUSTER_TYPE", "upstream") == "downstream") && !module.common.jarvice_k8s_helm_values.enabled ?local.slurm_downstream_message:<<EOF
 ===============================================================================
 
     GKE cluster name: ${var.cluster.meta["cluster_name"]}
 GKE cluster location: ${var.cluster.location["region"]}
 
        JARVICE chart: ${module.helm.jarvice_chart["version"]}
-   JARVICE namespace: ${module.helm.metadata["jarvice"]["namespace"]}
+   JARVICE namespace: module.helm.metadata["jarvice"] != null  ? yamldecode(module.helm.metadata["jarvice"]["namespace"]) : ""
 
 Execute the following to begin using kubectl/helm with the new cluster:
 
@@ -114,6 +116,18 @@ export KUBECONFIG=${local.kube_config["config_path"]}
 ${module.common.cluster_output_message}:
 
 https://${local.ingress_host}/
+
+===============================================================================
+EOF
+) : <<EOF
+===============================================================================
+
+    GKE cluster name: ${var.cluster.meta["cluster_name"]}
+GKE cluster location: ${var.cluster.location["region"]}
+
+Execute the following to begin using kubectl/helm with the new cluster:
+
+export KUBECONFIG=${local.kube_config["config_path"]}
 
 ===============================================================================
 EOF
