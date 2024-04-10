@@ -80,6 +80,7 @@ output "kube_config" {
 locals {
     helm_jarvice_values = module.helm.metadata["jarvice"] != null ? yamldecode(module.helm.metadata["jarvice"]["values"]) : null
     ingress_host = lookup(var.cluster.meta, "jarvice", "false") ? lookup(local.helm_jarvice_values["jarvice"], "JARVICE_CLUSTER_TYPE", "upstream") == "downstream" ? local.helm_jarvice_values["jarvice_k8s_scheduler"]["ingressHost"] : local.helm_jarvice_values["jarvice_bird"]["ingressHost"] : ""
+    jarvice_namespace = module.helm.metadata["jarvice"] != null  ? yamldecode(module.helm.metadata["jarvice"]["namespace"]) : ""
     slurm_downstream_message = (lookup(var.cluster.meta, "jarvice", "false") ? <<EOF
 ===============================================================================
 
@@ -107,7 +108,7 @@ output "cluster_info" {
 GKE cluster location: ${var.cluster.location["region"]}
 
        JARVICE chart: ${module.helm.jarvice_chart["version"]}
-   JARVICE namespace: module.helm.metadata["jarvice"] != null  ? yamldecode(module.helm.metadata["jarvice"]["namespace"]) : ""
+   JARVICE namespace: ${local.jarvice_namespace}
 
 Execute the following to begin using kubectl/helm with the new cluster:
 
