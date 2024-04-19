@@ -140,29 +140,44 @@ JARVICE no_proxy
 {{/*
 Create hostAlias for JARVICE
 */}}
-{{- define "jarvice.hostAliases" }}
-{{- $service := (lookup "v1" "Service" "kube-system" "traefik") }}
-{{- if $service }}
-{{ range $index, $ingress := $service.status.loadBalancer.ingress }}
+{{- define "jarvice.hostAliases" -}}
+  {{- $service := (lookup "v1" "Service" "kube-system" "traefik") }}
+  {{- if $service }}
+    {{- range $index, $ingress := $service.status.loadBalancer.ingress }}
 - ip: "{{- $ingress.ip }}"
   hostnames:
-{{- if (not (empty $.Values.jarvice_api.ingressHost)) }}
-  - "{{ $.Values.jarvice_api.ingressHost }}"
-{{- end }}
-{{- if (not (empty $.Values.jarvice_bird.ingressHost)) }}
-  - "{{- $.Values.jarvice_bird.ingressHost }}"
-{{- end }}
-{{- if (not (empty $.Values.jarvice_license_manager.ingressHost)) }}
-  - "{{- $.Values.jarvice_license_manager.ingressHost }}"
-{{- end }}
-{{- if (not (empty $.Values.jarvice_mc_portal.ingressHost)) }}
-  - "{{- $.Values.jarvice_mc_portal.ingressHost }}"
-{{- end }}
-{{- with index $.Values.keycloakx.ingress.rules 0 }}
-{{- if (not (empty .host)) }}
-  - "{{- .host }}"
-{{- end }}
-{{- end }}
-{{- end }}
-{{- end }}
+      {{- $ingressHosts := list }}
+      {{- if $.Values.jarvice_api.enabled }}
+        {{- if (not (empty $.Values.jarvice_api.ingressHost)) }}
+        {{- $ingressHosts = printf "%s" $.Values.jarvice_api.ingressHost | append $ingressHosts }}
+        {{- end }}
+      {{- end }}
+      {{- if $.Values.jarvice_bird.enabled }}
+        {{- if (not (empty $.Values.jarvice_bird.ingressHost)) -}}
+        {{- $ingressHosts = printf "%s" $.Values.jarvice_bird.ingressHost | append $ingressHosts }}
+        {{- end }}
+      {{- end }}
+      {{- if $.Values.jarvice_license_manager.enabled }}
+        {{- if (not (empty $.Values.jarvice_license_manager.ingressHost)) }}
+        {{- $ingressHosts = printf "%s" $.Values.jarvice_license_manager.ingressHost | append $ingressHosts }}
+        {{- end }}
+      {{- end }}
+      {{- if $.Values.jarvice_mc_portal.enabled }}
+        {{- if (not (empty $.Values.jarvice_mc_portal.ingressHost)) }}
+        {{- $ingressHosts = printf "%s" $.Values.jarvice_mc_portal.ingressHost | append $ingressHosts }}
+        {{- end }}
+      {{- end }}
+      {{- if $.Values.keycloakx.enabled }}
+        {{- with index $.Values.keycloakx.ingress.rules 0 }}
+          {{- if (not (empty .host)) }}
+          {{- $ingressHosts = printf "%s" .host | append $ingressHosts }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- $ingressHosts = $ingressHosts | uniq }}
+      {{- range $ingressHosts }}
+  - "{{ . }}"
+      {{- end }}
+    {{- end }}
+  {{- end }}
 {{- end }}
