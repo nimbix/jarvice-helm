@@ -116,7 +116,7 @@ spec:
           defaultMode: 444
 {{- end }}
       hostAliases:
-      {{- include "jarvice.hostAliases" . | nindent 8 }}
+      {{- include "jarvice.hostAliases" .$Values | nindent 8 }}
       containers:
       - name: jarvice-slurm-scheduler-{{ .name }}
         image: {{ include "jarvice.registry" $ }}/{{ $.Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-slurm-scheduler:{{ default $.Values.jarvice.JARVICE_IMAGES_TAG $.Chart.Annotations.tag }}{{- include "jarvice.version" $ }}
