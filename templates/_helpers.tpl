@@ -136,3 +136,48 @@ JARVICE no_proxy
 {{- end -}}
 {{- printf "%s,%s,%s.%s,%s.%s.svc,%s.%s.svc.%s,svc,svc.%s,localhost,127.0.0.1" $k8s_cluster_ip ($jxe_services | join ",") ($jxe_services | join (printf ".%s," $jarvice_system_ns)) $jarvice_system_ns ($jxe_services | join (printf ".%s.svc," $jarvice_system_ns)) $jarvice_system_ns ($jxe_services | join (printf ".%s.svc.%s," $jarvice_system_ns $jarvice_k8s_cluster_domain )) $jarvice_system_ns $jarvice_k8s_cluster_domain $jarvice_k8s_cluster_domain -}}
 {{- end -}}
+
+{{/*
+Create hostAlias for JARVICE
+*/}}
+{{- define "jarvice.hostAliases" -}}
+  {{- $service := (lookup "v1" "Service" "kube-system" "traefik") }}
+  {{- if $service }}
+    {{- range $index, $ingress := $service.status.loadBalancer.ingress }}
+- ip: "{{- $ingress.ip }}"
+  hostnames:
+      {{- $ingressHosts := list }}
+      {{- if $.Values.jarvice_api.enabled }}
+        {{- if (not (empty $.Values.jarvice_api.ingressHost)) }}
+        {{- $ingressHosts = printf "%s" $.Values.jarvice_api.ingressHost | append $ingressHosts }}
+        {{- end }}
+      {{- end }}
+      {{- if $.Values.jarvice_bird.enabled }}
+        {{- if (not (empty $.Values.jarvice_bird.ingressHost)) -}}
+        {{- $ingressHosts = printf "%s" $.Values.jarvice_bird.ingressHost | append $ingressHosts }}
+        {{- end }}
+      {{- end }}
+      {{- if $.Values.jarvice_license_manager.enabled }}
+        {{- if (not (empty $.Values.jarvice_license_manager.ingressHost)) }}
+        {{- $ingressHosts = printf "%s" $.Values.jarvice_license_manager.ingressHost | append $ingressHosts }}
+        {{- end }}
+      {{- end }}
+      {{- if $.Values.jarvice_mc_portal.enabled }}
+        {{- if (not (empty $.Values.jarvice_mc_portal.ingressHost)) }}
+        {{- $ingressHosts = printf "%s" $.Values.jarvice_mc_portal.ingressHost | append $ingressHosts }}
+        {{- end }}
+      {{- end }}
+      {{- if $.Values.keycloakx.enabled }}
+        {{- with index $.Values.keycloakx.ingress.rules 0 }}
+          {{- if (not (empty .host)) }}
+          {{- $ingressHosts = printf "%s" .host | append $ingressHosts }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- $ingressHosts = $ingressHosts | uniq }}
+      {{- range $ingressHosts }}
+  - "{{ . }}"
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}

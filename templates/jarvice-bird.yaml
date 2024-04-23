@@ -161,6 +161,8 @@ spec:
           - key: krb5.keytab
             mode: 0644
             path: krb5.keytab
+      hostAliases:
+      {{- include "jarvice.hostAliases" . | nindent 8 }}
       containers:
       - name: jarvice-bird
         image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-bird:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
@@ -616,6 +618,8 @@ spec:
         volumeMounts:
         - mountPath: /home/bird
           name: jarvice-bird-server
+      hostAliases:
+      {{- include "jarvice.hostAliases" . | nindent 8 }}
       containers:
       - name: jarvice-bird-server
         image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-bird-server:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}

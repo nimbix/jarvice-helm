@@ -71,6 +71,8 @@ spec:
       imagePullSecrets:
       - name: jarvice-docker
 {{- end }}
+      hostAliases:
+      {{- include "jarvice.hostAliases" . | nindent 8 }}
       containers:
       - name: jarvice-db
         image: {{ template "jarvice.registrysub" merge (dict "image" .Values.jarvice_db.image) . }}

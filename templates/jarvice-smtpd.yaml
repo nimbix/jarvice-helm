@@ -80,6 +80,8 @@ spec:
           optional: true
           defaultMode: 444
 {{- end }}
+      hostAliases:
+      {{- include "jarvice.hostAliases" . | nindent 8 }}
       containers:
       - name: jarvice-smtpd
         image: {{ template "jarvice.registrysub" merge (dict "image" .Values.jarvice_smtpd.image) . }}
