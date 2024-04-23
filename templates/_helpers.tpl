@@ -141,7 +141,8 @@ JARVICE no_proxy
 Create hostAlias for JARVICE
 */}}
 {{- define "jarvice.hostAliases" -}}
-{{- if try(.Values.jarvice.JARVICE_CLUSTER_TYPE, "downstream") == "upstream" }}
+{{- if (not (empty .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
+{{- if .Values.jarvice.JARVICE_CLUSTER_TYPE == "upstream" }}
   {{- $service := (lookup "v1" "Service" "kube-system" "traefik") }}
   {{- if $service }}
     {{- range $index, $ingress := $service.status.loadBalancer.ingress }}
@@ -181,5 +182,6 @@ Create hostAlias for JARVICE
       {{- end }}
     {{- end }}
   {{- end }}
+{{- end }}
 {{- end }}
 {{- end }}
