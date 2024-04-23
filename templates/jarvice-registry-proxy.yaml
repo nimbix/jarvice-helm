@@ -126,6 +126,8 @@ spec:
             claimName: {{ .Values.jarvice_registry_proxy.persistence.existingClaimName }}
 {{- end }}
 {{- end }}
+      hostAliases:
+      {{- include "jarvice.hostAliases" . | nindent 8 }}
       containers:
       - name: jarvice-registry-proxy
         image: {{ .Values.jarvice_registry_proxy.image }}
@@ -335,6 +337,8 @@ spec:
               configMap:
                 name: jarvice-registry-proxy-gc
                 optional: false
+          hostAliases:
+          {{- include "jarvice.hostAliases" . | nindent 12 }}
           containers:
           - name: jarvice-registry-proxy-gc
             image: {{ template "jarvice.registrysub" merge (dict "image" .Values.jarvice_registry_proxy_gc.image) . }}

@@ -132,6 +132,19 @@ resource "helm_release" "traefik" {
     depends_on = [helm_release.aws_load_balancer_controller, helm_release.external_dns]
 }
 
+data "kubernetes_service" "traefik" {
+    metadata {
+        name = "traefik"
+        namespace = "kube-system"
+    }
+
+    depends_on = [helm_release.traefik]
+}
+
+locals {
+    jarvice_bird_ingressHost = yamldecode(var.jarvice["values_yaml"]).jarvice_bird.ingressHost
+}
+
 resource "helm_release" "namespace" {
     count =  fileexists(local.jarvice_user_cacert) || fileexists(local.jarvice_user_java_cacert) ? 1 : 0
 
@@ -204,7 +217,18 @@ resource "helm_release" "jarvice" {
         fileexists(local.jarvice_user_java_cacert) ? local.java_cacert_values_yaml : "",
         var.cluster_values_yaml,
         var.global["values_yaml"],
-        var.jarvice["values_yaml"]
+        var.jarvice["values_yaml"],
+        yamlencode({
+            "keycloakx": {
+                "hostAliases": [
+                    {
+                        "ip": data.kubernetes_service.traefik.status[0].load_balancer[0].ingress[0].ip,
+                        "hostnames": [
+                            local.jarvice_bird_ingressHost
+                        ]
+                    }
+                ]
+            }})
     ]
 
     depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik, kubernetes_config_map.jarvice_user_cacert, kubernetes_config_map.jarvice_java_cacert]
