@@ -60,7 +60,7 @@ spec:
 {{ toYaml $.Values.jarvice_images_pull.imagePullSecrets | indent 10 }}
 {{- end }}
           hostAliases:
-          {{- include "jarvice.hostAliases" . | nindent 12 }}
+          {{- include "jarvice.hostAliases" (dct "Values" $.Values) | nindent 12 }}
           containers:
 {{- range $index, $image := $images }}
           - name: jarvice-images-pull-{{ $arch }}-{{ $index }}
