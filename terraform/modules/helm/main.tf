@@ -142,7 +142,8 @@ data "kubernetes_service" "traefik" {
 }
 
 locals {
-    jarvice_bird_ingressHost = yamldecode(var.jarvice["values_yaml"]).jarvice_bird.ingressHost
+    jarvice_bird_portal = try(yamldecode(var.jarvice["values_yaml"]).jarvice_bird, "")
+    jarvice_bird_ingressHost = try(local.jarvice_bird_portal.ingressHost, "")
 }
 
 resource "helm_release" "namespace" {
