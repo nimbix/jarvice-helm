@@ -170,12 +170,20 @@ jarvice:
 
   # Optionally, provide root certificate for JARVICE pods
   # jarvice.cacert.configMap:
-  # TODO docs
+  # Deprecated: use trust-manager
   cacert:
     user:
       configMap: # jarvice-cacert
     java:
       configMap: # jarvice-java-cacert
+
+  # Optionally, use trust-manager to provide root certificate for JARVICE pods
+  trust_manager:
+    enabled: false
+  #   inLine: |
+  #     -----BEGIN CERTIFICATE-----
+  #     ...
+  #     -----END CERTIFICATE-----
 
   JARVICE_SYSTEM_NAMESPACE: # auto-detected, should not need to be updated
   JARVICE_JOBS_NAMESPACE: # auto-set, should not need to be updated

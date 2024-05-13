@@ -185,3 +185,58 @@ Create hostAlias for JARVICE
 {{- end }}
 {{- end }}
 {{- end }}
+
+{{/*
+Create volume for jarvice root certificates
+*/}}
+{{- define "jarvice.rootCertVolume" -}}
+{{- if or (not (empty .Values.jarvice.cacert.user.configMap)) (not (empty .Values.jarvice.cacert.java.configMap)) }}
+{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
+- name: ca-jarvice-user
+  configMap:
+    name: {{ .Values.jarvice.cacert.user.configMap }}
+    optional: false
+    defaultMode: 444
+{{- end }}
+{{- if (not (empty .Values.jarvice.cacert.java.configMap)) }}
+- name: jarvice-java-cacert
+  configMap:
+    name: {{ .Values.jarvice.cacert.java.configMap }}
+    optional: false
+    defaultMode: 444
+{{- end }}
+{{- else if .Values.jarvice.trust_manager.enabled }}
+- name: jarvice-root-cert
+  configMap:
+    name: jarvice-root-cert
+    optional: false
+    defaultMode: 444
+{{- end }}
+{{- end }}
+
+{{/*
+Create volume for jarvice root certificates
+*/}}
+{{- define "jarvice.rootCertVolumeMount" -}}
+{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
+- name: ca-jarvice-user
+  mountPath: /etc/ssl/certs/ca-certificates.crt
+  subPath: ca-certificates.crt
+  readOnly: true
+{{- else if .Values.jarvice.trust_manager.enabled }}
+- name: jarvice-root-cert
+  mountPath: /etc/ssl/certs/ca-certificates.crt
+  subPath: ca-certificates.crt
+  readOnly: true
+{{- end }}
+{{- if (not (empty .Values.jarvice.cacert.java.configMap)) }}
+- name: jarvice-java-cacert
+  mountPath: /etc/ssl/certs/java/cacerts
+  subPath: cacerts
+{{- else if .Values.jarvice.trust_manager.enabled }}
+- name: jarvice-root-cert
+  mountPath: /etc/ssl/certs/java/cacerts
+  subPath: cacerts
+  readOnly: true
+{{- end }}
+{{- end }}
