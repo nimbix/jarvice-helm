@@ -1,0 +1,85 @@
+#!/bin/bash
+
+version_tag=
+chart_version="v0.9.2"
+namespace=cert-manager
+
+function usage {
+    cat <<EOF
+Usage:
+    $0 [options]
+
+Options:
+    --version-tag <tag>             trust-manager version (optional)
+    --namespace <kube_namespace>    Kubernetes namespace to deploy to
+                                    (Default: $namespace)
+    --chart-version <version>       trust-manager Helm chart version
+                                    (Default: $chart_version)
+
+Example:
+    $0 --version-tag v1.1.0
+EOF
+}
+
+HELM=$(type -p helm)
+if [ -z "$HELM" ]; then
+    cat <<EOF
+Could not find 'helm' in PATH.  It may not be installed.
+Run 'install-helm' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+KUBECTL=$(type -p kubectl)
+if [ -z "$KUBECTL" ]; then
+    cat <<EOF
+Could not find 'kubectl' in PATH.  It may not be installed.
+Run 'install-kubectl' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        --help)
+            usage
+            exit 0
+            ;;
+        --chart-version)
+            chart_version=$2
+            shift; shift
+            ;;
+        --version-tag)
+            version_tag=$2
+            shift; shift
+            ;;
+        --namespace)
+            namespace=$2
+            shift; shift
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+set -e
+
+echo
+echo "* Creating namespace: $namespace"
+$KUBECTL create namespace $namespace 2>/dev/null || /bin/true
+
+echo
+echo "* Deploying..."
+repo=https://charts.jetstack.io
+$HELM upgrade trust-manager trust-manager --repo $repo --version $chart_version \
+    --namespace $namespace --install --reset-values --wait
+
+echo
+echo "* Deployment successful..."
+
+echo
+echo "For advanced setup details, visit https://artifacthub.io/packages/helm/cert-manager/trust-manager and/or execute:"
+echo "$ helm inspect all trust-manager --repo $repo"
+
