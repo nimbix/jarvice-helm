@@ -14,6 +14,11 @@ spec:
 {{- if (not (empty .Values.jarvice.trust_manager.inLine)) }}
 {{ .Values.jarvice.trust_manager.inLine | indent 6 }}
 {{- end }}
+{{- if (eq "selfsigned" .Values.jarvice.ingress.tls.issuer.name) }}
+  - secret:
+      name: "jarvice-selfsigned-root-secret"
+      key: "ca.crt"
+{{- end }}
   target:
     configMap:
       key: "ca-certificates.crt"
