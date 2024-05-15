@@ -2,6 +2,7 @@
 
 namespace=jarvice-system
 file=$namespace.sql.gz
+validateonly=0
 
 function usage {
     cat <<EOF
@@ -13,7 +14,8 @@ Options:
                                     (Default: $namespace)
     --file <sql_backup_file>        Backup file to restore from (gzipped)
                                     (Default: $file)
-
+    --validate-only                 Import backup file to temporary DB, execute queries to validate backed up content
+                                    (Default: $file & $namespace)
 Example:
     $0 --namespace jarvice-system --file $file
 EOF
@@ -42,6 +44,10 @@ while [ $# -gt 0 ]; do
             file=$2
             shift; shift
             ;;
+        --validate-only)
+            validateonly=1
+            shift
+            ;;
         *)
             usage
             exit 1
@@ -54,6 +60,111 @@ pod=$($KUBECTL -n $namespace get pods \
         --field-selector=status.phase=Running \
         -o jsonpath={.items[0].metadata.name})
 [ -z "$pod" ] && echo "* Could not find jarvice-dal pod in $namespace namespace...Exiting..." && exit 1
+
+if [ $validateonly ]; then
+   # Remove temporary database if it exists
+   cmd='mysql '
+   cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
+   cmd+=' --host="$JARVICE_SITE_DBHOST" -e "DROP DATABASE IF EXISTS tempdb"'
+   $KUBECTL -n $namespace exec --stdin $pod -- bash -c "$cmd"
+
+   # Create temporary database
+   cmd='mysql '
+   cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
+   cmd+=' --host="$JARVICE_SITE_DBHOST" -e "CREATE DATABASE IF NOT EXISTS tempdb"'
+   echo
+   echo "* Creating \"tempdb\" JARVICE database..."
+   $KUBECTL -n $namespace exec --stdin $pod -- bash -c "$cmd"
+
+   # Show databases that exist (temporary db in list)
+   cmd='mysql '
+   cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
+   cmd+=' --host="$JARVICE_SITE_DBHOST" -e "SHOW DATABASES" --table'
+   echo
+   echo "* List of JARVICE databases (including \"tempdb\"):"
+   $KUBECTL -n $namespace exec --stdin $pod -- bash -c "$cmd"
+
+   # Restore dumped database into the temporary validation database
+   cmd='mysql '
+   cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
+   cmd+=' --host="$JARVICE_SITE_DBHOST" --database="tempdb"'
+   echo
+   echo "* Importing dumped JARVICE database into \"tempdb\" database from $file..."
+   $KUBECTL -n $namespace exec --stdin $pod -- bash -c "$cmd" <<<"$(zcat $file)"
+
+   cmd='mysql '
+   cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
+   cmd+=' --host="$JARVICE_SITE_DBHOST" --database=nimbix'
+   cmd+=' -e "SELECT DATABASE() as \"DATABASE\", (SELECT count(*) FROM nimbix.apps) \"apps\",'
+   cmd+=' (SELECT count(*) FROM nimbix.billing) \"billing\",'
+   cmd+=' (SELECT count(*) FROM nimbix.clusters) \"clusters\",'
+   cmd+=' (SELECT count(*) FROM nimbix.jobs) \"jobs\",'
+   cmd+=' (SELECT count(*) FROM nimbix.ldap) \"ldap\",'
+   cmd+=' (SELECT count(*) FROM nimbix.machines) \"machines\",'
+   cmd+=' (SELECT count(*) FROM nimbix.nodes) \"nodes\",'
+   cmd+=' (SELECT count(*) FROM nimbix.obj) \"obj\",'
+   cmd+=' (SELECT count(*) FROM nimbix.projects) \"projects\",'
+   cmd+=' (SELECT count(*) FROM nimbix.saml) \"saml\",'
+   cmd+=' (SELECT count(*) FROM nimbix.users) \"users\"\G"'
+   nimbix_res=`$KUBECTL -n $namespace exec --stdin $pod -- bash -c "$cmd"`
+   declare -a nimbix_ay=()
+   IFS=$'\n' nimbix_ay=($nimbix_res)
+
+   cmd='mysql '
+   cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
+   cmd+=' --host="$JARVICE_SITE_DBHOST" --database=tempdb'
+   cmd+=' -e "SELECT DATABASE() as \"DATABASE\", (SELECT count(*) FROM tempdb.apps) \"apps\",'
+   cmd+=' (SELECT count(*) FROM tempdb.billing) \"billing\",'
+   cmd+=' (SELECT count(*) FROM tempdb.clusters) \"clusters\",'
+   cmd+=' (SELECT count(*) FROM tempdb.jobs) \"jobs\",'
+   cmd+=' (SELECT count(*) FROM tempdb.ldap) \"ldap\",'
+   cmd+=' (SELECT count(*) FROM tempdb.machines) \"machines\",'
+   cmd+=' (SELECT count(*) FROM tempdb.nodes) \"nodes\",'
+   cmd+=' (SELECT count(*) FROM tempdb.obj) \"obj\",'
+   cmd+=' (SELECT count(*) FROM tempdb.projects) \"projects\",'
+   cmd+=' (SELECT count(*) FROM tempdb.saml) \"saml\",'
+   cmd+=' (SELECT count(*) FROM tempdb.users) \"users\"\G"'
+   tempdb_res=`$KUBECTL -n $namespace exec --stdin $pod -- bash -c "$cmd"`
+   declare -a tempdb_ay=()
+   IFS=$'\n' tempdb_ay=($tempdb_res)
+
+   # Display the results
+   echo
+   echo "* Row count comparison between \"nimbix\" and \"tempdb\" databases:"
+   hsep="+----------------------------------------+"
+   echo
+   echo "$hsep"
+   nimbix_len=${#nimbix_ay[@]}
+   for (( i=1; i<${nimbix_len}; i++ ));
+   do
+     printf "| %-20s\t%-16s |\n" ${nimbix_ay[$i]} ${tempdb_ay[$i]}
+     if [ $i == 1 ]; then
+        echo "$hsep"
+     fi
+   done
+   echo "$hsep"
+
+   # Drop the temporary validation database; we are done with it
+   cmd='mysql '
+   cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
+   cmd+=' --host="$JARVICE_SITE_DBHOST" -e "DROP DATABASE tempdb"'
+   echo
+   echo "* Dropping \"tempdb\" JARVICE database..."
+   $KUBECTL -n $namespace exec --stdin $pod -- bash -c "$cmd"
+
+   # Show databases again (temporary db no longer exists)
+   cmd='mysql '
+   cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
+   cmd+=' --host="$JARVICE_SITE_DBHOST" -e "SHOW DATABASES" --table'
+   echo
+   echo "* List of JARVICE databases:"
+   $KUBECTL -n $namespace exec --stdin $pod -- bash -c "$cmd"
+
+   echo; echo "* JARVICE database validation complete"
+
+   exit 0
+fi
+
 cmd='mysql '
 cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
 cmd+=' --host="$JARVICE_SITE_DBHOST" --database=nimbix'
