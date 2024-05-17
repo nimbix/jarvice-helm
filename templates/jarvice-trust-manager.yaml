@@ -6,6 +6,7 @@ metadata:
 spec:
   sources:
   - useDefaultCAs: true
+{{- if or (eq "letsencrypt-staging" .Values.jarvice.ingress.tls.issuer.name) (not (empty .Values.jarvice.trust_manager.inLine)) }}
   - inLine: |
 {{- if (eq "letsencrypt-staging" .Values.jarvice.ingress.tls.issuer.name) }}
 {{- $files := .Files }}
@@ -14,10 +15,14 @@ spec:
 {{- if (not (empty .Values.jarvice.trust_manager.inLine)) }}
 {{ .Values.jarvice.trust_manager.inLine | indent 6 }}
 {{- end }}
-{{- if (eq "selfsigned" .Values.jarvice.ingress.tls.issuer.name) }}
+{{- end }}
+{{- if (eq "selfsigned" .Values.jarvice.ingress.tls.cluster_issuer.name) }}
   - secret:
-      name: "jarvice-selfsigned-root-secret"
+      name: "jarvice-root-secret"
       key: "ca.crt"
+  - secret:
+      name: "jarvice-root-secret"
+      key: "tls.crt"
 {{- end }}
   target:
     configMap:

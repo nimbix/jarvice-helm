@@ -61,7 +61,7 @@ data:
   tls.key: {{ .Values.jarvice.ingress.tls.key }}
 ---
 {{- else }}
-{{- if not (empty .Values.jarvice.ingress.tls.issuer.name) }}
+{{- if or (not (empty .Values.jarvice.ingress.tls.issuer.name)) (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) }}
 {{- if or (eq "letsencrypt-prod" .Values.jarvice.ingress.tls.issuer.name) (eq "letsencrypt-staging" .Values.jarvice.ingress.tls.issuer.name) }}
 {{- if and (empty .Values.jarvice.ingress.tls.issuer.email) (empty .Values.jarvice.JARVICE_MAIL_ADMINS) }}
 {{- required "***** !!!!! A valid administrator email is required in order for Let's Encrypt to provide certificates.  Please provide a value for jarvice.ingress.tls.issuer.email or jarvice.JARVICE_MAIL_ADMINS.  !!!!! *****" .Values.jarvice.ingress.tls.issuer.email }}
@@ -118,11 +118,12 @@ spec:
           class: {{ .Values.jarvice.ingress.tls.class }}
 ---
 {{- end }}
-{{- else if (eq "selfsigned" .Values.jarvice.ingress.tls.issuer.name) }}
+{{- else if (eq "selfsigned" .Values.jarvice.ingress.tls.cluster_issuer.name) }}
 apiVersion: cert-manager.io/v1
-kind: ClusterIssuer
+kind: Issuer
 metadata:
   name: selfsigned-issuer
+  namespace: cert-manager
 spec:
   selfSigned: {}
 ---
@@ -130,6 +131,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: jarvice-issuer-selfsigned-ca
+  namespace: cert-manager
 spec:
   isCA: true
   commonName: jarvice-issuer-selfsigned-ca
@@ -139,29 +141,42 @@ spec:
     size: 256
   issuerRef:
     name: selfsigned-issuer
-    kind: ClusterIssuer
+    kind: Issuer
     group: cert-manager.io
 ---
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
-  name: {{ .Values.jarvice.ingress.tls.issuer.name }}
+  name: selfsigned-issuer-ca
+  namespace: cert-manager
 spec:
   ca:
     secretName: jarvice-selfsigned-root-secret
 ---
 apiVersion: cert-manager.io/v1
-kind: Issuer
+kind: Certificate
 metadata:
-  name: {{ .Values.jarvice.ingress.tls.issuer.name }}
-{{- if empty .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
-  namespace: {{ .Release.Namespace }}-jobs
-{{- else }}
-  namespace: {{ .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
-{{- end }}
+  name: jarvice-issuer-root-ca
+  namespace: cert-manager
+spec:
+  isCA: true
+  commonName: jarvice-root-ca
+  secretName: jarvice-root-secret
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: selfsigned-issuer-ca
+    kind: Issuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: {{ .Values.jarvice.ingress.tls.cluster_issuer.name }}
 spec:
   ca:
-    secretName: jarvice-selfsigned-root-secret
+    secretName: jarvice-root-secret
 ---
 {{- else if (eq "ca" .Values.jarvice.ingress.tls.issuer.name) }}
 {{/*
