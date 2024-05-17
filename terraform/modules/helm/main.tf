@@ -113,6 +113,26 @@ resource "helm_release" "cert_manager" {
     depends_on = [helm_release.traefik, helm_release.external_dns]
 }
 
+resource "helm_release" "trust_manager" {
+    count = contains(keys(var.charts), "cert-manager") ? 1 : 0
+
+    name = "trust-manager"
+    repository = "https://charts.jetstack.io"
+    chart = "trust-manager"
+    version = "v0.9.2"
+    namespace = "cert-manager"
+    create_namespace = true
+    reuse_values = false
+    reset_values = true
+    max_history = 12
+    render_subchart_notes = false
+    timeout = 600
+
+    values = null
+
+    depends_on = [helm_release.traefik, helm_release.external_dns, helm_release.cert_manager]
+}
+
 resource "helm_release" "traefik" {
     count = contains(keys(var.charts), "traefik") ? 1 : 0
 
@@ -232,5 +252,5 @@ resource "helm_release" "jarvice" {
             }})
     ]
 
-    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik, kubernetes_config_map.jarvice_user_cacert, kubernetes_config_map.jarvice_java_cacert]
+    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.trust_manager, helm_release.traefik, kubernetes_config_map.jarvice_user_cacert, kubernetes_config_map.jarvice_java_cacert]
 }

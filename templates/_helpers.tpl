@@ -145,6 +145,42 @@ Create hostAlias for JARVICE
 {{- if eq .Values.jarvice.JARVICE_CLUSTER_TYPE "upstream" }}
   {{- $service := (lookup "v1" "Service" "kube-system" "traefik") }}
   {{- if $service }}
+    {{- range $index, $ingress := $service.spec.externalIPs }}
+- ip: "{{- $ingress }}"
+  hostnames:
+      {{- $ingressHosts := list }}
+      {{- if $.Values.jarvice_api.enabled }}
+        {{- if (not (empty $.Values.jarvice_api.ingressHost)) }}
+        {{- $ingressHosts = printf "%s" $.Values.jarvice_api.ingressHost | append $ingressHosts }}
+        {{- end }}
+      {{- end }}
+      {{- if $.Values.jarvice_bird.enabled }}
+        {{- if (not (empty $.Values.jarvice_bird.ingressHost)) -}}
+        {{- $ingressHosts = printf "%s" $.Values.jarvice_bird.ingressHost | append $ingressHosts }}
+        {{- end }}
+      {{- end }}
+      {{- if $.Values.jarvice_license_manager.enabled }}
+        {{- if (not (empty $.Values.jarvice_license_manager.ingressHost)) }}
+        {{- $ingressHosts = printf "%s" $.Values.jarvice_license_manager.ingressHost | append $ingressHosts }}
+        {{- end }}
+      {{- end }}
+      {{- if $.Values.jarvice_mc_portal.enabled }}
+        {{- if (not (empty $.Values.jarvice_mc_portal.ingressHost)) }}
+        {{- $ingressHosts = printf "%s" $.Values.jarvice_mc_portal.ingressHost | append $ingressHosts }}
+        {{- end }}
+      {{- end }}
+      {{- if $.Values.keycloakx.enabled }}
+        {{- with index $.Values.keycloakx.ingress.rules 0 }}
+          {{- if (not (empty .host)) }}
+          {{- $ingressHosts = printf "%s" .host | append $ingressHosts }}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+      {{- $ingressHosts = $ingressHosts | uniq }}
+      {{- range $ingressHosts }}
+  - "{{ . }}"
+      {{- end }}
+    {{- end }}
     {{- range $index, $ingress := $service.status.loadBalancer.ingress }}
 - ip: "{{- $ingress.ip }}"
   hostnames:
@@ -183,5 +219,60 @@ Create hostAlias for JARVICE
     {{- end }}
   {{- end }}
 {{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+Create volume for jarvice root certificates
+*/}}
+{{- define "jarvice.rootCertVolume" -}}
+{{- if or (not (empty .Values.jarvice.cacert.user.configMap)) (not (empty .Values.jarvice.cacert.java.configMap)) }}
+{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
+- name: ca-jarvice-user
+  configMap:
+    name: {{ .Values.jarvice.cacert.user.configMap }}
+    optional: false
+    defaultMode: 444
+{{- end }}
+{{- if (not (empty .Values.jarvice.cacert.java.configMap)) }}
+- name: jarvice-java-cacert
+  configMap:
+    name: {{ .Values.jarvice.cacert.java.configMap }}
+    optional: false
+    defaultMode: 444
+{{- end }}
+{{- else if .Values.jarvice.trust_manager.enabled }}
+- name: jarvice-root-cert
+  configMap:
+    name: jarvice-root-cert
+    optional: false
+    defaultMode: 444
+{{- end }}
+{{- end }}
+
+{{/*
+Create volume for jarvice root certificates
+*/}}
+{{- define "jarvice.rootCertVolumeMount" -}}
+{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
+- name: ca-jarvice-user
+  mountPath: /etc/ssl/certs/ca-certificates.crt
+  subPath: ca-certificates.crt
+  readOnly: true
+{{- else if .Values.jarvice.trust_manager.enabled }}
+- name: jarvice-root-cert
+  mountPath: /etc/ssl/certs/ca-certificates.crt
+  subPath: ca-certificates.crt
+  readOnly: true
+{{- end }}
+{{- if (not (empty .Values.jarvice.cacert.java.configMap)) }}
+- name: jarvice-java-cacert
+  mountPath: /etc/ssl/certs/java/cacerts
+  subPath: cacerts
+{{- else if .Values.jarvice.trust_manager.enabled }}
+- name: jarvice-root-cert
+  mountPath: /etc/ssl/certs/java/cacerts
+  subPath: cacerts
+  readOnly: true
 {{- end }}
 {{- end }}

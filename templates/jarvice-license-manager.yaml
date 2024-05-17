@@ -51,13 +51,7 @@ spec:
           configMap:
             name: jarvice-license-manager
             optional: true
-{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
-        - name: ca-jarvice-user
-          configMap:
-            name: {{ .Values.jarvice.cacert.user.configMap }}
-            optional: false
-            defaultMode: 444
-{{- end }}
+        {{- include "jarvice.rootCertVolume" . | indent 8 }}
 {{- if (not (empty .Values.jarvice_license_manager.env.JARVICE_HOSTALIASES)) }}
       hostAliases: {{ .Values.jarvice_license_manager.env.JARVICE_HOSTALIASES }}
 {{- end }}
@@ -179,12 +173,7 @@ spec:
         - name: jarvice-etc
           mountPath: /jarvice/etc
           readOnly: true
-{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
-        - name: ca-jarvice-user
-          mountPath: /etc/ssl/certs/ca-certificates.crt
-          subPath: ca-certificates.crt
-          readOnly: true
-{{- end }}
+        {{- include "jarvice.rootCertVolumeMount" . | indent 8 }}
         resources:
 {{- if .Values.jarvice_license_manager.resources }}
 {{ toYaml .Values.jarvice_license_manager.resources | indent 10 }}
