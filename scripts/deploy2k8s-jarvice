@@ -163,6 +163,10 @@ echo "* Creating namespace: $namespace"
 $KUBECTL create namespace $namespace 2>/dev/null || /bin/true
 
 echo
+echo "* Creating configmap: jarvice-keycloak-realm-config"
+$KUBECTL -n $namespace create cm --from-file $jarvice_chart_dir/files/jarvice.json jarvice-keycloak-realm-config
+
+echo
 echo "* Deploying JARVICE to '$namespace' namespace..."
 echo
 if [ -n "$version" ]; then
