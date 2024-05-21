@@ -108,7 +108,7 @@ spec:
       imagePullSecrets:
       - name: jarvice-docker
       volumes:
-      {{- include "jarvice.rootCertVolume" $. | indent 6 }}
+      {{- include "jarvice.rootCertVolume" $ | indent 6 }}
       hostAliases:
       {{- include "jarvice.hostAliases" (dict "Values" $.Values) | nindent 8 }}
       containers:
@@ -333,7 +333,7 @@ spec:
             value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SINGULARITY_TMPDIR }}"
 {{- end }}
         volumeMounts:
-        {{- include "jarvice.rootCertVolumeMount" $. | indent 8 }}
+        {{- include "jarvice.rootCertVolumeMount" $ | indent 8 }}
         resources:
 {{- if .resources }}
 {{ toYaml .resources | indent 10 }}
