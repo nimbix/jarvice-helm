@@ -1,0 +1,18 @@
+{{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
+{{- if .Values.keycloakx.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jarvice-keycloak-realm-config
+  namespace: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+  annotations:
+    "helm.sh/hook": pre-upgrade,pre-install
+    "helm.sh/hook-weight": "3"
+    "helm.sh/resource-policy": keep
+  labels:
+    app: jarvice
+data:
+  jarvice.json: |
+{{ .Files.Get "files/jarvice.json" | indent 4 }}
+{{- end }}
+{{- end }}
