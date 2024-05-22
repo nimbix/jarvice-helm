@@ -114,13 +114,7 @@ spec:
             - key: krb5.keytab
               mode: 0644
               path: krb5.keytab
-{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
-        - name: ca-jarvice-user
-          configMap:
-            name: {{ .Values.jarvice.cacert.user.configMap }}
-            optional: false
-            defaultMode: 444
-{{- end }}
+        {{- include "jarvice.rootCertVolume" . | indent 8 }}
       hostAliases:
       {{- include "jarvice.hostAliases" . | nindent 8 }}
       containers:
@@ -357,12 +351,7 @@ spec:
           mountPath: /etc/krb5.keytab
           subPath: krb5.keytab
           readOnly: true
-{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
-        - name: ca-jarvice-user
-          mountPath: /etc/ssl/certs/ca-certificates.crt
-          subPath: ca-certificates.crt
-          readOnly: true
-{{- end }}
+        {{- include "jarvice.rootCertVolumeMount" . | indent 8 }}
         resources:
 {{- if .Values.jarvice_mc_portal.resources }}
 {{ toYaml .Values.jarvice_mc_portal.resources | indent 10 }}

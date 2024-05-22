@@ -81,13 +81,7 @@ spec:
             name: {{ .Values.jarvice.settings.configMap }}
             optional: true
             defaultMode: 0555
-{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
-        - name: ca-jarvice-user
-          configMap:
-            name: {{ .Values.jarvice.cacert.user.configMap }}
-            optional: false
-            defaultMode: 444
-{{- end }}
+        {{- include "jarvice.rootCertVolume" . | indent 8 }}
       hostAliases:
       {{- include "jarvice.hostAliases" . | nindent 8 }}
       containers:
@@ -279,12 +273,7 @@ spec:
         - name: jarvice-settings
           mountPath: /etc/jarvice/settings
           readOnly: true
-{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
-        - name: ca-jarvice-user
-          mountPath: /etc/ssl/certs/ca-certificates.crt
-          subPath: ca-certificates.crt
-          readOnly: true
-{{- end }}
+        {{- include "jarvice.rootCertVolumeMount" . | indent 8 }}
         resources:
 {{- if .Values.jarvice_sched_pass.resources }}
 {{ toYaml .Values.jarvice_sched_pass.resources | indent 10 }}

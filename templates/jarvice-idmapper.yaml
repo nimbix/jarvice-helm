@@ -128,22 +128,11 @@ spec:
         - mountPath: /home
           name: homes
           readOnly: true
-{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
-        - mountPath: /etc/ssl/certs/ca-certificates.crt
-          subPath: ca-certificates.crt
-          readOnly: true
-          name: ca-jarvice-user
-{{- end }}
+        {{- include "jarvice.rootCertVolumeMount" . | indent 8 }}
         resources:
 {{ toYaml .Values.jarvice_idmapper.resources | indent 10 }}
       volumes:
-{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
-        - name: ca-jarvice-user
-          configMap:
-            name: {{ .Values.jarvice.cacert.user.configMap }}
-            optional: true
-            defaultMode: 444
-{{- end }}
+        {{- include "jarvice.rootCertVolume" . | indent 8 }}
         - name: homes
 {{- if (not (empty .Values.jarvice_idmapper.filesystem.server)) }}
           nfs:
