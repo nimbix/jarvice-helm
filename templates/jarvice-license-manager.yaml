@@ -54,9 +54,10 @@ spec:
         {{- include "jarvice.rootCertVolume" . | indent 8 }}
 {{- if (not (empty .Values.jarvice_license_manager.env.JARVICE_HOSTALIASES)) }}
       hostAliases: {{ .Values.jarvice_license_manager.env.JARVICE_HOSTALIASES }}
-{{- end }}
+{{- else }}
       hostAliases:
       {{- include "jarvice.hostAliases" . | nindent 8 }}
+{{- end }}
       containers:
       - name: jarvice-license-manager
         image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-license-manager:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
