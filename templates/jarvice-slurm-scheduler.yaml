@@ -107,14 +107,10 @@ spec:
 {{- end }}
       imagePullSecrets:
       - name: jarvice-docker
-{{- if (not (empty $.Values.jarvice.cacert.user.configMap)) }}
       volumes:
-      - name: ca-jarvice-user
-        configMap:
-          name: {{ $.Values.jarvice.cacert.user.configMap }}
-          optional: false
-          defaultMode: 444
-{{- end }}
+      {{- include "jarvice.rootCertVolume" $ | indent 6 }}
+      hostAliases:
+      {{- include "jarvice.hostAliases" (dict "Values" $.Values) | nindent 8 }}
       containers:
       - name: jarvice-slurm-scheduler-{{ .name }}
         image: {{ include "jarvice.registry" $ }}/{{ $.Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-slurm-scheduler:{{ default $.Values.jarvice.JARVICE_IMAGES_TAG $.Chart.Annotations.tag }}{{- include "jarvice.version" $ }}
@@ -326,13 +322,8 @@ spec:
 {{- else }}
             value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SINGULARITY_TMPDIR }}"
 {{- end }}
-{{- if (not (empty $.Values.jarvice.cacert.user.configMap)) }}
         volumeMounts:
-        - name: ca-jarvice-user
-          mountPath: /etc/ssl/certs/ca-certificates.crt
-          subPath: ca-certificates.crt
-          readOnly: true
-{{- end }}
+        {{- include "jarvice.rootCertVolumeMount" $ | indent 8 }}
         resources:
 {{- if .resources }}
 {{ toYaml .resources | indent 10 }}

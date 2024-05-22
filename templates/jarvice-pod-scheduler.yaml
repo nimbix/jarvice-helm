@@ -43,6 +43,8 @@ spec:
 {{- end }}
       imagePullSecrets:
       - name: jarvice-docker
+      hostAliases:
+      {{- include "jarvice.hostAliases" . | nindent 8 }}
       containers:
       - name: jarvice-pod-scheduler
         image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-pod-scheduler:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}

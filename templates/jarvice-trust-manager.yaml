@@ -1,0 +1,36 @@
+{{- if .Values.jarvice.trust_manager.enabled }}
+apiVersion: trust.cert-manager.io/v1alpha1
+kind: Bundle
+metadata:
+  name: jarvice-root-cert
+spec:
+  sources:
+  - useDefaultCAs: true
+{{- if or (eq "letsencrypt-staging" .Values.jarvice.ingress.tls.issuer.name) (not (empty .Values.jarvice.trust_manager.inLine)) }}
+  - inLine: |
+{{- if (eq "letsencrypt-staging" .Values.jarvice.ingress.tls.issuer.name) }}
+{{- $files := .Files }}
+{{ $files.Get "files/lets-encrypt-staging.pem" | indent 6 }}
+{{- end }}
+{{- if (not (empty .Values.jarvice.trust_manager.inLine)) }}
+{{ .Values.jarvice.trust_manager.inLine | indent 6 }}
+{{- end }}
+{{- end }}
+{{- if (eq "selfsigned" .Values.jarvice.ingress.tls.cluster_issuer.name) }}
+  - secret:
+      name: "jarvice-root-secret"
+      key: "ca.crt"
+  - secret:
+      name: "jarvice-root-secret"
+      key: "tls.crt"
+{{- end }}
+  target:
+    configMap:
+      key: "ca-certificates.crt"
+    additionalFormats:
+      jks:
+        key: "cacerts"
+    namespaceSelector:
+      matchLabels:
+        kubernetes.io/metadata.name: {{ .Release.Namespace }}
+{{- end }}

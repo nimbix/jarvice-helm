@@ -121,13 +121,7 @@ spec:
 {{- else }}
           name: "{{ .Values.jarvice_bird.nginx.configMap }}"
 {{- end }}
-{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
-      - name: ca-jarvice-user
-        configMap:
-          name: "{{ .Values.jarvice.cacert.user.configMap }}"
-          optional: false
-          defaultMode: 444
-{{- end }}
+      {{- include "jarvice.rootCertVolume" . | indent 6 }}
       - name : jarvice-bird-server
         emptyDir:
           sizeLimit: 100Mi
@@ -161,6 +155,8 @@ spec:
           - key: krb5.keytab
             mode: 0644
             path: krb5.keytab
+      hostAliases:
+      {{- include "jarvice.hostAliases" . | nindent 8 }}
       containers:
       - name: jarvice-bird
         image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-bird:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
@@ -243,12 +239,7 @@ spec:
           name: bird-config
           readOnly: true
           subPath: config.json
-{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
-        - name: ca-jarvice-user
-          mountPath: /etc/ssl/certs/ca-certificates.crt
-          subPath: ca-certificates.crt
-          readOnly: true
-{{- end }}
+        {{- include "jarvice.rootCertVolumeMount" . | indent 8 }}
         resources:
 {{ toYaml .Values.jarvice_bird.bird.resources | indent 10 }}
       - name: jarvice-bird-portal
@@ -504,12 +495,7 @@ spec:
           mountPath: /etc/krb5.keytab
           subPath: krb5.keytab
           readOnly: true
-{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
-        - name: ca-jarvice-user
-          mountPath: /etc/ssl/certs/ca-certificates.crt
-          subPath: ca-certificates.crt
-          readOnly: true
-{{- end }}
+        {{- include "jarvice.rootCertVolumeMount" . | indent 8 }}
         resources:
 {{ toYaml .Values.jarvice_bird.portal.resources | indent 10 }}
 ---
@@ -583,13 +569,7 @@ spec:
       imagePullSecrets:
       - name: jarvice-docker
       volumes:
-{{- if (not (empty .Values.jarvice.cacert.java.configMap)) }}
-      - name: jarvice-java-cacert
-        configMap:
-          name: {{ .Values.jarvice.cacert.java.configMap }}
-          optional: false
-          defaultMode: 444
-{{- end }}
+      {{- include "jarvice.rootCertVolume" . | indent 6 }}
       - name : jarvice-bird-server
 {{- if .Values.jarvice_bird.server.persistence.enabled }}
         persistentVolumeClaim:
@@ -616,6 +596,8 @@ spec:
         volumeMounts:
         - mountPath: /home/bird
           name: jarvice-bird-server
+      hostAliases:
+      {{- include "jarvice.hostAliases" . | nindent 8 }}
       containers:
       - name: jarvice-bird-server
         image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-bird-server:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
@@ -667,11 +649,7 @@ spec:
         volumeMounts:
         - mountPath: /home/bird
           name: jarvice-bird-server
-{{- if (not (empty .Values.jarvice.cacert.java.configMap)) }}
-        - name: jarvice-java-cacert
-          mountPath: /etc/ssl/certs/java/cacerts
-          subPath: cacerts
-{{- end }}
+        {{- include "jarvice.rootCertVolumeMount" . | indent 8 }}
 {{- if (not (empty .Values.jarvice_bird.preset.configMap)) }}
         - name: jarvice-bird-user-preset
           mountPath: /opt/bird/bird-presets/user_dashboards_configuration_default.json

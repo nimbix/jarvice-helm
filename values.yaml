@@ -170,12 +170,20 @@ jarvice:
 
   # Optionally, provide root certificate for JARVICE pods
   # jarvice.cacert.configMap:
-  # TODO docs
+  # Deprecated: use trust-manager
   cacert:
     user:
       configMap: # jarvice-cacert
     java:
       configMap: # jarvice-java-cacert
+
+  # Optionally, use trust-manager to provide root certificate for JARVICE pods
+  trust_manager:
+    enabled: false
+  #   inLine: |
+  #     -----BEGIN CERTIFICATE-----
+  #     ...
+  #     -----END CERTIFICATE-----
 
   JARVICE_SYSTEM_NAMESPACE: # auto-detected, should not need to be updated
   JARVICE_JOBS_NAMESPACE: # auto-set, should not need to be updated
@@ -1380,6 +1388,7 @@ keycloakx:
     - "/opt/keycloak/bin/kc.sh"
     - "--verbose"
     - "start"
+    - "--import-realm"
     - "--http-enabled=true"
     - "--http-port=8080"
     - "--hostname-strict=false"
@@ -1388,6 +1397,60 @@ keycloakx:
     - "--spi-events-listener-jboss-logging-error-level=warn"
     - "--spi-login-protocol-openid-connect-legacy-logout-redirect-uri=true"
   extraEnv: |
+    - name: JARVICE_REALM
+      value: jarvice
+    - name: JARVICE_ROOT_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: {{ include "keycloak.fullname" . }}-root-creds
+          key: password
+    - name: JARVICE_REALM_ADMIN_USER
+      valueFrom:
+        secretKeyRef:
+          name: {{ include "keycloak.fullname" . }}-realm-creds
+          key: user
+    - name: JARVICE_REALM_ADMIN_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: {{ include "keycloak.fullname" . }}-realm-creds
+          key: password
+    - name: JARVICE_BIRD_INGRESSHOST
+      value: # bird ingressHost
+    - name: JARVICE_KEYCLOAK_SMTP_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: {{ include "keycloak.fullname" . }}-smtp-config
+          key: password
+    - name: JARVICE_KEYCLOAK_SMTP_START_TLS
+      valueFrom:
+        secretKeyRef:
+          name: {{ include "keycloak.fullname" . }}-smtp-config
+          key: tls
+    - name: JARVICE_KEYCLOAK_SMTP_AUTH
+      valueFrom:
+        secretKeyRef:
+          name: {{ include "keycloak.fullname" . }}-smtp-config
+          key: auth
+    - name: JARVICE_KEYCLOAK_SMTP_PORT
+      valueFrom:
+        secretKeyRef:
+          name: {{ include "keycloak.fullname" . }}-smtp-config
+          key: port
+    - name: JARVICE_KEYCLOAK_SMTP_HOST
+      valueFrom:
+        secretKeyRef:
+          name: {{ include "keycloak.fullname" . }}-smtp-config
+          key: host
+    - name: JARVICE_KEYCLOAK_SMTP_FROM
+      valueFrom:
+        secretKeyRef:
+          name: {{ include "keycloak.fullname" . }}-smtp-config
+          key: from
+    - name: JARVICE_KEYCLOAK_SMTP_USER
+      valueFrom:
+        secretKeyRef:
+          name: {{ include "keycloak.fullname" . }}-smtp-config
+          key: user
     - name: KC_DB_URL
       value: jdbc:mariadb://jarvice-db:3306/keycloak?ssl=allow&createDatabaseIfNotExist=true
     - name: KEYCLOAK_ADMIN
@@ -1406,6 +1469,14 @@ keycloakx:
         -XX:MaxRAMPercentage=50.0
         -Djava.awt.headless=true
         -Djgroups.dns.query={{ include "keycloak.fullname" . }}-headless
+  extraVolumes: |
+    - name: jarvice-keycloak-realm-config
+      configMap:
+        name: jarvice-keycloak-realm-config
+  extraVolumeMounts: |
+    - name: jarvice-keycloak-realm-config
+      mountPath: /opt/keycloak/data/import/jarvice.json
+      subPath: jarvice.json
   dbchecker:
     enabled: true
   database:
@@ -1422,6 +1493,22 @@ keycloakx:
       stringData:
         user: jarvice
         password: Pass1234
+    root-creds:
+      stringData:
+        password: Pass1234
+    realm-creds:
+      stringData:
+        user: nimbix
+        password: abc1234!
+    smtp-config:
+      stringData:
+        password: "" # SMTP password
+        tls:      "" # SMTP start TLS
+        auth:     "" # SMTP auth
+        port:     "" # SMTP port
+        host:     "" # SMTP host
+        from:     "" # SMTP from
+        user:     "" # SMTP user
   ingress:
     # If `true`, an Ingress is created
     enabled: true
@@ -1432,6 +1519,7 @@ keycloakx:
     # Ingress annotations
     annotations:
       # cert-manager.io/issuer: letsencrypt-staging
+      # cert-manager.io/cluster-issuer: selfsigned
       ## Resolve HTTP 502 error using ingress-nginx:
       ## See https://www.ibm.com/support/pages/502-error-ingress-keycloak-response
       # nginx.ingress.kubernetes.io/proxy-buffer-size: 128k

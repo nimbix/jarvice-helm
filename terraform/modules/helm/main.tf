@@ -113,6 +113,26 @@ resource "helm_release" "cert_manager" {
     depends_on = [helm_release.traefik, helm_release.external_dns]
 }
 
+resource "helm_release" "trust_manager" {
+    count = contains(keys(var.charts), "cert-manager") ? 1 : 0
+
+    name = "trust-manager"
+    repository = "https://charts.jetstack.io"
+    chart = "trust-manager"
+    version = "v0.9.2"
+    namespace = "cert-manager"
+    create_namespace = true
+    reuse_values = false
+    reset_values = true
+    max_history = 12
+    render_subchart_notes = false
+    timeout = 600
+
+    values = null
+
+    depends_on = [helm_release.traefik, helm_release.external_dns, helm_release.cert_manager]
+}
+
 resource "helm_release" "traefik" {
     count = contains(keys(var.charts), "traefik") ? 1 : 0
 
@@ -130,6 +150,20 @@ resource "helm_release" "traefik" {
     values = [var.charts["traefik"]["values"]]
 
     depends_on = [helm_release.aws_load_balancer_controller, helm_release.external_dns]
+}
+
+data "kubernetes_service" "traefik" {
+    metadata {
+        name = "traefik"
+        namespace = "kube-system"
+    }
+
+    depends_on = [helm_release.traefik]
+}
+
+locals {
+    jarvice_bird_portal = try(yamldecode(var.jarvice["values_yaml"]).jarvice_bird, "")
+    jarvice_bird_ingressHost = try(local.jarvice_bird_portal.ingressHost, "")
 }
 
 resource "helm_release" "namespace" {
@@ -204,8 +238,19 @@ resource "helm_release" "jarvice" {
         fileexists(local.jarvice_user_java_cacert) ? local.java_cacert_values_yaml : "",
         var.cluster_values_yaml,
         var.global["values_yaml"],
-        var.jarvice["values_yaml"]
+        var.jarvice["values_yaml"],
+        yamlencode({
+            "keycloakx": {
+                "hostAliases": [
+                    {
+                        "ip": data.kubernetes_service.traefik.status[0].load_balancer[0].ingress[0].ip,
+                        "hostnames": [
+                            local.jarvice_bird_ingressHost
+                        ]
+                    }
+                ]
+            }})
     ]
 
-    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.traefik, kubernetes_config_map.jarvice_user_cacert, kubernetes_config_map.jarvice_java_cacert]
+    depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.trust_manager, helm_release.traefik, kubernetes_config_map.jarvice_user_cacert, kubernetes_config_map.jarvice_java_cacert]
 }

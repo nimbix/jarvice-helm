@@ -59,6 +59,8 @@ spec:
 {{- if $.Values.jarvice_images_pull.imagePullSecrets }}
 {{ toYaml $.Values.jarvice_images_pull.imagePullSecrets | indent 10 }}
 {{- end }}
+          hostAliases:
+          {{- include "jarvice.hostAliases" (dict "Values" $.Values) | nindent 12 }}
           containers:
 {{- range $index, $image := $images }}
           - name: jarvice-images-pull-{{ $arch }}-{{ $index }}
@@ -118,6 +120,8 @@ spec:
 {{- if $.Values.jarvice_images_pull.imagePullSecrets }}
 {{ toYaml $.Values.jarvice_images_pull.imagePullSecrets | indent 6 }}
 {{- end }}
+      hostAliases:
+      {{- include "jarvice.hostAliases" . | nindent 8 }}
       containers:
 {{- range $images }}
       - name: {{ . | replace "/" "--" | replace ":" "--" | replace "." "-" | lower }}
