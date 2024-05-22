@@ -33,3 +33,7 @@ tmp*/
 bak*/
 *.local/
 *.local
+jobperf/
+terraform/
+*.svg
+*.md
