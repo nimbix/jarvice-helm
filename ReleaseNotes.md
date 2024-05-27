@@ -126,6 +126,35 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.24.5-202405221807
+
+* (JAR-7901) Correct error when Team admin try to impersonate Payer accounts
+* (JAR-8099) Enable Zone Admins to list users/tenants in zone
+* (JAR-8504) Hide PushToCompute Dashboard on BIRD UI for non-developer users
+* (JAR-8560) Fix Slurm nodes list
+* (JAR-8564) Do not expand JARVICE machines when saving PushToCompute Appdef from BIRD UI
+* (JAR-8609) Update initial Keycloak realm configuration for new JARVICE deployments
+* (JAR-8627) Fix various dashboard bugs on BIRD UI
+* (JAR-8641) Add hostAliases support for jarvice services and keycloak in jarvice-helm
+* (JAR-8646) Fix job output for batch jobs on mc portal
+* (JAR-8651) Change mouse icon when hovering on job "Clone" option
+* (JAR-8652) Log the correct user on PushToCompute Pull History page
+* (JAR-8655) (JAR-8733) Update JARVICE service containers to alpine 3.19
+* (JAR-8656) Correct presentation of applications displayed on the BIRD UI Team Jobs page
+* (JAR-8661) Maintain search query on tables in BIRD UI during refreshes
+* (JAR-8671) (JAR-8643) (JAR-8791) General accessibility improvements for BIRD UI
+* (JAR-8693) Flex support for upload file template
+* (JAR-8697) Correct File parameter handling in BIRD UI
+* (JAR-8710) (JAR-8657) Fix vault creation logic to prohibit invalid sizes
+* (JAR-8711) (JAR-8620) Use trust-manager to handle root certificates in JARVICE
+* (JAR-8734) Fix user stats refresh on MC portal
+* (JAR-8743) Update init v2 to conditionally load libraries based on LSB compatibility
+* (JAR-8746) Fix issue with missing import for docker pull container
+* (JAR-8762) Map SAML emails to JARVICE supported username
+* (JAR-8763) Create JARVICE user using JWT token from Keycloak
+* (JAR-8788) Support days format with Slurm squeue command
+* (JAR-8808) Fix GID permissions on /etc/hosts
+
 ## 3.24.4-202403251918
 
 * (JAR-8186) Allow apps to disable public IP ingress in interactive endpoints via AppDef
