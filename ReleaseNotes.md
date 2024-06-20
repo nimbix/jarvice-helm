@@ -126,6 +126,277 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.24.5-202405221807
+
+* (JAR-7901) Correct error when Team admin try to impersonate Payer accounts
+* (JAR-8099) Enable Zone Admins to list users/tenants in zone
+* (JAR-8504) Hide PushToCompute Dashboard on BIRD UI for non-developer users
+* (JAR-8560) Fix Slurm nodes list
+* (JAR-8564) Do not expand JARVICE machines when saving PushToCompute Appdef from BIRD UI
+* (JAR-8609) Update initial Keycloak realm configuration for new JARVICE deployments
+* (JAR-8627) Fix various dashboard bugs on BIRD UI
+* (JAR-8641) Add hostAliases support for jarvice services and keycloak in jarvice-helm
+* (JAR-8646) Fix job output for batch jobs on mc portal
+* (JAR-8651) Change mouse icon when hovering on job "Clone" option
+* (JAR-8652) Log the correct user on PushToCompute Pull History page
+* (JAR-8655) (JAR-8733) Update JARVICE service containers to alpine 3.19
+* (JAR-8656) Correct presentation of applications displayed on the BIRD UI Team Jobs page
+* (JAR-8661) Maintain search query on tables in BIRD UI during refreshes
+* (JAR-8671) (JAR-8643) (JAR-8791) General accessibility improvements for BIRD UI
+* (JAR-8693) Flex support for upload file template
+* (JAR-8697) Correct File parameter handling in BIRD UI
+* (JAR-8710) (JAR-8657) Fix vault creation logic to prohibit invalid sizes
+* (JAR-8711) (JAR-8620) Use trust-manager to handle root certificates in JARVICE
+* (JAR-8734) Fix user stats refresh on MC portal
+* (JAR-8743) Update init v2 to conditionally load libraries based on LSB compatibility
+* (JAR-8746) Fix issue with missing import for docker pull container
+* (JAR-8762) Map SAML emails to JARVICE supported username
+* (JAR-8763) Create JARVICE user using JWT token from Keycloak
+* (JAR-8788) Support days format with Slurm squeue command
+* (JAR-8808) Fix GID permissions on /etc/hosts
+
+## 3.24.4-202403251918
+
+* (JAR-8186) Allow apps to disable public IP ingress in interactive endpoints via AppDef
+* (JAR-8283) Add wall time field to Team Jobs view
+* (JAR-8502) Fix incorrect AppDef command name in job builder on BIRD UI
+* (JAR-8507) Fix core slider on job builder for BIRD UI
+* (JAR-8508) Fix job clone on BIRD UI to use correct machine type
+* (JAR-8509) (JAR-8203) Fix bug in appsync preventing deletion of out dated application
+* (JAR-8513) Dashboard transition to Current page after job submission on BIRD UI
+* (JAR-8519) Verify vault share settings during job submission
+* (JAR-8524) Add topbar color to theme editor
+* (JAR-8553) Allow LDAP bind user to use generic string
+* (JAR-8557) Preserve AppDef ordering returned by /jarvice/apps
+* (JAR-8565) Fix bug not displaying all application on Administration->Applications page
+* (JAR-8599) Fix JARVICE_API_PUBLIC_URL substitution in jarvice-helm chart
+* (JAR-8611) Fix /jarvice/apps handling of Google Artifact Docker registries
+* (JAR-8614) Update dependencies for OpenMPI
+
+## 3.24.3-202402282109
+
+* (JAR-7845) Prevent SAML/LDAP login if email is already in use
+* (JAR-8356) gkev2 terraform module optionally uses different service account for compute node groups
+* (JAR-8412) (JAR-8430) (JAR-8440) (JAR-8445) (JAR-8435) (JAR-8519) Address various vulnerabilities
+* (JAR-8467) Export theme to json file
+* (JAR-8469) (JAR-8470) Fix issue where job help HTML doesn't show up
+* (JAR-8484) Add timeout for FPGA reset when using Xilinx accelerators
+* (JAR-8486) Correct theme editor settings for dark mode
+* (JAR-8488) Optionally block cloud metadata server (GKE and EKS) from JARVICE jobs
+
+## 3.24.2-202402151917
+
+* (JAR-8357) Remember dashboard navigation history
+* (JAR-8364) (JAR-8420) (JAR-8425) Fix various vulnerabilities on Material Compute UI
+* (JAR-8371) Get global theme from java-web-ui-server
+* (JAR-8453) Fix SAML config failure for some configurations
+* (JAR-8466) Package OpenMPI with UCX
+* (JAR-8471) Add XRT reset for jobs using a Xilinx FPGA
+
+## 3.24.1-202401311639
+
+* (JAR-7949) Add Vendor option to LDAP federation on Account->LDAP page
+* (JAR-8150) Add general-purpose job submission validation hook script
+* (JAR-8280) Correct job details shown to System Administrators
+* (JAR-8321) Fix PushToCompute bug that clears out application certification
+* (JAR-8325) Update bird nginx config to proxy /portal to port 8080
+* (JAR-8327) Fix bug with FQDN support with slurm scheduler
+* (JAR-8329) Fix jobtail display to show unicode characters correctly
+* (JAR-8330) Update recent apps on BIRD UI
+* (JAR-8345) Fix team limits for Machines in Cluster 0 under Account->Team
+* (JAR-8351) Fix generator for container image tags in jarvice-helm
+* (JAR-8358) Add missing toleration constraint for proxy pod on slurm scheduler
+* (JAR-8376) Optionally move UI submenus to the right using dashboard editor
+
+## 3.24.0-202401181754
+
+* (JAR-6946) Use persistent PVC for bird server db
+* (JAR-7519) Fixed bug where user by zone drop down lists zones that have been deleted
+* (JAR-7523) Add Disable Notifications feature for sysadmins
+* (JAR-7847) Add the Wall time to Team Jobs dashboard or Team Summary
+* (JAR-7948) Remove unused routes from jarvice-bird ingress
+* (JAR-7972) Allow jarvice-bird Keycloak client to deploy in realms other than 'jarvice'
+* (JAR-7975) Fix error when pulling image from PushToCompute
+* (JAR-7977) Fix error when clicking on active job logs for a submitted job
+* (JAR-8136) Fix error preventing PushToCompute App icon from updating after successful save
+* (JAR-8213) Update docker-unfs3 container to Alpine 3.18
+* (JAR-8214) Enable custom Keyloack email theme
+* (JAR-8223) Move back button on application builder UI
+* (JAR-8230) Enable custom Keycloak login theme
+* (JAR-8245) Fix team limits to include all team member zones
+* (JAR-8246) Fix sidenav rendering
+* (JAR-8280) Correct job details shown to System Administrators
+* (JAR-8296) Remove unused packages from jarvice-bird
+* (JAR-8308) Remove root path from JARVICE_API_PUBLIC_URL
+* (JAR-8311) Automatically refresh Admin/Machines page
+
+## 3.21.9-1.202312061620
+
+* (JAR-5243) Billing code showing a job in current month even though it completed in previous month
+* (JAR-7421) Account/Limits - Hide "Per User" checkbox unless its the "Team default" limit
+* (JAR-7444) Project selection does not show up for team member
+* (JAR-7584) Move k8s support to 1.26
+* (JAR-8039) Enable SAML login for Google
+* (JAR-8081) UI: Don't show errors when job-runtime-info polling fails (seen during job termination)
+* (JAR-8095) Multi-tenant support has a race condition
+* (JAR-8128) Change k8s API deprecation check to version 1.23 for gke terraform module
+* (JAR-8137) pod-scheduler: account for resource-less containers to avoid OutOfCpu evictions
+* (JAR-8138) UI: Notifications - 400 Error when entering phone number without selecting provider
+* (JAR-8141) UI: Account SSH Keys cannot be validated correctly
+* (JAR-8150) Add general-purpose job submission validation hook script
+* (JAR-8153) UI: SAML page buttons alignment
+* (JAR-8170) Update DAL to Django 4.2
+* (JAR-8219) Fix pullsecret check for /jarvice/batch
+
+## 3.21.9-1.202311081510
+
+* (JAR-6665) Allow option for user to inherit team default white list
+* (JAR-7950) Fix invalid redirect_url & backchannel logout url in auto generated jarvice Keycloak client config
+* (JAR-8027) jarvice-api: support job priority during job submission for payers and team admins
+* (JAR-8066) ZoneAdmin fix bug with auto complete list only showing 25 users
+* (JAR-8072) SlurmScheduler support FQDN hosts
+* (JAR-8101) Fix endless failure login loop when impersonating user
+* (JAR-8102) Check zone admin status on heartbeat and enforce refresh if changed
+* (JAR-8133) Add restrict queue environment variables to helm
+* (JAR-8139) Pin helm chart version in script/deploy2k8-* scripts
+* (JAR-8143) Hide edit dashboard for normal user
+
+## 3.21.9-1.202310261643
+
+* (JAR-7581) Create "short queue" via license manager licfeatures hook script.
+* (JAR-7741) (JAR-8013) Eviden theme.
+* (JAR-7802) (JAR-7803) (JAR-7804) (JAR-7805) (JAR-7806) (JAR-7961) (JAR-8029) (JAR-8066) (JAR-8073) (JAR-8092) (JAR-8093) (JAR-8097) (JAR-8098) Added Zone Admin feature; system administrators can now delegate self-service management to an entire zone from the *Administration->Zones* view, including whether or not a zone has access to legacy apps (v1), which is the default.  Delegated zone administrators have an administration widget in their dashboards and can act on elements such as jobs, machine definitions, and billing reports for the respective zone.
+* (JAR-7859) Update Keycloak LDAP and SAML config to allow partial setups.
+* (JAR-7900) Allow the Team Jobs username column to be adjustable.
+* (JAR-7902) UI Dashboard History long label overwrites next column content.
+* (JAR-7904) Dashboard Team Jobs landing page should not be collapsed.
+* (JAR-7905) Dashboard Team Jobs remember the choice for Group by user.
+* (JAR-7906) Dashboard Team Jobs Group by User default should be turned off.
+* (JAR-7907) Dashboard Team Jobs missing terminate a single job option. 
+* (JAR-7909) Dashboard Team Jobs Application name should replace application id.
+* (JAR-7910) Dashboard Team Jobs Machine column is missing.
+* (JAR-7911) Dashboard Team Jobs Status unnecessary if all are running.
+* (JAR-7912) Dashboard Team Jobs Clone is not necessary.
+* (JAR-7913) Dashboard Team Jobs Impersonate function missing.
+* (JAR-7914) Dashboard Team Jobs Command is unnecessary.
+* (JAR-7915) Dashboard Team Jobs Start time for submitted should be -:-:- .
+* (JAR-7938) Portal: Fix issue with creating new zone.
+* (JAR-7974) Make Job Control icons bigger on new UI.
+* (JAR-7976) Batch output from jobs shows special characters (\n) removing the format from stdout.
+* (JAR-8065) UI: SysAdmin sees multiple Administration icons.
+* (JAR-8068) Remove jarvice client ADMIN role from keycloak.
+* (JAR-8084) UI: Zone name text longer than the button.
+
+## 3.21.9-1.202309071538
+
+* (JAR-6820) Audit log endpoint for jarvice-api
+* (JAR-7046) Portal: Sysadmin feature to force Keycloak password reset for any user.
+* (JAR-7544) Queue limits are enforced for per-payer job priorities.
+* (JAR-7597) Tag jobs to allow easy sorting by bare metal sys admin on Slurm downstream clusters.
+* (JAR-7736) Portal - Allow custom About Page content.
+* (JAR-7737) Update cert-manager tolerationS.
+* (JAR-7739) v2 apps: support SSH with password if possible.
+* (JAR-7744) Billing Multiselect dropdown does not show selected options.
+* (JAR-7779) Make Jarvice BIRD deployment air gap friendly.
+* (JAR-7782) Create EKSv2 terraform module supporting EBS Container Storage Interface required for k8s 1.23+.
+* (JAR-7783) UI - PTC - limit icon size.
+* (JAR-7788) Add banner to help debug on Slurm downstream cluster jobs.
+* (JAR-7790) Minor helm updates for BIRD UI.
+* (JAR-7801) Internal support for future "zone admin" feature.
+* (JAR-7807) bird-portal should not change to ready state if keycloak admin credentials are invalid.
+* (JAR-7808) Add externalIP support to traefik deploy script.
+* (JAR-7810) Correctly apply resources settings for jarvice-db service from override file.
+* (JAR-7833) Portal: Request IP checkbox not shown for v2 apps with interactive endpoints.
+* (JAR-7846) Fixed issue with User signup success email template.
+
+## 3.21.9-1.202308021521
+
+* (JAR-7368) Helm does not export singularity verbose.
+* (JAR-7407) Add Theme Editor.
+* (JAR-7427) SAML users are kept logged in for the entire duration of browser session (or tab).
+* (JAR-7442) Fix issue with restricted Team member still having access to other apps unless they refresh page.
+* (JAR-7496) Limit dashboards menu width.
+* (JAR-7516) Fix Admin Manage Apps Error handling when save fails.
+* (JAR-7517) Admin Users: Change 'Login' to 'Username' and 'User name' to 'Full Name'
+* (JAR-7521) Admin Users UI: Team members should inherit fields from payer.
+* (JAR-7522) API: Admin->Metadata shows Keycloak auth error.
+* (JAR-7525) Fixed timeout error shown for user trying to relogin on a timedout login screen.
+* (JAR-7542) Compute/PTC - Fix filter by category logic.
+* (JAR-7547) Allow ungroup view on Team Jobs.
+* (JAR-7550) Updated terraform tfvars for BIRD UI.
+* (JAR-7551) On Team Jobs, allow all jobs to be visible on the page.
+* (JAR-7580) Add BIRD UI containers to jarvice-pull-system-images.
+* (JAR-7676) Divide long menu into categories using divider.
+* (JAR-7677) Add 9-dot icon on topbar.
+* (JAR-7701) Check and merge OpenAPI documentation for Jarvice API.
+* (JAR-7726) Fix License Included not displayed PTC.
+* (JAR-7727) Admin/Billing - Optional filters error.
+* (JAR-7735) Fix typo for helm hook job.
+
+## 3.21.9-1.202307051453
+
+* (JAR-5754) Added `jarvice.JARVICE_API_TIMEOUT` and `jarvice.JARVICE_API_MAX_CNCR` to [values.yaml](values.yaml).
+* (JAR-6821) Return the JARVICE deployment version tag in `/jarvice/ready` endpoint of `jarvice-api`
+* (JAR-6822) Return the JARVICE deployment version tag in `/ready` endpoint of all control plane components served via public Ingress (e.g. downstream scheduler).
+* (JAR-7149) Rendering issue - dummy scrollbar.
+* (JAR-7189) Fixed bug where license manager configuration couldn't be deleted if it would've left the entire configuration empty.
+* (JAR-7305) Expose tenant priority in job details for admins.
+* (JAR-7306) Allow sort by tenant priority in team jobs queue view.
+* (JAR-7307) Allow team admins to change job priority.
+* (JAR-7309) Update Account->Team Restrictions column logic.
+* (JAR-7357) Improved cleanup of Singularity overlay images on Slurm clusters.
+* (JAR-7367) Fixed bug sourcing custom environment on Slurm clusters.
+* (JAR-7420) Account/Team Summary: "More" button on active jobs should redirect to Dasboard/Team Jobs.
+* (JAR-7426) Don't show "Invalid Command" banner on apps whose commands cant be run.
+* (JAR-7436) Regular team member does not have Account->Summary when Allowed by Team Admin.
+* (JAR-7443) Demoting a team admin does not remove Saml admin privilege.
+* (JAR-7451) Fixed table filter behaviour.
+* (JAR-7478) Add steps to add keycloak cert to bird UI.
+* (JAR-7493) Admin/Users Show only payers not filtered after refresh.
+* (JAR-7494) Admin/Users Vaults in dark mode.
+* (JAR-7495) Recent apps -tooltip position.
+* (JAR-7498) Team jobs - if two users run jobs view is empty.
+* (JAR-7502) Fix issue with SAML config parsing - allowing Keycloak to handle the configuration.
+* (JAR-7506) Fixed missing scratch directories in writable tmpfs for Singularity without setuid privileges on Slurm clusters.
+* (JAR-7507) Fixed missing non-RSA key support in SSH proxy for remote visualization in Slurm clusters.
+* (JAR-7510) Fixed Administrator apps detail showing interpolated AppDef.
+* (JAR-7518) Increase visibility of Zone selector.
+* (JAR-7524) Pagination change Default settings.
+
+## 3.21.9-1.202306281533
+
+* (JAR-7484) Fixed problem with `ldconfig` failures when using `nvidia-container-cli` with GPU-enabled jobs.
+* (JAR-7488) Removed reporting of privileged public apps as well as app container addresses when using unauthenticated `/jarvice/apps` endpoint of `jarvice-api`.
+
+## 3.21.9-1.202306211440
+
+* Next-generation user interface portal generally available but disabled by default; see [BIRD portal](Bird.md) for details on enabling and configuring.
+* (7251) Optional support for existing Kubernetes secret for SSH user name/private key combination when configuring Slurm schedulers; see `jarvice_slurm_scheduler.schedulers` section in [values.yaml](values.yaml) for details.
+* (7270) Added documentation for new Slurm downstream scheduler features; see [Slurm cluster nodes](Configuration.md#slurm-cluster-nodes) in *JARVICE System Configuration Notes* for details.
+* (7297) Added support for ed25519 SSH keys for user private key when using Slurm scheduler; this format is detected automatically based on the private key's value.
+* (7302) (7303) (7304) Future data model and scheduling support for self-service tenant admin job queue management.
+* (7350) Improved cleanup after image conversion errors with Singularity for Slurm downstream clusters.
+* (7355) Fixed bugs applying settings *ConfigMap* to portal.
+* (7358) Support for unprivileged Singularity binaries which cannot use the overlay functionality; note that this may result in compatibility issues with certain applications; see [Singularity builds and setuid](SlurmScheduler.md#singularity-builds-and-setuid) for details.
+
+## 3.21.9-1.202305101453 *(Next-generation UI portal TECH PREVIEW)*
+
+* (JAR-6818) Sign email addresses in new user invite URLs for additional security.
+* (JAR-6884) Preserve `${PATH}` in V2 app containers.
+* (JAR-6947) Preliminary support for Kubernetes 1.26 (experimental)
+* (JAR-7043) Slurm jobs fail sooner if errors occur during execution of script.
+* (JAR-7072) Initial support for next-generation ("BIRD") user interface portal; see the `jarvice-bird` section in [values.yaml](values.yaml) for details.
+* (JAR-7073) If enabled, new user invitations will be serviced automatically by new portal backend with functionally identical user experience and similar look and feel; new logins will be consistent on both portals unless passwords are later reset from any given portal.
+* (JAR-7116) Fixed bug with variable expansion in V2 apps.
+* (JAR-7150) Enable SFTP in V2 app containers requesting public IP addresses; note that only key authentication is supported for V2 apps, not password.
+* (JAR-7250) Additional `sbatch` parameters added for machine definitions, documentation forthcoming in a future release.
+* (JAR-7258) Support `walltime` limit parameter in job submission when using Slurm clusters.
+* (JAR-7259) Support for optional custom environment script in JARVICE-submitted Slurm jobs, documentation forthcoming in a future release.
+
+## 3.21.9-1.202304121617
+
+* (JAR-7112) Fixed deadline (walltime limit) capabilities to avoid terminating jobs that are still queuing; also included small but significant performance improvement to general Kubernetes downstream scheduling.
+
 ## 3.21.9-1.202303301627
 
 * (JAR-6941) Support for custom HTML in portal *About* page; please see [Customize JARVICE files via a ConfigMap](README.md#customize-jarvice-files-via-a-configmap) for details.

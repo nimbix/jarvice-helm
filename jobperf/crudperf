@@ -1,0 +1,199 @@
+#!/usr/bin/python3
+#
+# Copyright (c) 2023, Nimbix, Inc.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# 1. Redistributions of source code must retain the above copyright notice,
+#    this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright notice,
+#    this list of conditions and the following disclaimer in the documentation
+#    and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+#
+# The views and conclusions contained in the software and documentation are
+# those of the authors and should not be interpreted as representing official
+# policies, either expressed or implied, of Nimbix, Inc.
+#
+
+import kubernetes as k8s
+import sys
+import time
+import argparse
+import logging as log
+from multiprocessing.pool import ThreadPool
+
+createcount = 0
+patchcount = 0
+deletecount = 0
+
+
+def timer(s, mark):
+    now = time.time()
+    log.info(s + (' in %.2lf second(s)' % (now - mark)))
+    return now
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        prog='crudperf',
+        description='Kubernetes API parallel CRUD performance benchmark',
+        epilog='Copyright (c) 2023 Nimbix, Inc.  All rights reserved.')
+    parser.add_argument('count', help='number of objects to create', type=int)
+    parser.add_argument('-k', '--kubeconfig', required=False,
+                        default=None,
+                        help='Path to the kubeconfig file to use for CLI '
+                        'requests')
+    parser.add_argument('-n', '--namespace', required=False,
+                        default='default',
+                        help='Kubernetes namespace to use ("default")')
+    parser.add_argument('-l', '--limit',
+                        help='API concurrency limit (default: 8)',
+                        default=8, type=int)
+    parser.add_argument('-d', '--debug', action='store_true',
+                        help='Debug mode (verbose)')
+    parser.add_argument('-q', '--quiet', action='store_true',
+                        help='Quiet mode (print steps and summary only)')
+    args = parser.parse_args()
+
+    log.basicConfig(format='%(levelname)s: %(message)s', level=(
+        log.DEBUG if args.debug else (log.WARNING if args.quiet else log.INFO))
+                    )
+
+    try:
+        k8s.config.load_kube_config(args.kubeconfig)
+    except Exception as e:
+        if args.kubeconfig:
+            log.error(f'Failed to load {args.kubeconfig}: {e}')
+            sys.exit(1)
+        try:
+            k8s.config.load_kube_config()
+        except Exception:
+            try:
+                k8s.config.load_incluster_config()
+            except Exception as e:
+                log.error(f'Failed to configure Kubernetes client: {e}')
+                sys.exit(1)
+    core = k8s.client.CoreV1Api()
+    log.getLogger('kubernetes').setLevel(log.WARNING)
+
+    cms = [f'crudperf{x}' for x in range(0, args.count)]
+
+    def create1(i):
+        global createcount
+        try:
+            core.create_namespaced_config_map(
+                args.namespace, k8s.client.V1ConfigMap(
+                    metadata=k8s.client.V1ObjectMeta(
+                        name=i, labels={'app': 'crudperf'}),
+                    data={'foo': 'bar'}))
+            log.debug(f'Created ConfigMap {i}')
+            createcount += 1
+            if createcount % 25 == 0:
+                log.info('%d/%d ConfigMap(s) successfully created' % (
+                    createcount, len(cms)))
+            return i
+        except Exception as e:
+            log.debug('exc', exc_info=True)
+            log.error('Failed to create ConfigMap: %s' % str(e))
+            return 0
+
+    def patch1(i):
+        global patchcount
+        try:
+            cm = core.read_namespaced_config_map(i, args.namespace)
+            cm.data['patched'] = 'yes'
+            core.patch_namespaced_config_map(i, args.namespace, cm)
+            log.debug(f'Patched ConfigMap {i}')
+            patchcount += 1
+            if patchcount % 25 == 0:
+                log.info('%d/%d ConfigMap(s) successfully patched' % (
+                    patchcount, len(cms)))
+            return i
+        except Exception as e:
+            log.debug('exc', exc_info=True)
+            log.error('Failed to patch ConfigMap: %s' % str(e))
+            return 0
+
+    def delete1(i):
+        global deletecount
+        try:
+            core.delete_namespaced_config_map(
+                i, args.namespace, body=k8s.client.V1DeleteOptions(
+                    grace_period_seconds=0, propagation_policy='Foreground'))
+            log.debug(f'Requested deletion of ConfigMap {i}')
+            deletecount += 1
+            if deletecount % 25 == 0:
+                log.info('%d/%d ConfigMap(s) requested for delete' % (
+                    deletecount, len(cms)))
+            return i
+        except Exception as e:
+            log.debug('exc', exc_info=True)
+            log.error('Failed to delete ConfigMap: %s' % str(e))
+            return 0
+
+    log.info('Performance test parameters:\n' +
+             f'  Kubernetes namespace:  {args.namespace}\n' +
+             f'  # of objects:          {args.count}\n' +
+             f'  API concurrency limit: {args.limit} request(s)\n')
+
+    print('\n*** CREATING OBJECTS ***\n')
+    start = time.time()
+    with ThreadPool(args.limit) as p:
+        ret = set(p.map(create1, cms))
+    if 0 in ret:
+        ret.remove(0)
+    if len(ret) < args.count:
+        log.warning('%d/%d object(s) failed to create!' % (
+            args.count - len(ret), args.count))
+    cms = ret
+    createmark = timer('%d/%d object(s) successfully created' % (
+        len(cms), args.count), start)
+
+    print('\n*** PATCHING OBJECTS ***\n')
+    with ThreadPool(args.limit) as p:
+        ret = set(p.map(patch1, cms))
+    if 0 in ret:
+        ret.remove(0)
+    if len(ret) < len(cms):
+        log.warning('%d/%d object(s) failed to patch!' % (
+            len(cms) - len(ret), len(cms)))
+    patchmark = timer('%d/%d object(s) successfully patched' % (
+        len(ret), len(cms)), createmark)
+
+    print('\n*** DELETING OBJECTS ***\n')
+    with ThreadPool(args.limit) as p:
+        ret = set(p.map(delete1, cms))
+    if 0 in ret:
+        ret.remove(0)
+    if len(ret) < len(cms):
+        log.warning('%d/%d object(s) failed to delete!' % (
+            len(cms) - len(ret), len(cms)))
+    deletemark = timer('%d/%d object(s) successfully deleted' % (
+        len(ret), len(cms)), patchmark)
+
+    print('\n*** SUMMARY ***\n')
+    print('  # objects created:                %d' % len(cms))
+    print('  Time to create all objects:       %.02lf second(s)' %
+          (createmark - start))
+    print('  Time to patch all objects:        %.02lf second(s)' %
+          (patchmark - createmark))
+    print('  Time to delete all objects:       %.02lf second(s)' %
+          (deletemark - patchmark))
+    print('  Total CRUD time on all objects:   %.02lf second(s)' %
+          (deletemark - start))
+    print('  CRUD performance index:           %.02lf object(s)/minute' %
+          ((args.count / (deletemark - start)) * 60))
