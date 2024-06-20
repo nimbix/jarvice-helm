@@ -101,7 +101,7 @@ spec:
       volumes:
       {{- include "jarvice.rootCertVolume" . | indent 6 }}
       hostAliases:
-      {{- include "jarvice.hostAliases" . | nindent 8 }}
+      {{- include "jarvice.hostAliases" . | indent 8 }}
       containers:
       - name: jarvice-api
         image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-api:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
@@ -134,6 +134,21 @@ spec:
           successThreshold: {{ .Values.jarvice_api.livenessProbe.successThreshold }}
           failureThreshold: {{ .Values.jarvice_api.livenessProbe.failureThreshold }}
         env:
+{{- if .Values.jarvice_bird.enabled }}
+          - name: JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY
+{{- if .Values.keycloakx.enabled }}
+            valueFrom:
+              configMapKeyRef:
+                name: jarvice-keycloak-realm-public-key
+                key: public.key
+{{- else if (not (empty .Values.jarvice_api.env.JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY)) }}
+            value: "{{ .Values.jarvice_api.env.JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY }}"
+{{- end }}
+{{- if (not (empty .Values.jarvice_bird.env.KEYCLOAK_ID)) }}
+          - name: JARVICE_API_KEYCLOAK_OAUTH_CLIENT_ID
+            value: "{{ .Values.jarvice_bird.env.KEYCLOAK_ID }}"
+{{- end }}
+{{- end }}
           - name: JARVICE_API_TIMEOUT
 {{- if .Values.jarvice_api.env.JARVICE_API_TIMEOUT }}
             value: "{{ .Values.jarvice_api.env.JARVICE_API_TIMEOUT }}"
