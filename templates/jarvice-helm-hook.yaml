@@ -183,6 +183,7 @@ spec:
 {{- end }}
 {{- end }}
 {{- if .Values.jarvice_bird.enabled }}
+---
 apiVersion: batch/v1
 kind: Job
 metadata:
