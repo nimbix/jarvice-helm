@@ -546,7 +546,7 @@ jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   env:
     KEYCLOAK_URL: # keycloak.my-domain.com/auth
     JARVICE_KEYCLOAK_ADMIN_USER: nimbix
-    JARVICE_KEYCLOAK_ADMIN_PASS: Pass1234
+    JARVICE_KEYCLOAK_ADMIN_PASS: abc1234!
   ingressHost: # jarvice-bird.my-domain.com
   ingressPath: "/"  # Valid values are "/" (default) or "/bird"
 
@@ -943,7 +943,7 @@ jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   env:
     KEYCLOAK_URL: # keycloak.my-domain.com/auth
     JARVICE_KEYCLOAK_ADMIN_USER: nimbix
-    JARVICE_KEYCLOAK_ADMIN_PASS: Pass1234
+    JARVICE_KEYCLOAK_ADMIN_PASS: abc1234!
   ingressHost: # jarvice-bird.my-domain.com
   ingressPath: "/"  # Valid values are "/" (default) or "/bird"
 
@@ -1301,7 +1301,7 @@ jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   env:
     KEYCLOAK_URL: # keycloak.my-domain.com/auth
     JARVICE_KEYCLOAK_ADMIN_USER: nimbix
-    JARVICE_KEYCLOAK_ADMIN_PASS: Pass1234
+    JARVICE_KEYCLOAK_ADMIN_PASS: abc1234!
   ingressHost: # jarvice-bird.my-domain.com
   ingressPath: "/"  # Valid values are "/" (default) or "/bird"
 
