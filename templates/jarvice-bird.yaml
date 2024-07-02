@@ -832,13 +832,23 @@ spec:
 ---
 {{- end }}
 {{- if empty .Values.jarvice_bird.conf.configMap }}
+{{ $config := "files/jarvice-bird-config.json" }}
+{{ $bird_env := $.Values.jarvice_bird.env }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: jarvice-bird-config
 data:
-  jarvice-bird-config.json: |-
-{{ .Files.Get "files/jarvice-bird-config.json" | indent 4 }}
+  jarvice-bird-config.json: |
+{{- range $i, $line := splitList "\n" (.Files.Get $config) }}
+{{- if (eq $i 1) }}
+  {{- printf "\n\"keycloakAdminConsole\": \"%s/admin/%s/console/\","
+    $bird_env.KEYCLOAK_URL
+    $bird_env.KEYCLOAK_REALM | indent 10
+  }}
+{{- end }}
+{{ . | indent 4 }}
+{{- end }}
 ---
 {{- end }}
 {{- if empty .Values.jarvice_bird.nginx.configMap }}
