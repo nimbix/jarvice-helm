@@ -66,9 +66,12 @@ locals {
 }
 
 locals {
+    dns_domain = lookup(var.cluster.helm.jarvice, "dns_domain", null) != null ? lookup(var.cluster.helm.jarvice, "dns_domain", null) : lookup(var.global.helm.jarvice, "dns_domain", "cluster.local")
     cluster_values_yaml = <<EOF
 # common cluster override values
 jarvice:
+  JARVICE_K8S_CLUSTER_DOMAIN: ${local.dns_domain}
+
   tolerations: '[{"key": "node-role.jarvice.io/jarvice-system", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeAffinity: '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-system", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-system", "operator": "Exists"}]}] }}'
 
