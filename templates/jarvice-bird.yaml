@@ -196,9 +196,9 @@ spec:
         env:
           - name: JARVICE_SERVER_PROXY
 {{- if empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
-            value: "http://jarvice-bird-server.{{ .Release.Namespace }}.svc.cluster.local:9090/"
+            value: "http://jarvice-bird-server.{{ .Release.Namespace }}.svc.{{ .Values.jarvice.JARVICE_K8S_CLUSTER_DOMAIN }}:9090/"
 {{- else }}
-            value: "http://jarvice-bird-server.{{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}.svc.cluster.local:9090/"
+            value: "http://jarvice-bird-server.{{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}.svc.{{ .Values.jarvice.JARVICE_K8S_CLUSTER_DOMAIN }}:9090/"
 {{- end }}
           - name: KEYCLOAK_URL
 {{- if (not (empty .Values.jarvice_bird.env.KEYCLOAK_URL)) }}
