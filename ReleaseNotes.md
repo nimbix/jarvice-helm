@@ -126,6 +126,24 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.24.6-202407122022
+
+* (JAR-7876) Customize favicon using `jarvice-settings` ConfigMap
+* (JAR-8494) Make notification email RFC 5322 compliant
+* (JAR-8756) Correct `Jobs Run`  in `Stats`  box on legacy portal
+* (JAR-8792) Add notification to `Users` table
+* (JAR-8794) Improve performance of active jobs query
+* (JAR-8826) DSSR scheduler support deep identity based on Slurm API Tokens
+* (JAR-8858) (JAR-8968) Add ` shib-saml ` and `fed-shib-saml` providers to JARVICE Keycloak SAML mapper
+* (JAR-8859) Correct Keycloakx default values in Terraform modules
+* (JAR-8863) JARVICE user invites set `jarvice-user` role in Keycloak
+* (JAR-8875) Correct format of AppDefs shown in BIRD UI
+* (JAR-8878) V2 applications to warn when incompatible glibc is detected
+* (JAR-8887) BIRD UI no longer shows a $0.00 price for machines and applications
+* (JAR-8896) Add Keycloak button to JARVICE Administration submenu
+* (JAR-8962) Reduce resources used by Kubernetes Nested Scheduler
+* (JAR-8979) (JAR-8971) Build Kubernetes Nested Scheduler init containers
+
 ## 3.24.5-202405221807
 
 * (JAR-7901) Correct error when Team admin try to impersonate Payer accounts
