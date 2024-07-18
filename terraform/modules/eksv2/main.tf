@@ -39,6 +39,7 @@ resource "null_resource" "aws_availability_zones_available" {
 
 locals {
   create_vpc = lookup(var.cluster.meta, "vpc_id", "") == "" ? true : false
+  use_privateip = lookup(var.cluster.meta, "privateip", "") == "true" ? true : false
 }
 locals {
   pub_av_map = local.create_vpc ? {} : {
@@ -266,6 +267,8 @@ module "eks" {
     cluster_security_group_name = var.cluster.meta["cluster_name"]
     cluster_security_group_description = "EKS cluster security group."
     iam_role_name = var.cluster.meta["cluster_name"]
+    cluster_endpoint_private_access = lookup(var.cluster.meta, "privateip", "") == "true" ? true : false
+    cluster_endpoint_public_access = lookup(var.cluster.meta, "privateip", "") == "true" ? false : true
 
     cluster_version = var.cluster.meta["kubernetes_version"]
 
@@ -360,11 +363,11 @@ module "eks" {
             max_size = 2
             key_name = ""
             bootstrap_extra_args = "--kubelet-extra-args '--node-labels=node-role.jarvice.io/default=true'"
-            public_ip = true
+            public_ip = local.use_privateip ? false : true
             network_interfaces = [
                     {
                       device_index = 0
-                      associate_public_ip_address = true
+                      associate_public_ip_address = local.use_privateip ? false : true
                       security_groups = ["${aws_security_group.ssh.id}"] #lookup(pool.meta, "interface_type", null) == "efa" ? ["${aws_security_group.efa.id}", "${aws_security_group.ssh.id}"] : ["${aws_security_group.ssh.id}"] 
                     }
                 ]
@@ -396,7 +399,7 @@ EOF
             network_interfaces = [
                     {
                       device_index = 0
-                      associate_public_ip_address = true
+                      associate_public_ip_address = local.use_privateip ? false : true
                       security_groups = ["${aws_security_group.ssh.id}"] 
                     }
                 ]
@@ -431,7 +434,7 @@ EOF
             network_interfaces = [
                     {
                       device_index = 0
-                      associate_public_ip_address = true
+                      associate_public_ip_address = local.use_privateip ? false : true
                       security_groups = ["${aws_security_group.ssh.id}"] 
                     }
                 ]
@@ -494,7 +497,7 @@ EOF
                 network_interfaces = [
                     {
                       device_index = 0
-                      associate_public_ip_address = true
+                      associate_public_ip_address = local.use_privateip ? false : true
                       interface_type = lookup(pool.meta, "interface_type", null) == "efa" ? "efa" : null
                       security_groups = lookup(pool.meta, "interface_type", null) == "efa" ? ["${aws_security_group.efa.id}", "${aws_security_group.ssh.id}"] : ["${aws_security_group.ssh.id}"] 
                       #subnet_id = lookup(pool.meta, "zones", null) == null ? (

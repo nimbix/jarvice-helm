@@ -772,6 +772,9 @@ eksv2 = {  # Provision EKS infrastructure/clusters and deploy JARVICE
             #allow_cluster_join = "true"
 
             ssh_public_key = null  # global setting used if null specified
+
+            # use private IPs
+            # privateip = "true"
         }
 
         location = {
