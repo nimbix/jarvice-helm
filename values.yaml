@@ -99,7 +99,7 @@ jarvice:
   JARVICE_HTTP_PROXY:          # "http://proxy.my-domain.com:8080"
   JARVICE_HTTPS_PROXY:         # "https://proxy.my-domain.com:8080"
   JARVICE_NO_PROXY:            # "my-other-domain.com,192.168.1.10,domain.com:8080"
-  JARVICE_K8S_CLUSTER_DOMAIN:  # "cluster.local"
+  JARVICE_K8S_CLUSTER_DOMAIN:  "cluster.local"
 
   JARVICE_MAIL_SERVER: jarvice-smtpd:25
   JARVICE_MAIL_USERNAME: # "mail-username"
@@ -1172,6 +1172,7 @@ jarvice_mc_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 
 jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: false
+  create_client: false
   replicaCount: 1
   replicaCountMax: 1
   # HorizontalPodAutoscaler is enabled when replicaCountMax > replicaCount
@@ -1354,7 +1355,6 @@ jarvice_hyperhub: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 
 keycloakx:
   enabled: false
-  create_realm: false
   helm_hook:
     image: us-docker.pkg.dev/jarvice/images/alpine-k8s:1.21.13
   login:
@@ -1476,8 +1476,8 @@ keycloakx:
         name: jarvice-keycloak-realm-config
   extraVolumeMounts: |
     - name: jarvice-keycloak-realm-config
-      mountPath: /opt/keycloak/data/import/jarvice.json
-      subPath: jarvice.json
+      mountPath: /opt/keycloak/data/import/jarvice_realm.json
+      subPath: jarvice_realm.json
   dbchecker:
     enabled: true
   database:

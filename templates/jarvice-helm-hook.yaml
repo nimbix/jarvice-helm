@@ -1,9 +1,24 @@
 {{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
-{{- if .Values.keycloakx.create_realm }}
+{{- if .Values.jarvice_bird.create_client }}
+apiVersion: v1
+data:
+{{- $files := .Files }}
+  jarvice_client.json: |-
+{{ $files.Get "files/keycloak-config/client/jarvice_client.json" | indent 4 }}
+  jarvice_user_role.json: |-
+{{ $files.Get "files/keycloak-config/client/roles/jarvice_user_role.json" | indent 4 }}
+  jarvice_sysadmin_role.json: |-
+{{ $files.Get "files/keycloak-config/client/roles/jarvice_sysadmin_role.json" | indent 4 }}
+  jarvice_kcadmin_role.json: |-
+{{ $files.Get "files/keycloak-config/client/roles/jarvice_kcadmin_role.json" | indent 4 }}
+kind: ConfigMap
+metadata:
+  name: jarvice-keycloak-client
+---
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: jarvice-create-keycloak-realm
+  name: jarvice-create-keycloak-client
   namespace: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
   annotations:
     "helm.sh/hook": post-upgrade,post-install
@@ -14,173 +29,66 @@ metadata:
 spec:
   template:
     metadata:
-      name: jarvice-create-keycloak-realm
+      name: jarvice-create-keycloak-client
       labels:
         app: jarvice
     spec:
       volumes:
       {{- include "jarvice.rootCertVolume" . | indent 6 }}
+      - name: jarvice-keycloak-client
+        configMap:
+          name: jarvice-keycloak-client
+          optional: false
+          defaultMode: 444
       hostAliases:
       {{- include "jarvice.hostAliases" . | nindent 8 }}
       containers:
-        - name: jarvice-create-keycloak-realm
+        - name: jarvice-create-keycloak-client
           volumeMounts:
           {{- include "jarvice.rootCertVolumeMount" . | indent 10 }}
+          - name: jarvice-keycloak-client
+            mountPath: /etc/jarvice/jarvice_client.json
+            subPath: jarvice_client.json
+            readOnly: true
+          - name: jarvice-keycloak-client
+            mountPath: /etc/jarvice/jarvice_user_role.json
+            subPath: jarvice_user_role.json
+            readOnly: true
+          - name: jarvice-keycloak-client
+            mountPath: /etc/jarvice/jarvice_sysadmin_role.json
+            subPath: jarvice_sysadmin_role.json
+            readOnly: true
+          - name: jarvice-keycloak-client
+            mountPath: /etc/jarvice/jarvice_kcadmin_role.json
+            subPath: jarvice_kcadmin_role.json
+            readOnly: true
           env:
-          - name: JARVICE_BIRD_URL
-{{- if (not (eq "/" .Values.jarvice_bird.ingressPath)) }}
-           value: "{{ trimSuffix "/" .Values.jarvice_bird.ingressHost }}{{ .Values.jarvice_bird.ingressPath }}"
-{{- else }}
-            value: "{{ trimSuffix "/" .Values.jarvice_bird.ingressHost }}"
-{{- end }}
-          - name: JARVICE_PORTAL_URL
-            value: "{{ .Values.jarvice_mc_portal.ingressHost }}{{ .Values.jarvice_bird.ingressPath }}"
-          - name: JARVICE_KEYCLOAK_REALM
-            value: "{{ .Values.jarvice_bird.env.KEYCLOAK_REALM }}"
-          - name: JARVICE_REALM_ADMIN
-            value: {{ .Values.keycloakx.env.JARVICE_REALM_ADMIN }}
-          - name: JARVICE_REALM_ADMIN_PASSWD
-            value: {{ .Values.keycloakx.env.JARVICE_REALM_ADMIN_PASSWD }}
-          - name: JARVICE_KEYCLOAK_USER
-            value: {{ .Values.keycloakx.env.JARVICE_KEYCLOAK_ADMIN }}
-          - name: JARVICE_KEYCLOAK_PASSWD
-            value: {{ .Values.keycloakx.env.JARVICE_KEYCLOAK_ADMIN_PASSWD }}
-          {{- if .Values.jarvice_dal.env.JARVICE_ROOT_USER_CREATE }}
-          {{- if (not (empty .Values.jarvice_dal.env.JARVICE_ROOT_USER_PASSWD)) }}
-          - name: JARVICE_ROOT_USER_PASSWD
-            value: {{ .Values.jarvice_dal.env.JARVICE_ROOT_USER_PASSWD }}
-          {{- else }}
-          {{- required "***** !!!!! JARVICE root password required.  Please provide a value for jarvice_dal.env.JARVICE_ROOT_USER_PASSWD. !!!!! *****" .Values.jarvice_dal.env.JARVICE_ROOT_USER_PASSWD }}
-          {{- end }}
-          {{- end }}
+          - name: JARVICE_SYSTEM_NAMESPACE
+            value: "{{ .Release.Namespace }}"
           - name: KEYCLOAK_URL
             value: "{{ .Values.jarvice_bird.env.KEYCLOAK_URL }}"
-          - name: KEYCLOAK_RESET_PASSWORD_ALLOWED
-            value: "{{ .Values.keycloakx.login.KEYCLOAK_RESET_PASSWORD_ALLOWED }}"
-          - name: KEYCLOAK_REMEMBER_ME
-            value: "{{ .Values.keycloakx.login.KEYCLOAK_REMEMBER_ME }}"
-          {{- if (not (empty .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_FROM)) }}
-          - name: KEYCLOAK_SMTP_FROM
-            value: "{{ .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_FROM }}"
-          {{- end }}
-          {{- if (not (empty .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_HOST)) }}
-          - name: KEYCLOAK_SMTP_HOST
-            value: "{{ .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_HOST }}"
-          {{- end }}
-          {{- if (not (empty .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_PORT)) }}
-          - name: KEYCLOAK_SMTP_PORT
-            value: "{{ .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_PORT }}"
-          {{- end }}
-          {{- if (not (empty .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_START_TLS)) }}
-          - name: KEYCLOAK_SMTP_START_TLS
-            value: "{{ .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_START_TLS }}"
-          {{- end }}
-          {{- if (not (empty .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_AUTH)) }}
-          - name: KEYCLOAK_SMTP_AUTH
-            value: "{{ .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_AUTH }}"
-          {{- end }}
-          {{- if (not (empty .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_USER)) }}
-          - name: KEYCLOAK_SMTP_USER
-            value: "{{ .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_USER }}"
-          {{- end }}
-          {{- if (not (empty .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_PASSWORD)) }}
-          - name: KEYCLOAK_SMTP_PASSWORD
-            value: "{{ .Values.keycloakx.smtpServer.KEYCLOAK_SMTP_PASSWORD }}"
-          {{- end }}
-          image: "{{ .Values.keycloakx.helm_hook.image }}"
-          imagePullPolicy: "IfNotPresent"
+          - name: KEYCLOAK_REALM
+            value: "{{ .Values.jarvice_bird.env.KEYCLOAK_REALM }}"
+          - name: JARVICE_KEYCLOAK_USER
+            value: "{{ .Values.jarvice_bird.env.JARVICE_KEYCLOAK_ADMIN_USER }}"
+          - name: JARVICE_KEYCLOAK_PASSWD
+            value: "{{ .Values.jarvice_bird.env.JARVICE_KEYCLOAK_ADMIN_PASS }}"
+          - name: JARVICE_BIRD_INGRESSHOST
+            value: "{{ .Values.jarvice_bird.ingressHost }}"
+          image: "us-docker.pkg.dev/jarvice/images/jarvice-kubectl:v1.28.2-envsubst"
+          imagePullPolicy: IfNotPresent
           command:
           - /bin/sh
           - -c
-          - >
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && while [[ "$(curl -s -o /dev/null -m 3 -L -w ''%{http_code}'' ${KEYCLOAK_URL}/realms/master)" != "200" ]]; do echo "Waiting for keycloak" && sleep 30; done;
-              sleep 30;
-              [ "$(curl -s -o /dev/null -m 3 -L -w ''%{http_code}'' ${KEYCLOAK_URL}/realms/$JARVICE_KEYCLOAK_REALM)" == "200" ] && SKIP_CREATE="true";
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && token=$(curl -s "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "username=$JARVICE_KEYCLOAK_USER" --data-urlencode "password=$JARVICE_KEYCLOAK_PASSWD" --data-urlencode "grant_type=password" --data-urlencode "client_id=admin-cli" | jq -r .access_token);
-              sleep 5;
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && [ ! -z "$SKIP_CREATE" ] || echo "Creating $JARVICE_KEYCLOAK_REALM realm";
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && [ ! -z "$SKIP_CREATE" ] || curl -s -o /dev/null -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms" --data-raw "{\"enabled\": true,\"id\":\"$JARVICE_KEYCLOAK_REALM\", \"realm\":\"$JARVICE_KEYCLOAK_REALM\"}";
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && token=$(curl -s "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "username=$JARVICE_KEYCLOAK_USER" --data-urlencode "password=$JARVICE_KEYCLOAK_PASSWD" --data-urlencode "grant_type=password" --data-urlencode "client_id=admin-cli" | jq -r .access_token);
-              sleep 5;
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && [ $(curl -s -H "Authorization: Bearer $token" ${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients?clientId=jarvice | jq -r '.[0].clientId') == "jarvice" ] && exit 0;
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && echo "Creating jarvice client";
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && curl -s -o /dev/null -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients" --data-raw "{\"enabled\": true,\"attributes\": {},\"redirectUris\": [],\"clientId\": \"jarvice\",\"protocol\": \"openid-connect\"}";
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && curl -s -o /dev/null -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/roles" --data-raw "{\"name\": \"jarvice_admin\"}";
-              sleep 30;
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && token=$(curl -s "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "username=$JARVICE_KEYCLOAK_USER" --data-urlencode "password=$JARVICE_KEYCLOAK_PASSWD" --data-urlencode "grant_type=password" --data-urlencode "client_id=admin-cli" | jq -r .access_token);
-              sleep 5;
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && [ $(curl -s -H "Authorization: Bearer $token" ${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients?clientId=jarvice | jq -r '.[0].clientId') == "jarvice" ] || exit 1;
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && echo "Creating jarvice_admin role";
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && token=$(curl -s "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "username=$JARVICE_KEYCLOAK_USER" --data-urlencode "password=$JARVICE_KEYCLOAK_PASSWD" --data-urlencode "grant_type=password" --data-urlencode "client_id=admin-cli" | jq -r .access_token);
-              sleep 5;
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && management_roles_id=$(curl -s -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients" | jq -r '.[] | select(.clientId=="realm-management") | .id');
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && my_roles=$(curl -s -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients/${management_roles_id}/roles" | jq -c);
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && jxe_role_id=$(curl -s -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/roles/jarvice_admin" | jq -r '.id');
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && curl -s -o /dev/null -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/roles-by-id/${jxe_role_id}/composites" --data-raw "${my_roles}" &
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && token=$(curl -s "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "username=$JARVICE_KEYCLOAK_USER" --data-urlencode "password=$JARVICE_KEYCLOAK_PASSWD" --data-urlencode "grant_type=password" --data-urlencode "client_id=admin-cli" | jq -r .access_token);
-              sleep 5;
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && jxe_client_id=$(curl -s -H "Authorization: Bearer $token" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients" | jq -r '.[] | select(.clientId=="jarvice") | .id');
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && jxe_role_update=$(curl -s -H "Authorization: Bearer $token" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients" | jq -c --arg JARVICE_BIRD_URL "https://$JARVICE_BIRD_URL/*" --arg JARVICE_PORTAL_URL "https://$JARVICE_BIRD_URL/portal/kc-logout"  '.[] | select(.clientId=="jarvice") | .attributes."backchannel.logout.url"=$JARVICE_PORTAL_URL | .redirectUris = [$JARVICE_BIRD_URL] | .webOrigins = ["+"]');
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && curl -s -o /dev/null -X PUT -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients/${jxe_client_id}" --data-raw "$jxe_role_update" &
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && echo "Setting up jarvice client-scopes";
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && token=$(curl -s "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "username=$JARVICE_KEYCLOAK_USER" --data-urlencode "password=$JARVICE_KEYCLOAK_PASSWD" --data-urlencode "grant_type=password" --data-urlencode "client_id=admin-cli" | jq -r .access_token);
-              sleep 5;
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && address_id=$(curl -s -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients/${jxe_client_id}/optional-client-scopes" | jq -r '.[] | select(.name=="address") | .id');
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && phone_id=$(curl -s -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients/${jxe_client_id}/optional-client-scopes" | jq -r '.[] | select(.name=="phone") | .id');
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && offline_id=$(curl -s -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients/${jxe_client_id}/optional-client-scopes" | jq -r '.[] | select(.name=="offline_access") | .id');
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && microprofile_id=$(curl -s -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients/${jxe_client_id}/optional-client-scopes" | jq -r '.[] | select(.name=="microprofile-jwt") | .id');
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && token=$(curl -s "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "username=$JARVICE_KEYCLOAK_USER" --data-urlencode "password=$JARVICE_KEYCLOAK_PASSWD" --data-urlencode "grant_type=password" --data-urlencode "client_id=admin-cli" | jq -r .access_token);
-              sleep 5;
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && curl -s -o /dev/null -X DELETE -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients/${jxe_client_id}/optional-client-scopes/${address_id}" &
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && curl -s -o /dev/null -X DELETE -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients/${jxe_client_id}/optional-client-scopes/${phone_id}" &
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && curl -s -o /dev/null -X DELETE -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients/${jxe_client_id}/optional-client-scopes/${offline_id}" &
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && curl -s -o /dev/null -X DELETE -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients/${jxe_client_id}/optional-client-scopes/${microprofile_id}" &
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && token=$(curl -s "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "username=$JARVICE_KEYCLOAK_USER" --data-urlencode "password=$JARVICE_KEYCLOAK_PASSWD" --data-urlencode "grant_type=password" --data-urlencode "client_id=admin-cli" | jq -r .access_token);
-              sleep 5;
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && web_id=$(curl -s -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients/${jxe_client_id}/default-client-scopes" | jq -r '.[] | select(.name=="web-origins") | .id');
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && roles_id=$(curl -s -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients/${jxe_client_id}/default-client-scopes" | jq -r '.[] | select(.name=="roles") | .id');
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && profile_id=$(curl -s -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients/${jxe_client_id}/default-client-scopes" | jq -r '.[] | select(.name=="profile") | .id');
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && email_id=$(curl -s -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients/${jxe_client_id}/default-client-scopes" | jq -r '.[] | select(.name=="email") | .id');
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && curl -s -o /dev/null -X DELETE -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients/${jxe_client_id}/default-client-scopes/${web_id}" &
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && token=$(curl -s "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "username=$JARVICE_KEYCLOAK_USER" --data-urlencode "password=$JARVICE_KEYCLOAK_PASSWD" --data-urlencode "grant_type=password" --data-urlencode "client_id=admin-cli" | jq -r .access_token);
-              sleep 5;
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && curl -s -o /dev/null -X DELETE -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients/${jxe_client_id}/default-client-scopes/${roles_id}" &
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && curl -s -o /dev/null -X DELETE -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients/${jxe_client_id}/default-client-scopes/${profile_id}" &
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && curl -s -o /dev/null -X DELETE -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients/${jxe_client_id}/default-client-scopes/${email_id}" &
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && token=$(curl -s "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "username=$JARVICE_KEYCLOAK_USER" --data-urlencode "password=$JARVICE_KEYCLOAK_PASSWD" --data-urlencode "grant_type=password" --data-urlencode "client_id=admin-cli" | jq -r .access_token);
-              sleep 5;
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && curl -s -o /dev/null -X PUT -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients/${jxe_client_id}/default-client-scopes/${address_id}" &
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && curl -s -o /dev/null -X PUT -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients/${jxe_client_id}/default-client-scopes/${email_id}" &
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && curl -s -o /dev/null -X PUT -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients/${jxe_client_id}/default-client-scopes/${phone_id}" &
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && curl -s -o /dev/null -X PUT -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients/${jxe_client_id}/default-client-scopes/${profile_id}" &
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && curl -s -o /dev/null -X PUT -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/clients/${jxe_client_id}/default-client-scopes/${roles_id}" &
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && echo "Changing realm login theme to eviden";
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && token=$(curl -s "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "username=$JARVICE_KEYCLOAK_USER" --data-urlencode "password=$JARVICE_KEYCLOAK_PASSWD" --data-urlencode "grant_type=password" --data-urlencode "client_id=admin-cli" | jq -r .access_token);
-              sleep 5;
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && default_role_id=$(curl -s -H "Authorization: Bearer $token" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM" | jq -r '.defaultRole.id');
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && roles=$(curl -s -H "Authorization: Bearer $token" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/roles-by-id/$default_role_id/composites" | jq);
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && curl -s -H "Authorization: Bearer $token" -H "Content-Type: application/json" -d "$roles" -X DELETE "$KEYCLOAK_URL/admin/realms/$JARVICE_KEYCLOAK_REALM/roles-by-id/$default_role_id/composites";
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && token=$(curl -s "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "username=$JARVICE_KEYCLOAK_USER" --data-urlencode "password=$JARVICE_KEYCLOAK_PASSWD" --data-urlencode "grant_type=password" --data-urlencode "client_id=admin-cli" | jq -r .access_token);
-              sleep 5;
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && realm_settings=$(curl -s -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM" | jq --arg rememberMe "$KEYCLOAK_REMEMBER_ME" --arg resetPasswordAllowed "$KEYCLOAK_RESET_PASSWORD_ALLOWED" --arg from "$KEYCLOAK_SMTP_FROM" --arg host "$KEYCLOAK_SMTP_HOST" --arg port "$KEYCLOAK_SMTP_PORT" --arg starttls "$KEYCLOAK_SMTP_START_TLS" --arg auth "$KEYCLOAK_SMTP_AUTH" --arg user "$KEYCLOAK_SMTP_USER" --arg password "$KEYCLOAK_SMTP_PASSWORD" '.smtpServer = { "from": $from, "host": $host, "port": $port, "starttls": $starttls,  "auth": $auth,  "user": $user,  "password": $password} | .rememberMe = $rememberMe | .resetPasswordAllowed = $resetPasswordAllowed | .loginTheme = "eviden"' );
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && curl -s -o /dev/null -X PUT -d "$realm_settings" -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM";
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && echo "Creating $JARVICE_KEYCLOAK_REALM realm admin user";
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && token=$(curl -s "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "username=$JARVICE_KEYCLOAK_USER" --data-urlencode "password=$JARVICE_KEYCLOAK_PASSWD" --data-urlencode "grant_type=password" --data-urlencode "client_id=admin-cli" | jq -r .access_token);
-              sleep 5;
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && role_id=$(curl -s -H "Authorization: Bearer $token" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/roles" | jq -r '.[] | select(.name=="jarvice_admin") | .id');
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && curl -s -o /dev/null "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/users" -H 'Content-Type: application/json' -H "Authorization: Bearer $token" --data-raw "{ \"username\": \"$JARVICE_REALM_ADMIN\", \"email\": \"admin@localhost\", \"enabled\": true, \"realmRoles\": [ \"jarvice_admin\" ],\"credentials\": [ { \"type\": \"password\", \"value\": \"$JARVICE_REALM_ADMIN_PASSWD\", \"temporary\": false} ], \"firstName\": \"JXE\", \"lastName\": \"realm admin\"}";
-              sleep 5;
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && user_id=$(curl -s -H "Authorization: Bearer $token" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/users" | jq -r --arg USER "$JARVICE_REALM_ADMIN" '.[] | select(.username==$USER) | .id');
-              [ ! -z "$JARVICE_KEYCLOAK_USER" ] && curl -s -o /dev/null -H "Authorization: Bearer $token" -H "Content-Type: application/json" "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/users/$user_id/role-mappings/realm" --data-raw "[{\"id\": \"$role_id\", \"name\":\"jarvice_admin\"}]";
-              sleep 5;
-              [ ! -z "$JARVICE_ROOT_USER_PASSWD" ] && echo "Creating JARVICE root user";
-              [ ! -z "$JARVICE_ROOT_USER_PASSWD" ] && token=$(curl -s "${KEYCLOAK_URL}/realms/$JARVICE_KEYCLOAK_REALM/protocol/openid-connect/token" -H 'Content-Type: application/x-www-form-urlencoded' --data-urlencode "username=$JARVICE_REALM_ADMIN" --data-urlencode "password=$JARVICE_REALM_ADMIN_PASSWD" --data-urlencode "grant_type=password" --data-urlencode "client_id=admin-cli" | jq -r .access_token);
-              sleep 5;
-              [ ! -z "$JARVICE_ROOT_USER_PASSWD" ] && curl -s  "${KEYCLOAK_URL}/admin/realms/$JARVICE_KEYCLOAK_REALM/users" -H 'Content-Type: application/json' -H "Authorization: Bearer $token" --data-raw "{ \"username\": \"root\", \"email\": \"root@localhost\", \"enabled\": true, \"credentials\": [ { \"type\": \"password\", \"value\": \"$JARVICE_ROOT_USER_PASSWD\", \"temporary\": false} ], \"firstName\": \"JXE\", \"lastName\": \"root user\"}";
+          - |
+          {{- range $line := splitList "\n" (.Files.Get "files/jarvice-create-keycloak-client.sh") }}
+          {{ . | indent 4 }}
+          {{- end }}
       restartPolicy: OnFailure
 {{- if (not (empty .Values.jarvice.tolerations)) }}
       tolerations: {{ .Values.jarvice.tolerations }}
 {{- end }}
+      serviceAccountName: jarvice-system
 {{- end }}
 {{- if .Values.jarvice_bird.enabled }}
 ---
@@ -205,7 +113,7 @@ spec:
       volumes:
       {{- include "jarvice.rootCertVolume" . | indent 6 }}
       hostAliases:
-      {{- include "jarvice.hostAliases" . | indent 8 }}
+      {{- include "jarvice.hostAliases" . | nindent 8 }}
       containers:
         - name: jarvice-get-keycloak-realm-public-key
           volumeMounts:
