@@ -381,7 +381,14 @@
           "id": "c6044343-be85-4e63-a716-9170ad8db68b",
           "name": "jarvice-user",
           "description": "",
-          "composite": false,
+          "composite": true,
+          "composites": {
+            "client": {
+              "account": [
+                "manage-account"
+              ]
+            }
+          },
           "clientRole": true,
           "containerId": "68b5f1f1-50e3-4076-a09d-25beb6e50897",
           "attributes": {}
@@ -659,7 +666,7 @@
         "token.response.type.bearer.lower-case": "false"
       },
       "authenticationFlowBindingOverrides": {
-        "browser": "4159d091-569a-4340-b446-de67f522d9d7"
+        "browser": "d3e43bfd-8cca-4475-b452-22d2eed6e18e"
       },
       "fullScopeAllowed": false,
       "nodeReRegistrationTimeout": 0,
@@ -770,10 +777,10 @@
       "description": "",
       "rootUrl": "",
       "adminUrl": "",
-      "baseUrl": "",
+      "baseUrl": "https://${JARVICE_BIRD_INGRESSHOST}",
       "surrogateAuthRequired": false,
       "enabled": true,
-      "alwaysDisplayInConsole": false,
+      "alwaysDisplayInConsole": true,
       "clientAuthenticatorType": "client-secret",
       "redirectUris": [
         "https://${JARVICE_BIRD_INGRESSHOST}/*"
