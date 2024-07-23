@@ -75,7 +75,7 @@ spec:
             value: "{{ .Values.jarvice_bird.env.JARVICE_KEYCLOAK_ADMIN_PASS }}"
           - name: JARVICE_BIRD_INGRESSHOST
             value: "{{ .Values.jarvice_bird.ingressHost }}"
-          image: "us-docker.pkg.dev/jarvice/images/jarvice-kubectl:v1.28.2-envsubst"
+          image: "{{ .Values.jarvice_helm_hook.image }}"
           imagePullPolicy: IfNotPresent
           command:
           - /bin/sh
@@ -125,7 +125,7 @@ spec:
             value: "{{ .Values.jarvice_bird.env.KEYCLOAK_URL }}"
           - name: KEYCLOAK_REALM
             value: "{{ .Values.jarvice_bird.env.KEYCLOAK_REALM }}"
-          image: "us-docker.pkg.dev/jarvice/images/jarvice-kubectl:v1.28.2-kc"
+          image: "{{ .Values.jarvice_helm_hook.image }}"
           imagePullPolicy: "IfNotPresent"
           command:
           - /bin/sh
