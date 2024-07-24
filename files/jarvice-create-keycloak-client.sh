@@ -12,7 +12,7 @@ get_token() {
 keycloak_get () {
     request="$1"
     token=$(get_token)
-    curl --fail --silent -H "Authorization: Bearer $token" ${KEYCLOAK_URL}/admin/realms/$KEYCLOAK_REALM/$request
+    curl --fail --silent -H "Authorization: Bearer $token" "${KEYCLOAK_URL}/admin/realms/$KEYCLOAK_REALM/$request"
 }
 
 keycloak_post () {
@@ -22,7 +22,7 @@ keycloak_post () {
     curl --fail --silent -d "$data" \
         -H "Content-Type: application/json" \
         -H "Authorization: Bearer $token" \
-        ${KEYCLOAK_URL}/admin/realms/$KEYCLOAK_REALM/$request
+        "${KEYCLOAK_URL}/admin/realms/$KEYCLOAK_REALM/$request"
 }
 
 keycloak_put () {
@@ -32,7 +32,7 @@ keycloak_put () {
     curl --fail --silent -X PUT -d "$data" \
         -H "Content-Type: application/json" \
         -H "Authorization: Bearer $token" \
-        ${KEYCLOAK_URL}/admin/realms/$KEYCLOAK_REALM/$request > /dev/null 2>&1
+        "${KEYCLOAK_URL}/admin/realms/$KEYCLOAK_REALM/$request" > /dev/null 2>&1
 }
 
 create_client() {
