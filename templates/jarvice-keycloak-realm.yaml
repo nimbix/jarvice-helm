@@ -12,7 +12,7 @@ metadata:
   labels:
     app: jarvice
 data:
-  jarvice.json: |
-{{ .Files.Get "files/jarvice.json" | indent 4 }}
+  jarvice_realm.json: |
+{{ .Files.Get "files/keycloak-config/realm/jarvice_realm.json" | indent 4 }}
 {{- end }}
 {{- end }}

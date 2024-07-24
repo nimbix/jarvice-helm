@@ -1,0 +1,14 @@
+{
+  "name": "jarvice-kcadmin",
+  "description": "",
+  "composite": true,
+  "composites": {
+    "client": {
+      "jarvice": [
+        "jarvice-sysadmin"
+      ]
+    }
+  },
+  "clientRole": true,
+  "attributes": {}
+}

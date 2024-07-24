@@ -1172,6 +1172,7 @@ jarvice_mc_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 
 jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: false
+  create_client: false
   replicaCount: 1
   replicaCountMax: 1
   # HorizontalPodAutoscaler is enabled when replicaCountMax > replicaCount
@@ -1352,9 +1353,11 @@ jarvice_hyperhub: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     successThreshold: 1
     failureThreshold: 3
 
+jarvice_helm_hook:
+  image: us-docker.pkg.dev/jarvice/images/jarvice-kubectl:v1.28.2-envsubst
+
 keycloakx:
   enabled: false
-  create_realm: false
   helm_hook:
     image: us-docker.pkg.dev/jarvice/images/alpine-k8s:1.21.13
   login:
@@ -1476,8 +1479,8 @@ keycloakx:
         name: jarvice-keycloak-realm-config
   extraVolumeMounts: |
     - name: jarvice-keycloak-realm-config
-      mountPath: /opt/keycloak/data/import/jarvice.json
-      subPath: jarvice.json
+      mountPath: /opt/keycloak/data/import/jarvice_realm.json
+      subPath: jarvice_realm.json
   dbchecker:
     enabled: true
   database:
