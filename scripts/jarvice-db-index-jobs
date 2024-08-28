@@ -1,0 +1,78 @@
+#!/bin/sh
+
+namespace=jarvice-system
+
+function usage {
+    cat <<EOF
+
+Usage:
+    $0 [options]
+
+Options:
+    --namespace <kube_namespace>    Kubernetes namespace of JARVICE deployment
+                                    (Default: $namespace)
+EOF
+}
+
+function yes_no() {
+  echo
+  while true; do
+      read -p "Do you wish to continue? (Y/N) " yn
+      case $yn in
+          [Yy]* ) return 0;;
+          [Nn]* ) exit -1;;
+          * ) echo "Please answer Y or N.";;
+      esac
+  done
+}
+
+
+KUBECTL=$(type -p kubectl)
+if [ -z "$KUBECTL" ]; then
+    cat <<EOF
+Could not find 'kubectl' in PATH.  It may not be installed.
+Run 'install-kubectl' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        --namespace)
+            namespace=$2
+            shift; shift
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+
+cat <<EOF
+This script updates the job table for JARVICE to allow the sys-admin
+to navigate the Jobs UI dashboard much more efficiently when there are
+a large number of jobs(upto 10,000,000).
+
+NOTE: Please ensure there is enough disk space for new index creation, since
+the new indexes may increase the database size by 200% or more.
+The changes could take several minutes to apply, depending on the CPU and
+disk speed of the database server, and should be run during a maintenance
+window.
+EOF
+
+yes_no
+
+pod=$($KUBECTL -n $namespace get pods \
+        -l component=jarvice-dal \
+        --field-selector=status.phase=Running \
+        -o jsonpath={.items[0].metadata.name})
+[ -z "$pod" ] && echo "* Could not find jarvice-db pod in $namespace namespace...Exiting..." && exit 1
+cmd='mariadb '
+cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
+cmd+=' --host="$JARVICE_SITE_DBHOST" nimbix'
+echo "* Indexing JARVICE database jobs table in $namespace namespace..."; echo
+sql=$(cat ../files/jarvice-job-fts-index.sql)
+
+$KUBECTL -n $namespace exec $pod -- bash -c "echo '$sql' | $cmd"
