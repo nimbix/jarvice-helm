@@ -18,7 +18,7 @@ Options:
     --apply                         Apply the indexes
     --remove                        Remove indexes
     --sql-client                    SQL client
-                                    (Default: $sql_cli)
+                                    (Default: $sql_client)
 
 EOF
 }
