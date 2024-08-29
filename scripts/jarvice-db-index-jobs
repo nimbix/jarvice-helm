@@ -1,6 +1,7 @@
 #!/bin/sh
 
 namespace=jarvice-system
+sql_client=mariadb
 
 function usage {
     cat <<EOF
@@ -16,6 +17,8 @@ Options:
                                     (Default: $namespace)
     --apply                         Apply the indexes
     --remove                        Remove indexes
+    --sql-client                    SQL client
+                                    (Default: $sql_cli)
 
 EOF
 }
@@ -85,12 +88,26 @@ while [ $# -gt 0 ]; do
             sql=$(cat ../files/jarvice-job-fts-index-remove.sql)
             shift
             ;;
+
+        --sql-client)
+            sql_client=$2
+            shift; shift
+            ;;
+
         *)
             usage
             exit 1
             ;;
     esac
 done
+
+SQL=$(type -p $sql_client)
+if [ -z "$SQL" ]; then
+    cat <<EOF
+Could not find $sql_client in PATH.  It may not be installed.
+EOF
+    exit 1
+fi
 
 pod=$($KUBECTL -n $namespace get pods \
         -l component=jarvice-dal \
@@ -100,7 +117,7 @@ pod=$($KUBECTL -n $namespace get pods \
     echo "* Could not find jarvice-db pod in $namespace namespace..." && \
     echo "Exiting..." && exit 1
 
-cmd='mariadb '
+cmd="$SQL "
 cmd+=' --table'
 cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
 cmd+=' --host="$JARVICE_SITE_DBHOST" nimbix'
