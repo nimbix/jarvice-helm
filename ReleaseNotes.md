@@ -126,6 +126,37 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.24.7-202409101355
+
+* (JAR-8021) Allow Team Admin or Payer to access billing reports API
+* (JAR-8452) Kubernetes service DNS domain added to helm chart
+* (JAR-8575) Add recently terminated jobs to active dashboard on BIRD UI
+* (JAR-8609) Update Keycloak realm configuration
+* (JAR-8665) Update NGINX used by bird-portal
+* (JAR-8666) Replace uWSGI with gunicorn
+* (JAR-8701) Encode downstream scheduler credentials
+* (JAR-8825) Use JARVICE_MACHINES_ADD to populate default machines for new clusters
+* (JAR-8955) Correct job output log on Firefox
+* (JAR-8956) Add application license link to job builder UI
+* (JAR-8960) Replace strings with translation keys for adminViewsList
+* (JAR-8969) Fix job logs pane on Administration/Jobs page
+* (JAR-8970) Update jarvice-idp-mapper to map '-' to '_'
+* (JAR-8975) Fix Administration/Logs filter
+* (JAR-8977) JARVICE support Keycloak usernames with spaces
+* (JAR-8987) Update gotty shell packaged with KNS
+* (JAR-9013) KNS V2 improvements
+* (JAR-9060) Update UI to Angular 17
+* (JAR-9073) Fix Administration/Machines "Refresh" button
+* (JAR-9108) Correct setting user group permissions for v2 JARVICE applications
+* (JAR-9114) Enable metrics request for KNS
+* (JAR-9115) Add help message and optional app message to KNS jobs
+* (JAR-9119) Change gotty shell to an optional component for KNS V2 jobs
+* (JAR-9121) Optimize BIRD UI API calls
+* (JAR-9125) Optimize jobList DAL call for larger databases
+* (JAR-9134) Initial JARVICE integration with SMC xScale
+* (JAR-9142) Fix race condition in KNS
+* (JAR-9172) Update to gevent 24.2.1 
+
 ## 3.24.6-202407122022
 
 * (JAR-7876) Customize favicon using `jarvice-settings` ConfigMap
