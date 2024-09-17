@@ -369,6 +369,80 @@ spec:
         {{- include "jarvice.rootCertVolumeMount" . | indent 8 }}
         resources:
 {{ toYaml .Values.jarvice_api.resources | indent 10 }}
+      - name: jarvice-external-api
+        image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-external-api:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+{{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
+        imagePullPolicy: Always
+{{- else }}
+        imagePullPolicy: IfNotPresent
+{{- end }}
+        ports:
+          - name: http-external
+            containerPort: 8000
+        readinessProbe:
+          exec:
+            command:
+            - /bin/true
+          initialDelaySeconds: {{ .Values.jarvice_api.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jarvice_api.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jarvice_api.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_api.readinessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_api.readinessProbe.failureThreshold }}
+        livenessProbe:
+          httpGet:
+            scheme: HTTP
+            port: http
+            path: {{ .Values.jarvice_api.external.env.JARVICE_EXTERNAL_BILLING_PAHT }}/live
+          initialDelaySeconds: {{ .Values.jarvice_api.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.jarvice_api.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.jarvice_api.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .Values.jarvice_api.livenessProbe.successThreshold }}
+          failureThreshold: {{ .Values.jarvice_api.livenessProbe.failureThreshold }}
+        env:
+{{- if .Values.jarvice_bird.enabled }}
+          - name: JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY
+{{- if .Values.keycloakx.enabled }}
+            valueFrom:
+              configMapKeyRef:
+                name: jarvice-keycloak-realm-public-key
+                key: public.key
+{{- else if (not (empty .Values.jarvice_api.env.JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY)) }}
+            value: "{{ .Values.jarvice_api.env.JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY }}"
+{{- end }}
+{{- if (not (empty .Values.jarvice_bird.env.KEYCLOAK_ID)) }}
+          - name: JARVICE_API_KEYCLOAK_OAUTH_CLIENT_ID
+            value: "{{ .Values.jarvice_bird.env.KEYCLOAK_ID }}"
+{{- end }}
+{{- end }}
+{{- if (not (empty .Values.jarvice.JARVICE_HTTP_PROXY)) }}
+          - name: http_proxy
+            value: "{{ .Values.jarvice.JARVICE_HTTP_PROXY }}"
+{{- end }}
+{{- if (not (empty .Values.jarvice.JARVICE_HTTPS_PROXY)) }}
+          - name: https_proxy
+            value: "{{ .Values.jarvice.JARVICE_HTTPS_PROXY }}"
+{{- end }}
+{{- if or .Values.jarvice.JARVICE_HTTPS_PROXY .Values.jarvice.JARVICE_HTTP_PROXY .Values.jarvice.JARVICE_NO_PROXY }}
+{{- if (not (empty .Values.jarvice.JARVICE_NO_PROXY)) }}
+          - name: no_proxy
+            value: '{{ include "jarvice.no_proxy" . }},{{ .Values.jarvice.JARVICE_NO_PROXY }}'
+{{- else }}
+          - name: no_proxy
+            value: '{{ include "jarvice.no_proxy" . }}'
+{{- end }}
+{{- end }}
+          - name: JARVICE_DAL_URL
+{{- if empty .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+            value: "http://jarvice-dal.{{ .Release.Namespace }}:8080"
+{{- else }}
+            value: "http://jarvice-dal.{{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}:8080"
+{{- end }}
+          - name: JARVICE_EXTERNAL_BILLING_PATH
+            value: "{{ .Values.jarvice_api.external.env.JARVICE_EXTERNAL_BILLING_PATH }}"
+        volumeMounts:
+        {{- include "jarvice.rootCertVolumeMount" . | indent 8 }}
+        resources:
+{{ toYaml .Values.jarvice_api.resources | indent 10 }}
 ---
 apiVersion: v1
 kind: Service
@@ -384,6 +458,10 @@ spec:
     port: 8080
     targetPort: 8080
     name: http
+  - protocol: TCP
+    port: 8000
+    targetPort: 8000
+    name: http-external
   selector:
     deployment: jarvice-api
 ---
@@ -408,6 +486,8 @@ spec:
     ports:
     - protocol: TCP
       port: 8080
+    - protocol: TCP
+      port: 8000
 {{- end }}
 ---
 {{- end }}
@@ -427,6 +507,10 @@ spec:
     port: 8080
     targetPort: 8080
     name: http
+  - protocol: TCP
+    port: 8000
+    targetPort: 8000
+    name: http-external
   selector:
     deployment: jarvice-api
 ---
@@ -477,7 +561,7 @@ spec:
             port:
               name: http
         pathType: Prefix
-        path: /api
+        path: /api/jarvice
 {{- else }}
       - backend:
           service:
@@ -485,7 +569,7 @@ spec:
             port:
               name: http
         pathType: Prefix
-        path: /
+        path: /jarvice
 {{- end }}
 {{- else }}
 {{- if (eq "/api" .Values.jarvice_api.ingressPath) }}
@@ -500,6 +584,13 @@ spec:
         path: /
 {{- end }}
 {{- end }}
+      - backend:
+          service:
+            name: jarvice-api
+            port:
+              name: http-external
+        pathType: Prefix
+        path: {{ .Values.jarvice_api.external.env.JARVICE_EXTERNAL_BILLING_PATH }}
 {{- if ne "-" .Values.jarvice_api.ingressHost }}
     host: '{{- .Values.jarvice_api.ingressHost -}}'
 {{- if or (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}
