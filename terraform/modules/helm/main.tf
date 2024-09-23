@@ -163,7 +163,9 @@ data "kubernetes_service" "traefik" {
 
 locals {
     jarvice_bird_portal = try(yamldecode(var.jarvice["values_yaml"]).jarvice_bird, "")
+    jarvice_kc_portal = try(yamldecode(var.jarvice["values_yaml"]).keycloakx, "")
     jarvice_bird_ingressHost = try(local.jarvice_bird_portal.ingressHost, "")
+    jarvice_kc_ingressHost = try(local.jarvice_kc_portal.ingress.rules[0].host, "")
 }
 
 resource "helm_release" "namespace" {
@@ -254,3 +256,16 @@ resource "helm_release" "jarvice" {
 
     depends_on = [helm_release.cluster_autoscaler, helm_release.metrics_server, helm_release.external_dns, helm_release.cert_manager, helm_release.trust_manager, helm_release.traefik, kubernetes_config_map.jarvice_user_cacert, kubernetes_config_map.jarvice_java_cacert]
 }
+
+check "kc_health_check" {
+  data "http" "jarvice_kc" {
+    url = "https://${local.jarvice_kc_ingressHost}/auth"
+    insecure = "true"
+  }
+
+  assert {
+    condition = data.http.jarvice_kc.status_code == 200
+    error_message = "${data.http.jarvice_kc.url} returned an unhealthy status code"
+  }
+}
+
