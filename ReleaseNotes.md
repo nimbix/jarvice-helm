@@ -125,6 +125,8 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.24.8-202409240720
+
 ## 3.24.7-202409101355
 
 * (JAR-8021) Allow Team Admin or Payer to access billing reports API
