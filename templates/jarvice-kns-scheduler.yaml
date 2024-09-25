@@ -1,0 +1,464 @@
+{{- if .Values.jarvice_kns_scheduler.enabled }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kns-sa-{{ .name }}
+  namespace: jarvice-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kns-crb-{{ .name }}
+subjects:
+- kind: ServiceAccount
+  name: kns-sa-{{ .name }}
+  namespace: jarvice-system
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+{{- if gt (.replicaCount | int) 1 }}
+{{- if (semverCompare ">=1.21-0" $.Capabilities.KubeVersion.GitVersion) }}
+apiVersion: policy/v1
+{{- else }}
+apiVersion: policy/v1beta1
+{{- end }}
+kind: PodDisruptionBudget
+metadata:
+  name: jarvice-kns-scheduler-{{ .name }}
+spec:
+  selector:
+    matchLabels:
+      deployment: jarvice-kns-scheduler-{{ .name }}
+{{- if (not (empty .pdb.minAvailable)) }}
+  minAvailable: {{ .pdb.minAvailable }}
+{{- else }}
+  minAvailable: {{ $.Values.jarvice_kns_scheduler.pdb.minAvailable }}
+{{- end }}
+---
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jarvice-kns-scheduler-{{ .name }}
+  labels:
+    {{- include "jarvice.release_labels" $ | indent 4 }}
+    component: jarvice-kns-scheduler-{{ .name }}
+    deployment: jarvice-kns-scheduler-{{ .name }}
+    jarvice-system: core
+spec:
+{{- if (not (empty .replicaCount)) }}
+  replicas: {{ .replicaCount }}
+{{- else }}
+  replicas: {{ $.Values.jarvice_kns_scheduler.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      deployment: jarvice-kns-scheduler-{{ .name }}
+  template:
+    metadata:
+      labels:
+        {{- include "jarvice.release_labels" $ | indent 8 }}
+        component: jarvice-kns-scheduler-{{ .name }}
+        deployment: jarvice-kns-scheduler-{{ .name }}
+        jarvice-system: core
+      annotations:
+        deployment-date: {{ now | quote }}
+    spec:
+      serviceAccount: kns-sa-{{ .name }}
+      serviceAccountName: kns-sa-{{ .name }}
+{{- if (not (empty .tolerations)) }}
+      tolerations: {{ .tolerations }}
+{{- else if (not (empty $.Values.jarvice_kns_scheduler.tolerations)) }}
+      tolerations: {{ $.Values.jarvice_kns_scheduler.tolerations }}
+{{- else if (not (empty $.Values.jarvice.tolerations)) }}
+      tolerations: {{ $.Values.jarvice.tolerations }}
+{{- end }}
+{{- if (not (empty .nodeSelector)) }}
+      nodeSelector: {{ .nodeSelector }}
+{{- else if (not (empty $.Values.jarvice_kns_scheduler.nodeSelector)) }}
+      nodeSelector: {{ $.Values.jarvice_kns_scheduler.nodeSelector }}
+{{- else if (not (empty $.Values.jarvice.nodeSelector)) }}
+      nodeSelector: {{ $.Values.jarvice.nodeSelector }}
+{{- end }}
+      affinity:
+{{- if (not (empty .nodeAffinity)) }}
+        nodeAffinity: {{ .nodeAffinity }}
+{{- else if (not (empty $.Values.jarvice_kns_scheduler.nodeAffinity)) }}
+        nodeAffinity: {{ $.Values.jarvice_kns_scheduler.nodeAffinity }}
+{{- else if (not (empty $.Values.jarvice.nodeAffinity)) }}
+        nodeAffinity: {{ $.Values.jarvice.nodeAffinity }}
+{{- end }}
+        podAntiAffinity:
+{{- if (not (empty .antiAffinity)) }}
+        {{- if eq .antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                deployment: jarvice-kns-scheduler-{{ .name }}
+        {{- else if eq .antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  deployment: jarvice-kns-scheduler-{{ .name }}
+        {{- end }}
+{{- else }}
+        {{- if eq $.Values.jarvice_kns_scheduler.antiAffinity "hard" }}
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - topologyKey: "kubernetes.io/hostname"
+            labelSelector:
+              matchLabels:
+                deployment: jarvice-kns-scheduler-{{ .name }}
+        {{- else if eq $.Values.jarvice_kns_scheduler.antiAffinity "soft" }}
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 5
+            podAffinityTerm:
+              topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchLabels:
+                  deployment: jarvice-kns-scheduler-{{ .name }}
+        {{- end }}
+{{- end }}
+      imagePullSecrets:
+      - name: jarvice-docker
+      volumes:
+      {{- include "jarvice.rootCertVolume" $ | indent 6 }}
+      hostAliases:
+      {{- include "jarvice.hostAliases" (dict "Values" $.Values) | nindent 8 }}
+      containers:
+      - name: jarvice-kns-scheduler-{{ .name }}
+        command: ["python3"]
+        args: ["/main", "Nested"]
+        image: {{ include "jarvice.registry" $ }}/{{ $.Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-kns-scheduler:{{ default $.Values.jarvice.JARVICE_IMAGES_TAG $.Chart.Annotations.tag }}{{- include "jarvice.version" $ }}
+{{- if and (empty $.Values.jarvice.JARVICE_IMAGES_VERSION) (empty $.Chart.Annotations.tag) }}
+        imagePullPolicy: Always
+{{- else }}
+        imagePullPolicy: IfNotPresent
+{{- end }}
+        ports:
+          - name: http
+            containerPort: 8080
+        readinessProbe:
+          httpGet:
+            scheme: HTTP
+            port: http
+            path: /ready
+{{- if (not (empty .readinessProbe)) }}
+          initialDelaySeconds: {{ .readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .readinessProbe.timeoutSeconds }}
+          successThreshold: {{ .readinessProbe.successThreshold }}
+          failureThreshold: {{ .readinessProbe.failureThreshold }}
+{{- else }}
+          initialDelaySeconds: {{ $.Values.jarvice_kns_scheduler.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ $.Values.jarvice_kns_scheduler.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ $.Values.jarvice_kns_scheduler.readinessProbe.timeoutSeconds }}
+          successThreshold: {{ $.Values.jarvice_kns_scheduler.readinessProbe.successThreshold }}
+          failureThreshold: {{ $.Values.jarvice_kns_scheduler.readinessProbe.failureThreshold }}
+{{- end }}
+        livenessProbe:
+          httpGet:
+            scheme: HTTP
+            port: http
+            path: /live
+{{- if (not (empty .livenessProbe)) }}
+          initialDelaySeconds: {{ .livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .livenessProbe.timeoutSeconds }}
+          successThreshold: {{ .livenessProbe.successThreshold }}
+          failureThreshold: {{ .livenessProbe.failureThreshold }}
+{{- else }}
+          initialDelaySeconds: {{ $.Values.jarvice_kns_scheduler.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ $.Values.jarvice_kns_scheduler.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ $.Values.jarvice_kns_scheduler.livenessProbe.timeoutSeconds }}
+          successThreshold: {{ $.Values.jarvice_kns_scheduler.livenessProbe.successThreshold }}
+          failureThreshold: {{ $.Values.jarvice_kns_scheduler.livenessProbe.failureThreshold }}
+{{- end }}
+        env:
+          - name: JARVICE_KNS_KEEP_VCLUSTERS
+{{- if (not (empty .env.JARVICE_KNS_KEEP_VCLUSTERS)) }}
+            value: "{{ .env.JARVICE_KNS_KEEP_VCLUSTERS }}"
+{{- else }}
+            value: "{{ $.Values.jarvice_kns_scheduler.env.JARVICE_KNS_KEEP_VCLUSTERS }}"
+{{- end }}
+          - name: JARVICE_KNS_DEFAULT_LIMIT_RANGE
+{{- if (not (empty .env.JARVICE_KNS_DEFAULT_LIMIT_RANGE)) }}
+            value: "{{ .env.JARVICE_KNS_DEFAULT_LIMIT_RANGE }}"
+{{- else }}
+            value: "{{ $.Values.jarvice_kns_scheduler.env.JARVICE_KNS_DEFAULT_LIMIT_RANGE }}"
+{{- end }}
+          - name: JARVICE_KNS_VCLUSTER_SPAWN_DELAY
+{{- if (not (empty .env.JARVICE_KNS_VCLUSTER_SPAWN_DELAY)) }}
+            value: "{{ .env.JARVICE_KNS_VCLUSTER_SPAWN_DELAY }}"
+{{- else }}
+            value: "{{ $.Values.jarvice_kns_scheduler.env.JARVICE_KNS_VCLUSTER_SPAWN_DELAY }}"
+{{- end }}
+          - name: JARVICE_KNS_INIT_IMAGE
+{{- if (not (empty .env.JARVICE_KNS_INIT_IMAGE)) }}
+            value: "{{ .env.JARVICE_KNS_INIT_IMAGE }}"
+{{- else }}
+            value: "{{ $.Values.jarvice_kns_scheduler.env.JARVICE_KNS_INIT_IMAGE }}"
+{{- end }}
+          - name: JARVICE_KNS_ALLOW_GOTTY_SHELL
+{{- if (not (empty .env.JARVICE_KNS_ALLOW_GOTTY_SHELL)) }}
+            value: "{{ .env.JARVICE_KNS_ALLOW_GOTTY_SHELL }}"
+{{- else }}
+            value: "{{ $.Values.jarvice_kns_scheduler.env.JARVICE_KNS_ALLOW_GOTTY_SHELL }}"
+{{- end }}
+          - name: JARVICE_KNS_GOTTY_IMAGE
+{{- if (not (empty .env.JARVICE_KNS_GOTTY_IMAGE)) }}
+            value: "{{ .env.JARVICE_KNS_GOTTY_IMAGE }}"
+{{- else }}
+            value: "{{ $.Values.jarvice_kns_scheduler.env.JARVICE_KNS_GOTTY_IMAGE }}"
+{{- end }}
+          - name: JARVICE_KNS_GOTTY_IMAGE_TAG
+{{- if (not (empty .env.JARVICE_KNS_GOTTY_IMAGE_TAG)) }}
+            value: "{{ .env.JARVICE_KNS_GOTTY_IMAGE_TAG }}"
+{{- else }}
+            value: "{{ $.Values.jarvice_kns_scheduler.env.JARVICE_KNS_GOTTY_IMAGE_TAG }}"
+{{- end }}
+          - name: JARVICE_SYSTEM_K8S
+{{- if empty $.Values.jarvice.JARVICE_SYSTEM_K8S }}
+            value: "true"
+{{- else }}
+            value: "{{ $.Values.jarvice.JARVICE_SYSTEM_K8S }}"
+{{- end }}
+          - name: JARVICE_EXPERIMENTAL
+{{- if empty $.Values.jarvice.JARVICE_EXPERIMENTAL }}
+            value: "false"
+{{- else }}
+            value: "{{ $.Values.jarvice.JARVICE_EXPERIMENTAL }}"
+{{- end }}
+          - name: JARVICE_CLUSTER_TYPE
+{{- if empty $.Values.jarvice.JARVICE_CLUSTER_TYPE }}
+            value: "upstream"
+{{- else }}
+            value: "{{ $.Values.jarvice.JARVICE_CLUSTER_TYPE }}"
+{{- end }}
+{{- if (not (eq "downstream" $.Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
+          - name: JARVICE_DAL_URL
+            value: "http://jarvice-dal:8080"
+          - name: JARVICE_SCHED_URL
+            value: "https://jarvice-scheduler:9443"
+{{- end }}
+{{- if (not (empty .env.JARVICE_SCHED_SERVER_KEY)) }}
+          - name: JARVICE_SCHED_SERVER_KEY
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-sched-kns-server-key-{{ .name }}
+                key: JARVICE_SCHED_SERVER_KEY
+                optional: true
+{{- end }}
+          - name: JARVICE_JOBS_NAMESPACE
+{{- if empty $.Values.jarvice.JARVICE_JOBS_NAMESPACE }}
+            value: {{ $.Release.Namespace }}-jobs
+{{- else }}
+            value: {{ $.Values.jarvice.JARVICE_JOBS_NAMESPACE }}
+{{- end }}
+          - name: JARVICE_SYSTEM_NAMESPACE
+{{- if empty $.Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+            value: {{ $.Release.Namespace }}
+{{- else }}
+            value: {{ $.Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+{{- end }}
+          - name: JARVICE_SYSTEM_REGISTRY
+            value: {{ include "jarvice.registry" $ }}
+          - name: JARVICE_SYSTEM_REPO_BASE
+            value: {{ $.Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}
+          - name: JARVICE_IMAGES_TAG
+            value: {{ default $.Values.jarvice.JARVICE_IMAGES_TAG $.Chart.Annotations.tag }}{{- include "jarvice.version" $ }}
+          - name: JARVICE_LOCAL_REGISTRY
+            value: {{ $.Values.jarvice.JARVICE_LOCAL_REGISTRY }}
+          - name: JARVICE_LOCAL_REPO_BASE
+            value: {{ $.Values.jarvice.JARVICE_LOCAL_REPO_BASE }}
+          - name: JARVICE_JOBS_DOMAIN
+{{- if (hasPrefix "lookup" $.Values.jarvice.JARVICE_JOBS_DOMAIN) }}
+{{- if (eq "downstream" $.Values.jarvice.JARVICE_CLUSTER_TYPE) }}
+            value: '{{- .ingressHost -}}{{- trimPrefix "lookup" $.Values.jarvice.JARVICE_JOBS_DOMAIN -}}'
+{{- else }}
+            value: '{{- $.Values.jarvice_mc_portal.ingressHost -}}{{- trimPrefix "lookup" $.Values.jarvice.JARVICE_JOBS_DOMAIN -}}'
+{{- end }}
+{{- else }}
+            value: "{{ $.Values.jarvice.JARVICE_JOBS_DOMAIN }}"
+{{- end }}
+          - name: JARVICE_JOBS_INGRESS_CLASS
+            value: "{{ $.Values.jarvice.ingress.class }}"
+          - name: JARVICE_JOBS_INGRESS_ANNOTATIONS
+            value: '{{ $.Values.jarvice.JARVICE_JOBS_INGRESS_ANNOTATIONS }}'
+{{- if (not (empty $.Values.jarvice.ingress.tls.issuer.name)) }}
+          - name: JARVICE_JOBS_INGRESS_CERT_ISSUER
+            value: "{{ $.Values.jarvice.ingress.tls.issuer.name }}"
+{{- else if (not (empty $.Values.jarvice.ingress.tls.cluster_issuer.name)) }}
+          - name: JARVICE_JOBS_INGRESS_CERT_CLUSTER_ISSUER
+            value: "{{ $.Values.jarvice.ingress.tls.cluster_issuer.name }}"
+{{- end }}
+{{- if (not (empty $.Values.jarvice.JARVICE_HTTP_PROXY)) }}
+          - name: http_proxy
+            value: "{{ $.Values.jarvice.JARVICE_HTTP_PROXY }}"
+{{- end }}
+{{- if (not (empty $.Values.jarvice.JARVICE_HTTPS_PROXY)) }}
+          - name: https_proxy
+            value: "{{ $.Values.jarvice.JARVICE_HTTPS_PROXY }}"
+{{- end }}
+{{- if or $.Values.jarvice.JARVICE_HTTPS_PROXY $.Values.jarvice.JARVICE_HTTP_PROXY $.Values.jarvice.JARVICE_NO_PROXY }}
+{{- if (not (empty $.Values.jarvice.JARVICE_NO_PROXY)) }}
+          - name: no_proxy
+            value: '{{ include "jarvice.no_proxy" $ }},{{ $.Values.jarvice.JARVICE_NO_PROXY }}'
+{{- else }}
+          - name: no_proxy
+            value: '{{ include "jarvice.no_proxy" $ }}'
+{{- end }}
+{{- end }}
+        volumeMounts:
+        {{- include "jarvice.rootCertVolumeMount" $ | indent 8 }}
+        resources:
+{{- if .resources }}
+{{ toYaml .resources | indent 10 }}
+{{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-kns-scheduler-{{ .name }}
+  labels:
+    {{- include "jarvice.release_labels" $ | indent 4 }}
+    component: jarvice-kns-scheduler-{{ .name }}
+spec:
+  type: ClusterIP
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+    name: http
+  selector:
+    deployment: jarvice-kns-scheduler-{{ .name }}
+---
+{{- if or $.Values.jarvice_kns_scheduler.networkPolicy.enabled $.Values.jarvice.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: jarvice-kns-scheduler-{{ .name }}
+spec:
+  podSelector:
+    matchLabels:
+      deployment: jarvice-kns-scheduler-{{ .name }}
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: {{ $.Release.Namespace }}
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 8080
+{{- if (eq "downstream" $.Values.jarvice.JARVICE_CLUSTER_TYPE) }}
+{{- if (empty .ingressHost) }}
+  - {}
+{{- else }}
+  - from:
+    - namespaceSelector: {}
+    - podSelector: {}
+    ports:
+    - protocol: TCP
+      port: 8080
+{{- end }}
+{{- end }}
+---
+{{- end }}
+{{- if (eq "downstream" $.Values.jarvice.JARVICE_CLUSTER_TYPE) }}
+{{- if (empty .ingressHost) }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: jarvice-kns-scheduler-{{ .name }}-lb
+  labels:
+    {{- include "jarvice.release_labels" $ | indent 4 }}
+    component: jarvice-kns-scheduler-{{ .name }}
+spec:
+  type: LoadBalancer
+  loadBalancerIP: {{ .loadBalancerIP }}
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+    name: http
+  selector:
+    deployment: jarvice-kns-scheduler-{{ .name }}
+---
+{{- else }}
+{{- if (semverCompare ">=1.21-0" $.Capabilities.KubeVersion.GitVersion) }}
+apiVersion: networking.k8s.io/v1
+{{- else }}
+apiVersion: networking.k8s.io/v1beta1
+{{- end }}
+kind: Ingress
+metadata:
+  name: jarvice-kns-scheduler-{{ .name }}
+  labels:
+    {{- include "jarvice.release_labels" $ | indent 4 }}
+    component: jarvice-kns-scheduler-{{ .name }}
+  annotations:
+{{- if (not (semverCompare ">=1.21-0" $.Capabilities.KubeVersion.GitVersion)) }}
+{{- if (not (empty $.Values.jarvice.ingress.class)) }}
+    kubernetes.io/ingress.class: {{ $.Values.jarvice.ingress.class }}
+{{- end }}
+{{- end }}
+{{- if and (not (empty $.Values.jarvice.ingress.tls.issuer.name)) (and (empty $.Values.jarvice.ingress.tls.crt) (empty $.Values.jarvice.ingress.tls.key)) }}
+    cert-manager.io/issuer: {{ $.Values.jarvice.ingress.tls.issuer.name }}
+{{- else if and (not (empty $.Values.jarvice.ingress.tls.cluster_issuer.name)) (and (empty $.Values.jarvice.ingress.tls.crt) (empty $.Values.jarvice.ingress.tls.key)) }}
+    cert-manager.io/cluster-issuer: {{ $.Values.jarvice.ingress.tls.cluster_issuer.name }}
+{{- end }}
+{{- if .ingressAnnotations }}
+{{- if (kindIs "string" .ingressAnnotations) }}
+{{ toYaml (fromJson .ingressAnnotations) | indent 4 }}
+{{- else }}
+{{ toYaml .ingressAnnotations | indent 4 }}
+{{- end }}
+{{- end }}
+spec:
+{{- if (semverCompare ">=1.21-0" $.Capabilities.KubeVersion.GitVersion) }}
+{{- if (not (empty $.Values.jarvice.ingress.class)) }}
+  ingressClassName: {{ $.Values.jarvice.ingress.class }}
+{{- end }}
+{{- end }}
+  rules:
+  - http:
+      paths:
+{{- if (semverCompare ">=1.21-0" $.Capabilities.KubeVersion.GitVersion) }}
+      - backend:
+          service:
+            name: jarvice-kns-scheduler-{{ .name }}
+            port:
+              name: http
+        pathType: Prefix
+        path: /
+{{- else }}
+      - backend:
+          serviceName: jarvice-kns-scheduler-{{ .name }}
+          servicePort: http
+{{- end }}
+{{- if ne "-" .ingressHost }}
+    host: '{{- .ingressHost -}}'
+{{- if or (not (empty $.Values.jarvice.ingress.tls.cluster_issuer.name)) (not (empty $.Values.jarvice.ingress.tls.issuer.name)) (and (not (empty $.Values.jarvice.ingress.tls.crt)) (not (empty $.Values.jarvice.ingress.tls.key))) }}
+  tls:
+  - hosts:
+    - '{{- .ingressHost -}}'
+{{- if and (not (empty $.Values.jarvice.ingress.tls.crt)) (not (empty $.Values.jarvice.ingress.tls.key)) }}
+    secretName: 'tls-jarvice'
+{{- else }}
+    secretName: 'tls-{{- .ingressHost -}}'
+{{- end }}
+{{- end }}
+{{- end }}
+---
+{{- end }}
+{{- end }}
+{{- end }}

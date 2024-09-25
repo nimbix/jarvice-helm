@@ -888,6 +888,48 @@ jarvice_slurm_scheduler:
   #     # secret.Data["pkey"]: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
   #     secret:
 
+jarvice_kns_scheduler:
+  enabled: false
+  networkPolicy:
+    enabled: false
+  replicaCount: 2
+  # PodDisruptionBudget default requires 25% minimum of pods must be running
+  pdb:
+    minAvailable: "25%"
+  # antiAffinity default of "soft" prefers that pods run on diff nodes.
+  # Set to "hard" to require pods to run on diff nodes.
+  antiAffinity: "soft"
+  resources:
+    requests:
+      cpu: 1
+      memory: 2Gi
+    limits:
+      cpu: 4
+      memory: 8Gi
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 30
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 60
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+  tolerations: # '[{"key": "node-role.jarvice.io/jarvice-kns-scheduler", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-kns-scheduler", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-kns-scheduler", "operator": "Exists"}]}] }}'
+  nodeSelector: # '{"node-role.jarvice.io/jarvice-kns-scheduler": "true"}'
+  env:
+    JARVICE_KNS_KEEP_VCLUSTERS: ""
+    JARVICE_KNS_DEFAULT_LIMIT_RANGE: ""
+    JARVICE_KNS_VCLUSTER_SPAWN_DELAY: ""
+    JARVICE_KNS_INIT_IMAGE: ""
+    JARVICE_KNS_ALLOW_GOTTY_SHELL: ""
+    JARVICE_KNS_GOTTY_IMAGE: ""
+    JARVICE_KNS_GOTTY_IMAGE_TAG: ""
+
 jarvice_pod_scheduler:
   enabled: true
   resources:
