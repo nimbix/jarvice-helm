@@ -126,7 +126,18 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 # Changelog
 
 ## 3.24.8-202409242140
-
+* (JAR-8021) Allow Team Admin or Payer to access billing reports API
+* (JAR-8131) Change Jarvice compatibility statement 1.28
+* (JAR-8989) Publish API to manage External custom billing
+* (JAR-9124) Create a virtual scheduler
+* (JAR-9143) [KNS] Demo, documentation and apps
+* (JAR-9199) [DSSR] Implement V2.1
+* (JAR-9205) Logging to Object Storage not working after 3.24.3-202402282109
+* (JAR-9230) [KNS] Add custom script support
+* (JAR-8879) Make UI, API Changes for External custom billing
+* (JAR-9265) Fix syntax issue for MYSQL
+* (JAR-9195) Send mail based on user flags
+  
 ## 3.24.7-202409101355
 
 * (JAR-8021) Allow Team Admin or Payer to access billing reports API
