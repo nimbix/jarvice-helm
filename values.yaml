@@ -922,13 +922,13 @@ jarvice_kns_scheduler:
   nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-kns-scheduler", "operator": "Exists"}]}] }}'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-kns-scheduler": "true"}'
   env:
-    JARVICE_KNS_KEEP_VCLUSTERS: ""
+    JARVICE_KNS_KEEP_VCLUSTERS: "false"
     JARVICE_KNS_DEFAULT_LIMIT_RANGE: ""
-    JARVICE_KNS_VCLUSTER_SPAWN_DELAY: ""
-    JARVICE_KNS_INIT_IMAGE: ""
-    JARVICE_KNS_ALLOW_GOTTY_SHELL: ""
-    JARVICE_KNS_GOTTY_IMAGE: ""
-    JARVICE_KNS_GOTTY_IMAGE_TAG: ""
+    JARVICE_KNS_VCLUSTER_SPAWN_DELAY: 300
+    JARVICE_KNS_INIT_IMAGE: "us-docker.pkg.dev/jarvice/images/init-kns"
+    JARVICE_KNS_ALLOW_GOTTY_SHELL: "false"
+    JARVICE_KNS_GOTTY_IMAGE: "us-docker.pkg.dev/jarvice/images/kns-gotty"
+    JARVICE_KNS_GOTTY_IMAGE_TAG: "n1.3.0"
 
 jarvice_pod_scheduler:
   enabled: true
