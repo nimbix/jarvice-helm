@@ -1528,6 +1528,10 @@ keycloakx:
       subPath: jarvice_realm.json
   dbchecker:
     enabled: true
+    image: 
+      repository: us-docker.pkg.dev/jarvice/images/busybox
+      tag: latest
+      pullPolicy: IfNotPresent
   database:
     vendor: mariadb
     hostname: jarvice-db
