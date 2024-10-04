@@ -888,6 +888,48 @@ jarvice_slurm_scheduler:
   #     # secret.Data["pkey"]: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
   #     secret:
 
+jarvice_kns_scheduler:
+  enabled: false
+  networkPolicy:
+    enabled: false
+  replicaCount: 2
+  # PodDisruptionBudget default requires 25% minimum of pods must be running
+  pdb:
+    minAvailable: "25%"
+  # antiAffinity default of "soft" prefers that pods run on diff nodes.
+  # Set to "hard" to require pods to run on diff nodes.
+  antiAffinity: "soft"
+  resources:
+    requests:
+      cpu: 1
+      memory: 2Gi
+    limits:
+      cpu: 4
+      memory: 8Gi
+  readinessProbe:
+    initialDelaySeconds: 5
+    periodSeconds: 30
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+  livenessProbe:
+    initialDelaySeconds: 30
+    periodSeconds: 60
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+  tolerations: # '[{"key": "node-role.jarvice.io/jarvice-kns-scheduler", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-kns-scheduler", "effect": "NoSchedule", "operator": "Exists"}]'
+  nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-kns-scheduler", "operator": "Exists"}]}] }}'
+  nodeSelector: # '{"node-role.jarvice.io/jarvice-kns-scheduler": "true"}'
+  env:
+    JARVICE_KNS_KEEP_VCLUSTERS: "false"
+    JARVICE_KNS_DEFAULT_LIMIT_RANGE: ""
+    JARVICE_KNS_VCLUSTER_SPAWN_DELAY: 300
+    JARVICE_KNS_INIT_IMAGE: "us-docker.pkg.dev/jarvice/images/init-kns"
+    JARVICE_KNS_ALLOW_GOTTY_SHELL: "false"
+    JARVICE_KNS_GOTTY_IMAGE: "us-docker.pkg.dev/jarvice/images/kns-gotty"
+    JARVICE_KNS_GOTTY_IMAGE_TAG: "n1.3.0"
+
 jarvice_pod_scheduler:
   enabled: true
   resources:
@@ -1008,6 +1050,11 @@ jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   external:
     env:
       JARVICE_EXTERNAL_BILLING_PATH: "/external/v1"
+      JARVICE_EXTERNAL_BILLING_WORKERS: 2
+    resources:
+      limits:
+        cpu: 1
+        memory: 1Gi
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
 
@@ -1486,6 +1533,10 @@ keycloakx:
       subPath: jarvice_realm.json
   dbchecker:
     enabled: true
+    image: 
+      repository: us-docker.pkg.dev/jarvice/images/busybox
+      tag: latest
+      pullPolicy: IfNotPresent
   database:
     vendor: mariadb
     hostname: jarvice-db
