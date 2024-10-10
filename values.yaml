@@ -1050,6 +1050,11 @@ jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   external:
     env:
       JARVICE_EXTERNAL_BILLING_PATH: "/external/v1"
+      JARVICE_EXTERNAL_BILLING_WORKERS: 2
+    resources:
+      limits:
+        cpu: 1
+        memory: 1Gi
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
 
