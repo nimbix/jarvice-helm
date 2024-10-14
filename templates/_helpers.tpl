@@ -220,6 +220,9 @@ Create hostAlias for JARVICE
   {{- end }}
 {{- end }}
 {{- end }}
+{{- if (not (empty .Values.jarvice.externalHosts)) }}
+{{ toYaml .Values.jarvice.externalHosts }}
+{{- end }}
 {{- end }}
 
 {{/*
