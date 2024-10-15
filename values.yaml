@@ -131,6 +131,14 @@ jarvice:
   # downstream pod scheduler maximum number of parallel worker threads
   JARVICE_POD_SCHED_WORKERS:  # defaults to 8
 
+  externalHosts:
+    #- ip: 192.0.2.1
+    #  hostnames:
+    #    - host1.example.org
+    #- ip: 192.0.2.2
+    #  hostnames:
+    #    - host2.example.org
+
   ingress:
     class: "traefik"  # "nginx"
     tls:
