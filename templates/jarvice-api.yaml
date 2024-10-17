@@ -439,10 +439,12 @@ spec:
 {{- end }}
           - name: JARVICE_EXTERNAL_BILLING_PATH
             value: "{{ .Values.jarvice_api.external.env.JARVICE_EXTERNAL_BILLING_PATH }}"
+          - name: JARVICE_EXTERNAL_BILLING_WORKERS
+            value: "{{ .Values.jarvice_api.external.env.JARVICE_EXTERNAL_BILLING_WORKERS }}"
         volumeMounts:
         {{- include "jarvice.rootCertVolumeMount" . | indent 8 }}
         resources:
-{{ toYaml .Values.jarvice_api.resources | indent 10 }}
+{{ toYaml .Values.jarvice_api.external.resources | indent 10 }}
 ---
 apiVersion: v1
 kind: Service

@@ -131,6 +131,14 @@ jarvice:
   # downstream pod scheduler maximum number of parallel worker threads
   JARVICE_POD_SCHED_WORKERS:  # defaults to 8
 
+  externalHosts:
+    #- ip: 192.0.2.1
+    #  hostnames:
+    #    - host1.example.org
+    #- ip: 192.0.2.2
+    #  hostnames:
+    #    - host2.example.org
+
   ingress:
     class: "traefik"  # "nginx"
     tls:
@@ -1050,6 +1058,11 @@ jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   external:
     env:
       JARVICE_EXTERNAL_BILLING_PATH: "/external/v1"
+      JARVICE_EXTERNAL_BILLING_WORKERS: 2
+    resources:
+      limits:
+        cpu: 1
+        memory: 1Gi
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
 
@@ -1528,6 +1541,10 @@ keycloakx:
       subPath: jarvice_realm.json
   dbchecker:
     enabled: true
+    image: 
+      repository: us-docker.pkg.dev/jarvice/images/busybox
+      tag: latest
+      pullPolicy: IfNotPresent
   database:
     vendor: mariadb
     hostname: jarvice-db
