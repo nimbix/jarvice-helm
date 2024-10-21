@@ -25,6 +25,20 @@ The KNS also need the following standard Jarvice values:
 * `JARVICE_JOBS_DOMAIN`: domain name to use for job's ingress (downstream domain name).
 * `JARVICE_JOBS_INGRESS_CLASS`: ingress class (default is no specific class set for ingress).
 
+### Keycloak setup
+
+It is possible to enable Keycloak support so that jobs, when application needs it, can request a dedicated client id and client secret from the main Keycloak server handling the Jarvice instance.
+A dedicated client must be created in the KNS dedicated realm. This client must have the rights to create other clients in its realm.
+
+The following optional environment variables are to be set too:
+
+Environment|Value|Description/Notes
+---|---|---
+`JARVICE_KNS_KEYCLOAK_URL`|string|Url of the main Keycloak server endpoint /auth. For example: `https://jarvice-dummy-kc.jarvicedummy.dummy/auth`.
+`JARVICE_KNS_KEYCLOAK_REALM`|string|Keycloak Realm where KNS clients will be created and where main client is setup.
+`JARVICE_KNS_KEYCLOAK_CLIENT_ID`|string|ID of the dedicated client of the KNS scheduler. This client must be able to create other clients and be able to use client secrets (non public client).
+`JARVICE_KNS_KEYCLOAK_CLIENT_SECRET`|string|Secret of the dedicated client of the KNS scheduler, to authenticate and get tokens.
+
 ### Configuring distant K8S cluster
 
 #### Compute nodes taints
