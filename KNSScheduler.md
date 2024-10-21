@@ -30,7 +30,7 @@ The KNS also need the following standard Jarvice values:
 It is possible to enable Keycloak support so that jobs, when application needs it, can request a dedicated client id and client secret from the main Keycloak server handling the Jarvice instance.
 A dedicated client must be created in the KNS dedicated realm. This client must have the rights to create other clients in its realm.
 
-The following optional environment variables are to be set too:
+The following optional environment variables are to be set:
 
 Environment|Value|Description/Notes
 ---|---|---
