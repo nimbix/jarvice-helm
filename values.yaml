@@ -937,6 +937,10 @@ jarvice_kns_scheduler:
     JARVICE_KNS_ALLOW_GOTTY_SHELL: "false"
     JARVICE_KNS_GOTTY_IMAGE: "us-docker.pkg.dev/jarvice/images/kns-gotty"
     JARVICE_KNS_GOTTY_IMAGE_TAG: "n1.3.0"
+    JARVICE_KNS_KEYCLOAK_URL: ""
+    JARVICE_KNS_KEYCLOAK_REALM: "jarvice"
+    JARVICE_KNS_KEYCLOAK_CLIENT_ID: ""
+    JARVICE_KNS_KEYCLOAK_CLIENT_SECRET: ""
 
 jarvice_pod_scheduler:
   enabled: true

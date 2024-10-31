@@ -4,7 +4,6 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: kns-sa
-  namespace: jarvice-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -13,7 +12,7 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: kns-sa
-  namespace: jarvice-system
+  namespace: "{{ .Release.Namespace }}"
 roleRef:
   kind: ClusterRole
   name: cluster-admin
@@ -160,6 +159,22 @@ spec:
 {{- if (not (empty .Values.jarvice_kns_scheduler.env.JARVICE_KNS_GOTTY_IMAGE_TAG)) }}
           - name: JARVICE_KNS_GOTTY_IMAGE_TAG
             value: "{{ $.Values.jarvice_kns_scheduler.env.JARVICE_KNS_GOTTY_IMAGE_TAG }}"
+{{- end }}
+{{- if (not (empty .Values.jarvice_kns_scheduler.env.JARVICE_KNS_KEYCLOAK_URL)) }}
+          - name: JARVICE_KNS_KEYCLOAK_URL
+            value: "{{ $.Values.jarvice_kns_scheduler.env.JARVICE_KNS_KEYCLOAK_URL }}"
+{{- end }}
+{{- if (not (empty .Values.jarvice_kns_scheduler.env.JARVICE_KNS_KEYCLOAK_REALM)) }}
+          - name: JARVICE_KNS_KEYCLOAK_REALM
+            value: "{{ $.Values.jarvice_kns_scheduler.env.JARVICE_KNS_KEYCLOAK_REALM }}"
+{{- end }}
+{{- if (not (empty .Values.jarvice_kns_scheduler.env.JARVICE_KNS_KEYCLOAK_CLIENT_ID)) }}
+          - name: JARVICE_KNS_KEYCLOAK_CLIENT_ID
+            value: "{{ $.Values.jarvice_kns_scheduler.env.JARVICE_KNS_KEYCLOAK_CLIENT_ID }}"
+{{- end }}
+{{- if (not (empty .Values.jarvice_kns_scheduler.env.JARVICE_KNS_KEYCLOAK_CLIENT_SECRET)) }}
+          - name: JARVICE_KNS_KEYCLOAK_CLIENT_SECRET
+            value: "{{ $.Values.jarvice_kns_scheduler.env.JARVICE_KNS_KEYCLOAK_CLIENT_SECRET }}"
 {{- end }}
           - name: JARVICE_SYSTEM_K8S
 {{- if empty .Values.jarvice.JARVICE_SYSTEM_K8S }}
