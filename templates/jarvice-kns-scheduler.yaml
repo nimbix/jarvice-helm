@@ -12,6 +12,7 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: kns-sa
+  namespace: "{{ .Release.Namespace }}"
 roleRef:
   kind: ClusterRole
   name: cluster-admin
