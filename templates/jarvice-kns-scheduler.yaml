@@ -4,7 +4,6 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: kns-sa
-  namespace: jarvice-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -13,7 +12,7 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: kns-sa
-  namespace: jarvice-system
+  namespace: "{{ .Release.Namespace }}"
 roleRef:
   kind: ClusterRole
   name: cluster-admin
@@ -279,6 +278,8 @@ spec:
             value: "{{ .Values.jarvice_api.env.JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY }}"
 {{- end }}
 {{- end }}
+        volumeMounts:
+        {{- include "jarvice.rootCertVolumeMount" . | indent 8 }}
         resources:
 {{- if .Values.jarvice_kns_scheduler.resources }}
 {{ toYaml .Values.jarvice_kns_scheduler.resources | indent 10 }}
