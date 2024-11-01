@@ -4,7 +4,6 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: kns-sa
-  namespace: jarvice-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -13,7 +12,7 @@ metadata:
 subjects:
 - kind: ServiceAccount
   name: kns-sa
-  namespace: jarvice-system
+  namespace: "{{ .Release.Namespace }}"
 roleRef:
   kind: ClusterRole
   name: cluster-admin
