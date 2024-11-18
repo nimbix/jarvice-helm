@@ -1059,9 +1059,9 @@ jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     JARVICE_API_TIMEOUT: 1000
     JARVICE_API_MAX_CNCR: 16
     JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY: # Keycloak realm public RSA signing key
-  external:
+  billing:
     env:
-      JARVICE_EXTERNAL_BILLING_PATH: "/external/v1"
+      JARVICE_EXTERNAL_BILLING_PATH: "/v1/billing"
       JARVICE_EXTERNAL_BILLING_WORKERS: 2
     resources:
       limits:
