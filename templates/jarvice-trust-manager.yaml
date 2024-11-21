@@ -32,5 +32,5 @@ spec:
         key: "cacerts"
     namespaceSelector:
       matchLabels:
-        kubernetes.io/metadata.name: {{ .Release.Namespace }}
+        app: jarvice
 {{- end }}
