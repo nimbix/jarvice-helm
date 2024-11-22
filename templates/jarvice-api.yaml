@@ -361,8 +361,10 @@ spec:
 {{- else }}
             value: "{{ .Values.jarvice_api.env.JARVICE_API_POOL_SIZE }}"
 {{- end }}
-{{- if (not (empty .Values.jarvice.cacert.user.configMap)) }}
           - name: JARVICE_USER_CACERT
+{{- if .Values.jarvice.trust_manager.enabled }}
+            value: "jarvice-root-cert"
+{{- else if (not (empty .Values.jarvice.cacert.user.configMap)) }}
             value: {{ .Values.jarvice.cacert.user.configMap }}
 {{- end }}
         volumeMounts:
