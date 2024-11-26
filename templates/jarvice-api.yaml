@@ -394,7 +394,7 @@ spec:
           httpGet:
             scheme: HTTP
             port: http
-            path: {{ .Values.jarvice_api.api-v1.env.JARVICE_V1_API_PATH }}/live
+            path: {{ .Values.jarvice_api.api_v1.env.JARVICE_V1_API_PATH }}/live
           initialDelaySeconds: {{ .Values.jarvice_api.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.jarvice_api.livenessProbe.periodSeconds }}
           timeoutSeconds: {{ .Values.jarvice_api.livenessProbe.timeoutSeconds }}
@@ -440,13 +440,13 @@ spec:
             value: "http://jarvice-dal.{{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}:8080"
 {{- end }}
           - name: JARVICE_API_V1_PATH
-            value: "{{ .Values.jarvice_api.api-v1.env.JARVICE_API_V1_PATH }}"
+            value: "{{ .Values.jarvice_api.api_v1.env.JARVICE_API_V1_PATH }}"
           - name: JARVICE_API_V1_WORKERS
-            value: "{{ .Values.jarvice_api.api-v1.env.JARVICE_API_V1_WORKERS }}"
+            value: "{{ .Values.jarvice_api.api_v1.env.JARVICE_API_V1_WORKERS }}"
         volumeMounts:
         {{- include "jarvice.rootCertVolumeMount" . | indent 8 }}
         resources:
-{{ toYaml .Values.jarvice_api.api-v1.resources | indent 10 }}
+{{ toYaml .Values.jarvice_api.api_v1.resources | indent 10 }}
 ---
 apiVersion: v1
 kind: Service
@@ -594,7 +594,7 @@ spec:
             port:
               name: http-api-v1
         pathType: Prefix
-        path: {{ .Values.jarvice_api.api-v1.env.JARVICE_API_V1_PATH }}
+        path: {{ .Values.jarvice_api.api_v1.env.JARVICE_API_V1_PATH }}
 {{- if ne "-" .Values.jarvice_api.ingressHost }}
     host: '{{- .Values.jarvice_api.ingressHost -}}'
 {{- if or (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}
