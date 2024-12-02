@@ -598,7 +598,7 @@ spec:
             port:
               name: http-api-v1
         pathType: Prefix
-        path: "{{ .Values.jarvice_api.ingressPath }}/v1"
+        path: {{ cat .Values.jarvice_api.ingressPath "/v1" | nospace | replace "//" "/" }}
 {{- if ne "-" .Values.jarvice_api.ingressHost }}
     host: '{{- .Values.jarvice_api.ingressHost -}}'
 {{- if or (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}
