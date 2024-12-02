@@ -394,7 +394,7 @@ spec:
           httpGet:
             scheme: HTTP
             port: http
-            path: "{{ .Values.jarvice_api.ingressPath }}/v1/live"
+            path: {{ cat .Values.jarvice_api.ingressPath "/v1/live" | nospace | replace "//" "/" }}
           initialDelaySeconds: {{ .Values.jarvice_api.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.jarvice_api.livenessProbe.periodSeconds }}
           timeoutSeconds: {{ .Values.jarvice_api.livenessProbe.timeoutSeconds }}
