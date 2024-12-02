@@ -161,7 +161,7 @@ set -e
 echo
 echo "* Creating namespace: $namespace"
 $KUBECTL create namespace $namespace 2>/dev/null || /bin/true
-$KUBECTL label namespace $namespace "jarvice=app" || /bin/true
+$KUBECTL label namespace $namespace "app=jarvice" || /bin/true
 
 echo
 echo "* Deploying JARVICE to '$namespace' namespace..."

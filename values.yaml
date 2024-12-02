@@ -1059,10 +1059,7 @@ jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     JARVICE_API_TIMEOUT: 1000
     JARVICE_API_MAX_CNCR: 16
     JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY: # Keycloak realm public RSA signing key
-  api_v1:
-    env:
-      JARVICE_API_V1_PATH: "/v1"
-      JARVICE_API_V1_WORKERS: 2
+  fastapi:
     resources:
       limits:
         cpu: 1
