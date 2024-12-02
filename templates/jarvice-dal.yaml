@@ -124,7 +124,7 @@ spec:
         readinessProbe:
           httpGet:
             scheme: HTTP
-            port: http
+            port: 8080
             path: /ready
           initialDelaySeconds: {{ .Values.jarvice_dal.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.jarvice_dal.readinessProbe.periodSeconds }}
@@ -134,7 +134,7 @@ spec:
         livenessProbe:
           httpGet:
             scheme: HTTP
-            port: http
+            port: 8080
             path: /live
           initialDelaySeconds: {{ .Values.jarvice_dal.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.jarvice_dal.livenessProbe.periodSeconds }}

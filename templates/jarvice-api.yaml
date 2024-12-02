@@ -116,7 +116,7 @@ spec:
         readinessProbe:
           httpGet:
             scheme: HTTP
-            port: http
+            port: 8080
             path: /jarvice/ready
           initialDelaySeconds: {{ .Values.jarvice_api.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.jarvice_api.readinessProbe.periodSeconds }}
@@ -126,7 +126,7 @@ spec:
         livenessProbe:
           httpGet:
             scheme: HTTP
-            port: http
+            port: 8080
             path: /jarvice/live
           initialDelaySeconds: {{ .Values.jarvice_api.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.jarvice_api.livenessProbe.periodSeconds }}
@@ -391,7 +391,7 @@ spec:
         livenessProbe:
           httpGet:
             scheme: HTTP
-            port: http
+            port: 8000
             path: {{ .Values.jarvice_api.external.env.JARVICE_EXTERNAL_BILLING_PAHT }}/live
           initialDelaySeconds: {{ .Values.jarvice_api.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.jarvice_api.livenessProbe.periodSeconds }}
