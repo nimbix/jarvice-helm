@@ -128,11 +128,11 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 ## 3.24.9-202412042012
 * (JAR-6600) Improve License Manager stability
 * (JAR-7026) (JAR-9187) (JAR-9319) Add missing container images to jarvice-pull-system-images
-* (JAR-8383) (JAR-8879) (JAR-8880) (JAR-9254) (JAR-9255) (JAR-9307) (JAR-9310) (JAR-9316) (JAR-9384) (JAR-9538) (JAR-9539) (JAR-9571) External Billing V1
 * (JAR-8570) (JAR-9271) (JAR-9276) (JAR-9348) (JAR-9401) (JAR-9402) (JAR-9403) jarvice-helm chart enhancements for KNS
 * (JAR-8514) Update jarvice-helm chart to no longer set 'deployment-date'
 * (JAR-8703) (JAR-9267) (JAR-9268) (JAR-9269) Remove python package 'distutils'
 * (JAR-8856) Removed possible race condition between JARVICE job pods and configmap creation
+* (JAR-8861) External Billing V1
 * (JAR-8876) Keycloak no longer uses containers from Docker Hub
 * (JAR-9030) Create Keycloak client for KNS jobs
 * (JAR-9195) JARVICE to conditionally send email notifications
