@@ -155,7 +155,6 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 * (JAR-9461) Fix application registry configured for jarvice-api
 * (JAR-9475) Correct singularity tmpdir set by jarvice-slurm-scheduler
 * (JAR-9481) Jobs submitted from impersonated user set the correct job owner
-* (JAR-9522) jarvice-slurm-scheduler enhancements
 
 ## 3.24.8-202409261431
 * (JAR-8021) Allow Team Admin or Payer to access billing reports API
