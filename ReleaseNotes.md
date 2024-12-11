@@ -128,7 +128,7 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 ## 3.24.9-202412042012
 * (JAR-6600) Improve License Manager stability
 * (JAR-7026) (JAR-9187) (JAR-9319) Add missing container images to jarvice-pull-system-images
-* (JAR-8570) (JAR-9271) (JAR-9276) (JAR-9348) (JAR-9401) (JAR-9402) (JAR-9403) jarvice-helm chart enhancements for KNS
+* (JAR-8570) (JAR-9271) (JAR-9276) (JAR-9348) (JAR-9401) (JAR-9402) (JAR-9403) jarvice-helm chart enhancements for Kubernetes Nested Scheduler (KNS)
 * (JAR-8514) Update jarvice-helm chart to no longer set 'deployment-date'
 * (JAR-8703) (JAR-9267) (JAR-9268) (JAR-9269) Remove python package 'distutils'
 * (JAR-8856) Removed possible race condition between JARVICE job pods and configmap creation
