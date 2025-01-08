@@ -14,7 +14,7 @@ PUSH_REPOSITORY=$JARVICE_REPOSITORY
 
 DOCKER=docker
 
-JARVICE_IMAGES="jarvice-slurm-scheduler jarvice-dal jarvice-scheduler jarvice-sched-pass jarvice-k8s-scheduler jarvice-pod-scheduler jarvice-api jarvice-mc-portal init initv2 jarvice-appsync jarvice-dockerbuild jarvice-dockerpull jarvice-keycloak jarvice-bird jarvice-bird-portal jarvice-bird-server jarvice-external-api"
+JARVICE_IMAGES="jarvice-slurm-scheduler jarvice-dal jarvice-scheduler jarvice-sched-pass jarvice-k8s-scheduler jarvice-pod-scheduler jarvice-api jarvice-mc-portal init initv2 jarvice-appsync jarvice-dockerbuild jarvice-dockerpull jarvice-keycloak jarvice-bird jarvice-bird-portal jarvice-bird-server jarvice-api-v1"
 JARVICE_PUBLIC_IMAGES="init-kns"
 EXTRA_IMAGES=$(grep -iw image: $values_yaml 2>/dev/null | sed 's/#.*//' | awk '{print $2}' | sort | uniq)
 EXTRA_IMAGES+=" quay.io/jetstack/trust-manager:v0.9.2 quay.io/jetstack/cert-manager-package-debian:20210119.0 us-docker.pkg.dev/jarvice/images/kns-gotty:n1.3.0"
