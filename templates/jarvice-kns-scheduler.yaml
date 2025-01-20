@@ -176,6 +176,10 @@ spec:
           - name: JARVICE_KNS_KEYCLOAK_CLIENT_SECRET
             value: "{{ $.Values.jarvice_kns_scheduler.env.JARVICE_KNS_KEYCLOAK_CLIENT_SECRET }}"
 {{- end }}
+{{- if (not (empty .Values.jarvice_kns_scheduler.env.JARVICE_JOBS_INGRESS_CERT_SECRET_NAME)) }}
+          - name: JARVICE_JOBS_INGRESS_CERT_SECRET_NAME
+            value: "{{ $.Values.jarvice_kns_scheduler.env.JARVICE_JOBS_INGRESS_CERT_SECRET_NAME }}"
+{{- end }}
           - name: JARVICE_SYSTEM_K8S
 {{- if empty .Values.jarvice.JARVICE_SYSTEM_K8S }}
             value: "true"
