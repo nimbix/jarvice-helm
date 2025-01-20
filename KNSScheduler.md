@@ -53,3 +53,145 @@ Hard coded tolerations are:
 If using GPU nodes, the following taint must also be set:
 
 * `nvidia.com/gpu`
+
+#### HTTPS support
+
+Each KNS job needs its own subdomain to be accessed via ingress.
+
+In order to enable https support on the KNS cluster, it is mandatory to set a default wildcard certificate in the ingress controler when configuring the host K8S cluster.
+
+The following steps explain how to generate the certificate and how to set is as default certificate.
+
+##### Setup cluster issuer
+
+The following documentation assumes you are using letsencrypt to create the cluster certificate.
+
+First, create a new ClusterIssuer. A cluster issuer is like a simple issuer, but not namespace limited.
+For convenience, please push this ClusterIssuer in the same namespace than the KNS scheduler.
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    email: foo.bar@example.com  # <<< replace me
+    preferredChain: ""
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    server: https://acme-v02.api.letsencrypt.org/directory
+    solvers:
+    - http01:
+        ingress: {}
+    - dns01:
+        cloudDNS:
+          project: PROJECTID  # <<< replace me
+```
+
+Set the email according to your letsencrypt account. Please note that we set here `dns01` key, since generating a wildcard certificates uses dns01 acme challenge.
+Please also note that this `dns01` part is to be set according to your K8S cluster platform.
+
+###### GKE
+
+The example above is for GKE clusters, which uses your GKE project ID.
+
+```yaml
+    - dns01:
+        cloudDNS:
+          project: PROJECTID  # <<< replace me
+```
+
+Set your project ID here.
+
+###### OVH
+
+For OVH provider, please use:
+
+```yaml
+    - dns01:
+        webhook:
+          groupName: 'acme.foo.bar.cloud'
+          solverName: ovh
+          config:
+            endpoint: ovh-eu
+            applicationKey:  # <<< set me
+            applicationSecretRef:
+              key: applicationSecret
+              name: ovh-credentials
+            consumerKey:  # <<< set me
+```
+
+And set keys according to your account.
+
+##### Generate certificate
+
+Now that the cluster issuer is setup, you can generate the certificate.
+Create a wildcard certificate resource this way:
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: kns-wildcard
+spec:
+  secretName: kns-wildcard
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - '*.example.com'  # <<< replace me
+```
+
+Note that the certificate MUST be in the same namespace than the ingress controller.
+
+Create the certificate using kubectl, and wait for it to be ready. Creating of a wildcard certificate can take from few minutes to many hours, depending of your platform.
+You can follow the certificate creation by reading descriptions of each elements: certificate will create an order, which creates a challenge.
+
+Check that the certificate is ready by quering certificate resources in the ingress controler namespace:
+
+```
+# kubectl get certificate -n jarvice-system
+NAME                                          READY   SECRET                                        AGE
+kns-wildcard                                  True    kns-wildcard                                  1h
+#
+```
+
+Once the certificate is ready, proceed to next step.
+
+##### Register certificate as default certificate
+
+Now is time to register the created wildcard certificate as default certificate in th ingress controler.
+
+Procedure is different depending of your ingress controller:
+
+* For Trafeik, please read: https://doc.traefik.io/traefik/https/tls/#acme-default-certificate
+* For Nginx, please read: https://kubernetes.github.io/ingress-nginx/user-guide/tls/#default-ssl-certificate
+
+Now that the ingress controler is ready to use the wildcard certificate, KNS jobs should be https ready.
+
+##### Alternative solution
+
+In case of it is impossible to define a default certificate on the KNS cluster (shared cluster for example), an alternative solution is to create the certificate in the KNS namespace, and then use an external tool, like kubernetes-replicator (https://github.com/mittwald/kubernetes-replicator), to synchronise the certificate secret into each KNS jobs namespace.
+Then, the `JARVICE_JOBS_INGRESS_CERT_SECRET_NAME` KNS setting allows to define the secret name to be used by each ingress (each ingress will be TLS associated with the secret replicated in its namespace).
+
+If using kubernetes-replicator, to ensure secret replication, add a specific anotation when creating the certificate:
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: kns-wildcard
+spec:
+  secretName: kns-wildcard
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+  - '*.example.com'
+  secretTemplate:  # <<< kubernetes replicator annotation
+    annotations:
+      replicator.v1.mittwald.de/replicate-to: "kns-job-[0-9]*"
+```
+
+This will ensure kubernetes replicator will push the associated secret into each jobs namespace.
