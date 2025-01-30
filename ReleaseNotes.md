@@ -125,6 +125,32 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.25.0-202501281617
+* (JAR-6567) Release new File Manager application for JARVICE
+* (JAR-9080)(JAR-9083)(JAR-9178)(JAR-9179)(JAR-9180)(JAR-9260)(JAR-9603)(JAR-9635)(JAR-9648)(JAR-9705)(JAR-9708)(JAR-9723)(JAR-9746)(JAR-9757)(JAR-9793)(JAR-9849) New feature: External Projects
+* (JAR-9254) UI group External Resources by JARVICE payer on Administration page
+* (JAR-9304)(JAR-9443)(JAR-9616)(JAR-9641)(JAR-9788) Various bug fixes and improvements to KNS
+* (JAR-9615) Fixed CVE-2024-10220 for KNS jobs
+* (JAR-9642) Create external billing daemon for KNS jobs
+* (JAR-9647) KNS upgrade to vcluster 0.20+
+* (JAR-9745) KNS Keycloak job client configuration 
+* (JAR-9434) Add CRI-O support to init V2                                                                    
+* (JAR-9313) Backport init V2 GLIBC check into init V1
+* (JAR-9384) Enhancements to External Billing public API
+* (JAR-9385) Allow new Cluster entries to omit authentication for http:// addresses
+* (JAR-9448) Update python interpreter used by Jarvice-dockerbuild
+* (JAR-9459) Update helm chart for SMCx 2 support
+* (JAR-9629) Update scripts/jarvice-pull-system-images in jarvice-helm
+* (JAR-9522) jarvice-slurm-scheduler enhancements
+* (JAR-9593) Validate price values are positive number
+* (JAR-9608) Use common time function
+* (JAR-9611) Update jarvice-api livenessProbe and readyProbe
+* (JAR-9617) Update error handling in jarvice-api
+* (JAR-9627) Experimental - Add support for Google GCS FUSE to JARVICE job
+* (JAR-9756) /jarvice/appdef to optionally include appkind in response
+* (JAR-9762) Add OCI manifest support to /jarvice/apps
+* (JAR-9796) Fix job-tail for non sysadmin users
+
 ## 3.24.9-202412042012
 * (JAR-6600) Improve License Manager stability
 * (JAR-7026) (JAR-9187) (JAR-9319) Add missing container images to jarvice-pull-system-images
