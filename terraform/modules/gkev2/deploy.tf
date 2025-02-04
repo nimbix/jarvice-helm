@@ -256,11 +256,11 @@ EOF
 ${local.jarvice_ingress}
 EOF
 
-    depends_on = [google_container_cluster.jarvice, google_container_node_pool.jarvice_system, google_container_node_pool.jarvice_compute, google_compute_address.jarvice, kubernetes_daemonset.nvidia_driver_installer_cos, kubernetes_daemonset.nvidia_driver_installer_ubuntu, local_file.kube_config]
+    depends_on = [google_container_cluster.jarvice, google_container_node_pool.jarvice_system, google_container_node_pool.jarvice_compute, google_container_node_pool.jarvice_kns, google_compute_address.jarvice, kubernetes_daemonset.nvidia_driver_installer_cos, kubernetes_daemonset.nvidia_driver_installer_ubuntu, local_file.kube_config]
 }
 
 resource "kubernetes_daemonset" "nvidia_driver_installer_cos" {
-    count = var.cluster.compute_node_pools == null ? 0 : 1
+    count = var.cluster.compute_node_pools == null || var.cluster.kns_node_pools == null ? 0 : 1
     metadata {
         name = "nvidia-driver-installer-cos"
         namespace = "kube-system"
@@ -413,7 +413,7 @@ resource "kubernetes_daemonset" "nvidia_driver_installer_cos" {
 }
 
 resource "kubernetes_daemonset" "nvidia_driver_installer_ubuntu" {
-    count = var.cluster.compute_node_pools == null ? 0 : 1
+    count = var.cluster.compute_node_pools == null || var.cluster.kns_node_pools == null ? 0 : 1
     metadata {
         name = "nvidia-driver-installer-ubuntu"
         namespace = "kube-system"

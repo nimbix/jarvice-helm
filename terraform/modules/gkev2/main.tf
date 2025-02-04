@@ -372,7 +372,7 @@ resource "google_container_node_pool" "jarvice_compute" {
                 "node-pool.jarvice.io/jarvice-compute" = each.key
                 "node-pool.jarvice.io/disable-hyperthreading" = lower(lookup(each.value.meta, "disable_hyperthreading", "false")) == "true" ? "true" : "false"
             },
-            lookup(each.value.meta, "enable_gcfs", null) != null ? {"node-pool.jarvice.io/enable-gcfs" = lower(each.value.meta["enable_gcfs"]) == "true" ? "true" : "false"} : {}
+            lookup(each.value.meta, "enable_gcfs", null) != null ? {"node-pool.jarvice.io/enable-gcfs" = lower(each.value.meta["enable_gcfs"]) == "true" ? "true" : "false"} : {},
         )
         taint = [
             {
@@ -390,3 +390,76 @@ resource "google_container_node_pool" "jarvice_compute" {
     }
 }
 
+resource "google_container_node_pool" "jarvice_kns" {
+    for_each = var.cluster["kns_node_pools"]
+
+    name = each.key
+    location = local.region
+    node_locations = lookup(each.value.meta, "zones", null) != null ? split(",", each.value.meta["zones"]) : local.zones
+
+    cluster = google_container_cluster.jarvice.name
+    version = google_container_cluster.jarvice.master_version
+
+    initial_node_count = each.value["nodes_num"]
+    autoscaling {
+        min_node_count = each.value["nodes_min"]
+        max_node_count = each.value["nodes_max"]
+    }
+
+    management {
+        auto_repair = false
+        auto_upgrade = false
+    }
+
+    node_config {
+        machine_type = each.value["nodes_type"]
+        boot_disk_kms_key = lookup(var.cluster.meta, "kms_key",  null)
+        disk_size_gb = each.value["nodes_disk_size_gb"]
+        disk_type = lookup(each.value.meta, "disk_type", "pd-standard")
+
+        image_type = lower(lookup(each.value.meta, "enable_gcfs", "false")) == "true" ? "COS_CONTAINERD" : var.cluster.meta["kubernetes_version"] > 1.19 ? "UBUNTU_CONTAINERD" : "UBUNTU"
+        dynamic "gcfs_config" {
+            for_each = lookup(each.value.meta, "enable_gcfs", null) != null ? [lower(each.value.meta["enable_gcfs"]) == "true" ? true : false] : []
+            content {
+                enabled = gcfs_config.value
+            }
+        }
+
+        #min_cpu_platform = "Intel Skylake"
+        #disk_type = "pd-ssd"
+
+        guest_accelerator {
+            type = lookup(each.value.meta, "accelerator_type", "")
+            count = lookup(each.value.meta, "accelerator_count", 0)
+        }
+
+        service_account = coalesce(lookup(var.cluster.meta, "service_account",  null), "default")
+        oauth_scopes = local.oauth_scopes
+
+        metadata = {
+            disable-legacy-endpoints = "true"
+            ssh-keys = "${local.username}:${module.common.ssh_public_key}"
+        }
+
+        labels = merge(
+            {
+                "node-role.jarvice.io/jarvice-vcluster" = "true"
+                "node-pool.jarvice.io/disable-hyperthreading" = lower(lookup(each.value.meta, "disable_hyperthreading", "false")) == "true" ? "true" : "false"
+            },
+            lookup(each.value.meta, "enable_gcfs", null) != null ? {"node-pool.jarvice.io/enable-gcfs" = lower(each.value.meta["enable_gcfs"]) == "true" ? "true" : "false"} : {},
+        )
+        taint = [
+            {
+                key = "node-role.jarvice.io/jarvice-vcluster"
+                value = "true"
+                effect = "NO_SCHEDULE"
+            }
+        ]
+
+        tags = [google_container_cluster.jarvice.name, each.key]
+    }
+
+    lifecycle {
+        ignore_changes = [version, initial_node_count, node_config[0].taint]
+    }
+}
