@@ -110,7 +110,14 @@ variable "gkev2" {
             nodes_max = number
             meta = map(string)
         }))
-
+        kns_node_pools = map(object({
+            nodes_type = string
+            nodes_disk_size_gb = number
+            nodes_num = number
+            nodes_min = number
+            nodes_max = number
+            meta = map(string)
+        }))
         helm = map(
             map(string)
         )
