@@ -929,6 +929,7 @@ jarvice_kns_scheduler:
   tolerations: # '[{"key": "node-role.jarvice.io/jarvice-kns-scheduler", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-kns-scheduler", "effect": "NoSchedule", "operator": "Exists"}]'
   nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-kns-scheduler", "operator": "Exists"}]}] }}'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-kns-scheduler": "true"}'
+  imageTag: #20231221-1
   env:
     JARVICE_KNS_KEEP_VCLUSTERS: "false"
     JARVICE_KNS_DEFAULT_LIMIT_RANGE: ""
@@ -941,6 +942,8 @@ jarvice_kns_scheduler:
     JARVICE_KNS_KEYCLOAK_REALM: "jarvice"
     JARVICE_KNS_KEYCLOAK_CLIENT_ID: ""
     JARVICE_KNS_KEYCLOAK_CLIENT_SECRET: ""
+    JARVICE_KNS_BILLING_PROBE_INTERVAL: ""
+    JARVICE_KNS_BILLING_REPORT_INTERVAL: ""
     JARVICE_JOBS_INGRESS_CERT_SECRET_NAME: ""
 
 jarvice_pod_scheduler:

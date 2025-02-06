@@ -358,7 +358,7 @@ gkev2 = {  # Provision GKE infrastructure/clusters and deploy JARVICE
 
         meta = {
             cluster_name = "tf-jarvice"
-            kubernetes_version = "1.24"
+            kubernetes_version = "1.30"
 
             # Sync ingress hosts to zones/domains managed w/ Google Cloud DNS
             #dns_manage_records = "true"
@@ -388,6 +388,46 @@ gkev2 = {  # Provision GKE infrastructure/clusters and deploy JARVICE
             nodes_min = 0
             nodes_max = 5
         }
+        kns_node_pools = {}
+        #kns_node_pools = {
+        #      jxecompute02 = {
+        #          # n1 node_type is required for accelerator attachment
+        #          nodes_type = "n1-standard-8"
+        #          nodes_disk_size_gb = 100
+        #          nodes_num = 0
+        #          nodes_min = 0
+        #          nodes_max = 16
+        #          meta = {
+        #              disable_hyperthreading = "true"
+        #              disk_type = "pd-standard" # "pd-ssd" # "pd-balanced"
+        #              #enable_gcfs = "true"
+        #              #zones = "us-west1-a,us-west1-b,us-west1-c"
+        #              # Visit the following link for GCP accelerator type specs:
+        #              # https://cloud.google.com/compute/docs/gpus
+        #              #accelerator_type = "nvidia-tesla-t4"
+        #              #accelerator_count = 8
+        #          }
+        #      },
+        #      jxecompute03 = {
+        #          # n1 node_type is required for accelerator attachment
+        #          nodes_type = "g2-standard-32"
+        #          nodes_disk_size_gb = 200
+        #          nodes_num = 0
+        #          nodes_min = 0
+        #          nodes_max = 16
+        #          meta = {
+        #              disable_hyperthreading = "true"
+        #              disk_type = "pd-ssd" # "pd-standard" # "pd-balanced"
+        #              #enable_gcfs = "true"
+        #              zones = "us-west1-a,us-west1-b,us-west1-c"
+        #
+        #              # Visit the following link for GCP accelerator type specs:
+        #              # https://cloud.google.com/compute/docs/gpus
+        #              accelerator_type = "nvidia-l4"
+        #              accelerator_count = 1
+        #          }
+        #      }          
+        #  }
         compute_node_pools = {
             jxecompute00 = {
                 # n1 node_type is required for accelerator attachment
@@ -589,7 +629,7 @@ EOF
 
         meta = {
             cluster_name = "tf-jarvice-downstream"
-            kubernetes_version = "1.24"
+            kubernetes_version = "1.30"
 
             # Sync ingress hosts to zones/domains managed w/ Google Cloud DNS
             #dns_manage_records = "true"
@@ -987,7 +1027,7 @@ EOF
 
         meta = {
             cluster_name = "tf-jarvice-downstream"
-            kubernetes_version = "1.24"
+            kubernetes_version = "1.30"
             #arch = "arm64"  # Uncomment to deploy an arm64 cluster
 
             # Sync ingress hosts to zones/domains managed w/ AWS Route53 DNS
@@ -1143,7 +1183,7 @@ aks = {  # Provision AKS infrastructure/clusters and deploy JARVICE
 
         meta = {
             cluster_name = "tf-jarvice"
-            kubernetes_version = "1.24"
+            kubernetes_version = "1.30"
 
             # Sync ingress hosts to zones/domains managed w/ Azure DNS
             #dns_manage_records = "true"
@@ -1342,7 +1382,7 @@ EOF
 
         meta = {
             cluster_name = "tf-jarvice-downstream"
-            kubernetes_version = "1.24"
+            kubernetes_version = "1.30"
 
             # Sync ingress hosts to zones/domains managed w/ Azure DNS
             #dns_manage_records = "true"
