@@ -1,0 +1,498 @@
+#!/bin/bash
+
+# IMPORTANT ENVIRONMENT VARIABLES:
+#
+# UUID: jarvice API uuid value
+UUID='5e8ddd0b-816d-45ee-b42f-4530505b5648'
+# JARVICEADMIN: Must match the jarvice helm value of jarvice_bird.env.JARVICE_KEYCLOAK_ADMIN_USER
+JARVICEUSER='jarviceadmin'
+
+function usage() {
+    echo
+    echo Usage: $0 [OPTIONS] SECRET-FILE TARGET-REGISTRY [SOURCE-REGISTRY]
+    echo "SECRET-FILE                 The json file containing the secret associated with"
+    echo "                            your nimbix account"
+    echo "TARGET-REGISTRY             Local private registry to push tagged images to"
+    echo "SOURCE-REGISTRY (optional)  External registry to pull from. If not specfied the"
+    echo "                            default is 'us-docker.pkg.dev'"
+    echo
+    echo "OPTIONS:"
+    echo "  -r, --repo=string         Filter repositories based on repository name"
+    echo "  -i, --image=string        Filter repositories based on image name"
+    echo "  -d, --dry-run             Show the process without actually executing the process"
+    echo "  -p, --proxy=string        Set proxy address if needed to access external sites"
+    echo
+    echo
+    echo "Example:"
+    echo " $0 -r=jarvice,jarvice-apps mysecret.json registry:5000/jarvice_apps"
+}
+
+function filter_repos() {
+    # filter repo list by repo name (ex, jarvice, jarvice-apps, jarvice-siemens)
+    filter=$1
+    repos=$2
+
+    filter_array=()
+    newrepos=()
+    OIFS=$IFS
+
+    IFS=',' read -ra filter_array <<< "$filter"
+
+    while read -r line; do
+      IFS='/' read -ra array <<< "$line"
+      for f in "${filter_array[@]}"
+      do
+          if [[ "${array[1]}" == "${f}" ]]; then
+              newrepos[${#newrepos[@]}]="$line"
+          fi
+      done
+    done <<< "$repos"
+
+    IFS=$OIFS
+
+    echo "${newrepos[@]}"
+}
+
+function filter_apps() {
+    # filter repo list by application (or image) name (ex: tensorflow)
+    filter=$1
+    repos=$2
+
+    filter_array=()
+    newrepos=()
+    OIFS=$IFS
+
+    IFS=',' read -ra filter_array <<< "$filter"
+
+    while read -r line; do
+      IFS='/' read -ra array <<< "$line"
+      IFS=':' read -ra app_array <<< "${array[3]}"
+      app="${app_array[0]}"
+      for f in "${filter_array[@]}"
+      do
+          if [[ "${app}" == "${f}" ]]; then
+              newrepos[${#newrepos[@]}]="$line"
+          fi
+      done
+    done <<< "$repos"
+
+    IFS=$OIFS
+
+    echo "${newrepos[@]}"
+}
+
+function filter_none() {
+    # filter nothing from repo list; return list in an array
+    # example:  us-docker.pkg.dev/jarvice/images/tensorflow:2.13.0
+    repos=$1
+
+    newrepos=()
+
+    while read -r line; do
+        newrepos[${#newrepos[@]}]="$line"
+    done <<< "$repos"
+
+    echo "${newrepos[@]}"
+}
+
+function pull_repos() {
+    # pull repos to local docker/podman storage
+
+    for repo in "$@"
+    do
+        if [[ "${PROXY}" != "" ]]; then
+	    echo
+            echo "Set https_proxy to ${PROXY}"
+            export https_proxy="${PROXY}"
+        fi
+
+	cmd="${OCI} pull ${repo}"
+        if [[ $SHOWONLY -eq 1 ]]; then
+            echo $cmd
+        else
+            $cmd
+            if [[ $? -ne 0 ]]; then
+                echo "Failed: $cmd"
+                continue
+            fi
+        fi
+	tag_repo "${repo}"
+    done
+
+}
+
+function tag_repo() {
+    # tag repo
+
+    repo=$1
+
+    OIFS=$IFS
+
+    IFS='/' read -ra array1 <<< "$repo"
+    IFS=':' read -ra array2 <<< "${array1[3]}"
+    img=$(echo "${array2[0]}" | sed 's/-/_/g')
+    tag=$(echo "${array2[1]}" | cut -d'-' -f1)
+    cmd="${OCI} tag ${repo} ${img}:${tag}"
+    if [[ $SHOWONLY -eq 1 ]]; then
+        echo $cmd
+    else
+        $cmd
+        if [[ $? -ne 0 ]]; then
+            echo "Failed: $cmd"
+	    return
+        fi
+    fi
+
+    IFS=$OIFS
+    push_repo "${img}" "${tag}" "${repo}"
+
+    if [[ $SHOWONLY -eq 1 ]]; then
+        echo "Not going to create application in dry-run mode"
+    else
+        extract_appdef "${img}" "${tag}"
+        create_app "${img}" "${tag}"
+	#rm /tmp/AppDef.json
+    fi
+    rm_repo_local "${img}" "${tag}" "${repo}"
+
+}
+
+function push_repo() {
+    # push tagged image:tag to local private registry ($TARGETREG)
+
+    img=$1
+    tag=$2
+    repo=$3
+
+    cmd="${OCI} push ${img}:${tag} ${TARGETREG}/${img}:${tag}"
+    if [[ $SHOWONLY -eq 1 ]]; then
+        echo $cmd
+    else
+        $cmd
+        if [[ $? -ne 0 ]]; then
+            echo "Failed: $cmd"
+        fi
+    fi
+
+    if [[ "${PROXY}" != "" ]]; then
+        echo "Unset https_proxy"
+        unset https_proxy
+    fi
+
+    pushed_array+=("${img}:${tag}")
+}
+
+function extract_appdef() {
+    # extract AppDef.json from app image in localhost tag
+    # save AppDef.json to file system for later use in creating app
+
+    img=$1
+    tag=$2
+
+    cmd="${OCI} run localhost/${img}:${tag} cat /etc/NAE/AppDef.json"
+    if [[ $SHOWONLY -eq 1 ]]; then
+        echo ${cmd}
+	return
+    fi
+
+    AppDefJson=$(${cmd})
+
+    echo "${AppDefJson}" > /tmp/AppDef.json
+}
+
+function create_app() {
+    # build APPDEF data and create app
+
+    img=$1
+    tag=$2
+
+    AppDefContent=$(cat /tmp/AppDef.json)
+    appid="${img}_${tag}"
+    data=$(echo "${AppDefContent}" | jq values)
+    APPDEF=$(cat <<EOF
+{
+  "appid": "${appid}",
+  "price": "0.00",
+  "public": "true",
+  "certified": "false",
+  "team": "false",
+  "owner": "jarviceadmin",
+  "privs": "",
+  "repo": "${TARGETREG}/${img}:${tag}",
+  "src": "TODO",
+  "arch": "x86_64",
+  "data": $data
+}
+EOF
+)
+
+    # re-write AppDef.json with above outer variables
+    echo "${APPDEF}" | jq > /tmp/AppDef.json
+    #DATA="$(urlencodejson $img $tag)"
+    DATA=$(cat /tmp/AppDef.json | jq '.data')
+    DALPOD=$(/usr/bin/kubectl get pods --no-headers=true -n jarvice-system -l component=jarvice-dal | head -1 | awk '{ print $1 }')
+    if [[ $? -ne 0 ]]; then
+        echo "Failed: Cannot get jarvice-dal POD name"
+        cleanup
+    fi
+
+    tag_revised=$(echo $tag | sed 's/\./_/g')
+    ARGS="-d appid=jarvice-${img}_${tag_revised} -d price=0.00 -d owner=${JARVICEUSER} -d public=true -d privs= -d repo=${TARGETREG}/${img}:${tag} -d certified=false -d team=false -d src= -d arch=x86_64"
+
+    CMD=$(/usr/bin/kubectl exec -n jarvice-system "${DALPOD}" -- curl -k -X POST /tmp/AppDef.json $ARGS -d uuid=$UUID -d appdef="${DATA}" http://localhost:8080/api/appEdit)
+    RC=$(echo $CMD | jq -c .status)
+    if [[ $RC == 'true' ]]; then
+	apped_array+=("${img}:${tag}")
+	echo
+	echo "****************************"
+	echo "* APP creation SUCCESSFUL! *"
+	echo "****************************"
+	echo
+    else
+        echo "Failed: Could not create app: ${img}:${tag}"
+	echo "$CMD"
+        cleanup
+    fi
+
+}
+
+function rm_repo_local() {
+    # remove all temporary images/tags from local docker/podman store
+
+    img=$1
+    tag=$2
+    repo=$3
+
+    # remove image tags
+
+    OIFS=$IFS
+
+    IFS=':' read -ra array1 <<< "$repo"
+    img="${array1[0]}"
+
+    IFS=$OIFS
+
+    if [[ $SHOWONLY -eq 1 ]]; then
+        TAG="<${img}:${tag} id>"
+	cmd="${OCI} rmi $TAG --force"
+        echo $cmd
+    else
+	TAGID=$(get_imageid "${img}" "${tag}")
+    	echo "Untag ${TAGID}"
+        cmd="${OCI} rmi $TAGID --force"
+        $cmd 2>/dev/null
+        # not checking for error here; above cmd returns non-zero
+	# error code even though if succeeds (maybe because of -force?)
+    fi
+    echo
+}
+
+function urlencodejson() {
+    # NOT currently being used
+
+    img=$1
+    tag=$2
+
+    DATA=$(cat "/tmp/APPDEFDATA.txt")
+    echo ${DATA} | python3 -c "import json ; import sys; dct = json.loads(sys.stdin.read()); print(dct)" > "/tmp/appdef.txt"
+    while IFS= read -r line; do
+         python3 -c "import urllib.parse; print(urllib.parse.quote_plus(\"$line\"))";
+    done < /tmp/appdef.txt > /tmp/appdef_out.txt
+    content=$(cat "/tmp/appdef_out.txt")
+
+    echo "$content"
+}
+
+function get_imageid() {
+
+    img=$1
+    tag=$2
+
+    ID=$(${OCI} images | grep "${img}" | grep "${tag}" | awk '{ print $3 }' | head -1)
+
+    echo "$ID"
+}
+
+function cleanup_early() {
+  echo ""
+  echo "Ctrl+C pressed. Cleaning up before exiting..."
+  cleanup
+}
+
+function cleanup() {
+  if [[ $OCI == "docker" ]]; then
+      docker logout $REG 2>/dev/null
+  else
+      podman logout --authfile "${tmp}/config.json" $REG 2>/dev/null
+  fi
+
+  if [[ "${PROXY}" != "" ]]; then
+      echo "Unset https_proxy"
+      unset https_proxy
+  fi
+
+  rm -rf $tmp
+
+  exit 1
+}
+
+
+# command-line option variables
+FILTERFILE=""
+REPOS=""
+APPS=""
+SHOWONLY=0
+CREATEAPPONLY=""
+PROXY=""
+
+for i in "$@"; do
+  case $i in
+    -r=*|--repos=*)
+      REPOS="${i#*=}"
+      shift
+      ;;
+    -i=*|--image=*)
+      APPS="${i#*=}"
+      shift
+      ;;
+    -d|--dry-run)
+      SHOWONLY=1
+      shift
+      ;;
+    -p=*|--proxy=*)
+      PROXY="${i#*=}"
+      shift
+      ;;
+    --create-app-only)
+      CREATEAPPOLY="${i#*=}"
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    -*|--*)
+      echo "Unknown option $i"
+      usage
+      exit 1
+      ;;
+    *)
+      ;;
+  esac
+done
+
+# mandatory values
+PULLSECRET=$1
+TARGETREG=$2
+REG=${3:-"us-docker.pkg.dev"}
+
+# Check options validity
+if [[ "${SECRET-FILE}" == "" ]]; then
+    echo "Missing required option"
+    usage
+    exit 1
+fi
+if [[ "${TARGETREG}" == "" ]]; then
+    echo "Missing required option"
+    usage
+    exit 1
+fi
+if [[ "${REG}" == "" ]]; then
+    echo "Missing option"
+    usage
+    exit 1
+fi
+
+if [[ "${TARGETREG}" == "" ]]; then
+    echo "Missing target registry"
+    exit 1
+fi
+
+# determine OCI management tool (docker or podman)
+OCI="docker"
+podman=$(podman -v 2>/dev/null)
+if [[ "${podman}" != "" ]]; then
+    OCI="podman"
+fi
+
+# repoarray will hold all the repos/apps we want to process
+declare -a repoarray=()
+
+# create docker/podman config in temp location
+tmp=$(mktemp -d)
+
+if [[ "${PROXY}" != "" ]]; then
+    echo "Set https_proxy to ${PROXY}"
+    export https_proxy="${PROXY}"
+fi
+
+# BEGIN PROCESSING...
+
+trap cleanup_early SIGINT
+
+# Login to the nimbix/jarvice external repo
+if [[ $OCI == "docker" ]]; then
+    cat $PULLSECRET | docker --config $tmp login -u _json_key --password-stdin "$REG"
+else
+    cat $PULLSECRET | podman login --authfile "${tmp}/config.json" -u _json_key --password-stdin "$REG"
+fi
+if [[ $? -ne 0 ]]; then
+    usage
+    exit 1
+fi
+
+# If only creating an app then just use the app specified by the
+# --create-app-only=APP option, then exit
+if [[ "${CREATE_APP_ONLY}" != "" ]]; then
+    extract_appdef "${CREATE_APP_ONLY}"
+    create_app "${CREATE_APP_ONLY}"
+    exit 0
+fi
+
+# Generate list of repos from the nimbix/jarvice external repo
+repoapps=$(curl --data-urlencode "username=atosapps" \
+        --data-urlencode "apikey=e8bd9e5660134a0eac5594ecb58fb9b7c41ec7ec" \
+        --data-urlencode "dockerjson=$(cat $tmp/config.json)" \
+        --data-urlencode "useronly=false" \
+        --data-urlencode "version=2" \
+        https://cloud.nimbix.net/api/jarvice/apps | jq -r .[].repo)
+
+# process request
+if [[ $REPOS != "" ]]; then
+    repoarray=($(filter_repos "${REPOS}" "${repoapps}"))
+elif [[ $APPS != "" ]]; then
+    repoarray=($(filter_apps "${APPS}" "${repoapps}"))
+else
+    repoarray=($(filter_none "${repoapps}"))
+fi
+
+pushed_array=()
+apped_array=()
+
+pull_repos "${repoarray[@]}"
+
+echo
+echo "Number of repositories processed:  ${#repoarray[@]}"
+echo
+if [[ "${SHOWONLY}" -eq 1 ]]; then
+    echo "Images that would be pushed to the private registry if not a dry-run:"
+    echo "====================================================================="
+else
+    echo "Images successfully pushed to private registry:"
+    echo "==============================================="
+fi
+for i in "${pushed_array[@]}"; do
+    echo "$i"
+done
+echo
+echo "Applications successfully created for Jarvice:"
+echo "=============================================="
+for a in "${apped_array[@]}"; do
+    echo "$a"
+done
+echo
+
+cleanup
+
+exit 0
+
