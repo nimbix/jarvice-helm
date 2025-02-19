@@ -3,9 +3,13 @@
 # IMPORTANT ENVIRONMENT VARIABLES:
 #
 # UUID: jarvice API uuid value
-UUID='5e8ddd0b-816d-45ee-b42f-4530505b5648'
+UUID="${DAL_API_UUID}"
+# JARVICE_ACCOUNT_USERNAME: access username provided by your jarvice/nimbix account
+JARVICE_ACCOUNT_USERNAME=""
+# APIKEY: apikey value provided by your jarvice/nimbix account
+APIKEY=""
 # JARVICEADMIN: Must match the jarvice helm value of jarvice_bird.env.JARVICE_KEYCLOAK_ADMIN_USER
-JARVICEUSER='jarviceadmin'
+JARVICEUSER=""
 
 function usage() {
     echo
@@ -450,8 +454,8 @@ if [[ "${CREATE_APP_ONLY}" != "" ]]; then
 fi
 
 # Generate list of repos from the nimbix/jarvice external repo
-repoapps=$(curl --data-urlencode "username=atosapps" \
-        --data-urlencode "apikey=e8bd9e5660134a0eac5594ecb58fb9b7c41ec7ec" \
+repoapps=$(curl --data-urlencode "username=${JARVICE_ACCOUNT_USERNAME}" \
+        --data-urlencode "apikey=${APIKEY}" \
         --data-urlencode "dockerjson=$(cat $tmp/config.json)" \
         --data-urlencode "useronly=false" \
         --data-urlencode "version=2" \
