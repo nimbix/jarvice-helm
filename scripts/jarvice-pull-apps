@@ -2,14 +2,13 @@
 
 # IMPORTANT ENVIRONMENT VARIABLES:
 #
-# UUID: jarvice API uuid value
-UUID="${DAL_API_UUID}"
-# JARVICE_ACCOUNT_USERNAME: access username provided by your jarvice/nimbix account
-JARVICE_ACCOUNT_USERNAME=""
-# APIKEY: apikey value provided by your jarvice/nimbix account
-APIKEY=""
-# JARVICEADMIN: Must match the jarvice helm value of jarvice_bird.env.JARVICE_KEYCLOAK_ADMIN_USER
-JARVICEUSER=""
+# JARVICE_REMOTE_USER and JARVICE_REMOTE_APIKEY are used to access the Jarvice remote registry
+# and used to determine which application container images the user has permissions to pull.
+# Both these values are provided by Nimbix when you first setup your Jarvice account. These
+# are the same two values found in the Jarvice deployment values.yml file with the same names.
+JARVICE_REMOTE_USER=""
+JARVICE_REMOTE_APIKEY=""
+#
 
 function usage() {
     echo
@@ -23,6 +22,8 @@ function usage() {
     echo "OPTIONS:"
     echo "  -r, --repo=string         Filter repositories based on repository name"
     echo "  -i, --image=string        Filter repositories based on image name"
+    echo "  -l, --list                List container images your user has access to"
+    echo "                            TARGET-REGISTRY not needed with this option"
     echo "  -d, --dry-run             Show the process without actually executing the process"
     echo "  -p, --proxy=string        Set proxy address if needed to access external sites"
     echo
@@ -110,7 +111,12 @@ function pull_repos() {
             export https_proxy="${PROXY}"
         fi
 
-	cmd="${OCI} pull ${repo}"
+        if [[ "${OCI}" == "docker" ]]; then
+	    cmd="${OCI} pull --config ${TMPC}/config.json ${repo}"
+	else
+            cmd="${OCI} pull --authfile ${TMPC}/config.json ${repo}"
+	fi
+
         if [[ $SHOWONLY -eq 1 ]]; then
             echo $cmd
         else
@@ -155,7 +161,7 @@ function tag_repo() {
     else
         extract_appdef "${img}" "${tag}"
         create_app "${img}" "${tag}"
-	#rm /tmp/AppDef.json
+	rm "${TMPC}/AppDef.json"
     fi
     rm_repo_local "${img}" "${tag}" "${repo}"
 
@@ -201,51 +207,30 @@ function extract_appdef() {
 
     AppDefJson=$(${cmd})
 
-    echo "${AppDefJson}" > /tmp/AppDef.json
+    echo "${AppDefJson}" > ${TMPC}/AppDef.json
 }
 
 function create_app() {
-    # build APPDEF data and create app
 
     img=$1
     tag=$2
 
-    AppDefContent=$(cat /tmp/AppDef.json)
-    appid="${img}_${tag}"
-    data=$(echo "${AppDefContent}" | jq values)
-    APPDEF=$(cat <<EOF
-{
-  "appid": "${appid}",
-  "price": "0.00",
-  "public": "true",
-  "certified": "false",
-  "team": "false",
-  "owner": "jarviceadmin",
-  "privs": "",
-  "repo": "${TARGETREG}/${img}:${tag}",
-  "src": "TODO",
-  "arch": "x86_64",
-  "data": $data
-}
-EOF
-)
-
-    # re-write AppDef.json with above outer variables
-    echo "${APPDEF}" | jq > /tmp/AppDef.json
-    #DATA="$(urlencodejson $img $tag)"
-    DATA=$(cat /tmp/AppDef.json | jq '.data')
-    DALPOD=$(/usr/bin/kubectl get pods --no-headers=true -n jarvice-system -l component=jarvice-dal | head -1 | awk '{ print $1 }')
-    if [[ $? -ne 0 ]]; then
-        echo "Failed: Cannot get jarvice-dal POD name"
-        cleanup
-    fi
-
+    echo "Creating app ${img}:${tag} ..."
     tag_revised=$(echo $tag | sed 's/\./_/g')
-    ARGS="-d appid=jarvice-${img}_${tag_revised} -d price=0.00 -d owner=${JARVICEUSER} -d public=true -d privs= -d repo=${TARGETREG}/${img}:${tag} -d certified=false -d team=false -d src= -d arch=x86_64"
 
-    CMD=$(/usr/bin/kubectl exec -n jarvice-system "${DALPOD}" -- curl -k -X POST /tmp/AppDef.json $ARGS -d uuid=$UUID -d appdef="${DATA}" http://localhost:8080/api/appEdit)
-    RC=$(echo $CMD | jq -c .status)
-    if [[ $RC == 'true' ]]; then
+    ARGS="appid=\"jarvice-${img}_${tag_revised}\","
+    ARGS+="price=0.00,"
+    ARGS+="owner=\"jarvice\","
+    ARGS+="public=True,"
+    ARGS+="privs=\"\","
+    ARGS+="repo=\"${TARGETREG}/${img}:${tag}\","
+    ARGS+="certified=False,"
+    ARGS+="team=False,"
+    ARGS+="src=\"\","
+    ARGS+="arch=\"x86_64\""
+
+    cat ${TMPC}/AppDef.json | /usr/bin/kubectl -n jarvice-system exec --stdin deploy/jarvice-dal -- python3 -c "import JarviceDAL; import sys; appdef=sys.stdin.read(); JarviceDAL.req('appEdit',${ARGS},appdef=appdef)"
+    if [[ $? -eq 0 ]]; then
 	apped_array+=("${img}:${tag}")
 	echo
 	echo "****************************"
@@ -254,7 +239,9 @@ EOF
 	echo
     else
         echo "Failed: Could not create app: ${img}:${tag}"
-	echo "$CMD"
+        echo "Arguments for JarviceDAL: ${ARGS}" > "${TMPC}/JarviceDAL-ARGS"
+        echo "Information available in $TMPC"
+        RMTMP=0
         cleanup
     fi
 
@@ -291,22 +278,6 @@ function rm_repo_local() {
     echo
 }
 
-function urlencodejson() {
-    # NOT currently being used
-
-    img=$1
-    tag=$2
-
-    DATA=$(cat "/tmp/APPDEFDATA.txt")
-    echo ${DATA} | python3 -c "import json ; import sys; dct = json.loads(sys.stdin.read()); print(dct)" > "/tmp/appdef.txt"
-    while IFS= read -r line; do
-         python3 -c "import urllib.parse; print(urllib.parse.quote_plus(\"$line\"))";
-    done < /tmp/appdef.txt > /tmp/appdef_out.txt
-    content=$(cat "/tmp/appdef_out.txt")
-
-    echo "$content"
-}
-
 function get_imageid() {
 
     img=$1
@@ -327,7 +298,7 @@ function cleanup() {
   if [[ $OCI == "docker" ]]; then
       docker logout $REG 2>/dev/null
   else
-      podman logout --authfile "${tmp}/config.json" $REG 2>/dev/null
+      podman logout --authfile "${TMPC}/config.json" $REG 2>/dev/null
   fi
 
   if [[ "${PROXY}" != "" ]]; then
@@ -335,7 +306,9 @@ function cleanup() {
       unset https_proxy
   fi
 
-  rm -rf $tmp
+  if [[ "${RMTMP}" -eq 1 ]]; then
+      rm -rf "${TMPC}"
+  fi
 
   exit 1
 }
@@ -346,6 +319,8 @@ FILTERFILE=""
 REPOS=""
 APPS=""
 SHOWONLY=0
+LIST=0
+RMTMP=1
 CREATEAPPONLY=""
 PROXY=""
 
@@ -363,12 +338,20 @@ for i in "$@"; do
       SHOWONLY=1
       shift
       ;;
+    -l|--list)
+      LIST=1
+      shift
+      ;;
     -p=*|--proxy=*)
       PROXY="${i#*=}"
       shift
       ;;
-    --create-app-only)
-      CREATEAPPOLY="${i#*=}"
+    --create-app-only=*)
+      CREATEAPPONLY="${i#*=}"
+      shift
+      ;;
+    --no-remove-tmp)
+      RMTMP=0
       shift
       ;;
     -h|--help)
@@ -396,7 +379,7 @@ if [[ "${SECRET-FILE}" == "" ]]; then
     usage
     exit 1
 fi
-if [[ "${TARGETREG}" == "" ]]; then
+if [[ "${TARGETREG}" == "" ]] && [[ "${LIST}" -eq 0 ]]; then
     echo "Missing required option"
     usage
     exit 1
@@ -407,8 +390,13 @@ if [[ "${REG}" == "" ]]; then
     exit 1
 fi
 
-if [[ "${TARGETREG}" == "" ]]; then
-    echo "Missing target registry"
+if [[ "${JARVICE_REMOTE_USER}" == "" ]]; then
+    echo "Missing JARVICE_REMOTE_USER value at top of script"
+    exit 1
+fi
+
+if [[ "${JARVICE_REMOTE_APIKEY}" == "" ]]; then
+    echo "Missing JARVICE_REMOTE_APIKEY value at top of script"
     exit 1
 fi
 
@@ -423,7 +411,8 @@ fi
 declare -a repoarray=()
 
 # create docker/podman config in temp location
-tmp=$(mktemp -d)
+TMPC="/tmp/"$$
+mkdir $TMPC
 
 if [[ "${PROXY}" != "" ]]; then
     echo "Set https_proxy to ${PROXY}"
@@ -436,9 +425,9 @@ trap cleanup_early SIGINT
 
 # Login to the nimbix/jarvice external repo
 if [[ $OCI == "docker" ]]; then
-    cat $PULLSECRET | docker --config $tmp login -u _json_key --password-stdin "$REG"
+    cat $PULLSECRET | docker --config "${TMPC}/config.json" login -u _json_key --password-stdin "$REG"
 else
-    cat $PULLSECRET | podman login --authfile "${tmp}/config.json" -u _json_key --password-stdin "$REG"
+    cat $PULLSECRET | podman login --authfile "${TMPC}/config.json" -u _json_key --password-stdin "$REG"
 fi
 if [[ $? -ne 0 ]]; then
     usage
@@ -454,9 +443,9 @@ if [[ "${CREATE_APP_ONLY}" != "" ]]; then
 fi
 
 # Generate list of repos from the nimbix/jarvice external repo
-repoapps=$(curl --data-urlencode "username=${JARVICE_ACCOUNT_USERNAME}" \
-        --data-urlencode "apikey=${APIKEY}" \
-        --data-urlencode "dockerjson=$(cat $tmp/config.json)" \
+repoapps=$(curl --data-urlencode "username=${JARVICE_REMOTE_USER}" \
+        --data-urlencode "apikey=${JARVICE_REMOTE_APIKEY}" \
+        --data-urlencode "dockerjson=$(cat ${TMPC}/config.json)" \
         --data-urlencode "useronly=false" \
         --data-urlencode "version=2" \
         https://cloud.nimbix.net/api/jarvice/apps | jq -r .[].repo)
@@ -473,7 +462,17 @@ fi
 pushed_array=()
 apped_array=()
 
-pull_repos "${repoarray[@]}"
+if [[ "${#repoarray[@]}" -eq 0 ]]; then
+    echo
+    echo "Unable to locate specified repo/application(s)"
+elif [[ ${LIST} -eq 1 ]]; then
+    echo
+    for a in "${repoarray[@]}"; do
+        echo "$a"
+    done
+else
+    pull_repos "${repoarray[@]}"
+fi
 
 echo
 echo "Number of repositories processed:  ${#repoarray[@]}"
