@@ -89,6 +89,21 @@ spec:
               configMap:
                 name: jarvice-db-dump
                 optional: false
+          initContainers:
+          - command:
+            - sh
+            - -c
+            - chown -R 999:999 /jarvice-db-dump
+            image: us-docker.pkg.dev/jarvice/images/busybox:latest
+            imagePullPolicy: IfNotPresent
+            name: jarvice-db-dump-init
+{{- if .Values.jarvice_db_dump.securityContext.enabled }}
+            securityContext:
+              runAsUser: 0
+{{- end }}
+            volumeMounts:
+            - mountPath: /jarvice-db-dump
+              name: jarvice-db-dump-dir
           containers:
           - name: jarvice-db-dump
             image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-dal:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
@@ -151,7 +166,7 @@ data:
     dump_dir=/jarvice-db-dump
     file=$dump_dir/$JARVICE_SYSTEM_NAMESPACE-$(date +%Y%m%d%H%M%S).sql.gz
     echo "* Dumping JARVICE database from $JARVICE_SYSTEM_NAMESPACE namespace to $file..."
-    mariadb-dump --verbose \
+    mariadb-dump --skip-ssl --verbose \
         --user="$JARVICE_SITE_DBUSER" \
         --password="$JARVICE_SITE_DBPASSWD" \
         --host="$JARVICE_SITE_DBHOST" nimbix | gzip >$file
@@ -160,7 +175,7 @@ data:
     dump_dir=/jarvice-db-dump
     file=$dump_dir/${JARVICE_SYSTEM_NAMESPACE}_keycloak-$(date +%Y%m%d%H%M%S).sql.gz
     echo "* Dumping keycloak database from $JARVICE_SYSTEM_NAMESPACE namespace to $file..."
-    mariadb-dump --verbose \
+    mariadb-dump --skip-ssl --verbose \
         --user="$JARVICE_SITE_DBUSER" \
         --password="$JARVICE_SITE_DBPASSWD" \
         --host="$JARVICE_SITE_DBHOST" keycloak | gzip >$file
