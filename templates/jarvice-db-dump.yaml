@@ -93,14 +93,12 @@ spec:
           - command:
             - sh
             - -c
-            - chown -R 999:999 /jarvice-db-dump
-            image: us-docker.pkg.dev/jarvice/images/busybox:latest
+            - chown -R nginx:nginx /jarvice-db-dump
+            image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-dal:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
             imagePullPolicy: IfNotPresent
             name: jarvice-db-dump-init
-{{- if .Values.jarvice_db_dump.securityContext.enabled }}
             securityContext:
               runAsUser: 0
-{{- end }}
             volumeMounts:
             - mountPath: /jarvice-db-dump
               name: jarvice-db-dump-dir
