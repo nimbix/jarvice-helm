@@ -93,7 +93,20 @@ spec:
           - command:
             - sh
             - -c
-            - chown -R nginx:nginx /jarvice-db-dump
+            - chown -R ${JARVICE_DUMP_UID}:${JARVICE_DUMP_GID} /jarvice-db-dump
+            env:
+              - name: JARVICE_DUMP_UID
+{{- if .Values.jarvice_db_dump.securityContext.enabled }}
+                value: "{{ .Values.jarvice_db_dump.securityContext.runAsUser }}"
+{{- else }}
+                value: "nginx"
+{{- end }}
+              - name: JARVICE_DUMP_GID
+{{- if .Values.jarvice_db_dump.securityContext.enabled }}
+                value: "{{ .Values.jarvice_db_dump.securityContext.fsGroup }}"
+{{- else }}
+                value: "nginx"
+{{- end }}
             image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-dal:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
             imagePullPolicy: IfNotPresent
             name: jarvice-db-dump-init
