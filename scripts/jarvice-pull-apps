@@ -26,6 +26,7 @@ function usage() {
     echo "                            TARGET-REGISTRY not needed with this option"
     echo "  -d, --dry-run             Show the process without actually executing the process"
     echo "  -p, --proxy=string        Set proxy address if needed to access external sites"
+    echo "  -n, --namespace=string    JARVICE system namespace of target k8s cluster"
     echo
     echo
     echo "Example:"
@@ -229,7 +230,7 @@ function create_app() {
     ARGS+="src=\"\","
     ARGS+="arch=\"x86_64\""
 
-    cat ${TMPC}/AppDef.json | /usr/bin/kubectl -n jarvice-system exec --stdin deploy/jarvice-dal -- python3 -c "import JarviceDAL; import sys; appdef=sys.stdin.read(); JarviceDAL.req('appEdit',${ARGS},appdef=appdef)"
+    cat ${TMPC}/AppDef.json | /usr/bin/kubectl -n "${NAMESPACE}" exec --stdin deploy/jarvice-dal -- python3 -c "import JarviceDAL; import sys; appdef=sys.stdin.read(); JarviceDAL.req('appEdit',${ARGS},appdef=appdef)"
     if [[ $? -eq 0 ]]; then
 	apped_array+=("${img}:${tag}")
 	echo
@@ -323,6 +324,7 @@ LIST=0
 RMTMP=1
 CREATEAPPONLY=""
 PROXY=""
+NAMESPACE="jarvice-system"
 
 for i in "$@"; do
   case $i in
@@ -344,6 +346,10 @@ for i in "$@"; do
       ;;
     -p=*|--proxy=*)
       PROXY="${i#*=}"
+      shift
+      ;;
+    -n=*|--namespace=*)
+      NAMESPACE="${i#*=}"
       shift
       ;;
     --create-app-only=*)
