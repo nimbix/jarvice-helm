@@ -159,7 +159,11 @@ spec:
       {{- include "jarvice.hostAliases" . | nindent 8 }}
       containers:
       - name: jarvice-bird
+{{- if .Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE }}
+        image: {{ include "jarvice.registry" . }}/jarvice-bird:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+{{- else }}
         image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-bird:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+{{- end }}
 {{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
         imagePullPolicy: Always
 {{- else }}
@@ -243,7 +247,11 @@ spec:
         resources:
 {{ toYaml .Values.jarvice_bird.bird.resources | indent 10 }}
       - name: jarvice-bird-portal
+{{- if .Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE }}
+        image: {{ include "jarvice.registry" . }}/jarvice-bird-portal:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+{{- else }}
         image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-bird-portal:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+{{- end }}
 {{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
         imagePullPolicy: Always
 {{- else }}
@@ -600,7 +608,11 @@ spec:
       {{- include "jarvice.hostAliases" . | nindent 8 }}
       containers:
       - name: jarvice-bird-server
+{{- if .Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE }}
+        image: {{ include "jarvice.registry" . }}/jarvice-bird-server:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+{{- else }}
         image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-bird-server:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+{{- end }}
 {{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
         imagePullPolicy: Always
 {{- else }}
