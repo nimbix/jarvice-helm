@@ -125,6 +125,37 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.25.1-202503171803
+* (JAR-9279) (JAR-9877) New UI for External Projects
+* (JAR-9370) Make tables resizable in UI
+* (JAR-9408) Add new KNS node pool type to gkev2 terraform module
+* (JAR-9569) Update dockerpull to trust certs from /etc/ssl/certs
+* (JAR-9640) (JAR-9906) Add Keycloak link to Account page for Payers and Team Administrators
+* (JAR-9689) Add audit log for External project
+* (JAR-9765) (JAR-9766) (JAR-9767) (JAR-9786) (JAR-9787) Various code mitigations 
+* (JAR-9789) Add interactive job in DSSR examples and fix ssh binary issue
+* (JAR-9800) Disable Cluster Admin role for KNS jobs
+* (JAR-9807) Fix CSV columns for Billing Stats
+* (JAR-9811) New `scripts/jarvice-pull-apps` script to pull jarvice application images and push to local registry
+* (JAR-9816) Improve external billing support for KNS
+* (JAR-9954) Update CRI-O check in initv2
+* (JAR-9967) Fix supervisord issue with alpine 3.21 for bird-portal
+* (JAR-9977) Fix active batch job output on UI
+* (JAR-9988) Add `application/vnd.docker.image.rootfs.diff.tar.gzip` and `application/vnd.docker.container.image.v1+json` support to dockerpull
+* (JAR-9996) Fix S3 upload for JARVICE output and error logs
+* (JAR-9898) Add Jarvice vault for KNS jobs
+* (JAR-9964) Support Keycloak version 26.x
+* (JAR-9965) Add Copyright notice
+* (JAR-10009) Add translation for JARVICE error notifications
+* (JAR-10028) External projects improvements
+* (JAR-10034) Fix Dockerpull error logging
+* (JAR-10038) Update format for job Output window
+* (JAR-10041) Fix Download Logs button from Dashboard -> Current
+* (JAR-10055) Fix Team Jobs Terminate button to validate team admin permissions
+* (JAR-10058) Fix `Zone` dropdown list on create vault page
+* (JAR-10075) Fix support for optional filters on Admin billing report
+* (JAR-10084) System Admins do not use projects by default on Task builder
+
 ## 3.25.0-202501281617
 * (JAR-6567) Release new File Manager application for JARVICE
 * (JAR-9080)(JAR-9083)(JAR-9178)(JAR-9179)(JAR-9180)(JAR-9260)(JAR-9603)(JAR-9635)(JAR-9648)(JAR-9705)(JAR-9708)(JAR-9723)(JAR-9746)(JAR-9757)(JAR-9793)(JAR-9849) New feature: External Projects
