@@ -102,7 +102,7 @@ spec:
       - name: jarvice-kns-scheduler
         command: ["python3"]
         args: ["/main", "Nested"]
-        image: {{- if (empty .Values.jarvice_kns_scheduler.imageTag ) }}{{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-k8s-nested-scheduler:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}{{- else }}{{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-k8s-nested-scheduler:{{ default .Values.jarvice_kns_scheduler.imageTag .Chart.Annotations.tag }}{{- include "jarvice.version" . }}{{- end }}
+        image: {{ if (empty .Values.jarvice_kns_scheduler.imageTag ) }}{{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-k8s-nested-scheduler:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}{{- else }}{{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-k8s-nested-scheduler:{{ default .Values.jarvice_kns_scheduler.imageTag .Chart.Annotations.tag }}{{- include "jarvice.version" . }}{{- end }}
 {{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
         imagePullPolicy: Always
 {{- else }}
