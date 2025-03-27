@@ -211,12 +211,30 @@ function extract_appdef() {
     echo "${AppDefJson}" > ${TMPC}/AppDef.json
 }
 
+function create_app_owner() {
+
+    # create application owner in case it doesn't already exist.
+    # The app owner MUST be a registered jarvice user account or
+    # app creaton will fail.
+
+    PASS=$(tr -dc 'A-Za-z0-9!?%=' < /dev/urandom | head -c 10)
+    ARGS="user_email=\"jarvice@localhost\","
+    ARGS+="user_login=\"jarvice\","
+    ARGS+="user_pass=\"${PASS}\","
+    ARGS+="user_nicename=\"jarvice\""
+
+    kubectl -n "${NAMESPACE}"  exec deploy/jarvice-dal -- python3 -c "import JarviceDAL; JarviceDAL.req('userRegister', ${ARGS})" 2>/dev/null
+}
+
 function create_app() {
 
     img=$1
     tag=$2
 
     echo "Creating app ${img}:${tag} ..."
+
+    create_app_owner
+
     tag_revised=$(echo $tag | sed 's/\./_/g')
 
     ARGS="appid=\"jarvice-${img}_${tag_revised}\","
