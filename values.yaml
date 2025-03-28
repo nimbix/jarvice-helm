@@ -22,6 +22,11 @@ jarvice:
 
   JARVICE_SYSTEM_REGISTRY: us-docker.pkg.dev
   JARVICE_SYSTEM_REPO_BASE: jarvice-system/images
+  # Enable JARVICE_SYSTEM_OMIT_REPO_BASE only in special use-case instances
+  # For example SMC-xScale v2 requires that JARVICE_SYSTEM_REPO_BASE not
+  # be used in image paths - so enabling this will prevent that
+  JARVICE_SYSTEM_OMIT_REPO_BASE: false
+
   JARVICE_IMAGES_TAG: jarvice-master
   JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
 
