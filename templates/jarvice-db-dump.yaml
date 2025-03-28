@@ -107,7 +107,7 @@ spec:
 {{- else }}
                 value: "nginx"
 {{- end }}
-{{- if .Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE }}
+{{- if eq .Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE "true" }}
             image: {{ include "jarvice.registry" . }}/jarvice-dal:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
 {{- else }}
             image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-dal:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
