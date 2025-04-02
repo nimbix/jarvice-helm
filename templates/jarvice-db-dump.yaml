@@ -107,7 +107,11 @@ spec:
 {{- else }}
                 value: "nginx"
 {{- end }}
+{{- if eq .Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE "true" }}
+            image: {{ include "jarvice.registry" . }}/jarvice-dal:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+{{- else }}
             image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-dal:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+{{- end }}
             imagePullPolicy: IfNotPresent
             name: jarvice-db-dump-init
             securityContext:
@@ -117,7 +121,11 @@ spec:
               name: jarvice-db-dump-dir
           containers:
           - name: jarvice-db-dump
+{{- if .Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE }}
+            image: {{ include "jarvice.registry" . }}/jarvice-dal:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+{{- else }}
             image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-dal:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+{{- end }}
 {{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
             imagePullPolicy: Always
 {{- else }}
