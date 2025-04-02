@@ -1,10 +1,10 @@
-# JARVICE KNS Scheduler Overview
+# JARVICE KNS Scheduler
 
 KNS, for Kubernetes Nested Scheduler, allows to launch Kubernetes based apps as jobs.
 
 ## Important
 
-Please understand that for now, KNS scheduler needs cluster-admin rights on the target cluster to run properly.
+Please understand that, due to its nature, the KNS scheduler needs cluster-admin rights on the target cluster to run properly.
 It is STRONGLY recommanded to run the KNS in a dedicated K8S cluster, not the same than Jarvice upstream.
 
 ## Configuration
@@ -20,6 +20,7 @@ Environment|Value|Description/Notes
 `JARVICE_KNS_ALLOW_GOTTY_SHELL`|string|Allow or not, at admin level, usage of the gotty shell when launching a KNS job. Note that for a gotty shell to start, both admin and app's AppDef.json must allow it. Default is `false`.
 `JARVICE_KNS_GOTTY_IMAGE`|string|Repo/image from which to grab KNS gotty image. Default is `us-docker.pkg.dev/jarvice/images/kns-gotty`. Note that if no tag is provided in this url, JARVICE_KNS_GOTTY_IMAGE_TAG is used.
 `JARVICE_KNS_GOTTY_IMAGE_TAG`|string|Jarvice image tag for gotty image. Default is `n1.3.0`.
+`JARVICE_KNS_DEFAULT_STORAGE_CLASS`|string|Name of the default storage class to be propagated from host kubernetes cluster to inside nested kubernetes clusters.
 
 The KNS also need the following standard Jarvice values:
 * `JARVICE_JOBS_DOMAIN`: domain name to use for job's ingress (downstream domain name).
@@ -195,3 +196,20 @@ spec:
 ```
 
 This will ensure kubernetes replicator will push the associated secret into each jobs namespace.
+
+### Users Vault
+
+KNS allows usage of vaults. Currently, only NFS based vaults are supported.
+
+#### Register user's vault
+
+In order to register a user vault, use Jarvive XE portal.
+As admin, in Admininstration tab, select Users. Search for the desired user, and click on the "Vaults" icon.
+
+![KNS_vault_1](pictures/KNS_vault_1.png)
+
+Select "Create", and set vault title and mount address, in the format `IP:/PATH`. Also make sure the zone is the same than the zone where KNS cluster is configured.
+
+![KNS_vault_2](pictures/KNS_vault_2.png)
+
+Now, when a user launches a KNS application, once nested kubernetes is accessible, a dedicated storage class, named from user and vault name (`jobuser-vaultname`), will be accessible for usage, and will mount the vault on demand.
