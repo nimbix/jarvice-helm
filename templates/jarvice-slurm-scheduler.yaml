@@ -253,10 +253,10 @@ spec:
           - name: JARVICE_SYSTEM_REPO_BASE
             value: {{ $.Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}
           - name: JARVICE_SYSTEM_OMIT_REPO_BASE
-{{- if empty .Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE }}
+{{- if empty $.Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE }}
             value: "false"
 {{- else }}
-            value: "{{ .Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE }}"
+            value: "{{ $.Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE }}"
 {{- end }}
           - name: JARVICE_IMAGES_TAG
             value: {{ default $.Values.jarvice.JARVICE_IMAGES_TAG $.Chart.Annotations.tag }}{{- include "jarvice.version" $ }}
