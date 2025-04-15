@@ -80,7 +80,11 @@ spec:
       {{- include "jarvice.hostAliases" . | nindent 8 }}
       containers:
       - name: jarvice-k8s-scheduler
+{{- if eq .Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE "true" }}
+        image: {{ include "jarvice.registry" . }}/jarvice-k8s-scheduler:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+{{- else }}
         image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-k8s-scheduler:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+{{- end }}
 {{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
         imagePullPolicy: Always
 {{- else }}
@@ -188,6 +192,12 @@ spec:
             value: {{ include "jarvice.registry" . }}
           - name: JARVICE_SYSTEM_REPO_BASE
             value: {{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}
+          - name: JARVICE_SYSTEM_OMIT_REPO_BASE
+{{- if empty .Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE }}
+            value: "false"
+{{- else }}
+            value: "{{ .Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE }}"
+{{- end }}
           - name: JARVICE_IMAGES_TAG
             value: {{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
           - name: JARVICE_LOCAL_REGISTRY
