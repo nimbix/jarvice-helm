@@ -329,6 +329,7 @@ resource "google_container_node_pool" "jarvice_compute" {
     autoscaling {
         min_node_count = each.value["nodes_min"]
         max_node_count = each.value["nodes_max"]
+        total_max_node_count = each.value["nodes_max"] * length(local.zones)
     }
 
     management {
@@ -405,6 +406,7 @@ resource "google_container_node_pool" "jarvice_kns" {
     autoscaling {
         min_node_count = each.value["nodes_min"]
         max_node_count = each.value["nodes_max"]
+        total_max_node_count = each.value["nodes_max"] * length(local.zones)
     }
 
     management {
