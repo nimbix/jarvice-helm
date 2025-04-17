@@ -31,7 +31,7 @@ spec:
   selector:
     matchLabels:
       deployment: jarvice-kns-scheduler
-  minAvailable: {{ .Values.jarvice_kns_scheduler.pdb.minAvailable }}
+  minAvailable: {{ .Values.jarvice_kns_scheduler.pdb.minAvailable | default "25%" }}
 ---
 {{- end }}
 apiVersion: apps/v1
@@ -58,7 +58,6 @@ spec:
       annotations:
         deployment-date: {{ now | quote }}
     spec:
-      serviceAccount: kns-sa
       serviceAccountName: kns-sa
 {{- if (not (empty .Values.jarvice_kns_scheduler.tolerations)) }}
       tolerations: {{ .Values.jarvice_kns_scheduler.tolerations }}
