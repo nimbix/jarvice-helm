@@ -125,6 +125,37 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.25.2-202504241435
+* (JAR-9031) (JAR-9033) (JAR-9184) (JAR-9185) (JAR-9868) (JAR-9916) (JAR-9917) (JAR-10290) External Reference Data Provider
+* (JAR-9414) Fix AppDef upload on sysadmin applications page
+* (JAR-9881) Correct file picker on BIRD portal
+* (JAR-9946) Fix WebShell Entrypoint on Ubuntu 22.04, Ubuntu 24.04,  RHEL 8, and RHEL 9
+* (JAR-9955) Update KNS helm template
+* (JAR-9995) Use JARVICE_SYSTEM_REPO_BASE to remove registry/repo prefix from JARVICE images
+* (JAR-10006) UI allow editing file paths of file picker
+* (JAR-10062) Fix OpenGL error with Ansys Fluent
+* (JAR-10067) (JAR-10073) Accessibility improvements
+* (JAR-10079) Add confirmation dialog when deleting Machines
+* (JAR-10089) BIRD UI use Angular-slider 19.0.0
+* (JAR-10145) Update job start time handling
+* (JAR-10156) Update label alignment in BIRD UI
+* (JAR-10165) (JAR-10166) (JAR-10083) (JAR-10178) (JAR-10181) (JAR-10185) (JAR-10222) (JAR-10225) (JAR-10307) (JAR-10330) (JAR-10381) Various KNS enhancements for Kubeflow support
+* (JAR-10168) Display zone names when left menu is collapsed
+* (JAR-10139) Add a group by Machine to team jobs table
+* (JAR-10161) Add pagination for Machines table
+* (JAR-10170) Enable editing Categories for Push-To-Compute applications
+* (JAR-10175) Improve email notification handling
+* (JAR-10177) Add text wrapping to Recent application section on Dashboard 
+* (JAR-10211) Add missing value accessors for BIRD UI
+* (JAR-10216) Correctly display walltime on Team Jobs dashboard
+* (JAR-10219) Fix UI runtime errors during submit command
+* (JAR-10247) scripts/jarvice-pull-apps creates jarvice user if needed
+* (JAR-10300) Fix application tile size in UI
+* (JAR-10317) Update LXCFS DaemonSet
+* (JAR-10301) Fix scroll on job builder page
+* (JAR-10302) Fix FATAL: main(): system: Symbolic link loop in DSSR scheduler
+* (JAR-10320) Fix Administration/Logs category filter
+
 ## 3.25.1-202503171803
 * (JAR-9279) (JAR-9877) New UI for External Projects
 * (JAR-9370) Make tables resizable in UI
