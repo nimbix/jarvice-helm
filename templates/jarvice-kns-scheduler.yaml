@@ -31,7 +31,7 @@ spec:
   selector:
     matchLabels:
       deployment: jarvice-kns-scheduler
-  minAvailable: {{ .Values.jarvice_kns_scheduler.pdb.minAvailable }}
+  minAvailable: {{ .Values.jarvice_kns_scheduler.pdb.minAvailable | default "25%" }}
 ---
 {{- end }}
 apiVersion: apps/v1
@@ -58,7 +58,6 @@ spec:
       annotations:
         deployment-date: {{ now | quote }}
     spec:
-      serviceAccount: kns-sa
       serviceAccountName: kns-sa
 {{- if (not (empty .Values.jarvice_kns_scheduler.tolerations)) }}
       tolerations: {{ .Values.jarvice_kns_scheduler.tolerations }}
@@ -102,7 +101,11 @@ spec:
       - name: jarvice-kns-scheduler
         command: ["python3"]
         args: ["/main", "Nested"]
-        image: {{- if (empty .Values.jarvice_kns_scheduler.imageTag ) }}{{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-k8s-nested-scheduler:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}{{- else }}{{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-k8s-nested-scheduler:{{ default .Values.jarvice_kns_scheduler.imageTag .Chart.Annotations.tag }}{{- include "jarvice.version" . }}{{- end }}
+{{- if eq .Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE "true" }}
+        image: {{ if (empty .Values.jarvice_kns_scheduler.imageTag ) }}{{ include "jarvice.registry" . }}/jarvice-k8s-nested-scheduler:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}{{- else }}{{ include "jarvice.registry" . }}/jarvice-k8s-nested-scheduler:{{ default .Values.jarvice_kns_scheduler.imageTag .Chart.Annotations.tag }}{{- include "jarvice.version" . }}{{- end }}
+{{- else }}
+        image: {{ if (empty .Values.jarvice_kns_scheduler.imageTag ) }}{{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-k8s-nested-scheduler:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}{{- else }}{{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-k8s-nested-scheduler:{{ default .Values.jarvice_kns_scheduler.imageTag .Chart.Annotations.tag }}{{- include "jarvice.version" . }}{{- end }}
+{{- end }}
 {{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
         imagePullPolicy: Always
 {{- else }}
@@ -139,6 +142,14 @@ spec:
 {{- if (not (empty .Values.jarvice_kns_scheduler.env.JARVICE_KNS_DEFAULT_LIMIT_RANGE)) }}
           - name: JARVICE_KNS_DEFAULT_LIMIT_RANGE
             value: "{{ .Values.jarvice_kns_scheduler.env.JARVICE_KNS_DEFAULT_LIMIT_RANGE }}"
+{{- end }}
+{{- if (not (empty .Values.jarvice_kns_scheduler.env.JARVICE_KNS_DEFAULT_STORAGE_CLASS)) }}
+          - name: JARVICE_KNS_DEFAULT_STORAGE_CLASS
+            value: "{{ .Values.jarvice_kns_scheduler.env.JARVICE_KNS_DEFAULT_STORAGE_CLASS }}"
+{{- end }}
+{{- if (not (empty .Values.jarvice_kns_scheduler.env.JARVICE_KNS_DYNAMIC_STORAGE_SIZE)) }}
+          - name: JARVICE_KNS_DYNAMIC_STORAGE_SIZE
+            value: "{{ .Values.jarvice_kns_scheduler.env.JARVICE_KNS_DYNAMIC_STORAGE_SIZE }}"
 {{- end }}
 {{- if (not (empty .Values.jarvice_kns_scheduler.env.JARVICE_KNS_VCLUSTER_SPAWN_DELAY)) }}
           - name: JARVICE_KNS_VCLUSTER_SPAWN_DELAY
@@ -281,13 +292,14 @@ spec:
             value: "{{ .Values.jarvice.JARVICE_K8S_SCHED_LOGLEVEL }}"
 {{- if .Values.jarvice_bird.enabled }}
           - name: JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY
-{{- if .Values.keycloakx.enabled }}
+{{- if (not (empty .Values.jarvice_api.env.JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY)) }}
+            value: "{{ .Values.jarvice_api.env.JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY }}"
+{{- else }}
             valueFrom:
               configMapKeyRef:
                 name: jarvice-keycloak-realm-public-key
                 key: public.key
-{{- else if (not (empty .Values.jarvice_api.env.JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY)) }}
-            value: "{{ .Values.jarvice_api.env.JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY }}"
+
 {{- end }}
 {{- end }}
         volumeMounts:

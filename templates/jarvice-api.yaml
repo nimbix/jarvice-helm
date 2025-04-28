@@ -104,7 +104,11 @@ spec:
       {{- include "jarvice.hostAliases" . | nindent 8 }}
       containers:
       - name: jarvice-api
+{{- if eq .Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE "true" }}
+        image: {{ include "jarvice.registry" . }}/jarvice-api:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+{{- else }}
         image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-api:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+{{- end }}
 {{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
         imagePullPolicy: Always
 {{- else }}
@@ -136,13 +140,15 @@ spec:
         env:
 {{- if .Values.jarvice_bird.enabled }}
           - name: JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY
-{{- if .Values.keycloakx.enabled }}
+{{- if (not (empty .Values.jarvice_api.env.JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY)) }}
+            value: "{{ .Values.jarvice_api.env.JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY }}"
+{{- else }}
             valueFrom:
               configMapKeyRef:
                 name: jarvice-keycloak-realm-public-key
                 key: public.key
-{{- else if (not (empty .Values.jarvice_api.env.JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY)) }}
-            value: "{{ .Values.jarvice_api.env.JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY }}"
+
+{{- end }}
 {{- end }}
 {{- if (not (empty .Values.jarvice_bird.env.KEYCLOAK_ID)) }}
           - name: JARVICE_API_KEYCLOAK_OAUTH_CLIENT_ID
@@ -372,7 +378,11 @@ spec:
         resources:
 {{ toYaml .Values.jarvice_api.resources | indent 10 }}
       - name: jarvice-api-v1
+{{- if eq .Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE "true" }}
+        image: {{ include "jarvice.registry" . }}/jarvice-api-v1:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+{{- else }}
         image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-api-v1:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+{{- end }}
 {{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
         imagePullPolicy: Always
 {{- else }}
