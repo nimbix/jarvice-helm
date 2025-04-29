@@ -225,6 +225,20 @@ resource "helm_release" "jarvice" {
 
     namespace = var.jarvice["namespace"]
     create_namespace = true
+    set {
+        name  = "metadata.labels.app"
+        value = "jarvice"
+    }
+
+    set {
+        name  = "metadata.labels.kubernetes.io/metadata.name"
+        value = "jarvice-system"
+    }
+
+    set {
+        name  = "metadata.labels.kubernetes.io/managed-by"
+        value = "Terraform"
+    }
     reuse_values = false
     reset_values = true
     max_history = 12
