@@ -147,8 +147,6 @@ spec:
               configMapKeyRef:
                 name: jarvice-keycloak-realm-public-key
                 key: public.key
-
-{{- end }}
 {{- end }}
 {{- if (not (empty .Values.jarvice_bird.env.KEYCLOAK_ID)) }}
           - name: JARVICE_API_KEYCLOAK_OAUTH_CLIENT_ID
