@@ -232,7 +232,7 @@ resource "helm_release" "jarvice" {
 
     set {
         name  = "metadata.labels.kubernetes.io/metadata.name"
-        value = "jarvice-system"
+        value = var.jarvice["namespace"]
     }
 
     set {
