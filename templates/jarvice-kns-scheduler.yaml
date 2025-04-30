@@ -292,13 +292,14 @@ spec:
             value: "{{ .Values.jarvice.JARVICE_K8S_SCHED_LOGLEVEL }}"
 {{- if .Values.jarvice_bird.enabled }}
           - name: JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY
-{{- if .Values.keycloakx.enabled }}
+{{- if (not (empty .Values.jarvice_api.env.JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY)) }}
+            value: "{{ .Values.jarvice_api.env.JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY }}"
+{{- else }}
             valueFrom:
               configMapKeyRef:
                 name: jarvice-keycloak-realm-public-key
                 key: public.key
-{{- else if (not (empty .Values.jarvice_api.env.JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY)) }}
-            value: "{{ .Values.jarvice_api.env.JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY }}"
+
 {{- end }}
 {{- end }}
         volumeMounts:
