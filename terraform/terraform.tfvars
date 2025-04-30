@@ -603,8 +603,12 @@ keycloakx:
     KEYCLOAK_SMTP_PASSWORD:  # smtp password
   ingress:
     enabled: false
-    annotations:
-      cert-manager.io/issuer: # letsencrypt-staging
+    annotations: {}
+      # cert-manager.io/issuer: letsencrypt-staging
+      # cert-manager.io/cluster-issuer: selfsigned
+      ## Resolve HTTP 502 error using ingress-nginx:
+      ## See https://www.ibm.com/support/pages/502-error-ingress-keycloak-response
+      # nginx.ingress.kubernetes.io/proxy-buffer-size: 128k
     ingressClassName: traefik
     rules:
     - host: # ingress host
