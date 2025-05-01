@@ -1,0 +1,117 @@
+#!/bin/sh
+
+namespace=jarvice-system
+sql_client=mariadb
+
+function usage {
+    cat <<EOF
+This script applies databes indexes to improve performance of some JARVICE
+functions when there are a large number of jobs (> 1,000,000) present in the
+database
+
+Usage:
+    $0 [options]
+
+Options:
+    --namespace <kube_namespace>    Kubernetes namespace of JARVICE deployment
+                                    (Default: $namespace)
+    --apply                         Apply the indexes
+    --remove                        Remove indexes
+    --sql-client                    SQL client
+                                    (Default: $sql_client)
+
+EOF
+}
+
+function yes_no() {
+  echo
+  while true; do
+      read -p "Do you wish to continue? (Y/N) " yn
+      case $yn in
+          [Yy]* ) return 0;;
+          [Nn]* ) exit -1;;
+          * ) echo "Please answer Y or N.";;
+      esac
+  done
+}
+
+
+
+function add_idx_msg()
+{
+    cat <<EOF
+******* Adding indexes to the jobs table in the database *******
+
+Please ensure there is enough disk space for index creation, since
+this process may increase the database size by 200% or more.
+The changes could take several minutes to apply, depending on the CPU and
+disk speed of the database server, and should be run during a maintenance
+window.
+EOF
+}
+
+function del_idx_msg()
+{
+    echo "******* Removing indexes from the jobs table in the database *******"
+}
+
+
+
+KUBECTL=$(type -p kubectl)
+if [ -z "$KUBECTL" ]; then
+    cat <<EOF
+Could not find 'kubectl' in PATH.  It may not be installed.
+Run 'install-kubectl' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        --namespace)
+            namespace=$2
+            shift; shift
+            ;;
+
+        --apply)
+            add_idx_msg
+            yes_no
+            echo "* Indexing JARVICE database jobs table in $namespace namespace..."; echo
+            sql=$(cat ../files/jarvice-job-fts-index-add.sql)
+            shift
+            ;;
+
+        --remove)
+            del_idx_msg
+            yes_no
+            echo "* De-indexing JARVICE database jobs table in $namespace namespace..."; echo
+            sql=$(cat ../files/jarvice-job-fts-index-remove.sql)
+            shift
+            ;;
+
+        --sql-client)
+            sql_client=$2
+            shift; shift
+            ;;
+
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+pod=$($KUBECTL -n $namespace get pods \
+        -l component=jarvice-dal \
+        --field-selector=status.phase=Running \
+        -o jsonpath={.items[0].metadata.name})
+[ -z "$pod" ] && \
+    echo "* Could not find jarvice-db pod in $namespace namespace..." && \
+    echo "Exiting..." && exit 1
+
+cmd="$sql_client "
+cmd+=' --table'
+cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
+cmd+=' --host="$JARVICE_SITE_DBHOST" nimbix'
+
+$KUBECTL -n $namespace exec $pod -- bash -c "echo '$sql' | $cmd"
