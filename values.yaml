@@ -261,7 +261,7 @@ jarvice:
       tolerations: # '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
-      image: us-docker.pkg.dev/jarvice-system/images/jarvice-lxcfs:latest
+      image: us-docker.pkg.dev/jarvice-system/images/jarvice-lxcfs:6.0.4
       imagePullPolicy: IfNotPresent
       env:
         HOST_LXCFS_DIR: /var/lib/lxcfs
