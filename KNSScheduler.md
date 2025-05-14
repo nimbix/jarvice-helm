@@ -214,3 +214,9 @@ Select "Create", and set vault title and mount address, in the format `IP:/PATH`
 ![KNS_vault_2](pictures/KNS_vault_2.png)
 
 Now, when a user launches a KNS application, once nested kubernetes is accessible, a dedicated storage class, named from user and vault name (`jobuser-vaultname`), will be accessible for usage, and will mount the vault on demand.
+
+### Machines
+
+KNS machines are not nodes, but resources quota that the job can allocate at maximum during its life. Only CPU, RAM an GPU are taken into account.
+
+When creating machines for a KNS cluster, it is important to add a specific `appkind` key in their properties, so that these machines are identified as KNS and only KNS related applications can run on them. In their **Resources** tab, select **Properties** field, and add `appkind=kns` value. Please remember that if other values are to be set in this field, they should be comma separated.
