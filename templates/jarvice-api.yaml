@@ -140,14 +140,10 @@ spec:
         env:
 {{- if .Values.jarvice_bird.enabled }}
           - name: JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY
-{{- if (not (empty .Values.jarvice_api.env.JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY)) }}
-            value: "{{ .Values.jarvice_api.env.JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY }}"
-{{- else }}
             valueFrom:
               configMapKeyRef:
                 name: jarvice-keycloak-realm-public-key
                 key: public.key
-{{- end }}
 {{- if (not (empty .Values.jarvice_bird.env.KEYCLOAK_ID)) }}
           - name: JARVICE_API_KEYCLOAK_OAUTH_CLIENT_ID
             value: "{{ .Values.jarvice_bird.env.KEYCLOAK_ID }}"
@@ -411,14 +407,10 @@ spec:
         env:
 {{- if .Values.jarvice_bird.enabled }}
           - name: JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY
-{{- if .Values.keycloakx.enabled }}
             valueFrom:
               configMapKeyRef:
                 name: jarvice-keycloak-realm-public-key
                 key: public.key
-{{- else if (not (empty .Values.jarvice_api.env.JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY)) }}
-            value: "{{ .Values.jarvice_api.env.JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY }}"
-{{- end }}
 {{- if (not (empty .Values.jarvice_bird.env.KEYCLOAK_ID)) }}
           - name: JARVICE_API_KEYCLOAK_OAUTH_CLIENT_ID
             value: "{{ .Values.jarvice_bird.env.KEYCLOAK_ID }}"

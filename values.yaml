@@ -22,6 +22,11 @@ jarvice:
 
   JARVICE_SYSTEM_REGISTRY: us-docker.pkg.dev
   JARVICE_SYSTEM_REPO_BASE: jarvice-system/images
+  # Enable JARVICE_SYSTEM_OMIT_REPO_BASE only in special use-case instances
+  # For example SMC-xScale v2 requires that JARVICE_SYSTEM_REPO_BASE not
+  # be used in image paths - so enabling this will prevent that
+  JARVICE_SYSTEM_OMIT_REPO_BASE: "false"
+
   JARVICE_IMAGES_TAG: jarvice-master
   JARVICE_IMAGES_VERSION: # auto-set (ignored) if installing from chart repo
 
@@ -256,7 +261,7 @@ jarvice:
       tolerations: # '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
-      image: us-docker.pkg.dev/jarvice/images/lxcfs:3.0.3-4
+      image: us-docker.pkg.dev/jarvice-system/images/jarvice-lxcfs:6.0.4
       imagePullPolicy: IfNotPresent
       env:
         HOST_LXCFS_DIR: /var/lib/lxcfs
@@ -791,6 +796,7 @@ jarvice_k8s_scheduler:
     JARVICE_PVCLS_IMAGE: us-docker.pkg.dev/jarvice/images/alpine:3.18 # change if mirroring locally
     JARVICE_SCHED_JOB_UID:  # set to numeric value to override UID for jobs
     JARVICE_SCHED_JOB_GID:  # set to numeric value to override GID for jobs
+    JARVICE_GCSFUSE_SIDECAR_IMAGE: # set to GCS FUSE sidecar image
 
 jarvice_slurm_scheduler:
   enabled: false
@@ -945,6 +951,8 @@ jarvice_kns_scheduler:
     JARVICE_KNS_BILLING_PROBE_INTERVAL: ""
     JARVICE_KNS_BILLING_REPORT_INTERVAL: ""
     JARVICE_JOBS_INGRESS_CERT_SECRET_NAME: ""
+    JARVICE_KNS_DEFAULT_STORAGE_CLASS: ""
+    JARVICE_KNS_DYNAMIC_STORAGE_SIZE: ""
 
 jarvice_pod_scheduler:
   enabled: true
@@ -1062,7 +1070,6 @@ jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     JARVICE_API_POOL_SIZE: 4
     JARVICE_API_TIMEOUT: 1000
     JARVICE_API_MAX_CNCR: 16
-    JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY: # Keycloak realm public RSA signing key
   fastapi:
     resources:
       limits:
@@ -1588,7 +1595,7 @@ keycloakx:
     # The Service port targeted by the Ingress
     servicePort: http
     # Ingress annotations
-    annotations:
+    annotations: {}
       # cert-manager.io/issuer: letsencrypt-staging
       # cert-manager.io/cluster-issuer: selfsigned
       ## Resolve HTTP 502 error using ingress-nginx:

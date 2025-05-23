@@ -1,9 +1,11 @@
 # JARVICE KNS Scheduler
+# JARVICE KNS Scheduler
 
 KNS, for Kubernetes Nested Scheduler, allows to launch Kubernetes based apps as jobs.
 
 ## Important
 
+Please understand that, due to its nature, the KNS scheduler needs cluster-admin rights on the target cluster to run properly.
 Please understand that, due to its nature, the KNS scheduler needs cluster-admin rights on the target cluster to run properly.
 It is STRONGLY recommanded to run the KNS in a dedicated K8S cluster, not the same than Jarvice upstream.
 
@@ -21,6 +23,7 @@ Environment|Value|Description/Notes
 `JARVICE_KNS_GOTTY_IMAGE`|string|Repo/image from which to grab KNS gotty image. Default is `us-docker.pkg.dev/jarvice/images/kns-gotty`. Note that if no tag is provided in this url, JARVICE_KNS_GOTTY_IMAGE_TAG is used.
 `JARVICE_KNS_GOTTY_IMAGE_TAG`|string|Jarvice image tag for gotty image. Default is `n1.3.0`.
 `JARVICE_KNS_DEFAULT_STORAGE_CLASS`|string|Name of the default storage class to be propagated from host kubernetes cluster to inside nested kubernetes clusters.
+`JARVICE_KNS_DYNAMIC_STORAGE_SIZE`|string|Size by default to allocate to jobs that can be allocated on the `JARVICE_KNS_DEFAULT_STORAGE_CLASS`. Default is `100Gi`. IMPORTANT: set unit with the value: not `80` but `80Gi`.
 
 The KNS also need the following standard Jarvice values:
 * `JARVICE_JOBS_DOMAIN`: domain name to use for job's ingress (downstream domain name).
@@ -213,3 +216,9 @@ Select "Create", and set vault title and mount address, in the format `IP:/PATH`
 ![KNS_vault_2](pictures/KNS_vault_2.png)
 
 Now, when a user launches a KNS application, once nested kubernetes is accessible, a dedicated storage class, named from user and vault name (`jobuser-vaultname`), will be accessible for usage, and will mount the vault on demand.
+
+### Machines
+
+KNS machines are not nodes, but resources quota that the job can allocate at maximum during its life. Only CPU, RAM an GPU are taken into account.
+
+When creating machines for a KNS cluster, it is important to add a specific `appkind` key in their properties, so that these machines are identified as KNS and only KNS related applications can run on them. In their **Resources** tab, select **Properties** field, and add `appkind=kns` value. Please remember that if other values are to be set in this field, they should be comma separated.

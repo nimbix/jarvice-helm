@@ -373,6 +373,7 @@ resource "google_container_node_pool" "jarvice_compute" {
                 "node-pool.jarvice.io/disable-hyperthreading" = lower(lookup(each.value.meta, "disable_hyperthreading", "false")) == "true" ? "true" : "false"
             },
             lookup(each.value.meta, "enable_gcfs", null) != null ? {"node-pool.jarvice.io/enable-gcfs" = lower(each.value.meta["enable_gcfs"]) == "true" ? "true" : "false"} : {},
+            lookup(each.value.meta, "accelerator_type", "") != "" && can(regex("nvidia", lower(trimspace(lookup(each.value.meta, "accelerator_type", ""))))) ? {"nvidia.com/gpu" = "present"} : {}
         )
         taint = [
             {
@@ -447,6 +448,7 @@ resource "google_container_node_pool" "jarvice_kns" {
                 "node-pool.jarvice.io/disable-hyperthreading" = lower(lookup(each.value.meta, "disable_hyperthreading", "false")) == "true" ? "true" : "false"
             },
             lookup(each.value.meta, "enable_gcfs", null) != null ? {"node-pool.jarvice.io/enable-gcfs" = lower(each.value.meta["enable_gcfs"]) == "true" ? "true" : "false"} : {},
+            lookup(each.value.meta, "accelerator_type", "") != "" && can(regex("nvidia", lower(trimspace(lookup(each.value.meta, "accelerator_type", ""))))) ? {"nvidia.com/gpu" = "present"} : {}
         )
         taint = [
             {
