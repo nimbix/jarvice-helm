@@ -394,6 +394,10 @@ spec:
           - name: JARVICE_S3_ENDPOINTURL
             value: "{{ .Values.jarvice.JARVICE_S3_ENDPOINTURL }}"
 {{- end }}
+{{- if (not (empty .Values.jarvice_k8s_scheduler.env.JARVICE_GCSFUSE_SIDECAR_IMAGE)) }}
+          - name: JARVICE_GCSFUSE_SIDECAR_IMAGE
+            value: "{{ .Values.jarvice_k8s_scheduler.env.JARVICE_GCSFUSE_SIDECAR_IMAGE }}"
+{{- end }}
         volumeMounts:
         {{- include "jarvice.rootCertVolumeMount" . | indent 8 }}
         resources:
