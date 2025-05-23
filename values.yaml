@@ -796,6 +796,7 @@ jarvice_k8s_scheduler:
     JARVICE_PVCLS_IMAGE: us-docker.pkg.dev/jarvice/images/alpine:3.18 # change if mirroring locally
     JARVICE_SCHED_JOB_UID:  # set to numeric value to override UID for jobs
     JARVICE_SCHED_JOB_GID:  # set to numeric value to override GID for jobs
+    JARVICE_GCSFUSE_SIDECAR_IMAGE: # set to GCS FUSE sidecar image
 
 jarvice_slurm_scheduler:
   enabled: false
