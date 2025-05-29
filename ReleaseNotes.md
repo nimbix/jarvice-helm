@@ -125,6 +125,44 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.25.3-202505230409
+
+* (JAR-7028) Add REGESTRY and REPO_BASE for mirrored dependency images
+* (JAR-9372) Update job utilization graphs
+* (JAR-9373) Fix logic for 'Do not encode generated job passwords into URLs' option
+* (JAR-9404) Update jarvice-kns-scheduler to verify jwt signature
+* (JAR-9699) Add additional job information to active jobs on Dashboard
+* (JAR-9704) Fix push2compute history to only show applications owned by developer
+* (JAR-9865) Prevent scripts from running as root when using the slurm scheduler
+* (JAR-10169) Add frontend and backend version information to About page
+* (JAR-10210) Improve table layout for Admin->Users
+* (JAR-10223) Helm templates to use JARVICE_API_KEYCLOAK_REALM_PUBLIC_KEY ConfigMap by default
+* (JAR-10327) Update notification message when terminating team jobs
+* (JAR-10328) Enable dark theme for External Data page
+* (JAR-10329) Update External Data entries without refreshing page
+* (JAR-10365) Support unauthenticated public containers with slurm scheduler
+* (JAR-10379) Correctly show search results from file picker
+* (JAR-10380) (JAR-10483) GCS FUSE vault support for v1 JARVICE applications
+* (JAR-10383) Make columns resizable on Admin->Jobs page
+* (JAR-10386) Update animation on Stats widget on Dashboard page
+* (JAR-10390) Fix login indicator on PushToCompute page
+* (JAR-10391) Fix scrollbar on PushToCompute page
+* (JAR-10393) Update Powered by Eviden popup
+* (JAR-10394) jarvice-helm adds app=jarvice label to release namespace
+* (JAR-10395) Add additional containers to jarvice-pull-system-images script
+* (JAR-10414) Set default ingress annotations for keycloakx to empty list
+* (JAR-10416) Add support to synchronize RuntimeClasses for KNS jobs
+* (JAR-10468) Update layout of Current Job tiles
+* (JAR-10477) Update Stats table on Administration page
+* (JAR-10482) Fix path for internal DAL scripts
+* (JAR-10484) Fix AppDef validation in DAL causing appsync to fail
+* (JAR-10490) Fix positioning of node scale slider when cloning jobs
+* (JAR-10503) Update page headers on KNS job user interface
+* (JAR-10504) Document appkind key for filtering machines available to KNS applications
+* (JAR-10568) Add "Default" annotation to default StorageClasse in vcluster for KNS jobs
+* (JAR-10572) Prevent jobs not owned by team from being added to reports generated from the Dashboard page
+* (JAR-10603) Add optional gcsfuse sidecar container to k8s-scheduler helm template
+
 ## 3.25.2-202504241435
 * (JAR-9031) (JAR-9033) (JAR-9184) (JAR-9185) (JAR-9868) (JAR-9916) (JAR-9917) (JAR-10290) External Reference Data Provider
 * (JAR-9414) Fix AppDef upload on sysadmin applications page
