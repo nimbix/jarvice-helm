@@ -37,132 +37,159 @@ def getKeycloakClientToken():
     token = json.loads(resp.content)
     return token['access_token']
 
-def keycloakCreateRealmIfNotExist(realm_name):
+def getRequest(url_prefix):
     access_token = getKeycloakClientToken()
     headers = {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer {}'.format(access_token)
     }
-    # List existing realms
     resp = requests.get(
-        '{}/admin/realms?briefRepresentation=true'.format(
-            keycloak_url
-        ),
+        keycloak_url + url_prefix,
         headers=headers,
         verify=cacert
     )
-    if resp.status_code != 200:
+    if int(resp.status_code) != 200:
         print(resp.status_code)
         print(resp.content)
-        raise SchedError("Keycloak failed to list realms.")
-    # print(json.loads(resp.content))
+        print("Failed HTTP GET at " + keycloak_url + url_prefix)
+        exit(1)
+    return resp
+
+
+def postRequest(url_prefix, payload):
+    access_token = getKeycloakClientToken()
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer {}'.format(access_token)
+    }
+    resp = requests.post(
+        keycloak_url + url_prefix,
+        data=json.dumps(payload),
+        headers=headers,
+        verify=cacert
+    )
+    if int(resp.status_code) != 201:
+        print(resp.status_code)
+        print(resp.content)
+        print("Failed HTTP POST at " + keycloak_url + url_prefix)
+        exit(1)
+
+
+def putRequest(url_prefix, payload):
+    access_token = getKeycloakClientToken()
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer {}'.format(access_token)
+    }
+    resp = requests.put(
+        keycloak_url + url_prefix,
+        data=json.dumps(payload),
+        headers=headers,
+        verify=cacert
+    )
+    if int(resp.status_code) != 204:
+        print(resp.status_code)
+        print(resp.content)
+        print("Failed HTTP POST at " + keycloak_url + url_prefix)
+        exit(1)
+
+
+def keycloakCreateRealmIfNotExist(realm_name):
+    
+    # List existing realms
+    resp = getRequest('/admin/realms?briefRepresentation=true')
+    
+    # Check realm is in the list
     realm_exists = False
     realm_id = None
     for realm in json.loads(resp.content):
-        # print(realm)
         if realm['realm'] == realm_name:
             realm_id = realm['id']
             realm_exists = True
             break
 
+    payload = {"realm": realm_name, "enabled": "true"}
     if not realm_exists:
-        payload = {"realm": realm_name, "enabled": "true"}
         # Create realm
-        resp = requests.post(
-            '{}/admin/realms/'.format(
-                keycloak_url
-            ),
-            data=json.dumps(payload),
-            headers=headers,
-            verify=cacert
-        )
-        if int(resp.status_code) != 201:
-            print(resp.status_code)
-            print(resp.content)
-            raise SchedError("Keycloak realm creation failed.")
+        print('Creating ' + realm_name + ' realm.')
+        resp = postRequest('/admin/realms/', payload)
         realm_id = resp.headers['Location'].split("/")[-1]
+    else:
+        # Make sure it matches our needs
+        print('Realm ' + realm_name + ' already exists, updating it.')
+        purl = '/admin/realms/{}'.format(realm_name)
+        resp = putRequest(purl, payload)
 
     return realm_id
 
-def keycloakCreateClient(payload, client_name, realm_name):
-    access_token = getKeycloakClientToken()
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer {}'.format(access_token)
-    }
+
+def keycloakCreateClientIfNotExist(payload, client_name, realm_name):
+
+    purl = '/admin/realms/{}/clients'.format(realm_name)
+
+    # List existing clients
+    resp = getRequest(purl)
+
+    # Check client is in the list
+    client_exists = False
+    client_id = None
+    for client in json.loads(resp.content):
+        if client['clientId'] == client_name:
+            client_id = client['id']
+            client_exists = True
+            break
+
     # Create client
-    resp = requests.post(
-        '{}/admin/realms/{}/clients'.format(
-            keycloak_url,
-            realm_name
-        ),
-        data=json.dumps(payload),
-        headers=headers,
-        verify=cacert
-    )
-    if int(resp.status_code) != 201:
-        print(resp.status_code)
-        print(resp.content)
-        raise SchedError("Keycloak client creation failed.")
-    client_id = resp.headers['Location'].split("/")[-1]
+    if not client_exists:
+        print('Creating ' + client_name + ' client.')
+        resp = postRequest(purl, payload)
+        client_id = resp.headers['Location'].split("/")[-1]
+    else:
+        print('Client ' + client_name + ' already exists, updating it.')
+        purl = '/admin/realms/{}/clients/{}'.format(realm_name, client_id)
+        resp = putRequest(purl, payload)
+
     # Get client (with its secret) and its id
-    resp = requests.get(
-        '{}/admin/realms/{}/clients/{}'.format(
-            keycloak_url,
-            realm_name,
-            client_id
-        ),
-        headers=headers,
-        verify=cacert
-    )
-    if resp.status_code != 200:
-        print(resp.status_code)
-        print(resp.content)
-        exit(1)
+    purl = '/admin/realms/{}/clients/{}'.format(realm_name, client_id)
+    resp = getRequest(purl)
     client = json.loads(resp.content)
     return client_id, client['secret']
 
-def keycloakCreateClientRole(payload, client_id, realm_name):
-    access_token = getKeycloakClientToken()
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer {}'.format(access_token)
-    }
-    # Create client role
-    resp = requests.post(
-        '{}/admin/realms/{}/clients/{}/roles'.format(
-            keycloak_url,
-            realm_name,
-            client_id
-        ),
-        data=json.dumps(payload),
-        headers=headers,
-        verify=cacert
-    )
-    if int(resp.status_code) != 201:
-        print(resp)
-        print(resp.status_code)
-        print(resp.content)
-        exit(1)
-    # Get role id
-    resp = requests.get(
-        '{}/admin/realms/{}/clients/{}/roles/kns-role'.format(
-            keycloak_url,
-            realm_name,
-            client_id
-        ),
-        headers=headers,
-        verify=cacert
-    )
-    role_id = json.loads(resp.content.decode('utf-8'))['id']
 
-    return role_id
+def keycloakCreateClientRoleIfNotExist(payload, client_role_name, client_id, realm_name):
+
+    purl = '/admin/realms/{}/clients/{}/roles'.format(realm_name, client_id)
+
+    # List existing roles
+    resp = getRequest(purl)
+
+    # Check client role is in the list
+    client_role_exists = False
+    client_role_id = None
+    for client_role in json.loads(resp.content):
+        if client_role['roleId'] == client_role_name:
+            client_role_id = client_role['id']
+            client_role_exists = True
+            break
+
+    # Create client
+    if not client_role_exists:
+        print('Creating ' + client_role_name + ' client role.')
+        resp = postRequest(purl, payload)
+        client_role_id = resp.headers['Location'].split("/")[-1]
+    else:
+        print('Client role ' + client_name + ' already exists, updating it.')
+        purl = '/admin/realms/{}/clients/{}/roles/{}'.format(realm_name, client_id, client_role_id)
+        resp = putRequest(purl, payload)
+
+    return client_role_id
 
 
+# Realm: jarvice
 realm_id = keycloakCreateRealmIfNotExist(jarvice_realm)
 print(realm_id)
 
-
+# Client: jarvice
 client_name = "jarvice"
 redirect_url = "https://jarvice-development-bird.jarvicedev.com"
 payload = {
@@ -194,11 +221,82 @@ payload = {
     ]
 }
 
-client_id, client_secret = keycloakCreateClient(payload=payload, client_name=client_name, realm_name=jarvice_realm)
+client_id, client_secret = keycloakCreateClientIfNotExist(payload=payload, client_name=client_name, realm_name=jarvice_realm)
 
+# Client role: jarvice-user 
 payload = {
-    "name": "jarvice-user",
-    "description": "",
-    "attributes": {}
+  "name": "jarvice-user",
+  "description": "",
+  "composite": true,
+  "composites": {
+    "client": {
+      "account": [
+        "manage-account"
+      ]
+    }
+  },
+  "clientRole": true,
+  "attributes": {}
 }
-role_id = keycloakCreateClientRole(payload=payload, client_id=client_id, realm_name=jarvice_realm)
+client_role_name=payload['name']
+
+role_id = keycloakCreateClientRoleIfNotExist(payload=payload, client_role_name=client_role_name, client_id=client_id, realm_name=jarvice_realm)
+
+# Client role: jarvice-sysadmin
+payload = {
+  "name": "jarvice-sysadmin",
+  "description": "",
+  "composite": true,
+  "composites": {
+    "client": {
+      "realm-management": [
+        "realm-admin",
+        "manage-realm",
+        "query-realms",
+        "manage-clients",
+        "view-users",
+        "query-clients",
+        "manage-authorization",
+        "manage-identity-providers",
+        "view-authorization",
+        "manage-events",
+        "view-clients",
+        "view-realm",
+        "query-groups",
+        "impersonation",
+        "manage-users",
+        "query-users",
+        "view-identity-providers",
+        "view-events",
+        "create-client"
+      ],
+      "jarvice": [
+        "jarvice-user"
+      ]
+    }
+  },
+  "clientRole": true,
+  "attributes": {}
+}
+client_role_name=payload['name']
+
+role_id = keycloakCreateClientRoleIfNotExist(payload=payload, client_role_name=client_role_name, client_id=client_id, realm_name=jarvice_realm)
+
+# Client role: jarvice-kcadmin
+payload = {
+  "name": "jarvice-kcadmin",
+  "description": "",
+  "composite": true,
+  "composites": {
+    "client": {
+      "jarvice": [
+        "jarvice-sysadmin"
+      ]
+    }
+  },
+  "clientRole": true,
+  "attributes": {}
+}
+client_role_name=payload['name']
+
+role_id = keycloakCreateClientRoleIfNotExist(payload=payload, client_role_name=client_role_name, client_id=client_id, realm_name=jarvice_realm)

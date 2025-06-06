@@ -1,0 +1,14 @@
+{
+  "name": "jarvice-user",
+  "description": "",
+  "composite": true,
+  "composites": {
+    "client": {
+      "account": [
+        "manage-account"
+      ]
+    }
+  },
+  "clientRole": true,
+  "attributes": {}
+}
