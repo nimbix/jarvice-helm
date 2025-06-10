@@ -15,8 +15,8 @@ jarvice_env_variables = {key:val for key, val in os.environ.items() if myPattern
 
 def update_string_by_jarvice_env(string_to_update):
     for key, val in jarvice_env_variables.items():
-        if key in string_to_update:
-            string_to_update = string_to_update.replace(key, val)
+        if str('${' + str(key) + '}') in string_to_update:
+            string_to_update = string_to_update.replace(str('${' + str(key) + '}'), val)
     return string_to_update
 
 cacert = '/etc/ssl/certs/ca-certificates.crt'
@@ -85,6 +85,7 @@ def postRequest(url_prefix, payload):
         print(resp.content)
         print("Failed HTTP POST at " + keycloak_url + url_prefix)
         exit(1)
+    return resp
 
 
 def putRequest(url_prefix, payload):
@@ -104,7 +105,7 @@ def putRequest(url_prefix, payload):
         print(resp.content)
         print("Failed HTTP PUT at " + keycloak_url + url_prefix)
         exit(1)
-
+    return resp
 
 def keycloakCreateRealmIfNotExist(realm_name, payload):
     
@@ -161,10 +162,10 @@ def keycloakCreateClientIfNotExist(payload, client_name, realm_name):
         resp = putRequest(purl, payload)
 
     # Get client (with its secret) and its id
-    purl = '/admin/realms/{}/clients/{}'.format(realm_name, client_id)
-    resp = getRequest(purl)
-    client = json.loads(resp.content)
-    return client_id, client['secret']
+    #purl = '/admin/realms/{}/clients/{}'.format(realm_name, client_id)
+    #resp = getRequest(purl)
+    #client = json.loads(resp.content)
+    return client_id #, client['secret']
 
 
 def keycloakCreateClientRoleIfNotExist(payload, client_role_name, client_id, realm_name):
@@ -178,7 +179,7 @@ def keycloakCreateClientRoleIfNotExist(payload, client_role_name, client_id, rea
     client_role_exists = False
     client_role_id = None
     for client_role in json.loads(resp.content):
-        if client_role['roleId'] == client_role_name:
+        if client_role['name'] == client_role_name:
             client_role_id = client_role['id']
             client_role_exists = True
             break
@@ -190,7 +191,7 @@ def keycloakCreateClientRoleIfNotExist(payload, client_role_name, client_id, rea
         client_role_id = resp.headers['Location'].split("/")[-1]
     else:
         print('Client role ' + client_name + ' already exists, updating it.')
-        purl = '/admin/realms/{}/clients/{}/roles/{}'.format(realm_name, client_id, client_role_id)
+        purl = '/admin/realms/{}/clients/{}/roles/{}'.format(realm_name, client_id, client_role_name)
         resp = putRequest(purl, payload)
 
     return client_role_id
@@ -200,19 +201,19 @@ print("Entering creation/update tree")
 
 # List realms to create
 for realm in os.listdir("./realms/"):
-    
+    print("Working on realm: " + str(realm)) 
     # Load realm configuration
     with open("./realms/" + str(realm) + "/main.json", 'r') as configuration_file:
         file_content = update_string_by_jarvice_env(configuration_file.read())
     realm_payload = json.loads(file_content)
     # Extract name from payload, dont user file name
-    realm_name = realm_payload['realm']
+    realm_name = str(realm_payload['realm'])
     # Create realm
-    keycloakCreateRealmIfNotExist(realm_name, realm_payload)
+    realm_id = keycloakCreateRealmIfNotExist(realm_name, realm_payload)
 
     # List clients to create
     for client in os.listdir("./realms/" + str(realm) + "/clients/"):
-
+        print("Working on client: " + str(client))
         # Load client configuration
         with open("./realms/" + str(realm) + "/clients/" + str(client) + "/main.json", 'r') as configuration_file:
             file_content = update_string_by_jarvice_env(configuration_file.read())
@@ -220,11 +221,11 @@ for realm in os.listdir("./realms/"):
         # Extract name from payload, dont user file name
         client_name = client_payload['clientId']
         # Create client
-        keycloakCreateClientIfNotExist(client_payload, client_name, realm_name)
+        client_id = keycloakCreateClientIfNotExist(payload=client_payload, client_name=client_name, realm_name=realm_name)
 
         # List client roles to create
-        for client_role in os.listdir("./realms/" + str(realm) + "/clients/" + str(client) + "/roles/"):
-            
+        for client_role in sorted(os.listdir("./realms/" + str(realm) + "/clients/" + str(client) + "/roles/")):
+            print("Working on client role: " + str(client_role.replace('.json','')))
             # Load client role configuration
             with open("./realms/" + str(realm) + "/clients/" + str(client) +  "/roles/" + client_role, 'r') as configuration_file:
                 file_content = update_string_by_jarvice_env(configuration_file.read())
@@ -232,7 +233,7 @@ for realm in os.listdir("./realms/"):
             # Extract name from payload
             client_role_name = client_role_payload['name']
             # Create client role
-            keycloakCreateClientRoleIfNotExist(client_role_payload, client_role_name, client_name, realm_name)
+            client_role_id = keycloakCreateClientRoleIfNotExist(payload=client_role_payload, client_role_name=client_role_name, client_id=client_id, realm_name=realm_name)
 
 
 
