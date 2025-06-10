@@ -6,6 +6,18 @@ from urllib.parse import urlencode
 import urllib.parse
 import os
 import json
+import re
+
+# Compute JARVICE_ environment, to replace strings later
+prefix="JARVICE"
+myPattern = re.compile(r'{prefix}\w+'.format(prefix=prefix))
+jarvice_env_variables = {key:val for key, val in os.environ.items() if myPattern.match(key)}
+
+def update_string_by_jarvice_env(string_to_update):
+    for key, val in jarvice_env_variables.items():
+        if key in string_to_update:
+            string_to_update = string_to_update.replace(key, val)
+    return string_to_update
 
 cacert = '/etc/ssl/certs/ca-certificates.crt'
 
@@ -74,7 +86,6 @@ def postRequest(url_prefix, payload):
         print("Failed HTTP POST at " + keycloak_url + url_prefix)
         exit(1)
 
-    return resp
 
 def putRequest(url_prefix, payload):
     access_token = getKeycloakClientToken()
@@ -91,12 +102,11 @@ def putRequest(url_prefix, payload):
     if int(resp.status_code) != 204:
         print(resp.status_code)
         print(resp.content)
-        print("Failed HTTP POST at " + keycloak_url + url_prefix)
+        print("Failed HTTP PUT at " + keycloak_url + url_prefix)
         exit(1)
-    return resp
 
 
-def keycloakCreateRealmIfNotExist(realm_name):
+def keycloakCreateRealmIfNotExist(realm_name, payload):
     
     # List existing realms
     resp = getRequest('/admin/realms?briefRepresentation=true')
@@ -110,7 +120,6 @@ def keycloakCreateRealmIfNotExist(realm_name):
             realm_exists = True
             break
 
-    payload = {"realm": realm_name, "enabled": "true"}
     if not realm_exists:
         # Create realm
         print('Creating ' + realm_name + ' realm.')
@@ -169,7 +178,7 @@ def keycloakCreateClientRoleIfNotExist(payload, client_role_name, client_id, rea
     client_role_exists = False
     client_role_id = None
     for client_role in json.loads(resp.content):
-        if client_role['name'] == client_role_name:
+        if client_role['roleId'] == client_role_name:
             client_role_id = client_role['id']
             client_role_exists = True
             break
@@ -180,125 +189,166 @@ def keycloakCreateClientRoleIfNotExist(payload, client_role_name, client_id, rea
         resp = postRequest(purl, payload)
         client_role_id = resp.headers['Location'].split("/")[-1]
     else:
-        print('Client role ' + client_role_name + ' already exists, updating it.')
-        purl = '/admin/realms/{}/clients/{}/roles/{}'.format(realm_name, client_id, client_role_name)
+        print('Client role ' + client_name + ' already exists, updating it.')
+        purl = '/admin/realms/{}/clients/{}/roles/{}'.format(realm_name, client_id, client_role_id)
         resp = putRequest(purl, payload)
 
     return client_role_id
 
 
-# Realm: jarvice
-realm_id = keycloakCreateRealmIfNotExist(jarvice_realm)
-print(realm_id)
+print("Entering creation/update tree")
 
-# Client: jarvice
-client_name = "jarvice"
-redirect_url = "https://jarvice-development-bird.jarvicedev.com"
-payload = {
-    'protocol': 'openid-connect',
-    'clientId': '{}'.format(client_name),
-    'name': '',
-    'description': '',
-    'authorizationServicesEnabled': False,
-    'serviceAccountsEnabled': True,
-    'implicitFlowEnabled': False,
-    'directAccessGrantsEnabled': True,
-    'standardFlowEnabled': True,
-    'publicClient': False,
-    'clientAuthenticatorType': "client-secret",
-    'frontchannelLogout': True,
-    'attributes': {
-        'saml_idp_initiated_sso_url_name': '',
-        'oauth2.device.authorization.grant.enabled': False,
-        'oidc.ciba.grant.enabled': False
-    },
-    'alwaysDisplayInConsole': False,
-    'rootUrl': '',
-    'baseUrl': '',
-    'redirectUris': [
-        'https://{}/*'.format(redirect_url)
-    ],
-    'webOrigins': [
-        '+'
-    ]
-}
+# List realms to create
+for realm in os.listdir("./realms/"):
+    
+    # Load realm configuration
+    with open("./realms/" + str(realm) + "/main.json", 'r') as configuration_file:
+        file_content = update_string_by_jarvice_env(configuration_file.read())
+    realm_payload = json.loads(file_content)
+    # Extract name from payload, dont user file name
+    realm_name = realm_payload['realm']
+    # Create realm
+    keycloakCreateRealmIfNotExist(realm_name, realm_payload)
 
-client_id, client_secret = keycloakCreateClientIfNotExist(payload=payload, client_name=client_name, realm_name=jarvice_realm)
+    # List clients to create
+    for client in os.listdir("./realms/" + str(realm) + "/clients/"):
 
-# Client role: jarvice-user 
-payload = {
-  "name": "jarvice-user",
-  "description": "",
-  "composite": True,
-  "composites": {
-    "client": {
-      "account": [
-        "manage-account"
-      ]
-    }
-  },
-  "clientRole": True,
-  "attributes": {}
-}
-client_role_name=payload['name']
+        # Load client configuration
+        with open("./realms/" + str(realm) + "/clients/" + str(client) + "/main.json", 'r') as configuration_file:
+            file_content = update_string_by_jarvice_env(configuration_file.read())
+        client_payload = json.loads(file_content)
+        # Extract name from payload, dont user file name
+        client_name = client_payload['clientId']
+        # Create client
+        keycloakCreateClientIfNotExist(client_payload, client_name, realm_name)
 
-role_id = keycloakCreateClientRoleIfNotExist(payload=payload, client_role_name=client_role_name, client_id=client_id, realm_name=jarvice_realm)
+        # List client roles to create
+        for client_role in os.listdir("./realms/" + str(realm) + "/clients/" + str(client) + "/roles/"):
+            
+            # Load client role configuration
+            with open("./realms/" + str(realm) + "/clients/" + str(client) +  "/roles/" + client_role, 'r') as configuration_file:
+                file_content = update_string_by_jarvice_env(configuration_file.read())
+            client_role_payload = json.loads(file_content)
+            # Extract name from payload
+            client_role_name = client_role_payload['name']
+            # Create client role
+            keycloakCreateClientRoleIfNotExist(client_role_payload, client_role_name, client_name, realm_name)
 
-# Client role: jarvice-sysadmin
-payload = {
-  "name": "jarvice-sysadmin",
-  "description": "",
-  "composite": True,
-  "composites": {
-    "client": {
-      "realm-management": [
-        "realm-admin",
-        "manage-realm",
-        "query-realms",
-        "manage-clients",
-        "view-users",
-        "query-clients",
-        "manage-authorization",
-        "manage-identity-providers",
-        "view-authorization",
-        "manage-events",
-        "view-clients",
-        "view-realm",
-        "query-groups",
-        "impersonation",
-        "manage-users",
-        "query-users",
-        "view-identity-providers",
-        "view-events",
-        "create-client"
-      ],
-      "jarvice": [
-        "jarvice-user"
-      ]
-    }
-  },
-  "clientRole": True,
-  "attributes": {}
-}
-client_role_name=payload['name']
 
-role_id = keycloakCreateClientRoleIfNotExist(payload=payload, client_role_name=client_role_name, client_id=client_id, realm_name=jarvice_realm)
 
-# Client role: jarvice-kcadmin
-payload = {
-  "name": "jarvice-kcadmin",
-  "description": "",
-  "composite": True,
-  "composites": {
-    "client": {
-      "jarvice": [
-        "jarvice-sysadmin"
-      ]
-    }
-  },
-  "clientRole": True,
-  "attributes": {}
-}
-client_role_name=payload['name']
+# # Realm: jarvice
+# realm_id = keycloakCreateRealmIfNotExist(jarvice_realm)
+# print(realm_id)
 
-role_id = keycloakCreateClientRoleIfNotExist(payload=payload, client_role_name=client_role_name, client_id=client_id, realm_name=jarvice_realm)
+# # Client: jarvice
+# client_name = "jarvice"
+# redirect_url = "https://jarvice-development-bird.jarvicedev.com"
+# payload = {
+#     'protocol': 'openid-connect',
+#     'clientId': '{}'.format(client_name),
+#     'name': '',
+#     'description': '',
+#     'authorizationServicesEnabled': False,
+#     'serviceAccountsEnabled': True,
+#     'implicitFlowEnabled': False,
+#     'directAccessGrantsEnabled': True,
+#     'standardFlowEnabled': True,
+#     'publicClient': False,
+#     'clientAuthenticatorType': "client-secret",
+#     'frontchannelLogout': True,
+#     'attributes': {
+#         'saml_idp_initiated_sso_url_name': '',
+#         'oauth2.device.authorization.grant.enabled': False,
+#         'oidc.ciba.grant.enabled': False
+#     },
+#     'alwaysDisplayInConsole': False,
+#     'rootUrl': '',
+#     'baseUrl': '',
+#     'redirectUris': [
+#         'https://{}/*'.format(redirect_url)
+#     ],
+#     'webOrigins': [
+#         '+'
+#     ]
+# }
+
+# client_id, client_secret = keycloakCreateClientIfNotExist(payload=payload, client_name=client_name, realm_name=jarvice_realm)
+
+# # Client role: jarvice-user 
+# payload = {
+#   "name": "jarvice-user",
+#   "description": "",
+#   "composite": true,
+#   "composites": {
+#     "client": {
+#       "account": [
+#         "manage-account"
+#       ]
+#     }
+#   },
+#   "clientRole": true,
+#   "attributes": {}
+# }
+# client_role_name=payload['name']
+
+# role_id = keycloakCreateClientRoleIfNotExist(payload=payload, client_role_name=client_role_name, client_id=client_id, realm_name=jarvice_realm)
+
+# # Client role: jarvice-sysadmin
+# payload = {
+#   "name": "jarvice-sysadmin",
+#   "description": "",
+#   "composite": true,
+#   "composites": {
+#     "client": {
+#       "realm-management": [
+#         "realm-admin",
+#         "manage-realm",
+#         "query-realms",
+#         "manage-clients",
+#         "view-users",
+#         "query-clients",
+#         "manage-authorization",
+#         "manage-identity-providers",
+#         "view-authorization",
+#         "manage-events",
+#         "view-clients",
+#         "view-realm",
+#         "query-groups",
+#         "impersonation",
+#         "manage-users",
+#         "query-users",
+#         "view-identity-providers",
+#         "view-events",
+#         "create-client"
+#       ],
+#       "jarvice": [
+#         "jarvice-user"
+#       ]
+#     }
+#   },
+#   "clientRole": true,
+#   "attributes": {}
+# }
+# client_role_name=payload['name']
+
+# role_id = keycloakCreateClientRoleIfNotExist(payload=payload, client_role_name=client_role_name, client_id=client_id, realm_name=jarvice_realm)
+
+# # Client role: jarvice-kcadmin
+# payload = {
+#   "name": "jarvice-kcadmin",
+#   "description": "",
+#   "composite": true,
+#   "composites": {
+#     "client": {
+#       "jarvice": [
+#         "jarvice-sysadmin"
+#       ]
+#     }
+#   },
+#   "clientRole": true,
+#   "attributes": {}
+# }
+# client_role_name=payload['name']
+
+# role_id = keycloakCreateClientRoleIfNotExist(payload=payload, client_role_name=client_role_name, client_id=client_id, realm_name=jarvice_realm)
+
