@@ -1,0 +1,16 @@
+{
+    "id": "719dd00d-314c-4663-b13a-4245c5dde6c6",
+    "name": "jarvice-kcadmin",
+    "description": "",
+    "composite": true,
+    "composites": {
+    "client": {
+        "jarvice": [
+        "jarvice-sysadmin"
+        ]
+    }
+    },
+    "clientRole": true,
+    "containerId": "68b5f1f1-50e3-4076-a09d-25beb6e50897",
+    "attributes": {}
+}

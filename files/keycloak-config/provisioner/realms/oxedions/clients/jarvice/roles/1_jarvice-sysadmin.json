@@ -1,0 +1,37 @@
+{
+    "id": "7ef2d5af-8255-495e-abd6-1a7e2453a53a",
+    "name": "jarvice-sysadmin",
+    "description": "",
+    "composite": true,
+    "composites": {
+    "client": {
+        "realm-management": [
+        "realm-admin",
+        "manage-realm",
+        "query-realms",
+        "manage-clients",
+        "view-users",
+        "query-clients",
+        "manage-authorization",
+        "manage-identity-providers",
+        "view-authorization",
+        "manage-events",
+        "view-clients",
+        "view-realm",
+        "query-groups",
+        "impersonation",
+        "manage-users",
+        "query-users",
+        "view-identity-providers",
+        "view-events",
+        "create-client"
+        ],
+        "jarvice": [
+        "jarvice-user"
+        ]
+    }
+    },
+    "clientRole": true,
+    "containerId": "68b5f1f1-50e3-4076-a09d-25beb6e50897",
+    "attributes": {}
+}
