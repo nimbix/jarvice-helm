@@ -156,7 +156,7 @@ spec:
           - label
           - ns
           - {{ .Release.Namespace }}
-          - app=jarvice
+          - app={{ include "jarvice.name" . }}
       restartPolicy: OnFailure
 {{- if (not (empty .Values.jarvice.tolerations)) }}
       tolerations: {{ .Values.jarvice.tolerations }}
