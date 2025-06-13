@@ -1,4 +1,5 @@
 {
+  "id": "68b5f1f1-50e3-4076-a09d-25beb6e50897",
   "clientId": "jarvice",
   "name": "",
   "description": "",
@@ -27,7 +28,6 @@
   "protocol": "openid-connect",
   "attributes": {
     "client.secret.creation.time": "1715982162",
-    "post.logout.redirect.uris": "+",
     "oauth2.device.authorization.grant.enabled": "false",
     "backchannel.logout.revoke.offline.tokens": "false",
     "use.refresh.tokens": "true",
@@ -41,10 +41,14 @@
     "display.on.consent.screen": "false",
     "token.response.type.bearer.lower-case": "false"
   },
+  "authenticationFlowBindingOverrides": {
+    "browser": "d3e43bfd-8cca-4475-b452-22d2eed6e18e"
+  },
   "fullScopeAllowed": true,
   "nodeReRegistrationTimeout": -1,
   "protocolMappers": [
     {
+      "id": "3fedd958-2556-40dc-92c6-ccae36f80518",
       "name": "jarvice-billing-code",
       "protocol": "openid-connect",
       "protocolMapper": "oidc-usermodel-attribute-mapper",
@@ -59,6 +63,7 @@
       }
     },
     {
+      "id": "4bebec37-5e02-49ca-8c1a-ffc65662007f",
       "name": "jarvice-payer",
       "protocol": "openid-connect",
       "protocolMapper": "oidc-usermodel-attribute-mapper",
@@ -73,6 +78,7 @@
       }
     },
     {
+      "id": "d20785d5-c866-4a1d-b0fa-c1c4e21d6cd4",
       "name": "jarvice",
       "protocol": "openid-connect",
       "protocolMapper": "oidc-audience-mapper",
@@ -80,8 +86,7 @@
       "config": {
         "included.client.audience": "jarvice",
         "id.token.claim": "false",
-        "access.token.claim": "true",
-        "userinfo.token.claim": "false"
+        "access.token.claim": "true"
       }
     }
   ],
@@ -93,10 +98,5 @@
     "roles",
     "email"
   ],
-  "optionalClientScopes": [],
-  "access": {
-    "view": true,
-    "configure": true,
-    "manage": true
-  }
+  "optionalClientScopes": []
 }

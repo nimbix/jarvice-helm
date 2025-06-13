@@ -1,0 +1,16 @@
+{
+    "id": "c6044343-be85-4e63-a716-9170ad8db68b",
+    "name": "jarvice-user",
+    "description": "",
+    "composite": true,
+    "composites": {
+    "client": {
+        "account": [
+        "manage-account"
+        ]
+    }
+    },
+    "clientRole": true,
+    "containerId": "68b5f1f1-50e3-4076-a09d-25beb6e50897",
+    "attributes": {}
+}

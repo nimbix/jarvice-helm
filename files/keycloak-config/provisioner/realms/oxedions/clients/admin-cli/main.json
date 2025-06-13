@@ -1,0 +1,38 @@
+{
+    "id": "388840e5-b6c3-4910-8c45-e4eaa34987b7",
+    "clientId": "admin-cli",
+    "name": "${client_admin-cli}",
+    "surrogateAuthRequired": false,
+    "enabled": true,
+    "alwaysDisplayInConsole": false,
+    "clientAuthenticatorType": "client-secret",
+    "redirectUris": [],
+    "webOrigins": [],
+    "notBefore": 0,
+    "bearerOnly": false,
+    "consentRequired": false,
+    "standardFlowEnabled": false,
+    "implicitFlowEnabled": false,
+    "directAccessGrantsEnabled": true,
+    "serviceAccountsEnabled": false,
+    "publicClient": true,
+    "frontchannelLogout": false,
+    "protocol": "openid-connect",
+    "attributes": {},
+    "authenticationFlowBindingOverrides": {},
+    "fullScopeAllowed": false,
+    "nodeReRegistrationTimeout": 0,
+    "defaultClientScopes": [
+    "web-origins",
+    "acr",
+    "profile",
+    "roles",
+    "email"
+    ],
+    "optionalClientScopes": [
+    "address",
+    "phone",
+    "offline_access",
+    "microprofile-jwt"
+    ]
+}

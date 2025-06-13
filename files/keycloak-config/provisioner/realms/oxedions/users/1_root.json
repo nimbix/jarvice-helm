@@ -1,0 +1,17 @@
+    {
+      "username": "root",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "root",
+      "lastName": "user",
+      "email": "root@localhost",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${JARVICE_ROOT_PASSWORD}"
+        }
+      ],
+      "clientRoles": {
+        "jarvice": ["jarvice-sysadmin"]
+      }
+    }

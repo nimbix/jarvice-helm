@@ -1,0 +1,70 @@
+{
+    "id": "8782f645-32b5-4e10-a2fd-1f15dd09af08",
+    "clientId": "account-console",
+    "name": "${client_account-console}",
+    "description": "",
+    "rootUrl": "${authBaseUrl}",
+    "adminUrl": "",
+    "baseUrl": "/realms/${JARVICE_REALM}/account/",
+    "surrogateAuthRequired": false,
+    "enabled": true,
+    "alwaysDisplayInConsole": false,
+    "clientAuthenticatorType": "client-secret",
+    "redirectUris": [
+    "/realms/${JARVICE_REALM}/account/*"
+    ],
+    "webOrigins": [],
+    "notBefore": 0,
+    "bearerOnly": false,
+    "consentRequired": false,
+    "standardFlowEnabled": true,
+    "implicitFlowEnabled": false,
+    "directAccessGrantsEnabled": false,
+    "serviceAccountsEnabled": false,
+    "publicClient": true,
+    "frontchannelLogout": false,
+    "protocol": "openid-connect",
+    "attributes": {
+    "post.logout.redirect.uris": "+",
+    "oauth2.device.authorization.grant.enabled": "false",
+    "backchannel.logout.revoke.offline.tokens": "false",
+    "use.refresh.tokens": "true",
+    "oidc.ciba.grant.enabled": "false",
+    "backchannel.logout.session.required": "true",
+    "client_credentials.use_refresh_token": "false",
+    "acr.loa.map": "{}",
+    "require.pushed.authorization.requests": "false",
+    "tls.client.certificate.bound.access.tokens": "false",
+    "display.on.consent.screen": "false",
+    "pkce.code.challenge.method": "S256",
+    "token.response.type.bearer.lower-case": "false"
+    },
+    "authenticationFlowBindingOverrides": {
+    "browser": "d3e43bfd-8cca-4475-b452-22d2eed6e18e"
+    },
+    "fullScopeAllowed": false,
+    "nodeReRegistrationTimeout": 0,
+    "protocolMappers": [
+    {
+        "id": "455b585f-5e3e-4a65-ad39-1593e1c99ec7",
+        "name": "audience resolve",
+        "protocol": "openid-connect",
+        "protocolMapper": "oidc-audience-resolve-mapper",
+        "consentRequired": false,
+        "config": {}
+    }
+    ],
+    "defaultClientScopes": [
+    "web-origins",
+    "acr",
+    "profile",
+    "roles",
+    "email"
+    ],
+    "optionalClientScopes": [
+    "address",
+    "phone",
+    "offline_access",
+    "microprofile-jwt"
+    ]
+}

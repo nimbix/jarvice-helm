@@ -1,0 +1,9 @@
+{
+    "id": "00cb9f80-9f8f-4d77-84f9-49a6d7aa679f",
+    "name": "default-roles-${JARVICE_REALM}",
+    "description": "${role_default-roles}",
+    "composite": false,
+    "clientRole": false,
+    "containerId": "${JARVICE_REALM}",
+    "attributes": {}
+}

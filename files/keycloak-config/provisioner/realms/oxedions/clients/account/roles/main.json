@@ -1,0 +1,88 @@
+[
+  {
+    "id": "e2adf86d-5066-4e7d-8738-fd986ee011e3",
+    "name": "view-applications",
+    "description": "${role_view-applications}",
+    "composite": false,
+    "clientRole": true,
+    "containerId": "e7da92eb-4fe0-4d1b-92d8-16c01a07d681",
+    "attributes": {}
+  },
+  {
+    "id": "f53fd038-8f14-46f1-86e2-30b379d6084c",
+    "name": "manage-account",
+    "description": "${role_manage-account}",
+    "composite": true,
+    "composites": {
+      "client": {
+        "account": [
+          "manage-account-links"
+        ]
+      }
+    },
+    "clientRole": true,
+    "containerId": "e7da92eb-4fe0-4d1b-92d8-16c01a07d681",
+    "attributes": {}
+  },
+  {
+    "id": "afb64c12-4cd0-4696-9812-2dbd81eecb5a",
+    "name": "view-groups",
+    "description": "${role_view-groups}",
+    "composite": false,
+    "clientRole": true,
+    "containerId": "e7da92eb-4fe0-4d1b-92d8-16c01a07d681",
+    "attributes": {}
+  },
+  {
+    "id": "bfc01476-f5fb-4e9f-a087-6e60d455147f",
+    "name": "view-profile",
+    "description": "${role_view-profile}",
+    "composite": false,
+    "clientRole": true,
+    "containerId": "e7da92eb-4fe0-4d1b-92d8-16c01a07d681",
+    "attributes": {}
+  },
+  {
+    "id": "a8c9cb00-0dd8-47ce-8efc-59dc491f2e34",
+    "name": "view-consent",
+    "description": "${role_view-consent}",
+    "composite": false,
+    "clientRole": true,
+    "containerId": "e7da92eb-4fe0-4d1b-92d8-16c01a07d681",
+    "attributes": {}
+  },
+  {
+    "id": "17e03e3a-d199-4856-a1f1-d00550cddb2f",
+    "name": "delete-account",
+    "description": "${role_delete-account}",
+    "composite": false,
+    "clientRole": true,
+    "containerId": "e7da92eb-4fe0-4d1b-92d8-16c01a07d681",
+    "attributes": {}
+  },
+  {
+    "id": "599b7848-1952-4df2-ad24-b4fbd094dc8e",
+    "name": "manage-account-links",
+    "description": "${role_manage-account-links}",
+    "composite": false,
+    "clientRole": true,
+    "containerId": "e7da92eb-4fe0-4d1b-92d8-16c01a07d681",
+    "attributes": {}
+  },
+  {
+    "id": "5045bc57-a54a-476f-95fd-d6d55636207e",
+    "name": "manage-consent",
+    "description": "${role_manage-consent}",
+    "composite": true,
+    "composites": {
+      "client": {
+        "account": [
+          "view-consent"
+        ]
+      }
+    },
+    "clientRole": true,
+    "containerId": "e7da92eb-4fe0-4d1b-92d8-16c01a07d681",
+    "attributes": {}
+  }
+]
