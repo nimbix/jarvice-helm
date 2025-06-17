@@ -1,0 +1,9 @@
+{
+    "id": "3f2107d1-a2c2-4900-b54e-d7d0f423d519",
+    "name": "offline_access",
+    "description": "${role_offline-access}",
+    "composite": false,
+    "clientRole": false,
+    "containerId": "${JARVICE_REALM}",
+    "attributes": {}
+}

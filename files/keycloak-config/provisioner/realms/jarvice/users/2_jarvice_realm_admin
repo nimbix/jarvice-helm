@@ -1,0 +1,17 @@
+{
+    "username": "${JARVICE_REALM_ADMIN_USER}",
+    "enabled": true,
+    "emailVerified": true,
+    "firstName": "JXE",
+    "lastName": "realm admin",
+    "email": "admin@localhost",
+    "credentials": [
+    {
+        "type": "password",
+        "value": "${JARVICE_REALM_ADMIN_PASSWORD}"
+    }
+    ],
+    "clientRoles": {
+    "jarvice": ["jarvice-sysadmin"]
+    }
+}

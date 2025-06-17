@@ -1,0 +1,9 @@
+{
+    "id": "3cfdd45a-d099-4b23-a7bf-fa3412d250cd",
+    "name": "uma_authorization",
+    "description": "${role_uma_authorization}",
+    "composite": false,
+    "clientRole": false,
+    "containerId": "${JARVICE_REALM}",
+    "attributes": {}
+}
