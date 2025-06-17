@@ -281,6 +281,8 @@ spec:
           successThreshold: {{ .Values.jarvice_bird.portal.livenessProbe.successThreshold }}
           failureThreshold: {{ .Values.jarvice_bird.portal.livenessProbe.failureThreshold }}
         env:
+          - name: JARVICE_BIRD_PORTAL_WSGI_WORKERS
+            value: "{{ .Values.jarvice_bird.portal.resources.limits.cpu }}"
 {{- if (not (empty .Values.jarvice_bird.env.JARVICE_BIRD_PORTAL_URL)) }}
           - name: JARVICE_BIRD_PORTAL_URL
             value: "{{ .Values.jarvice_bird.env.JARVICE_BIRD_PORTAL_URL }}"
