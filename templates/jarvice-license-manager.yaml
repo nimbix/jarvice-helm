@@ -60,7 +60,9 @@ spec:
 {{- end }}
       containers:
       - name: jarvice-license-manager
-{{- if eq .Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE "true" }}
+{{- if (not (empty .Values.jarvice_license_manager.image)) }}
+        image: {{ .Values.jarvice_license_manager.image }}
+{{- else if eq .Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE "true" }}
         image: {{ include "jarvice.registry" . }}/jarvice-license-manager:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
 {{- else }}
         image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-license-manager:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
