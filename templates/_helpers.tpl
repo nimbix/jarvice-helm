@@ -143,7 +143,11 @@ Create hostAlias for JARVICE
 {{- define "jarvice.hostAliases" -}}
 {{- if (not (empty .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if eq .Values.jarvice.JARVICE_CLUSTER_TYPE "upstream" }}
-  {{- $service := (lookup "v1" "Service" "kube-system" "traefik") }}
+  {{- $svc_name := "traefik" }}
+  {{- if eq .Values.jarvice.ingress.class "nginx" }}
+    {{- $svc_name = "nginx-ingress-nginx-controller" }}
+  {{- end }}
+  {{- $service := (lookup "v1" "Service" "kube-system" $svc_name) }}
   {{- if $service }}
     {{- range $index, $ingress := $service.spec.externalIPs }}
 - ip: "{{- $ingress }}"
