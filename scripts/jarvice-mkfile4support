@@ -145,8 +145,8 @@ fi
 
 if [ -z "$helm_release_name" ]; then
     echo "Getting latest helm jarvice chart installation..."
-    helm_release_name=$($HELM --namespace $namespace list --date --output json | \
-        $JQ -r "[.[] | select(.chart | startswith(\"jarvice-\")) | select(.status==\"deployed\")] | last | .name")
+    helm_release_name=$("$HELM" --namespace $namespace list --date --output json | \
+        "$JQ" -r "[.[] | select(.chart | startswith(\"jarvice-\")) | select(.status==\"deployed\")] | last | .name")
     echo "Found installed helm chart release: $helm_release_name"
 fi
 
@@ -155,18 +155,18 @@ outdir=$tmpdir/$helm_release_name
 mkdir -p $outdir/helm
 
 echo "Gathering helm release info, status, values..."
-helm_release_info=$($HELM --namespace $namespace list --date --output json | \
-    $JQ -r ".[] | select(.name==\"$helm_release_name\")")
+helm_release_info=$("$HELM" --namespace $namespace list --date --output json | \
+    "$JQ" -r ".[] | select(.name==\"$helm_release_name\")")
 [ -z "$helm_release_info" ] && echo "Could not find helm deployment!" && exit 1
 
 echo "Got helm release info:"
 echo "$helm_release_info"
 
 echo "$helm_release_info" | python -m json.tool >$outdir/helm/release.json
-$HELM --namespace $namespace status $helm_release_name >$outdir/helm/status.txt
-$HELM --namespace $namespace get values $helm_release_name >$outdir/helm/values.yaml
+"$HELM" --namespace $namespace status $helm_release_name >$outdir/helm/status.txt
+"$HELM" --namespace $namespace get values $helm_release_name >$outdir/helm/values.yaml
 values_yaml=$outdir/helm/values-all.yaml
-$HELM --namespace $namespace get values --all $helm_release_name >$values_yaml
+"$HELM" --namespace $namespace get values --all $helm_release_name >$values_yaml
 
 kubedir=$outdir/kubernetes
 mkdir -p $kubedir
@@ -205,8 +205,8 @@ EOF
 gets="nodes daemonsets persistentvolumes storageclasses"
 for get in $gets; do
     echo "Getting $get..."
-    $KUBECTL -n kube-system get $get >$kubedir/$get.txt
-    $KUBECTL -n kube-system get -o json $get >$kubedir/$get.json
+    "$KUBECTL" -n kube-system get $get >$kubedir/$get.txt
+    "$KUBECTL" -n kube-system get -o json $get >$kubedir/$get.json
 done
 
 namespaces="$jarvice_system_namespace $jarvice_jobs_namespace $jarvice_builds_namespace $jarvice_pulls_namespace $jarvice_daemonsets_namespace"
@@ -217,16 +217,16 @@ for ns in $namespaces; do
     [ "$ns" = "$jarvice_daemonsets_namespace" ] && gets="configmaps secrets daemonsets all"
     for get in $gets; do
         echo "Getting $get..."
-        $KUBECTL -n $ns get $get >$kubedir/$ns/$get.txt 2>&1
-        $KUBECTL -n $ns get $get -o json > $kubedir/$ns/$get.json
+        "$KUBECTL" -n $ns get $get >$kubedir/$ns/$get.txt 2>&1
+        "$KUBECTL" -n $ns get $get -o json > $kubedir/$ns/$get.json
     done
     kinds=$(cat $kubedir/$ns/all.json | \
-        $JQ -r '.items[] | .kind + "/" + .metadata.name')
+        "$JQ" -r '.items[] | .kind + "/" + .metadata.name')
     for kind in $kinds; do
         logdir=$kubedir/$ns/logs/$(dirname $kind | tr A-Z a-z)
         mkdir -p $logdir
         echo "Gathering logs for $kind..."
-        $KUBECTL -n $ns logs --all-containers=true --pod-running-timeout=3s \
+        "$KUBECTL" -n $ns logs --all-containers=true --pod-running-timeout=3s \
             $kind >$logdir/$(basename $kind).log 2>&1 || \
             rm -f $logdir/$(basename $kind).log
     done
@@ -278,10 +278,10 @@ gpg_keyfile=$tmpdir/gpg/nimbix.pub
 echo "$gpg_pub_key" >$gpg_keyfile
 
 gpg_keyring=$tmpdir/gpg/keyring.gpg
-$GPG --quiet --no-default-keyring --keyring $gpg_keyring --import $gpg_keyfile
+"$GPG" --quiet --no-default-keyring --keyring $gpg_keyring --import $gpg_keyfile
 
 support=support@nimbix.net
-$GPG --quiet --no-default-keyring --keyring $gpg_keyring --encrypt \
+"$GPG" --quiet --no-default-keyring --keyring $gpg_keyring --encrypt \
     --trust-model always --recipient $support --output $output_file $tgz
 rm -rf $tmpdir
 

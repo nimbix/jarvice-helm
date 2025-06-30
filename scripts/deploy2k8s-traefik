@@ -131,7 +131,7 @@ set -e
 
 echo
 echo "* Creating namespace: $namespace"
-$KUBECTL create namespace $namespace 2>/dev/null || /bin/true
+"$KUBECTL" create namespace $namespace 2>/dev/null || /bin/true
 
 echo
 if [ -n "$node_port" ]; then
@@ -142,7 +142,7 @@ else
     ip_args="--set service.type=LoadBalancer --set service.spec.loadBalancerIP=$load_balancer_ip"
 fi
 repo=https://helm.traefik.io/traefik
-$HELM upgrade traefik traefik --repo $repo --version $chart_version \
+"$HELM" upgrade traefik traefik --repo $repo --version $chart_version \
     --namespace $namespace --install --reset-values \
     \
     --set image.tag="$version_tag" \

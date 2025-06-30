@@ -78,22 +78,22 @@ function cleanup {
 }
 trap cleanup EXIT
 
-$TERRAFORM state list | grep ${TARGET_CLUSTER} | grep aws_eks_cluster.this || \
+"$TERRAFORM" state list | grep ${TARGET_CLUSTER} | grep aws_eks_cluster.this || \
     (echo ${TARGET_CLUSTER} not EKS cluster && exit 1)
 
-$TERRAFORM destroy -target=module.${TARGET_CLUSTER}.${jxe_state} -auto-approve
+"$TERRAFORM" destroy -target=module.${TARGET_CLUSTER}.${jxe_state} -auto-approve
 sleep 60
-$TERRAFORM destroy -target=module.${TARGET_CLUSTER}.${k8s_state} -auto-approve
-$TERRAFORM destroy -target=module.${TARGET_CLUSTER}.${vpc_state} -auto-approve
+"$TERRAFORM" destroy -target=module.${TARGET_CLUSTER}.${k8s_state} -auto-approve
+"$TERRAFORM" destroy -target=module.${TARGET_CLUSTER}.${vpc_state} -auto-approve
 echo "Removing remaining resources for ${TARGET_CLUSTER}"
-while [ $($TERRAFORM state list | grep ${TARGET_CLUSTER} | wc -l) -gt 0 ]; do
-	for state in `$TERRAFORM state list | grep ${TARGET_CLUSTER}`; do
-		$TERRAFORM destroy -target="$state" -auto-approve &> /dev/null
+while [ $("$TERRAFORM" state list | grep ${TARGET_CLUSTER} | wc -l) -gt 0 ]; do
+	for state in `"$TERRAFORM" state list | grep ${TARGET_CLUSTER}`; do
+		"$TERRAFORM" destroy -target="$state" -auto-approve &> /dev/null
 	done
 done
 echo "Updating ${STATE_FILE}"
-$JQ '.resources[1:]' ${UPDATE_TFSTATE} > $tmpfile
-update=$($JQ -n 'input | .resources += inputs' ${STATE_FILE} $tmpfile)
+"$JQ" '.resources[1:]' ${UPDATE_TFSTATE} > $tmpfile
+update=$("$JQ" -n 'input | .resources += inputs' ${STATE_FILE} $tmpfile)
 echo $update | tee ${STATE_FILE} &> /dev/null
 cat <<EOF
 Update complete. Note, jarvice-helm needs to pull in changes to support

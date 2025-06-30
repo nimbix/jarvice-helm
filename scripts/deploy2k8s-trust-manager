@@ -75,12 +75,12 @@ set -e
 
 echo
 echo "* Creating namespace: $namespace"
-$KUBECTL create namespace $namespace 2>/dev/null || /bin/true
+"$KUBECTL" create namespace $namespace 2>/dev/null || /bin/true
 
 echo
 echo "* Deploying..."
 repo=https://charts.jetstack.io
-$HELM upgrade trust-manager trust-manager --repo $repo --version $chart_version \
+"$HELM" upgrade trust-manager trust-manager --repo $repo --version $chart_version \
     --namespace $namespace --set "app.trust.namespace=$trust_namespace" --install --reset-values --wait
 
 echo

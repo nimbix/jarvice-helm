@@ -38,7 +38,7 @@ EOF
 fi
 
 echo -n "Checking for previously installed pod network addons..."
-installed_plugins=$($KUBECTL get --all-namespaces daemonsets -o name | grep -w "^daemonset\..\+/\(weave-net\|kube-flannel\|contiv\|cilium\|calico\)")
+installed_plugins=$("$KUBECTL" get --all-namespaces daemonsets -o name | grep -w "^daemonset\..\+/\(weave-net\|kube-flannel\|contiv\|cilium\|calico\)")
 if [ -n "$installed_plugins" ]; then
     echo; echo; echo "Only one pod network add-on at a time can be used."
     echo "We found that the following has already been deployed:"
@@ -71,9 +71,9 @@ echo; echo "* Deploying version: $VERSION"
 
 # See this link for more information on Kube-router configuration options:
 # https://www.kube-router.io/docs/
-$KUBECTL apply -f "https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter.yaml"
+"$KUBECTL" apply -f "https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter.yaml"
 image=docker.io/cloudnativelabs/kube-router:$VERSION
-$KUBECTL --namespace kube-system patch daemonset kube-router \
+"$KUBECTL" --namespace kube-system patch daemonset kube-router \
     --patch "{\"spec\": {\"template\": {\"spec\": {\"containers\": [{\"name\": \"kube-router\", \"image\": \"$image\"}], \"tolerations\": [{\"effect\": \"NoSchedule\", \"operator\": \"Exists\"}]}}}}"
 
 echo

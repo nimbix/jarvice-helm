@@ -95,7 +95,7 @@ function get_nodes {
     echo
     echo "Getting up-to-date node list..."
     echo
-    $KUBECTL get nodes 2>/dev/null || (sleep 10 && $KUBECTL get nodes)
+    "$KUBECTL" get nodes 2>/dev/null || (sleep 10 && "$KUBECTL" get nodes)
     echo
 }
 
@@ -238,9 +238,9 @@ echo
 [ -z "$KUBECTL" ] && echo "Cannot find kubectl executable.  Exiting..." && exit 1
 [ ! -x "$KUBECTL" ] && echo "$KUBECTL is not executable.  Exiting..." && exit 1
 echo "Found kubectl executable: $KUBECTL"
-KUBECTL_VER_CURR=$($KUBECTL version 2>/dev/null | grep ^Client | sed -E 's/.*GitVersion:"v([\.0-9]+)".*/\1/')
-KUBECTL_VER_MAJOR=$($KUBECTL version 2>/dev/null | grep ^Client | sed -E 's/.*Major:"([0-9]+)".*/\1/')
-KUBECTL_VER_MINOR=$($KUBECTL version 2>/dev/null | grep ^Client | sed -E 's/.*Minor:"([0-9]+)\+*".*/\1/')
+KUBECTL_VER_CURR=$("$KUBECTL" version 2>/dev/null | grep ^Client | sed -E 's/.*GitVersion:"v([\.0-9]+)".*/\1/')
+KUBECTL_VER_MAJOR=$("$KUBECTL" version 2>/dev/null | grep ^Client | sed -E 's/.*Major:"([0-9]+)".*/\1/')
+KUBECTL_VER_MINOR=$("$KUBECTL" version 2>/dev/null | grep ^Client | sed -E 's/.*Minor:"([0-9]+)\+*".*/\1/')
 echo "Found kubectl version: $KUBECTL_VER_CURR"
 
 # Upgrade the entire cluster
@@ -251,7 +251,7 @@ if [ "$(basename $0)" == "upgrade-kubeadm-cluster" ]; then
         if [ -n "$MASTER_NODES_LIST" ]; then
             master_nodes="$MASTER_NODES_LIST"
         else
-            master_nodes=$($KUBECTL get nodes -l node-role.kubernetes.io/master='' -o jsonpath='{.items[*].metadata.name}')
+            master_nodes=$("$KUBECTL" get nodes -l node-role.kubernetes.io/master='' -o jsonpath='{.items[*].metadata.name}')
             first_master=$(echo "$master_nodes" | awk '{print $1}')
         fi
         all_nodes="$master_nodes"
@@ -259,14 +259,14 @@ if [ "$(basename $0)" == "upgrade-kubeadm-cluster" ]; then
         if [ -n "$WORKER_NODES_LIST" ]; then
             worker_nodes="$WORKER_NODES_LIST"
         else
-            worker_nodes=$($KUBECTL get nodes -l node-role.kubernetes.io/master!='' -o jsonpath='{.items[*].metadata.name}')
+            worker_nodes=$("$KUBECTL" get nodes -l node-role.kubernetes.io/master!='' -o jsonpath='{.items[*].metadata.name}')
         fi
         all_nodes="$worker_nodes"
     else
-        master_nodes=$($KUBECTL get nodes -l node-role.kubernetes.io/master='' -o jsonpath='{.items[*].metadata.name}')
+        master_nodes=$("$KUBECTL" get nodes -l node-role.kubernetes.io/master='' -o jsonpath='{.items[*].metadata.name}')
         first_master=$(echo "$master_nodes" | awk '{print $1}')
-        worker_nodes=$($KUBECTL get nodes -l node-role.kubernetes.io/master!='' -o jsonpath='{.items[*].metadata.name}')
-        all_nodes=$($KUBECTL get nodes -o jsonpath='{.items[*].metadata.name}')
+        worker_nodes=$("$KUBECTL" get nodes -l node-role.kubernetes.io/master!='' -o jsonpath='{.items[*].metadata.name}')
+        all_nodes=$("$KUBECTL" get nodes -o jsonpath='{.items[*].metadata.name}')
     fi
 
     echo "Upgrading the following master nodes:"
@@ -293,18 +293,18 @@ if [ "$(basename $0)" == "upgrade-kubeadm-cluster" ]; then
 
     if [ -n "$MASTER_NODES" ]; then
         if [ -n "$MASTER_NODES_LIST" ]; then
-            all_node_versions=$($KUBECTL get nodes $all_nodes $all_nodes -o jsonpath='{.items[*].status.nodeInfo.kubeletVersion}' | sed -e 's/v//g')
+            all_node_versions=$("$KUBECTL" get nodes $all_nodes $all_nodes -o jsonpath='{.items[*].status.nodeInfo.kubeletVersion}' | sed -e 's/v//g')
         else
-            all_node_versions=$($KUBECTL get nodes -l node-role.kubernetes.io/master='' -o jsonpath='{.items[*].status.nodeInfo.kubeletVersion}' | sed -e 's/v//g')
+            all_node_versions=$("$KUBECTL" get nodes -l node-role.kubernetes.io/master='' -o jsonpath='{.items[*].status.nodeInfo.kubeletVersion}' | sed -e 's/v//g')
         fi
     elif [ -n "$WORKER_NODES" ]; then
         if [ -n "$WORKER_NODES_LIST" ]; then
-            all_node_versions=$($KUBECTL get nodes $all_nodes $all_nodes -o jsonpath='{.items[*].status.nodeInfo.kubeletVersion}' | sed -e 's/v//g')
+            all_node_versions=$("$KUBECTL" get nodes $all_nodes $all_nodes -o jsonpath='{.items[*].status.nodeInfo.kubeletVersion}' | sed -e 's/v//g')
         else
-            all_node_versions=$($KUBECTL get nodes -l node-role.kubernetes.io/master!='' -o jsonpath='{.items[*].status.nodeInfo.kubeletVersion}' | sed -e 's/v//g')
+            all_node_versions=$("$KUBECTL" get nodes -l node-role.kubernetes.io/master!='' -o jsonpath='{.items[*].status.nodeInfo.kubeletVersion}' | sed -e 's/v//g')
         fi
     else
-        all_node_versions=$($KUBECTL get nodes -o jsonpath='{.items[*].status.nodeInfo.kubeletVersion}' | sed -e 's/v//g')
+        all_node_versions=$("$KUBECTL" get nodes -o jsonpath='{.items[*].status.nodeInfo.kubeletVersion}' | sed -e 's/v//g')
     fi
     minor_version=$(echo "$all_node_versions" | awk '{print $1}' | awk -F. '{print $1"."$2}')
     for version in $all_node_versions; do
@@ -346,7 +346,7 @@ if [ "$(basename $0)" == "upgrade-kubeadm-cluster" ]; then
             prompt_continue ""
             set -e
             echo
-            $KUBECTL drain $node --ignore-daemonsets --delete-local-data $DRY_RUN
+            "$KUBECTL" drain $node --ignore-daemonsets --delete-local-data $DRY_RUN
         fi
 
         if [ "$node" == "$first_master" ]; then
@@ -359,7 +359,7 @@ if [ "$(basename $0)" == "upgrade-kubeadm-cluster" ]; then
         if [ "$node" == "$first_master" ]; then
             echo "First master node $node will be uncordoned."
             echo
-            $KUBECTL uncordon $node $DRY_RUN
+            "$KUBECTL" uncordon $node $DRY_RUN
         fi
     done
     cmd=/tmp/upgrade-kubelet
@@ -399,7 +399,7 @@ if [ "$(basename $0)" == "upgrade-kubeadm-cluster" ]; then
         prompt_continue ""
         set -e
         echo
-        $KUBECTL drain $node --ignore-daemonsets --force --delete-local-data $DRY_RUN
+        "$KUBECTL" drain $node --ignore-daemonsets --force --delete-local-data $DRY_RUN
 
         cmd=/tmp/upgrade-kubeadm
         args="$MINOR $PATCH $NO_DRY_RUN $YES"
@@ -418,7 +418,7 @@ if [ "$(basename $0)" == "upgrade-kubeadm-cluster" ]; then
         echo
         echo "Worker node $node will be uncordoned."
         echo
-        $KUBECTL uncordon $node $DRY_RUN
+        "$KUBECTL" uncordon $node $DRY_RUN
 
         get_nodes
     done
@@ -443,7 +443,7 @@ fi
 [ -z "$KUBELET" ] && echo "Cannot find kubelet executable.  Exiting..." && exit 1
 [ ! -x "$KUBELET" ] && echo "$KUBELET is not executable.  Exiting..." && exit 1
 echo "Found kubelet executable: $KUBELET"
-KUBELET_VER_CURR=$($KUBELET --version 2>/dev/null | awk '{print $2}' | sed s/^v//)
+KUBELET_VER_CURR=$("$KUBELET" --version 2>/dev/null | awk '{print $2}' | sed s/^v//)
 KUBELET_VER_MAJOR=$(echo $KUBELET_VER_CURR | awk -F. '{print $1}')
 KUBELET_VER_MINOR=$(echo $KUBELET_VER_CURR | awk -F. '{print $2}')
 echo "Found kubelet version: $KUBELET_VER_CURR"
@@ -458,9 +458,9 @@ fi
 [ -z "$KUBEADM" ] && echo "Cannot find kubeadm executable.  Exiting..." && exit 1
 [ ! -x "$KUBEADM" ] && echo "$KUBEADM is not executable.  Exiting..." && exit 1
 echo "Found kubeadm executable: $KUBEADM"
-KUBEADM_VER_CURR=$($KUBEADM version 2>/dev/null | sed -E 's/.*GitVersion:"v([\.0-9]+)".*/\1/')
-KUBEADM_VER_MAJOR=$($KUBEADM version 2>/dev/null | sed -E 's/.*Major:"([0-9]+)".*/\1/')
-KUBEADM_VER_MINOR=$($KUBEADM version 2>/dev/null | sed -E 's/.*Minor:"([0-9]+)\+*".*/\1/')
+KUBEADM_VER_CURR=$("$KUBEADM" version 2>/dev/null | sed -E 's/.*GitVersion:"v([\.0-9]+)".*/\1/')
+KUBEADM_VER_MAJOR=$("$KUBEADM" version 2>/dev/null | sed -E 's/.*Major:"([0-9]+)".*/\1/')
+KUBEADM_VER_MINOR=$("$KUBEADM" version 2>/dev/null | sed -E 's/.*Minor:"([0-9]+)\+*".*/\1/')
 echo "Found kubeadm version: $KUBEADM_VER_CURR"
 echo
 if [ "$(basename $0)" == "upgrade-kubeadm" ]; then
@@ -578,7 +578,7 @@ else
         echo
         echo "Getting version of the kubeadm binary..."
         echo
-        $KUBEADM version
+        "$KUBEADM" version
         echo
         if [ "$NODE_TYPE" == "master" -a -n "$FIRST" ]; then
             ignore="--ignore-preflight-errors=CoreDNSUnsupportedPlugins --ignore-preflight-errors=CoreDNSMigration --ignore-preflight-errors=ControlPlaneNodesReady"
@@ -586,7 +586,7 @@ else
             echo
             echo "Getting kubeadm upgrade plan..."
             echo
-            $SUDO $KUBEADM upgrade plan $ignore
+            $SUDO "$KUBEADM" upgrade plan $ignore
 
             echo
             set +e
@@ -596,9 +596,9 @@ else
             echo
             echo "Applying new kubeadm version configuration..."
             echo
-            $SUDO $KUBEADM upgrade apply v$UPGRADE_VER --yes $ignore || \
+            $SUDO "$KUBEADM" upgrade apply v$UPGRADE_VER --yes $ignore || \
                 (sleep 10 && \
-                    $SUDO $KUBEADM upgrade apply v$UPGRADE_VER --yes $ignore)
+                    $SUDO "$KUBEADM" upgrade apply v$UPGRADE_VER --yes $ignore)
         else
             set +e
             prompt_continue "Upgrade node configuration to v$UPGRADE_VER?"
@@ -606,7 +606,7 @@ else
             echo
             echo "Executing node upgrade..."
             echo
-            $SUDO $KUBEADM upgrade node
+            $SUDO "$KUBEADM" upgrade node
         fi
     fi
 

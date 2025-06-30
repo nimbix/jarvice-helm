@@ -80,7 +80,7 @@ done
 
 terraform_state="module.$TERRAFORM_CLUSTER.module.helm.helm_release.namespace[0]"
 
-kube_context=$($KUBECTL config current-context)
+kube_context=$("$KUBECTL" config current-context)
 [ "$?" -ne "0" ] && echo "Kubectl config invalid" && exit
 read -p "Create $terraform_state for $kube_context? (y/n) " -n 1 -r
 echo
@@ -89,12 +89,12 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     exit 1
 fi
 
-$KUBECTL create ns $NAMESPACE
-$KUBECTL annotate ns $NAMESPACE meta.helm.sh/release-name=$NAMESPACE
-$KUBECTL annotate ns $NAMESPACE meta.helm.sh/release-namespace=default
-$KUBECTL label ns $NAMESPACE app.kubernetes.io/managed-by=Helm
-$HELM install $NAMESPACE namespace \
+"$KUBECTL" create ns $NAMESPACE
+"$KUBECTL" annotate ns $NAMESPACE meta.helm.sh/release-name=$NAMESPACE
+"$KUBECTL" annotate ns $NAMESPACE meta.helm.sh/release-namespace=default
+"$KUBECTL" label ns $NAMESPACE app.kubernetes.io/managed-by=Helm
+"$HELM" install $NAMESPACE namespace \
   --repo https://ameijer.github.io/k8s-as-helm \
   --version 1.1.0
-$TERRAFORM import "$terraform_state" default/$NAMESPACE
+"$TERRAFORM" import "$terraform_state" default/$NAMESPACE
 

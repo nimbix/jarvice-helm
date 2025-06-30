@@ -49,7 +49,7 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-pod=$($KUBECTL -n $namespace get pods \
+pod=$("$KUBECTL" -n $namespace get pods \
         -l component=jarvice-dal \
         --field-selector=status.phase=Running \
         -o jsonpath={.items[0].metadata.name})
@@ -58,6 +58,6 @@ cmd='mysqldump '
 cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
 cmd+=' --host="$JARVICE_SITE_DBHOST" keycloak'
 echo "* Dumping keycloak database from $namespace namespace to $file..."
-$KUBECTL -n $namespace exec $pod -- bash -c "$cmd" | gzip >$file
+"$KUBECTL" -n $namespace exec $pod -- bash -c "$cmd" | gzip >$file
 echo; echo "* Successfully dumped keycloak database from $namespace namespace to $file..."
 

@@ -121,12 +121,12 @@ set -e
 
 echo
 echo "* Creating namespace: $namespace"
-$KUBECTL create namespace $namespace 2>/dev/null || /bin/true
+"$KUBECTL" create namespace $namespace 2>/dev/null || /bin/true
 
 repo=https://helm.elastic.co
 echo
 echo "* Deploying Elasticsearch $es_version_tag..."
-$HELM upgrade elasticsearch elasticsearch --repo $repo \
+"$HELM" upgrade elasticsearch elasticsearch --repo $repo \
     --namespace $namespace --install --reset-values \
     \
     --set replicas=3 \
@@ -162,7 +162,7 @@ echo "$ helm inspect all elasticsearch --repo $repo"
 echo
 echo "* Deploying Kibana..."
 
-$HELM upgrade kibana kibana --repo $repo \
+"$HELM" upgrade kibana kibana --repo $repo \
     --namespace $namespace --install --reset-values \
     \
     --set replicas=1 \
@@ -193,7 +193,7 @@ echo "$ helm inspect all kibana --repo $repo"
 repo=https://charts.helm.sh/stable
 echo
 echo "* Deploying fluentd..."
-$HELM upgrade fluentd fluentd --repo $repo \
+"$HELM" upgrade fluentd fluentd --repo $repo \
     --namespace $namespace --install --reset-values \
     \
     ${fluentd_version_tag:+--set image.tag=$fluentd_version_tag} \
@@ -242,7 +242,7 @@ echo "$ helm inspect all fluentd --repo $repo"
 
 echo
 echo "* Deploying fluent-bit..."
-$HELM upgrade fluent-bit fluent-bit --repo $repo \
+"$HELM" upgrade fluent-bit fluent-bit --repo $repo \
     --namespace $namespace --install --reset-values \
     \
     ${fluent_bit_version_tag:+--set image.fluent_bit.tag=$fluent_bit_version_tag} \

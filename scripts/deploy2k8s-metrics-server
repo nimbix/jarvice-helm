@@ -68,7 +68,7 @@ fi
 echo
 echo "* Deploying..."
 repo=https://kubernetes-sigs.github.io/metrics-server
-$HELM upgrade metrics-server metrics-server --repo $repo \
+"$HELM" upgrade metrics-server metrics-server --repo $repo \
     --namespace $namespace --install --reset-values \
     \
     --set image.repository=gcr.io/k8s-staging-metrics-server/metrics-server \

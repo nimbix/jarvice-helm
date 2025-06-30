@@ -76,12 +76,12 @@ done
 
 echo
 echo "* Creating namespace: $namespace"
-$KUBECTL create namespace $namespace 2>/dev/null || /bin/true
+"$KUBECTL" create namespace $namespace 2>/dev/null || /bin/true
 
 echo
 echo "* Deploying..."
 repo=https://metallb.github.io/metallb
-$HELM upgrade metallb metallb --repo $repo \
+"$HELM" upgrade metallb metallb --repo $repo \
     --namespace $namespace --install --reset-values \
     \
     ${version_tag:+--set controller.image.tag=$version_tag} \
