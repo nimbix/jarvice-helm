@@ -42,7 +42,7 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-pod=$($KUBECTL -n $namespace get pods \
+pod=$("$KUBECTL" -n $namespace get pods \
         -l component=jarvice-db \
         --field-selector=status.phase=Running \
         -o jsonpath={.items[0].metadata.name})
@@ -50,15 +50,15 @@ pod=$($KUBECTL -n $namespace get pods \
 cmd='mariadb-upgrade '
 cmd+=' --user="root" --password="$MYSQL_ROOT_PASSWORD"'
 echo "* Upgrading JARVICE database in $namespace namespace..."
-$KUBECTL -n $namespace exec $pod -- bash -c "$cmd"
+"$KUBECTL" -n $namespace exec $pod -- bash -c "$cmd"
 echo; echo "* Successfully upgraded JARVICE database in $namespace namespace..."
 sleep 1
 
 echo; echo "* Restarting JARVICE database in $namespace namespace..."
-$KUBECTL -n $namespace rollout restart deployment/jarvice-db
-$KUBECTL -n $namespace rollout status deployment/jarvice-db --watch=true
+"$KUBECTL" -n $namespace rollout restart deployment/jarvice-db
+"$KUBECTL" -n $namespace rollout status deployment/jarvice-db --watch=true
 
 echo; echo "* Restarting JARVICE DAL in $namespace namespace..."
-$KUBECTL -n $namespace rollout restart deployment/jarvice-dal
-$KUBECTL -n $namespace rollout status deployment/jarvice-dal --watch=true
+"$KUBECTL" -n $namespace rollout restart deployment/jarvice-dal
+"$KUBECTL" -n $namespace rollout status deployment/jarvice-dal --watch=true
 
