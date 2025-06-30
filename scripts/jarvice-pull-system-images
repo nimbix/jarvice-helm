@@ -87,7 +87,7 @@ EOF
     exit 1
 fi
 
-$DOCKER info >/dev/null 2>&1
+"$DOCKER" info >/dev/null 2>&1
 [ "$?" != "0" ] && echo "User '$USER' is not able to communicate with the docker daemon" && exit 1
 
 [ -z "$JARVICE_VERSION" ] && usage && exit 1
@@ -98,12 +98,12 @@ JARVICE_REG_REPO=$JARVICE_REGISTRY/$JARVICE_REPOSITORY
 PUSH_REG_REPO=
 [ -n "$PUSH_REGISTRY" ] && PUSH_REG_REPO=$PUSH_REGISTRY/$PUSH_REPOSITORY
 for i in $JARVICE_IMAGES; do
-    $DOCKER pull $JARVICE_REG_REPO/$i:$JARVICE_VERSION
-    [ -n "$SAVE_DIR" ] && $DOCKER save $JARVICE_REG_REPO/$i:$JARVICE_VERSION | gzip >$SAVE_DIR/$(echo $JARVICE_REG_REPO/$i:$JARVICE_VERSION | sed -e 's|/|~|g').tar.gz
+    "$DOCKER" pull $JARVICE_REG_REPO/$i:$JARVICE_VERSION
+    [ -n "$SAVE_DIR" ] && "$DOCKER" save $JARVICE_REG_REPO/$i:$JARVICE_VERSION | gzip >$SAVE_DIR/$(echo $JARVICE_REG_REPO/$i:$JARVICE_VERSION | sed -e 's|/|~|g').tar.gz
     if [ -n "$PUSH_REG_REPO" ]; then
-        $DOCKER tag $JARVICE_REG_REPO/$i:$JARVICE_VERSION $PUSH_REG_REPO/$i:$JARVICE_VERSION
-        $DOCKER push $PUSH_REG_REPO/$i:$JARVICE_VERSION
-        [ -n "$REMOVE" ] && $DOCKER rmi $PUSH_REG_REPO/$i:$JARVICE_VERSION $JARVICE_REG_REPO/$i:$JARVICE_VERSION
+        "$DOCKER" tag $JARVICE_REG_REPO/$i:$JARVICE_VERSION $PUSH_REG_REPO/$i:$JARVICE_VERSION
+        "$DOCKER" push $PUSH_REG_REPO/$i:$JARVICE_VERSION
+        [ -n "$REMOVE" ] && "$DOCKER" rmi $PUSH_REG_REPO/$i:$JARVICE_VERSION $JARVICE_REG_REPO/$i:$JARVICE_VERSION
     fi
 done
 
@@ -111,23 +111,23 @@ JARVICE_REG_REPO=$JARVICE_REGISTRY/$JARVICE_PUBLIC_REPOSITORY
 PUSH_REG_REPO=
 [ -n "$PUSH_REGISTRY" ] && PUSH_REG_REPO=$PUSH_REGISTRY/$PUSH_REPOSITORY
 for i in $JARVICE_PUBLIC_IMAGES; do
-    $DOCKER pull $JARVICE_REG_REPO/$i:$JARVICE_VERSION
-    [ -n "$SAVE_DIR" ] && $DOCKER save $JARVICE_REG_REPO/$i:$JARVICE_VERSION | gzip >$SAVE_DIR/$(echo $JARVICE_REG_REPO/$i:$JARVICE_VERSION | sed -e 's|/|~|g').tar.gz
+    "$DOCKER" pull $JARVICE_REG_REPO/$i:$JARVICE_VERSION
+    [ -n "$SAVE_DIR" ] && "$DOCKER" save $JARVICE_REG_REPO/$i:$JARVICE_VERSION | gzip >$SAVE_DIR/$(echo $JARVICE_REG_REPO/$i:$JARVICE_VERSION | sed -e 's|/|~|g').tar.gz
     if [ -n "$PUSH_REG_REPO" ]; then
-        $DOCKER tag $JARVICE_REG_REPO/$i:$JARVICE_VERSION $PUSH_REG_REPO/$i:$JARVICE_VERSION
-        $DOCKER push $PUSH_REG_REPO/$i:$JARVICE_VERSION
-        [ -n "$REMOVE" ] && $DOCKER rmi $PUSH_REG_REPO/$i:$JARVICE_VERSION $JARVICE_REG_REPO/$i:$JARVICE_VERSION
+        "$DOCKER" tag $JARVICE_REG_REPO/$i:$JARVICE_VERSION $PUSH_REG_REPO/$i:$JARVICE_VERSION
+        "$DOCKER" push $PUSH_REG_REPO/$i:$JARVICE_VERSION
+        [ -n "$REMOVE" ] && "$DOCKER" rmi $PUSH_REG_REPO/$i:$JARVICE_VERSION $JARVICE_REG_REPO/$i:$JARVICE_VERSION
     fi
 done
 
 for i in $EXTRA_IMAGES; do
-    $DOCKER pull $i
-    [ -n "$SAVE_DIR" ] && $DOCKER save $i | gzip >$SAVE_DIR/$(echo $i | sed -e 's|/|~|g').tar.gz
+    "$DOCKER" pull $i
+    [ -n "$SAVE_DIR" ] && "$DOCKER" save $i | gzip >$SAVE_DIR/$(echo $i | sed -e 's|/|~|g').tar.gz
     if [ -n "$PUSH_REGISTRY" ]; then
         push_image=$PUSH_REGISTRY/$(echo ${i#*/})
-        $DOCKER tag $i $push_image
-        $DOCKER push $push_image
-        [ -n "$REMOVE" ] && $DOCKER rmi $push_image $i
+        "$DOCKER" tag $i $push_image
+        "$DOCKER" push $push_image
+        [ -n "$REMOVE" ] && "$DOCKER" rmi $push_image $i
     fi
 done
 

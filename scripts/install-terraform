@@ -50,7 +50,7 @@ fi
 set -e
 
 [ -z "$INSTALL_DIR" ] && INSTALL_DIR=/usr/local
-TF_INSTALL_DIR=$INSTALL_DIR/bin
+TF_INSTALL_DIR="$INSTALL_DIR/bin"
 
 TF_URL=https://releases.hashicorp.com/terraform/
 TF_VER=$(echo $TF_VER_INSTALL | awk -F. '{print $1"."$2}')
@@ -67,7 +67,7 @@ TF_URL+="$TF_VER/$TF_ZIP"
 
 echo; echo "* Installing terraform version $TF_VER..."
 curl --silent $TF_URL >/tmp/$TF_ZIP
-$SUDO unzip /tmp/$TF_ZIP -d $TF_INSTALL_DIR
+$SUDO unzip /tmp/$TF_ZIP -d "$TF_INSTALL_DIR"
 rm -f /tmp/$TF_ZIP
 
 echo; echo "* Terraform is ready for use..."
