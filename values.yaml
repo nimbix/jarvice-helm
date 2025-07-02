@@ -903,7 +903,7 @@ jarvice_slurm_scheduler:
   #     secret:
 
 jarvice_kns_scheduler:
-  enabled: false
+  enabled: true
   networkPolicy:
     enabled: false
   replicaCount: 2
@@ -936,9 +936,19 @@ jarvice_kns_scheduler:
   nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-kns-scheduler", "operator": "Exists"}]}] }}'
   nodeSelector: # '{"node-role.jarvice.io/jarvice-kns-scheduler": "true"}'
   imageTag: #20231221-1
+  https:
+    enable: true
+    ingressClassName: "traefik"
+    letsencrypt: false  # Enable letsencrypt automatic certificate generation, will need all letsencrypt variables bellow to be set
+    letsencrypt_credentials_json_base64: ""
+    letsencrypt_project: "change-me"
+    letsencrypt_user_email: "changeme@foobar"
+    letsencrypt_requested_wildcard: '*.change.me.jarvicexe.cloud'
+    certificate_name: kns-wildcard  # If using a custom made certificate, set the certificate name to be used by KNS.
   env:
     JARVICE_KNS_KEEP_VCLUSTERS: "false"
-    JARVICE_KNS_DEFAULT_LIMIT_RANGE: ""
+    JARVICE_KNS_DEFAULT_LIMIT_RANGE: eyJkZWZhdWx0Ijp7ImNwdSI6IDgsICJtZW1vcnkiOiAiMTBHaSJ9LCAiZGVmYXVsdF9yZXF1ZXN0Ijp7ImNwdSI6ICIxIiwgIm1lbW9yeSI6ICI0R2kifSwgInR5cGUiOiJDb250YWluZXIifQo=
+            #          value: '{"default":{"cpu": 8, "memory": "10Gi"}, "default_request":{"cpu": "1", "memory": "4Gi"}, "type":"Container"}'
     JARVICE_KNS_VCLUSTER_SPAWN_DELAY: 300
     JARVICE_KNS_INIT_IMAGE: "us-docker.pkg.dev/jarvice/images/init-kns"
     JARVICE_KNS_ALLOW_GOTTY_SHELL: "false"
@@ -951,7 +961,7 @@ jarvice_kns_scheduler:
     JARVICE_KNS_BILLING_PROBE_INTERVAL: ""
     JARVICE_KNS_BILLING_REPORT_INTERVAL: ""
     JARVICE_JOBS_INGRESS_CERT_SECRET_NAME: ""
-    JARVICE_KNS_DEFAULT_STORAGE_CLASS: ""
+    JARVICE_KNS_DEFAULT_STORAGE_CLASS: "jarvice-user"
     JARVICE_KNS_DYNAMIC_STORAGE_SIZE: ""
 
 jarvice_pod_scheduler:
