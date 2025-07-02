@@ -937,7 +937,7 @@ jarvice_kns_scheduler:
   nodeSelector: # '{"node-role.jarvice.io/jarvice-kns-scheduler": "true"}'
   imageTag: #20231221-1
   https:
-    enable: false
+    enable: true
     ingressClassName: "traefik"
     letsencrypt: false  # Enable letsencrypt automatic certificate generation, will need all letsencrypt variables bellow to be set
     letsencrypt_credentials_json_base64: ""
