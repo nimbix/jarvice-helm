@@ -163,6 +163,10 @@ spec:
           failureThreshold: {{ $.Values.jarvice_slurm_scheduler.livenessProbe.failureThreshold }}
 {{- end }}
         env:
+{{- if $.Values.jarvice_idmapper.enabled }}
+          - name: JARVICE_IDMAPPER_URL
+            value: "http://jarvice-idmapper:8080"
+{{- end }}
           - name: JARVICE_SLURM_CLUSTER_ADDR
 {{- if (empty .env.JARVICE_SLURM_CLUSTER_ADDR) }}
 {{- required "***** !!!!! slurm headnode address required. Please provide a value for .env.JARVICE_SLURM_CLUSTER_ADDR. !!!!! *****" .env.JARVICE_SLURM_CLUSTER_ADDR }}
