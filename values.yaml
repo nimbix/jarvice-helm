@@ -903,7 +903,7 @@ jarvice_slurm_scheduler:
   #     secret:
 
 jarvice_kns_scheduler:
-  enabled: true
+  enabled: false
   networkPolicy:
     enabled: false
   replicaCount: 2

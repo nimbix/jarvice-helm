@@ -33,7 +33,7 @@ apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
   name: letsencrypt-kns
-  namespace: jarvice-system
+  namespace: {{ .Release.Namespace }}
 spec:
   acme:
     email: {{ .Values.jarvice_kns_scheduler.https.letsencrypt_user_email }}
@@ -55,7 +55,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: {{ .Values.jarvice_kns_scheduler.https.certificate_name }}
-  namespace: jarvice-system
+  namespace: {{ .Release.Namespace }}
 spec:
   secretName: kns-wildcard
   issuerRef:
@@ -70,7 +70,7 @@ apiVersion: traefik.containo.us/v1alpha1
 kind: TLSStore
 metadata:
   name: default
-  namespace: jarvice-system
+  namespace: {{ .Release.Namespace }}
 spec:
   defaultCertificate:
     secretName: {{ .Values.jarvice_kns_scheduler.https.certificate_name }}
