@@ -108,7 +108,7 @@ set -e
 
 echo
 echo "* Creating namespace: $namespace"
-$KUBECTL create namespace $namespace 2>/dev/null || /bin/true
+"$KUBECTL" create namespace $namespace 2>/dev/null || /bin/true
 
 echo
 if [ -n "$load_balancer_external_ip" ]; then
@@ -117,7 +117,7 @@ else
     ip_args="--set controller.service.type=LoadBalancer --set controller.service.loadBalancerIP=$load_balancer_ip"
 fi
 repo=https://kubernetes.github.io/ingress-nginx
-$HELM upgrade nginx ingress-nginx --repo $repo --version $chart_version \
+"$HELM" upgrade nginx ingress-nginx --repo $repo --version $chart_version \
     --namespace $namespace --install --reset-values \
     \
     --set controller.image.tag="$version_tag" \
