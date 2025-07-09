@@ -18,6 +18,65 @@ roleRef:
   name: cluster-admin
   apiGroup: rbac.authorization.k8s.io
 ---
+{{- if .Values.jarvice_kns_scheduler.https.enabled }}
+{{- if .Values.jarvice_kns_scheduler.https.letsencrypt }}
+apiVersion: v1
+data:
+  credentials.json: {{ .Values.jarvice_kns_scheduler.https.letsencrypt_credentials_json_base64 }}
+kind: Secret
+metadata:
+  name: dns-svc-account
+  namespace: cert-manager
+type: Opaque
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-kns
+  namespace: {{ .Release.Namespace }}
+spec:
+  acme:
+    email: {{ .Values.jarvice_kns_scheduler.https.letsencrypt_user_email }}
+    preferredChain: ""
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    server: https://acme-v02.api.letsencrypt.org/directory
+    solvers:
+    - http01:
+        ingress: {}
+    - dns01:
+        cloudDNS:
+          serviceAccountSecretRef:
+            name: dns-svc-account
+            key: credentials.json
+          project: {{ .Values.jarvice_kns_scheduler.https.letsencrypt_project }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ .Values.jarvice_kns_scheduler.https.certificate_name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  secretName: kns-wildcard
+  issuerRef:
+    name: letsencrypt-kns
+    kind: ClusterIssuer
+  dnsNames:
+  - {{ .Values.jarvice_kns_scheduler.https.letsencrypt_requested_wildcard }}
+---
+{{- end }}
+{{- if eq .Values.jarvice_kns_scheduler.https.ingressClassName "traefik" }}
+apiVersion: traefik.containo.us/v1alpha1
+kind: TLSStore
+metadata:
+  name: default
+  namespace: {{ .Release.Namespace }}
+spec:
+  defaultCertificate:
+    secretName: {{ .Values.jarvice_kns_scheduler.https.certificate_name }}
+---
+{{- end }}
+{{- end }}
 {{- if gt (.Values.jarvice_kns_scheduler.replicaCount | int) 1 }}
 {{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
 apiVersion: policy/v1
@@ -100,7 +159,7 @@ spec:
       containers:
       - name: jarvice-kns-scheduler
         command: ["python3"]
-        args: ["/main", "Nested"]
+        args: ["/jarvice/main", "Nested"]
 {{- if eq .Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE "true" }}
         image: {{ if (empty .Values.jarvice_kns_scheduler.imageTag ) }}{{ include "jarvice.registry" . }}/jarvice-k8s-nested-scheduler:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}{{- else }}{{ include "jarvice.registry" . }}/jarvice-k8s-nested-scheduler:{{ default .Values.jarvice_kns_scheduler.imageTag .Chart.Annotations.tag }}{{- include "jarvice.version" . }}{{- end }}
 {{- else }}
