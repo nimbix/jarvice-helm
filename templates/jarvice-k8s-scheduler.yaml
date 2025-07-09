@@ -117,6 +117,10 @@ spec:
           successThreshold: {{ .Values.jarvice_k8s_scheduler.livenessProbe.successThreshold }}
           failureThreshold: {{ .Values.jarvice_k8s_scheduler.livenessProbe.failureThreshold }}
         env:
+{{- if .Values.jarvice_idmapper.enabled }}
+          - name: JARVICE_IDMAPPER_URL
+            value: "http://jarvice-idmapper:8080"
+{{- end }}
 {{- if .Values.jarvice_bird.enabled }}
           - name: JARVICE_BIRD_API_URL
             value: "{{ .Values.jarvice_bird.ingressHost }}/portal"

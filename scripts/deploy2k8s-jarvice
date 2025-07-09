@@ -59,7 +59,7 @@ EOF
     exit 1
 fi
 
-HELM_VER=$($HELM version 2>/dev/null | grep 'Version:' | sed -E 's/.*Version:"v([.0-9]+)".*/\1/')
+HELM_VER=$("$HELM" version 2>/dev/null | grep 'Version:' | sed -E 's/.*Version:"v([.0-9]+)".*/\1/')
 if [ "$(strict_version $HELM_VER $HELM_VER_REQ)" != "True" ]; then
     echo "helm version $HELM_VER_REQ or newer is required."
     echo "Please upgrade helm or remove it."
@@ -160,8 +160,8 @@ set -e
 
 echo
 echo "* Creating namespace: $namespace"
-$KUBECTL create namespace $namespace 2>/dev/null || /bin/true
-$KUBECTL label namespace $namespace "app=jarvice" || /bin/true
+"$KUBECTL" create namespace $namespace 2>/dev/null || /bin/true
+"$KUBECTL" label namespace $namespace "app=jarvice" || /bin/true
 
 echo
 echo "* Deploying JARVICE to '$namespace' namespace..."
@@ -173,7 +173,7 @@ else
     release_args="$release $jarvice_chart_dir"
     values_args="-f $jarvice_chart_dir/values.yaml"
 fi
-$HELM upgrade $release_args \
+"$HELM" upgrade $release_args \
     --namespace $namespace --install --debug \
     --reset-values $values_args -f $values $*
 

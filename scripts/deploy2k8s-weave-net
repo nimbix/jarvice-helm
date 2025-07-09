@@ -59,7 +59,7 @@ echo; echo "* Deploying...  IPALLOC_RANGE=$IPALLOC_RANGE"
 
 # See this link for more information on Weave Net configuration options:
 # https://github.com/weaveworks/weave/blob/master/site/kubernetes/kube-addon.md#-changing-configuration-options
-$KUBECTL apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&env.IPALLOC_RANGE=$IPALLOC_RANGE"
+"$KUBECTL" apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&env.IPALLOC_RANGE=$IPALLOC_RANGE"
 
 echo
 echo "* Deployment successful...  IPALLOC_RANGE=$IPALLOC_RANGE"

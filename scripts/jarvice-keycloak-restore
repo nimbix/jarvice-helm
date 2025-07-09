@@ -49,7 +49,7 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-pod=$($KUBECTL -n $namespace get pods \
+pod=$("$KUBECTL" -n $namespace get pods \
         -l component=jarvice-dal \
         --field-selector=status.phase=Running \
         -o jsonpath={.items[0].metadata.name})
@@ -58,6 +58,6 @@ cmd='mysql '
 cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
 cmd+=' --host="$JARVICE_SITE_DBHOST" keycloak'
 echo "* Restoring keycloak database to $namespace namespace from $file..."
-$KUBECTL -n $namespace exec --stdin $pod -- bash -c "$cmd" <<<"$(zcat $file)"
+"$KUBECTL" -n $namespace exec --stdin $pod -- bash -c "$cmd" <<<"$(zcat $file)"
 echo; echo "* Successfully restored keycloak database to $namespace namespace from $file..."
 

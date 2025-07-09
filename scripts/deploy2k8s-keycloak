@@ -111,11 +111,11 @@ set -e
 
 echo
 echo "* Creating namespace: $namespace"
-$KUBECTL create namespace $namespace 2>/dev/null || /bin/true
+"$KUBECTL" create namespace $namespace 2>/dev/null || /bin/true
 
 echo
 echo "* Creating configmap: $realm_configmap"
-$KUBECTL -n $namespace create configmap \
+"$KUBECTL" -n $namespace create configmap \
     --from-file "$keycloak_realm" \
     "$realm_configmap" 2>/dev/null || /bin/true
 
