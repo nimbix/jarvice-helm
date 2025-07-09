@@ -132,12 +132,12 @@ echo
 EOF
 )
 
-pod=$($KUBECTL -n $namespace get pods \
+pod=$("$KUBECTL" -n $namespace get pods \
         -l component=jarvice-registry-proxy \
         --field-selector=status.phase=Running \
         -o jsonpath={.items[0].metadata.name})
 [ -z "$pod" ] && echo "* Could not find jarvice-registry-proxy pod in $namespace namespace...Exiting..." && exit 1
 echo "* Running image cleanup on jarvice-registry-proxy in $namespace namespace..."; echo
-$KUBECTL -n $namespace exec $pod -- sh -c "$script" -s $last_access_seconds
+"$KUBECTL" -n $namespace exec $pod -- sh -c "$script" -s $last_access_seconds
 echo; echo "* Finished image cleanup on jarvice-registry-proxy in $namespace namespace..."
 

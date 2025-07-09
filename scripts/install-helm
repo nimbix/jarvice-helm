@@ -5,9 +5,9 @@ HELM=$(type -p helm)
 
 if [ -n "$HELM" ]; then
     echo "Found $HELM."
-    HELM2=$($HELM version 2>/dev/null | grep '^Client' || /bin/true)
+    HELM2=$("$HELM" version 2>/dev/null | grep '^Client' || /bin/true)
     [ -n "$HELM2" ] && cat <<EOF
-$HELM is not version 3 or newer.  Please migrate:
+"$HELM" is not version 3 or newer.  Please migrate:
 https://helm.sh/blog/migrate-from-helm-v2-to-helm-v3/
 
 EOF

@@ -24,7 +24,7 @@ EOF
     exit 1
 fi
 
-$KUBECTL proxy &> /dev/null &
+"$KUBECTL" proxy &> /dev/null &
 proxy_pid="$!"
-$CURL -sSL "localhost:8001/api/v1/nodes/$($KUBECTL get no | awk 'FNR==2{ print $1 }')/proxy/configz" | $JQ -r .kubeletconfig.clusterDomain
+"$CURL" -sSL "localhost:8001/api/v1/nodes/$("$KUBECTL" get no | awk 'FNR==2{ print $1 }')/proxy/configz" | "$JQ" -r .kubeletconfig.clusterDomain
 kill -9 "$proxy_pid"

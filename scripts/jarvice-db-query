@@ -54,7 +54,7 @@ done
 
 [ -z "$query" ] && usage && exit 1
 
-pod=$($KUBECTL -n $namespace get pods \
+pod=$("$KUBECTL" -n $namespace get pods \
         -l component=jarvice-dal \
         --field-selector=status.phase=Running \
         -o jsonpath={.items[0].metadata.name})
@@ -63,5 +63,5 @@ cmd='mariadb '
 cmd+=' --user="$JARVICE_SITE_DBUSER" --password="$JARVICE_SITE_DBPASSWD"'
 cmd+=' --host="$JARVICE_SITE_DBHOST" nimbix'
 echo "* Running query on JARVICE database in $namespace namespace..."; echo
-$KUBECTL -n $namespace exec $pod -- bash -c "echo '$query' | $cmd"
+"$KUBECTL" -n $namespace exec $pod -- bash -c "echo '$query' | $cmd"
 

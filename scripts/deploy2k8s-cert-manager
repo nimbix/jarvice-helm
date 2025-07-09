@@ -68,12 +68,12 @@ set -e
 
 echo
 echo "* Creating namespace: $namespace"
-$KUBECTL create namespace $namespace 2>/dev/null || /bin/true
+"$KUBECTL" create namespace $namespace 2>/dev/null || /bin/true
 
 echo
 echo "* Deploying..."
 repo=https://charts.jetstack.io
-$HELM upgrade cert-manager cert-manager --repo $repo --version $chart_version \
+"$HELM" upgrade cert-manager cert-manager --repo $repo --version $chart_version \
     --namespace $namespace --install --reset-values \
     \
     --set installCRDs=true \
