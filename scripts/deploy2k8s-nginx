@@ -1,0 +1,161 @@
+#!/bin/bash
+
+version_tag=v1.12.3
+chart_version=4.12.3
+load_balancer_ip=
+load_balancer_external_ip=
+replicas=1
+memory_request=90Mi
+cpu_request=100m
+namespace=kube-system
+
+function usage {
+    cat <<EOF
+Usage:
+    $0 [options]
+
+Options:
+    --load-balancer-ip <ip_addr>    Static IP for ingress controller service*
+    --load-balancer-external-ip     External IP for ingress controller service*
+    --replicas <replicas>           Number of pod replicas to run
+                                    (Default: $replicas)
+    --memory-request <memory>       Memory request for each pod
+                                    (Default: $memory_request)
+    --cpu-request <cpu>             CPU request for each pod
+                                    (Default: $cpu_request)
+    --namespace <kube_namespace>    Kubernetes namespace to deploy to
+                                    (Default: $namespace)
+    --chart-version <version>       Nginx Helm chart version
+                                    (Default: $chart_version)
+    --version-tag <tag>             Nginx version
+                                    (Default: $version_tag)
+
+* One of --load-balancer-ip, or --load-balancer-external-ip is required
+
+Example deployment using LoadBalancer service:
+    $0 --load-balancer-ip 10.20.0.10
+
+EOF
+}
+
+HELM=$(type -p helm)
+if [ -z "$HELM" ]; then
+    cat <<EOF
+Could not find 'helm' in PATH.  It may not be installed.
+Run 'install-helm' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+KUBECTL=$(type -p kubectl)
+if [ -z "$KUBECTL" ]; then
+    cat <<EOF
+Could not find 'kubectl' in PATH.  It may not be installed.
+Run 'install-kubectl' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        --help)
+            usage
+            exit 0
+            ;;
+        --load-balancer-ip)
+            load_balancer_ip=$2
+            shift; shift
+            ;;
+	    --load-balancer-external-ip)
+            load_balancer_external_ip=$2
+	        shift; shift
+	        ;;
+        --replicas)
+            replicas=$2
+            shift; shift
+            ;;
+        --memory-request)
+            memory_request=$2
+            shift; shift
+            ;;
+        --cpu-request)
+            cpu_request=$2
+            shift; shift
+            ;;
+        --namespace)
+            namespace=$2
+            shift; shift
+            ;;
+        --chart-version)
+            chart_version=$2
+            shift; shift
+            ;;
+        --version-tag)
+            version_tag=$2
+            shift; shift
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+[ -z "$load_balancer_ip" -a -z "$load_balancer_external_ip" ] && usage && exit 1
+[ -n "$load_balancer_ip" -a -n "$load_balancer_external_ip" ] && usage && exit 1
+
+set -e
+
+echo
+echo "* Creating namespace: $namespace"
+"$KUBECTL" create namespace $namespace 2>/dev/null || /bin/true
+
+echo
+if [ -n "$load_balancer_external_ip" ]; then
+    ip_args="--set controller.service.type=LoadBalancer --set controller.service.externalIPs[0]=$load_balancer_external_ip"
+else
+    ip_args="--set controller.service.type=LoadBalancer --set controller.service.loadBalancerIP=$load_balancer_ip"
+fi
+repo=https://kubernetes.github.io/ingress-nginx
+"$HELM" upgrade nginx ingress-nginx --repo $repo --version $chart_version \
+    --namespace $namespace --install --reset-values \
+    \
+    --set controller.image.tag="$version_tag" \
+    \
+    --set controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key="node-role\.jarvice\.io/jarvice-system" \
+    --set controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator="Exists" \
+    \
+    --set controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].key="kubernetes\.io/arch" \
+    --set controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].operator="In" \
+    --set controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].values[0]="amd64" \
+    --set controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[1].values[1]="arm64" \
+    \
+    --set controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[1].matchExpressions[0].key="node-role\.kubernetes\.io/jarvice-system" \
+    --set controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[1].matchExpressions[0].operator="Exists" \
+    \
+    --set controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[1].matchExpressions[1].key="kubernetes\.io/arch" \
+    --set controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[1].matchExpressions[1].operator="In" \
+    --set controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[1].matchExpressions[1].values[0]="amd64" \
+    --set controller.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[1].matchExpressions[1].values[1]="arm64" \
+    \
+    --set controller.tolerations[0]."key"="node-role\.jarvice\.io/jarvice-system" \
+    --set controller.tolerations[0]."effect"="NoSchedule" \
+    --set controller.tolerations[0]."operator"="Exists" \
+    \
+    --set controller.tolerations[1]."key"="node-role\.kubernetes\.io/jarvice-system" \
+    --set controller.tolerations[1]."effect"="NoSchedule" \
+    --set controller.tolerations[1]."operator"="Exists" \
+    \
+    $ip_args \
+    \
+    --set controller.replicaCount=$replicas \
+    --set controller.resources.requests.memory=$memory_request \
+    --set controller.resources.requests.cpu=$cpu_request
+
+echo
+echo "* Deployment successful..."
+
+echo
+echo "For advanced setup details, visit https://github.com/kubernetes/ingress-nginx and/or execute:"
+echo "$ helm inspect all ingress-nginx --repo $repo"
+
