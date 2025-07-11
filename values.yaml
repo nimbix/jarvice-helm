@@ -493,6 +493,7 @@ jarvice_idmapper: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   image: us-docker.pkg.dev/jarvice/images/idmapper:20201116
+  initImage: us-docker.pkg.dev/jarvice/images/idmapper-create-dirs:20250711
   imagePullPolicy: IfNotPresent
   # Shared filesystem settings.  Defaults to hostPath if NFS server is not set
   filesystem:
