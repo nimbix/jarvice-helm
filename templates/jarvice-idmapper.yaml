@@ -150,7 +150,7 @@ spec:
 {{- if (eq .Values.jarvice_idmapper.filesystem.server "emptydir") }}
         - name: users-config
           configMap:
-            name: users-config
+            name: "{{ .Values.jarvice_idmapper.filesystem.configMap }}"
             optional: true
             items:
               - key: users.json
@@ -191,12 +191,12 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: users-config
+  name: "{{ .Values.jarvice_idmapper.filesystem.configMap }}"
 data:
   users.json: |
   {{ toJson .Values.jarvice_idmapper.filesystem.mapping | indent 2 }}
-{{- end }}
 ---
+{{- end }}
 {{- if or .Values.jarvice_idmapper.networkPolicy.enabled (and (eq "<nil>" (toString .Values.jarvice_idmapper.networkPolicy.enabled)) .Values.jarvice.networkPolicy.enabled) }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy

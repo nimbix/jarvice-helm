@@ -497,7 +497,7 @@ jarvice_idmapper: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   imagePullPolicy: IfNotPresent
   # Shared filesystem settings.  Defaults to hostPath if NFS server is not set
   filesystem:
-    # mapping: # Optional, used to update directory permissions to uid/gid - ONLY USE WITH EMPTYDIR.
+    mapping: {} # Optional, used to update directory permissions to uid/gid - ONLY USE WITH EMPTYDIR.
     #   foo: # Optional, used to map username "foo" to uid/gid
     #     uid: 1000
     #     gid: 1000
@@ -505,6 +505,7 @@ jarvice_idmapper: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     #     uid: 1001
     #     gid: 1001
     # If mapping is not set, then uid/gid will be derived from the username
+    configMap: users-config
     path: /home
     server: # nfs.my-domain.com
   # Visit https://github.com/nimbix/idmapper for environment variable details
