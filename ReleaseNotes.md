@@ -125,6 +125,24 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.25.4-202507171337
+
+* (JAR-10253) idMapper refactoring for downstream environment multi-zone support
+* (JAR-10451) Update lxcfs daemonset
+* (JAR-10493) Add additional fields on itemized billing report csv
+* (JAR-10519) Fix resizeable tables logic
+* (JAR-10520) (JAR-10605) (JAR-10625) Update File Picker in UI
+* (JAR-10529) Add version page to HyperHub
+* (JAR-10571) Update Dashboard reports to exclude jobs not owned by team
+* (JAR-10608) Change "Wall Time Limit" to "Time Limit"
+* (JAR-10645) (JAR-10647) Add additional columns to the Dashboard->Team Jobs table
+* (JAR-10700) Fix Account>External Data page rendering
+* (JAR-10215) (JAR-10707) Add triad support to License Manager
+* (JAR-10763) Update Administration>Users by Zones page
+* (JAR-10765) Allow Zone Admin to create new Clusters
+* (JAR-10781) Fix PushToCompute create application button
+* (JAR-10845) Update Dashboard>Team Jobs page
+
 ## 3.25.3-202505230409
 
 * (JAR-7028) Add REGESTRY and REPO_BASE for mirrored dependency images
