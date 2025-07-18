@@ -1,0 +1,338 @@
+[0m[1mlocal_file.clusters: Refreshing state... [id=beb8a4a81aeaf31d5651dbb028f9a8f5478cfabb][0m
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  [32m+[0m create[0m
+ [36m<=[0m read (data resources)[0m
+
+Terraform will perform the following actions:
+
+[1m  # local_file.clusters[0m will be created
+[0m  [32m+[0m[0m resource "local_file" "clusters" {
+      [32m+[0m[0m content              = <<-EOT
+            # clusters.tf - cluster definitions (dynamically created using cluster configs)
+            
+            ################
+            # K8s clusters #
+            ################
+            
+            
+            
+            ################
+            # GKE clusters #
+            ################
+            
+            
+            
+            ###################
+            # GKE clusters v2 #
+            ###################
+            
+            
+            
+            #################
+            # CAPG clusters #
+            #################
+            
+            # CAPG cluster configuration: capg_cluster_00
+            provider "google" {
+                alias = "capg_cluster_00"
+            
+                region = local.capg["capg_cluster_00"].location["region"]
+                project = local.capg["capg_cluster_00"].auth["project"]
+                credentials = local.capg["capg_cluster_00"].auth["service_account_key_file"]
+            }
+            
+            provider "kubernetes" {
+                alias = "capg_cluster_00"
+            
+                host = module.capg_cluster_00.kube_config["host"]
+                cluster_ca_certificate = base64decode(module.capg_cluster_00.kube_config["cluster_ca_certificate"])
+                client_certificate = base64decode(module.capg_cluster_00.kube_config["client_certificate"])
+                client_key = base64decode(module.capg_cluster_00.kube_config["client_key"])
+                token = module.capg_cluster_00.kube_config["token"]
+            }
+            
+            provider "helm" {
+                alias = "capg_cluster_00"
+            
+                kubernetes {
+                    host = module.capg_cluster_00.kube_config["host"]
+                    cluster_ca_certificate = base64decode(module.capg_cluster_00.kube_config["cluster_ca_certificate"])
+                    client_certificate = base64decode(module.capg_cluster_00.kube_config["client_certificate"])
+                    client_key = base64decode(module.capg_cluster_00.kube_config["client_key"])
+                    token = module.capg_cluster_00.kube_config["token"]
+                }
+            }
+            
+            provider "kubectl" {
+                alias = "capg_cluster_00"
+            
+                host = module.capg_cluster_00.kube_config["host"]
+                cluster_ca_certificate = base64decode(module.capg_cluster_00.kube_config["cluster_ca_certificate"])
+                client_certificate = base64decode(module.capg_cluster_00.kube_config["client_certificate"])
+                client_key = base64decode(module.capg_cluster_00.kube_config["client_key"])
+                token = module.capg_cluster_00.kube_config["token"]
+                load_config_file = false
+            }
+            
+            
+            
+            # CAPG cluster configuration: capg_cluster_00
+            module "capg_cluster_00" {
+                source = "./modules/capg"
+            
+                enabled = local.capg["capg_cluster_00"].enabled
+                auth = local.capg["capg_cluster_00"].auth
+                meta = local.capg["capg_cluster_00"].meta
+                location = local.capg["capg_cluster_00"].location
+                system_node_pool = local.capg["capg_cluster_00"].system_node_pool
+                dockerbuild_node_pool = local.capg["capg_cluster_00"].dockerbuild_node_pool
+                compute_node_pools = local.capg["capg_cluster_00"].compute_node_pools
+                cluster = local.capg["capg_cluster_00"].cluster
+                helm = local.capg["capg_cluster_00"].helm
+                global = var.global
+            
+                providers = {
+                    google = google.capg_cluster_00
+                    kubernetes = kubernetes.capg_cluster_00
+                    helm = helm.capg_cluster_00
+                    kubectl = kubectl.capg_cluster_00
+                }
+                depends_on = [local_file.clusters]
+            }
+            
+            output "capg_cluster_00" {
+                value = format("\n\nCAPG Cluster Configuration: %s\n%s\n", "capg_cluster_00", module.capg_cluster_00.cluster_info)
+            }
+            output "capg_cluster_00_slurm" {
+                value = module.capg_cluster_00.slurm_info
+            }
+            
+            ################
+            # EKS clusters #
+            ################
+            
+            
+            
+            ###################
+            # EKS clusters v2 #
+            ###################
+            
+            
+            
+            ################
+            # AKS clusters #
+            ################
+        EOT
+      [32m+[0m[0m content_base64sha256 = (known after apply)
+      [32m+[0m[0m content_base64sha512 = (known after apply)
+      [32m+[0m[0m content_md5          = (known after apply)
+      [32m+[0m[0m content_sha1         = (known after apply)
+      [32m+[0m[0m content_sha256       = (known after apply)
+      [32m+[0m[0m content_sha512       = (known after apply)
+      [32m+[0m[0m directory_permission = "0775"
+      [32m+[0m[0m file_permission      = "0664"
+      [32m+[0m[0m filename             = "./clusters.tf"
+      [32m+[0m[0m id                   = (known after apply)
+    }
+
+[1m  # module.capg_cluster_00.data.external.workload_cluster_info[0m will be read during apply
+  # (depends on a resource or a module with changes pending)
+[0m [36m<=[0m[0m data "external" "workload_cluster_info" {
+      [32m+[0m[0m id      = (known after apply)
+      [32m+[0m[0m program = [
+          [32m+[0m[0m "bash",
+          [32m+[0m[0m "-c",
+          [32m+[0m[0m <<-EOT
+                set -e
+                export PATH="./.tmp:$PATH"
+                        
+                if [[ -f "./.tmp/workload-kubeconfig.yaml" ]]; then
+                    ENDPOINT=$(kubectl --kubeconfig ./.tmp/workload-kubeconfig.yaml config view --minify -o jsonpath='{.clusters[0].cluster.server}')
+                    CA_CERT=$(kubectl --kubeconfig ./.tmp/workload-kubeconfig.yaml config view --raw --minify --flatten -o jsonpath='{.clusters[0].cluster.certificate-authority-data}')
+                    TOKEN=$(kubectl --kubeconfig ./.tmp/workload-kubeconfig.yaml create token default --duration=24h 2>/dev/null || echo "")
+                            
+                    jq -n --arg endpoint "$ENDPOINT" --arg ca_cert "$CA_CERT" --arg token "$TOKEN" \
+                        '{endpoint: $endpoint, ca_certificate: $ca_cert, token: $token}'
+                else
+                    jq -n '{endpoint: "", ca_certificate: "", token: ""}'
+                fi
+            EOT,
+        ]
+      [32m+[0m[0m result  = (known after apply)
+    }
+
+[1m  # module.capg_cluster_00.data.google_project.jarvice[0m will be read during apply
+  # (depends on a resource or a module with changes pending)
+[0m [36m<=[0m[0m data "google_project" "jarvice" {
+      [32m+[0m[0m auto_create_network = (known after apply)
+      [32m+[0m[0m billing_account     = (known after apply)
+      [32m+[0m[0m folder_id           = (known after apply)
+      [32m+[0m[0m id                  = (known after apply)
+      [32m+[0m[0m labels              = (known after apply)
+      [32m+[0m[0m name                = (known after apply)
+      [32m+[0m[0m number              = (known after apply)
+      [32m+[0m[0m org_id              = (known after apply)
+      [32m+[0m[0m skip_delete         = (known after apply)
+    }
+
+[1m  # module.capg_cluster_00.google_project_iam_member.capg_manager_compute_admin[0m will be created
+[0m  [32m+[0m[0m resource "google_project_iam_member" "capg_manager_compute_admin" {
+      [32m+[0m[0m etag    = (known after apply)
+      [32m+[0m[0m id      = (known after apply)
+      [32m+[0m[0m member  = (known after apply)
+      [32m+[0m[0m project = (known after apply)
+      [32m+[0m[0m role    = "roles/compute.admin"
+    }
+
+[1m  # module.capg_cluster_00.google_project_iam_member.capg_manager_container_admin[0m will be created
+[0m  [32m+[0m[0m resource "google_project_iam_member" "capg_manager_container_admin" {
+      [32m+[0m[0m etag    = (known after apply)
+      [32m+[0m[0m id      = (known after apply)
+      [32m+[0m[0m member  = (known after apply)
+      [32m+[0m[0m project = (known after apply)
+      [32m+[0m[0m role    = "roles/container.admin"
+    }
+
+[1m  # module.capg_cluster_00.google_project_iam_member.capg_manager_iam_admin[0m will be created
+[0m  [32m+[0m[0m resource "google_project_iam_member" "capg_manager_iam_admin" {
+      [32m+[0m[0m etag    = (known after apply)
+      [32m+[0m[0m id      = (known after apply)
+      [32m+[0m[0m member  = (known after apply)
+      [32m+[0m[0m project = (known after apply)
+      [32m+[0m[0m role    = "roles/iam.serviceAccountAdmin"
+    }
+
+[1m  # module.capg_cluster_00.google_project_iam_member.capg_manager_security_admin[0m will be created
+[0m  [32m+[0m[0m resource "google_project_iam_member" "capg_manager_security_admin" {
+      [32m+[0m[0m etag    = (known after apply)
+      [32m+[0m[0m id      = (known after apply)
+      [32m+[0m[0m member  = (known after apply)
+      [32m+[0m[0m project = (known after apply)
+      [32m+[0m[0m role    = "roles/iam.securityAdmin"
+    }
+
+[1m  # module.capg_cluster_00.google_project_service.project_services["cloudresourcemanager.googleapis.com"][0m will be created
+[0m  [32m+[0m[0m resource "google_project_service" "project_services" {
+      [32m+[0m[0m disable_dependent_services = false
+      [32m+[0m[0m disable_on_destroy         = false
+      [32m+[0m[0m id                         = (known after apply)
+      [32m+[0m[0m project                    = (known after apply)
+      [32m+[0m[0m service                    = "cloudresourcemanager.googleapis.com"
+    }
+
+[1m  # module.capg_cluster_00.google_project_service.project_services["compute.googleapis.com"][0m will be created
+[0m  [32m+[0m[0m resource "google_project_service" "project_services" {
+      [32m+[0m[0m disable_dependent_services = false
+      [32m+[0m[0m disable_on_destroy         = false
+      [32m+[0m[0m id                         = (known after apply)
+      [32m+[0m[0m project                    = (known after apply)
+      [32m+[0m[0m service                    = "compute.googleapis.com"
+    }
+
+[1m  # module.capg_cluster_00.google_project_service.project_services["container.googleapis.com"][0m will be created
+[0m  [32m+[0m[0m resource "google_project_service" "project_services" {
+      [32m+[0m[0m disable_dependent_services = false
+      [32m+[0m[0m disable_on_destroy         = false
+      [32m+[0m[0m id                         = (known after apply)
+      [32m+[0m[0m project                    = (known after apply)
+      [32m+[0m[0m service                    = "container.googleapis.com"
+    }
+
+[1m  # module.capg_cluster_00.google_project_service.project_services["iam.googleapis.com"][0m will be created
+[0m  [32m+[0m[0m resource "google_project_service" "project_services" {
+      [32m+[0m[0m disable_dependent_services = false
+      [32m+[0m[0m disable_on_destroy         = false
+      [32m+[0m[0m id                         = (known after apply)
+      [32m+[0m[0m project                    = (known after apply)
+      [32m+[0m[0m service                    = "iam.googleapis.com"
+    }
+
+[1m  # module.capg_cluster_00.google_service_account.capg_manager[0m will be created
+[0m  [32m+[0m[0m resource "google_service_account" "capg_manager" {
+      [32m+[0m[0m account_id   = "tf-jarvice-capg-capg"
+      [32m+[0m[0m disabled     = false
+      [32m+[0m[0m display_name = "Cluster API GCP Manager for tf-jarvice-capg"
+      [32m+[0m[0m email        = (known after apply)
+      [32m+[0m[0m id           = (known after apply)
+      [32m+[0m[0m member       = (known after apply)
+      [32m+[0m[0m name         = (known after apply)
+      [32m+[0m[0m project      = (known after apply)
+      [32m+[0m[0m unique_id    = (known after apply)
+    }
+
+[1m  # module.capg_cluster_00.google_service_account_key.capg_manager[0m will be created
+[0m  [32m+[0m[0m resource "google_service_account_key" "capg_manager" {
+      [32m+[0m[0m id                 = (known after apply)
+      [32m+[0m[0m key_algorithm      = "KEY_ALG_RSA_2048"
+      [32m+[0m[0m name               = (known after apply)
+      [32m+[0m[0m private_key        = (sensitive value)
+      [32m+[0m[0m private_key_type   = "TYPE_GOOGLE_CREDENTIALS_FILE"
+      [32m+[0m[0m public_key         = (known after apply)
+      [32m+[0m[0m public_key_type    = "TYPE_X509_PEM_FILE"
+      [32m+[0m[0m service_account_id = (known after apply)
+      [32m+[0m[0m valid_after        = (known after apply)
+      [32m+[0m[0m valid_before       = (known after apply)
+    }
+
+[1m  # module.capg_cluster_00.local_file.gcp_credentials[0m will be created
+[0m  [32m+[0m[0m resource "local_file" "gcp_credentials" {
+      [32m+[0m[0m content              = (sensitive value)
+      [32m+[0m[0m content_base64sha256 = (known after apply)
+      [32m+[0m[0m content_base64sha512 = (known after apply)
+      [32m+[0m[0m content_md5          = (known after apply)
+      [32m+[0m[0m content_sha1         = (known after apply)
+      [32m+[0m[0m content_sha256       = (known after apply)
+      [32m+[0m[0m content_sha512       = (known after apply)
+      [32m+[0m[0m directory_permission = "0777"
+      [32m+[0m[0m file_permission      = "0777"
+      [32m+[0m[0m filename             = "./.tmp/gcp-credentials.json"
+      [32m+[0m[0m id                   = (known after apply)
+    }
+
+[1m  # module.capg_cluster_00.local_file.workload_cluster_manifests[0m will be created
+[0m  [32m+[0m[0m resource "local_file" "workload_cluster_manifests" {
+      [32m+[0m[0m content              = (known after apply)
+      [32m+[0m[0m content_base64sha256 = (known after apply)
+      [32m+[0m[0m content_base64sha512 = (known after apply)
+      [32m+[0m[0m content_md5          = (known after apply)
+      [32m+[0m[0m content_sha1         = (known after apply)
+      [32m+[0m[0m content_sha256       = (known after apply)
+      [32m+[0m[0m content_sha512       = (known after apply)
+      [32m+[0m[0m directory_permission = "0777"
+      [32m+[0m[0m file_permission      = "0777"
+      [32m+[0m[0m filename             = "./.tmp/workload-cluster.yaml"
+      [32m+[0m[0m id                   = (known after apply)
+    }
+
+[1m  # module.capg_cluster_00.null_resource.create_bootstrap_cluster[0m will be created
+[0m  [32m+[0m[0m resource "null_resource" "create_bootstrap_cluster" {
+      [32m+[0m[0m id = (known after apply)
+    }
+
+[1m  # module.capg_cluster_00.null_resource.create_workload_cluster[0m will be created
+[0m  [32m+[0m[0m resource "null_resource" "create_workload_cluster" {
+      [32m+[0m[0m id = (known after apply)
+    }
+
+[1m  # module.capg_cluster_00.null_resource.init_cluster_api[0m will be created
+[0m  [32m+[0m[0m resource "null_resource" "init_cluster_api" {
+      [32m+[0m[0m id = (known after apply)
+    }
+
+[1m  # module.capg_cluster_00.null_resource.install_helm_and_jarvice[0m will be created
+[0m  [32m+[0m[0m resource "null_resource" "install_helm_and_jarvice" {
+      [32m+[0m[0m id = (known after apply)
+    }
+
+[1mPlan:[0m 17 to add, 0 to change, 0 to destroy.
+[0m
+Changes to Outputs:
+  [32m+[0m[0m capg_cluster_00       = (known after apply)
+  [32m+[0m[0m capg_cluster_00_slurm = {}
+[90m
+─────────────────────────────────────────────────────────────────────────────[0m
+
+Note: You didn't use the -out option to save this plan, so Terraform can't
+guarantee to take exactly these actions if you run "terraform apply" now.

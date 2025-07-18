@@ -1,0 +1,57 @@
+[0m[1mlocal_file.clusters: Refreshing state... [id=e81fe4792049fd6e7fd9070f4bae5b2f94309353][0m
+[0m[1mmodule.capg_cluster_00.data.google_project.jarvice: Reading...[0m[0m
+
+Terraform used the selected providers to generate the following execution
+plan. Resource actions are indicated with the following symbols:
+  [32m+[0m create[0m
+
+Terraform planned the following actions, but then encountered a problem:
+
+[1m  # module.capg_cluster_00.google_project_service.project_services["cloudresourcemanager.googleapis.com"][0m will be created
+[0m  [32m+[0m[0m resource "google_project_service" "project_services" {
+      [32m+[0m[0m disable_dependent_services = false
+      [32m+[0m[0m disable_on_destroy         = false
+      [32m+[0m[0m id                         = (known after apply)
+      [32m+[0m[0m project                    = (known after apply)
+      [32m+[0m[0m service                    = "cloudresourcemanager.googleapis.com"
+    }
+
+[1m  # module.capg_cluster_00.google_project_service.project_services["compute.googleapis.com"][0m will be created
+[0m  [32m+[0m[0m resource "google_project_service" "project_services" {
+      [32m+[0m[0m disable_dependent_services = false
+      [32m+[0m[0m disable_on_destroy         = false
+      [32m+[0m[0m id                         = (known after apply)
+      [32m+[0m[0m project                    = (known after apply)
+      [32m+[0m[0m service                    = "compute.googleapis.com"
+    }
+
+[1m  # module.capg_cluster_00.google_project_service.project_services["container.googleapis.com"][0m will be created
+[0m  [32m+[0m[0m resource "google_project_service" "project_services" {
+      [32m+[0m[0m disable_dependent_services = false
+      [32m+[0m[0m disable_on_destroy         = false
+      [32m+[0m[0m id                         = (known after apply)
+      [32m+[0m[0m project                    = (known after apply)
+      [32m+[0m[0m service                    = "container.googleapis.com"
+    }
+
+[1m  # module.capg_cluster_00.google_project_service.project_services["iam.googleapis.com"][0m will be created
+[0m  [32m+[0m[0m resource "google_project_service" "project_services" {
+      [32m+[0m[0m disable_dependent_services = false
+      [32m+[0m[0m disable_on_destroy         = false
+      [32m+[0m[0m id                         = (known after apply)
+      [32m+[0m[0m project                    = (known after apply)
+      [32m+[0m[0m service                    = "iam.googleapis.com"
+    }
+
+[1mPlan:[0m 4 to add, 0 to change, 0 to destroy.
+[0m
+Changes to Outputs:
+  [32m+[0m[0m capg_cluster_00_slurm = {}
+[31m╷[0m[0m
+[31m│[0m [0m[1m[31mError: [0m[0m[1mError when reading or editing Project "my-project-id": Get "https://cloudresourcemanager.googleapis.com/v1/projects/my-project-id?alt=json&prettyPrint=false": private key should be a PEM or plain PKCS1 or PKCS8; parse error: asn1: structure error: tags don't match (16 vs {class:0 tag:13 length:45 isCompound:true}) {optional:false explicit:false application:false private:false defaultValue:<nil> tag:<nil> stringType:0 timeType:0 set:false omitEmpty:false} pkcs1PrivateKey @2[0m
+[31m│[0m [0m
+[31m│[0m [0m[0m  with module.capg_cluster_00.data.google_project.jarvice,
+[31m│[0m [0m  on modules/capg/main.tf line 15, in data "google_project" "jarvice":
+[31m│[0m [0m  15: data "google_project" "jarvice" [4m{[0m[0m
+[31m│[0m [0m
+[31m╵[0m[0m

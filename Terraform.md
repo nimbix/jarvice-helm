@@ -1,5 +1,7 @@
 # JARVICE Deployment with Terraform
 
+🚀 **NEW**: For the latest modular, multi-cloud deployment approach, see **[DEPLOYMENT.md](DEPLOYMENT.md)** which covers the refactored configuration with platform-specific tfvars files and automated deployment scripts.
+
 This documentation describes how to deploy JARVICE using Terraform.
 Provisioning and deploying to Google Kubernetes Engine (GKE),
 Amazon Elastic Kubernetes Service (EKS), and

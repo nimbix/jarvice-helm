@@ -1,0 +1,158 @@
+# machinedeployment.yaml - MachineDeployment manifest template for node pools
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineDeployment
+metadata:
+  name: ${name}
+  namespace: ${namespace}
+  labels:
+    cluster.x-k8s.io/cluster-name: ${cluster_name}
+spec:
+  clusterName: ${cluster_name}
+  replicas: ${replicas}
+  selector:
+    matchLabels:
+      cluster.x-k8s.io/cluster-name: ${cluster_name}
+      cluster.x-k8s.io/deployment-name: ${name}
+  template:
+    metadata:
+      labels:
+        cluster.x-k8s.io/cluster-name: ${cluster_name}
+        cluster.x-k8s.io/deployment-name: ${name}
+    spec:
+      clusterName: ${cluster_name}
+      version: ${version}
+      bootstrap:
+        configRef:
+          apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+          kind: KubeadmConfigTemplate
+          name: ${name}
+          namespace: ${namespace}
+      infrastructureRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+        kind: GCPMachineTemplate
+        name: ${name}
+        namespace: ${namespace}
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: GCPMachineTemplate
+metadata:
+  name: ${name}
+  namespace: ${namespace}
+spec:
+  template:
+    spec:
+      instanceType: ${machine_type}
+      image: ${image_type}
+      additionalDisks:
+      - size: ${disk_size_gb}
+        type: ${disk_type}
+        %{if disk_encryption_key != null}
+        encryptionKey: ${disk_encryption_key}
+        %{endif}
+      serviceAccount:
+        email: ${service_account_email}
+        scopes:
+        %{for scope in split(",", oauth_scopes)}
+        - ${scope}
+        %{endfor}
+      additionalLabels: ${labels}
+      %{if taints != "[]"}
+      taints: ${taints}
+      %{endif}
+      additionalNetworkTags:
+      %{for tag in split(",", tags)}
+      - ${tag}
+      %{endfor}
+      %{if zones != ""}
+      zone: ${element(split(",", zones), 0)}
+      %{endif}
+      %{if enable_gcfs}
+      gcfs:
+        enabled: true
+      %{endif}
+      %{if accelerator_type != "" && accelerator_count > 0}
+      accelerators:
+      - type: ${accelerator_type}
+        count: ${accelerator_count}
+      %{endif}
+      additionalMetadata:
+        disable-legacy-endpoints: "${disable_legacy_endpoints}"
+        ssh-keys: "${ssh_key}"
+      %{if enable_autorepair}
+      autoRepair: true
+      %{endif}
+      %{if enable_autoupgrade}
+      autoUpgrade: true
+      %{endif}
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1beta1
+kind: KubeadmConfigTemplate
+metadata:
+  name: ${name}
+  namespace: ${namespace}
+spec:
+  template:
+    spec:
+      joinConfiguration:
+        nodeRegistration:
+          name: '{{ ds.meta_data.local_hostname.split(".")[0] }}'
+          kubeletExtraArgs:
+            cloud-provider: gce
+            %{if enable_gcfs}
+            feature-gates: "ReadWriteOncePod=false,GCEPDCSIDriver=false"
+            %{endif}
+      preKubeadmCommands:
+      - systemctl daemon-reload
+      - systemctl restart kubelet
+      %{if enable_gcfs}
+      - systemctl enable gcfs
+      - systemctl start gcfs
+      %{endif}
+      postKubeadmCommands:
+      - systemctl daemon-reload
+      - systemctl restart kubelet
+      %{if accelerator_type != "" && accelerator_count > 0}
+      - |
+        if lspci | grep -i nvidia; then
+          curl -fsSL https://nvidia.github.io/nvidia-docker/gpgkey | apt-key add -
+          distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+          curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | tee /etc/apt/sources.list.d/nvidia-docker.list
+          apt-get update && apt-get install -y nvidia-docker2
+          systemctl restart docker
+        fi
+      %{endif}
+---
+%{if enable_autoscaling}
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: MachineHealthCheck
+metadata:
+  name: ${name}
+  namespace: ${namespace}
+spec:
+  clusterName: ${cluster_name}
+  maxUnhealthy: 40%
+  selector:
+    matchLabels:
+      cluster.x-k8s.io/cluster-name: ${cluster_name}
+      cluster.x-k8s.io/deployment-name: ${name}
+  unhealthyConditions:
+  - type: Ready
+    status: Unknown
+    timeout: 300s
+  - type: Ready
+    status: "False"
+    timeout: 300s
+---
+apiVersion: autoscaling.k8s.io/v1beta2
+kind: MachineAutoscaler
+metadata:
+  name: ${name}
+  namespace: ${namespace}
+spec:
+  scaleTargetRef:
+    apiVersion: cluster.x-k8s.io/v1beta1
+    kind: MachineDeployment
+    name: ${name}
+  minReplicas: ${min_replicas}
+  maxReplicas: ${max_replicas}
+%{endif}

@@ -1,0 +1,16 @@
+# gcp-cluster.yaml - GCP Cluster infrastructure manifest template
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: GCPCluster
+metadata:
+  name: ${cluster_name}
+  namespace: ${namespace}
+  labels:
+    cluster.x-k8s.io/cluster-name: ${cluster_name}
+spec:
+  project: ${project}
+  region: ${region}
+  network:
+    name: ${network_name}
+    subnetName: ${subnetwork_name}
+    autoCreateSubnetworks: false
+  additionalLabels: ${additional_labels}

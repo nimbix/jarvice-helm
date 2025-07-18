@@ -1,0 +1,68 @@
+# cluster.yaml - Cluster API Cluster manifest template
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: ${cluster_name}
+  namespace: ${namespace}
+  labels:
+    cluster.x-k8s.io/cluster-name: ${cluster_name}
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks: ["${cluster_ipv4_cidr}"]
+    services:
+      cidrBlocks: ["${services_ipv4_cidr}"]
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    kind: GCPCluster
+    name: ${cluster_name}
+    namespace: ${namespace}
+  controlPlaneRef:
+    kind: GCPManagedControlPlane
+    apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+    name: ${cluster_name}
+    namespace: ${namespace}
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1beta1
+kind: GCPManagedControlPlane
+metadata:
+  name: ${cluster_name}
+  namespace: ${namespace}
+spec:
+  project: ${project}
+  location: ${region}
+  %{if kubernetes_version != ""}
+  version: ${kubernetes_version}
+  %{endif}
+  releaseChannel: ${release_channel}
+  network:
+    name: ${network_name}
+    subnetName: ${subnetwork_name}
+    %{if enable_ip_alias}
+    enableIPAlias: true
+    %{endif}
+  %{if max_pods_per_node != 110}
+  maxPodsPerNode: ${max_pods_per_node}
+  %{endif}
+  %{if enable_shielded_nodes}
+  enableShieldedNodes: true
+  %{endif}
+  %{if enable_autorepair}
+  enableAutoRepair: true
+  %{endif}
+  %{if enable_autoupgrade}
+  enableAutoUpgrade: true
+  %{endif}
+  %{if maintenance_window != ""}
+  maintenancePolicy:
+    window:
+      dailyMaintenanceWindow:
+        startTime: ${maintenance_window}
+  %{endif}
+  %{if disk_encryption_key != null}
+  diskEncryptionKey: ${disk_encryption_key}
+  %{endif}
+  additionalLabels:
+    cluster.x-k8s.io/cluster-name: ${cluster_name}
+    managed-by: terraform
+    provider: capg

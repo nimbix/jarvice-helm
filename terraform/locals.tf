@@ -16,6 +16,11 @@ locals {
             key => var.gkev2[key] if var.gkev2[key].enabled == true
     }
 
+    capg = {
+        for key in keys(var.capg):
+            key => var.capg[key] if var.capg[key].enabled == true
+    }
+
     eks = {
         for key in keys(var.eks):
             key => var.eks[key] if var.eks[key].enabled == true
@@ -31,7 +36,7 @@ locals {
             key => var.aks[key] if var.aks[key].enabled == true
     }
 
-    all = merge(var.k8s, var.gke, var.eks, var.aks)
-    all_enabled = merge(local.k8s, local.gke, local.eks, local.aks)
+    all = merge(var.k8s, var.gke, var.gkev2, var.capg, var.eks, var.eksv2, var.aks)
+    all_enabled = merge(local.k8s, local.gke, local.gkev2, local.capg, local.eks, local.eksv2, local.aks)
 }
 
