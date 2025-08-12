@@ -210,6 +210,10 @@ spec:
           - name: JARVICE_KNS_DYNAMIC_STORAGE_SIZE
             value: "{{ .Values.jarvice_kns_scheduler.env.JARVICE_KNS_DYNAMIC_STORAGE_SIZE }}"
 {{- end }}
+{{- if (not (empty .Values.jarvice_kns_scheduler.env.JARVICE_KNS_RUNTIME_CLASSES_TO_SYNC)) }}
+          - name: JARVICE_KNS_RUNTIME_CLASSES_TO_SYNC
+            value: "{{ .Values.jarvice_kns_scheduler.env.JARVICE_KNS_RUNTIME_CLASSES_TO_SYNC }}"
+{{- end }}
 {{- if (not (empty .Values.jarvice_kns_scheduler.env.JARVICE_KNS_VCLUSTER_SPAWN_DELAY)) }}
           - name: JARVICE_KNS_VCLUSTER_SPAWN_DELAY
             value: "{{ $.Values.jarvice_kns_scheduler.env.JARVICE_KNS_VCLUSTER_SPAWN_DELAY }}"
