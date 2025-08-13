@@ -1,5 +1,56 @@
+{{- if .Values.jarvice_bird.enabled }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: jarvice-get-keycloak-realm-public-key
+  namespace: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+  annotations:
+    "helm.sh/hook": post-upgrade,post-install
+    "helm.sh/hook-weight": "3"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+  labels:
+    app: jarvice
+spec:
+  template:
+    metadata:
+      name: jarvice-get-keycloak-realm-public-key
+      labels:
+        app: jarvice
+    spec:
+      volumes:
+      {{- include "jarvice.rootCertVolume" . | indent 6 }}
+      hostAliases:
+      {{- include "jarvice.hostAliases" . | nindent 8 }}
+      containers:
+        - name: jarvice-get-keycloak-realm-public-key
+          volumeMounts:
+          {{- include "jarvice.rootCertVolumeMount" . | indent 10 }}
+          env:
+          - name: JARVICE_SYSTEM_NAMESPACE
+            value: "{{ .Release.Namespace }}"
+          - name: KEYCLOAK_URL
+            value: "{{ .Values.jarvice_bird.env.KEYCLOAK_URL }}"
+          - name: KEYCLOAK_REALM
+            value: "{{ .Values.jarvice_bird.env.KEYCLOAK_REALM }}"
+          image: "{{ .Values.jarvice_helm_hook.image }}"
+          imagePullPolicy: "IfNotPresent"
+          command:
+          - /bin/sh
+          - -c
+          - |
+          {{- range $line := splitList "\n" (.Files.Get "files/jarvice-get-keycloak-realm-public-key.sh") }}
+          {{ . | indent 4 }}
+          {{- end }}
+      restartPolicy: OnFailure
+{{- if (not (empty .Values.jarvice.tolerations)) }}
+      tolerations: {{ .Values.jarvice.tolerations }}
+{{- end }}
+      serviceAccountName: jarvice-system
+{{- end }}
 {{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if .Values.jarvice_bird.create_client }}
+---
 apiVersion: v1
 data:
 {{- $files := .Files }}
@@ -162,54 +213,4 @@ spec:
       tolerations: {{ .Values.jarvice.tolerations }}
 {{- end }}
       serviceAccountName: jarvice-label-ns
-{{- if .Values.jarvice_bird.enabled }}
----
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: jarvice-get-keycloak-realm-public-key
-  namespace: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
-  annotations:
-    "helm.sh/hook": post-upgrade,post-install
-    "helm.sh/hook-weight": "3"
-    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
-  labels:
-    app: jarvice
-spec:
-  template:
-    metadata:
-      name: jarvice-get-keycloak-realm-public-key
-      labels:
-        app: jarvice
-    spec:
-      volumes:
-      {{- include "jarvice.rootCertVolume" . | indent 6 }}
-      hostAliases:
-      {{- include "jarvice.hostAliases" . | nindent 8 }}
-      containers:
-        - name: jarvice-get-keycloak-realm-public-key
-          volumeMounts:
-          {{- include "jarvice.rootCertVolumeMount" . | indent 10 }}
-          env:
-          - name: JARVICE_SYSTEM_NAMESPACE
-            value: "{{ .Release.Namespace }}"
-          - name: KEYCLOAK_URL
-            value: "{{ .Values.jarvice_bird.env.KEYCLOAK_URL }}"
-          - name: KEYCLOAK_REALM
-            value: "{{ .Values.jarvice_bird.env.KEYCLOAK_REALM }}"
-          image: "{{ .Values.jarvice_helm_hook.image }}"
-          imagePullPolicy: "IfNotPresent"
-          command:
-          - /bin/sh
-          - -c
-          - |
-          {{- range $line := splitList "\n" (.Files.Get "files/jarvice-get-keycloak-realm-public-key.sh") }}
-          {{ . | indent 4 }}
-          {{- end }}
-      restartPolicy: OnFailure
-{{- if (not (empty .Values.jarvice.tolerations)) }}
-      tolerations: {{ .Values.jarvice.tolerations }}
-{{- end }}
-      serviceAccountName: jarvice-system
-{{- end }}
 {{- end }}
