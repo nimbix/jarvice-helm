@@ -22,6 +22,7 @@ Environment|Value|Description/Notes
 `JARVICE_KNS_GOTTY_IMAGE_TAG`|string|Jarvice image tag for gotty image. Default is `n1.3.0`.
 `JARVICE_KNS_DEFAULT_STORAGE_CLASS`|string|Name of the default storage class to be propagated from host kubernetes cluster to inside nested kubernetes clusters.
 `JARVICE_KNS_DYNAMIC_STORAGE_SIZE`|string|Size by default to allocate to jobs that can be allocated on the `JARVICE_KNS_DEFAULT_STORAGE_CLASS`. Default is `100Gi`. IMPORTANT: set unit with the value: not `80` but `80Gi`.
+`JARVICE_KNS_RUNTIME_CLASSES_TO_SYNC`|string|A list of runtime classes to sync, comma separated. Default is empty, so no runtime classes to sync.
 
 The KNS also need the following standard Jarvice values:
 * `JARVICE_JOBS_DOMAIN`: domain name to use for job's ingress (downstream domain name).

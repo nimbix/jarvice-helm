@@ -979,6 +979,7 @@ jarvice_kns_scheduler:
     JARVICE_JOBS_INGRESS_CERT_SECRET_NAME: ""
     JARVICE_KNS_DEFAULT_STORAGE_CLASS: "jarvice-user"
     JARVICE_KNS_DYNAMIC_STORAGE_SIZE: ""
+    JARVICE_KNS_RUNTIME_CLASSES_TO_SYNC: ""
 
 jarvice_pod_scheduler:
   enabled: true
