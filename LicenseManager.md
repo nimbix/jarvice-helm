@@ -54,7 +54,7 @@ Typical use cases include, but are not limited to:
 
 ![General Component Architecture](jarvice-license-manager.svg)
 
-Consider that a user is running an application such as Ansys in their system, the company has a Flex server that contains a license file with the purchased licenses. The `jarvice-license-manager` web service communicates with one or more FlexNet license server(s), maintains a token cache and reservation system, and provides guidance to downstream schedulers about license availability so they can queue jobs as needed.  It is intended to be used with batch, rather than interactive jobs.
+ The `jarvice-license-manager` web service communicates with one or more FlexNet license server(s), maintains a token cache and reservation system, and provides guidance to downstream schedulers about license availability so they can queue jobs as needed.  It is intended to be used with batch, rather than interactive jobs.
 
 To prevent excessive traffic to the license server(s) during periods of frequent job submission, `jarvice-license-manager` maintains a cache of available tokens and updates it periodically for all configured license server(s).  A reservation system operates on top of the cache, so that job submissions can temporarily "reserve" feature tokens until the corresponding solver checks them out from the license server.
 
@@ -62,8 +62,8 @@ To reserve feature tokens for a job, users (or scripts/applications via API) mus
 
 #### Reservation Life Cycle
 
-* If the required tokens are available, a reservation is created which does not expire and counts against future reservation attempts. If the required number of tokens are not available, the reservation fails and the requesting job queues.
-* Once the job starts running (e.g. infrastructure queuing and container pulling for all parallel nodes in the job is complete), expiration is update to give the solver time to perform the actual checkout; typically, this is a 60 second period but can be increased or specified by the end user during job submission.  It is expected that the solver will perform the actual checkout within this time period, starting from the moment the application environment is ready.  Most solvers attempt license checkouts immediately upon invocation, which fits this model.
+* If the required tokens are available, a reservation is created which does not expire and counts against future reservation attempts. Otherwise, the reservation fails and the requesting job queues.
+* Once the job starts running (e.g. infrastructure queuing and container pulling for all parallel nodes in the job is complete), expiration is updated to give the solver time to perform the actual checkout. Typically, this is a 60 second period but can be increased or specified by the end user during job submission.  It is expected that the solver will perform the actual checkout within this time period, starting from the moment the application environment is ready.  Most solvers attempt license checkouts immediately upon invocation, which fits this model.
 * Expiring reservations are automatically deleted on the next license server update period.
 * If the job is canceled, terminated, or ends before the expiration time of the reservation, the reservation is automatically deleted since the job is no longer active.
 
