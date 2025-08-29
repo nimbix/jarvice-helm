@@ -371,11 +371,11 @@ spec:
         {{- include "jarvice.rootCertVolumeMount" . | indent 8 }}
         resources:
 {{ toYaml .Values.jarvice_api.resources | indent 10 }}
-      - name: jarvice-api-v1
+      - name: jarvice-api-external
 {{- if (eq ".Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE" "true") }}
-        image: {{ include "jarvice.registry" . }}/jarvice-api-v1:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+        image: {{ include "jarvice.registry" . }}/jarvice-api-external:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
 {{- else }}
-        image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-api-v1:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+        image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-api-external:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
 {{- end }}
 {{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
         imagePullPolicy: Always
@@ -383,7 +383,7 @@ spec:
         imagePullPolicy: IfNotPresent
 {{- end }}
         ports:
-          - name: http-api-v1
+          - name: http-api-external
             containerPort: 8000
         readinessProbe:
           exec:
@@ -398,7 +398,7 @@ spec:
           httpGet:
             scheme: HTTP
             port: http
-            path: {{ cat .Values.jarvice_api.ingressPath "/v1/live" | nospace | replace "//" "/" }}
+            path: {{ cat .Values.jarvice_api.ingressPath "/external/live" | nospace | replace "//" "/" }}
           initialDelaySeconds: {{ .Values.jarvice_api.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.jarvice_api.livenessProbe.periodSeconds }}
           timeoutSeconds: {{ .Values.jarvice_api.livenessProbe.timeoutSeconds }}
@@ -469,7 +469,7 @@ spec:
   - protocol: TCP
     port: 8000
     targetPort: 8000
-    name: http-api-v1
+    name: http-api-external
   selector:
     deployment: jarvice-api
 ---
@@ -518,7 +518,7 @@ spec:
   - protocol: TCP
     port: 8000
     targetPort: 8000
-    name: http-api-v1
+    name: http-api-external
   selector:
     deployment: jarvice-api
 ---
@@ -596,9 +596,9 @@ spec:
           service:
             name: jarvice-api
             port:
-              name: http-api-v1
+              name: http-api-external
         pathType: Prefix
-        path: {{ cat .Values.jarvice_api.ingressPath "/v1" | nospace | replace "//" "/" }}
+        path: {{ cat .Values.jarvice_api.ingressPath "/external" | nospace | replace "//" "/" }}
 {{- if ne "-" .Values.jarvice_api.ingressHost }}
     host: '{{- .Values.jarvice_api.ingressHost -}}'
 {{- if or (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}
