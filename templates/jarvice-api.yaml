@@ -383,7 +383,7 @@ spec:
         imagePullPolicy: IfNotPresent
 {{- end }}
         ports:
-          - name: http-api-external
+          - name: http-api-ext
             containerPort: 8000
         readinessProbe:
           exec:
@@ -469,7 +469,7 @@ spec:
   - protocol: TCP
     port: 8000
     targetPort: 8000
-    name: http-api-external
+    name: http-api-ext
   selector:
     deployment: jarvice-api
 ---
@@ -518,7 +518,7 @@ spec:
   - protocol: TCP
     port: 8000
     targetPort: 8000
-    name: http-api-external
+    name: http-api-ext
   selector:
     deployment: jarvice-api
 ---
@@ -596,7 +596,7 @@ spec:
           service:
             name: jarvice-api
             port:
-              name: http-api-external
+              name: http-api-ext
         pathType: Prefix
         path: {{ cat .Values.jarvice_api.ingressPath "/external" | nospace | replace "//" "/" }}
 {{- if ne "-" .Values.jarvice_api.ingressHost }}
