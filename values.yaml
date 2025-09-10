@@ -595,8 +595,8 @@ jarvice_registry_proxy_gc: # N/A if jarvice_registry_proxy.enabled is false
 
 jarvice_dal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
-  replicaCount: 2
-  replicaCountMax: 6
+  replicaCount: 1
+  replicaCountMax: 2
   # HorizontalPodAutoscaler is enabled when replicaCountMax > replicaCount
   autoscaling:
     metrics:
@@ -679,7 +679,7 @@ jarvice_dal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 
 jarvice_scheduler: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
-  replicaCount: 2
+  replicaCount: 1
   # PodDisruptionBudget default requires 25% minimum of pods must be running
   pdb:
     minAvailable: "25%"
@@ -752,7 +752,7 @@ jarvice_sched_pass: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 
 jarvice_k8s_scheduler:
   enabled: true
-  replicaCount: 2
+  replicaCount: 1
   # PodDisruptionBudget default requires 25% minimum of pods must be running
   pdb:
     minAvailable: "25%"
@@ -906,7 +906,7 @@ jarvice_kns_scheduler:
   enabled: true
   networkPolicy:
     enabled: false
-  replicaCount: 2
+  replicaCount: 1
   # PodDisruptionBudget default requires 25% minimum of pods must be running
   pdb:
     minAvailable: "25%"
@@ -1032,7 +1032,7 @@ jarvice_license_manager: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
   replicaCount: 1
-  replicaCountMax: 2
+  replicaCountMax: 1
   # HorizontalPodAutoscaler is enabled when replicaCountMax > replicaCount
   autoscaling:
     metrics:
