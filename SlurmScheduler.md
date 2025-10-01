@@ -85,6 +85,22 @@ To enable such feature:
 
 ### Configuring distant slurm cluster
 
+#### Execution environment
+
+##### Custom environment
+
+It is possible for the admin to set a custom environment automatically (like loading modules to launch singularity, etc).
+
+When job is executed, BEFORE singularity execution, the job script will look for an existing `$HOME/.jarvice_custom_env` executable file, and source it if present.
+
+Small tip: adding `set -x` in this file as command will enable verbose tracing for the remaining of the jobs, which can help debugging in case of needs.
+
+##### CUDA environment
+
+When using GPU nodes, the `--nv` parameter is passed to singularity at app execution. In order for singularity to be able to mount CUDA environment (libs, binaries, etc) into the running container, admin can define a small script at `$HOME/.jarvice_cuda_env`, which will be sourced before executing singularity, to load the desired CUDA toolkit.
+
+See `https://docs.sylabs.io/guides/3.5/user-guide/gpu.html` for more details on how singularity uses CUDA.
+
 #### SelectType
 
 Jarvice requires that at least SelectType be based on CPU/GPU/Memory to allow resources allocation and restrictions.
