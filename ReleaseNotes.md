@@ -125,6 +125,50 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.25.5-202509221354
+
+* (JAR-8831) Allow multiple zones for one admin
+* (JAR-9676) Implement queueing for Altair Radioss based on license 
+* (JAR-9825) (JAR-9587)- Create Keycloak realm for payers for KNS
+* (JAR-9905) Added wall time value as a jobenv variable 
+* (JAR-10061) Changed default scaling mode to Remote Resizing for VNC connection
+* (JAR-10256) Improved UI for billing view
+* (JAR-10315) Reduced logs in KNS to only app deployment
+* (JAR-10340) Fixed Adding Deleting license variables to accounts save
+* (JAR-10492)(JAR-10494) Improved UI for File picker 
+* (JAR-10491) Better error message from scheduler  
+* (JAR-10497) Allow am/pm in 24h format for dates on UI
+* (JAR-10498)(JAR-10973) Allow appdef to specify default label with substitution option
+* (JAR-10584) Fixed Docker Registry Status Style
+* (JAR-10602) Fixed Stats page in "administration" 
+* (JAR-10662) Fixed Missing translation for job 
+* (JAR-10646) Added Filter and Sort to the Dashboard Team Jobs table
+* (JAR-10668) Fixed padding in Impersonate Confirmation modal dialogue
+* (JAR-10702) Added a horizontal scroll bar to the output preview
+* (JAR-10762) Fixed Zone Admin list behavior
+* (JAR-10789) Improved User edit confirmation change
+* (JAR-10791) Moved "Allow team members to see team Jobs" checkbox from "Accounts Team Summary" to "Accounts Team" page
+* (JAR-10792) Fixed issue with incorrect team jobs batch terminate message
+* (JAR-10793) Simplified message shown when job is launched 
+* (JAR-10795) Restricted vertical height of cards on Team Jobs view and allow scroll
+* (JAR-10836) Fixed Missing text notification in Dashboard
+* (JAR-10844) Fixed Dashboard Team Jobs showing incorrect data including wall time limit
+* (JAR-10859) Allow Submenu collapse
+* (JAR-10869) Allow setting a default walltime limit in appdef 
+* (JAR-10870) Fixed Admin Machines view selection checkboxes 
+* (JAR-10889) Fixed issue with AppDef parameters description containing special character
+* (JAR-10908) Fixed Default zone not chosen when creating cluster
+* (JAR-10916) Improved License Manager documentation
+* (JAR-10924) Improved network Error handling
+* (JAR-10954) Fixed Team Billing report 
+* (JAR-10960) Fixed Clear filter does not clear text on Team jobs
+* (JAR-10961) Removed writable tmpfs support for Slurm Scheduler
+* (JAR-10966) Fixed missing job info button in Processing state
+* (JAR-10975) Fixed Date display in itemized billing reports
+* (JAR-10976) Fixed Billing filter user field behavior
+* (JAR-11077) Fixed App Whitelist selection* (JAR-10078) Fixed resizeable tables
+* (JAR-11117) Fixed Admin Billing Report shows Error
+
 ## 3.25.4-202507171337
 
 * (JAR-10253) idMapper refactoring for downstream environment multi-zone support
