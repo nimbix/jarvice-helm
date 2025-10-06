@@ -140,7 +140,8 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 * (JAR-10497) Allow am/pm in 24h format for dates on UI
 * (JAR-10498)(JAR-10973) Allow appdef to specify default label with substitution option
 * (JAR-10584) Fixed Docker Registry Status Style
-* (JAR-10602) Fixed Stats page in "administration" 
+* (JAR-10602) Fixed Stats page in "administration"
+* (JAR-10618) Fixed Pb with vcluster and resource consumption of the kine process
 * (JAR-10662) Fixed Missing translation for job 
 * (JAR-10646) Added Filter and Sort to the Dashboard Team Jobs table
 * (JAR-10668) Fixed padding in Impersonate Confirmation modal dialogue
