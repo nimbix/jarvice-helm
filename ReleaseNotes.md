@@ -125,6 +125,48 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.25.6-202512101626
+
+* (JAR-10533) Create UI for hiding/showing columns on Dashboard Team Jobs
+* (JAR-10670) Optionally use email address for External Projects membership
+* (JAR-10703) Enable limitation of 2 'desktop' jobs per user
+* (JAR-10897) Fix performance issue with team jobs view
+* (JAR-10963) File picker remembers the file Detailed state
+* (JAR-10965) Team Jobs fixed invalid error message on missing job operation
+* (JAR-11026) Improve account variables save
+* (JAR-11075) Fix CUDA support with singularity when using Slurm scheduler 
+* (JAR-11095) Enable DSSR vaults
+* (JAR-11099) Resizable table 'fit' and 'reset' features
+* (JAR-11105) Correct overlay size formatting in Slurm scheduler
+* (JAR-11114) Fix dialog when cloning a job
+* (JAR-11115) Admin Job Terminate dialog
+* (JAR-11141) Correct error omitting Applications from admin
+* (JAR-11144) (JAR-11318) Update proxy settings for Slurm scheduler
+* (JAR-11150) Implement enhanced limits functionality using JSON format
+* (JAR-11159) Remove duplicate CONNECT URL
+* (JAR-11169) Improve Team Actions
+* (JAR-11175) Deprecate Force checkbox under Storage
+* (JAR-11176) Fixed idmapper error with DSSR scheduler
+* (JAR-11186) Update Subscription Manager table
+* (JAR-11191) (JAR-11320) Prevent Connect button on apps from opening twice
+* (JAR-11192) Team Jobs Terminate All checks for jobs that failed to terminate
+* (JAR-11209) Enable ARM64 downstreams images build
+* (JAR-11224) mc_arch missing from Add and Edit Machine page on BIRD UI
+* (JAR-11225) Update arch handling for appEditSave
+* (JAR-11227) Fix CRUD operation with team limits
+* (JAR-11228) Update Ui after Editing a limit under Administration → Limits
+* (JAR-11229) Enhancements for Limits functionality
+* (JAR-11238) K8s pod scheduler needs to ensure oldest pending job is granted license reservation first when using License Manager
+* (JAR-11239) Correct `"publicip": true` flag
+* (JAR-11255) Update resources requested by gke-gcsfuse-sidecar
+* (JAR-11259) Enhancements to KNS scheduler
+* (JAR-11260) Enable search with Machine filter to list all available machine types
+* (JAR-11282) Fix LXCFS start.sh file permissions
+* (JAR-11314) Increased scrollable area when file picker window size changes
+* (JAR-11354) Assign JARVICE machines created by DAL init to the default scheduler
+* (JAR-11355) Create database migration remove NULL values from machines table
+* (JAR-11356) Get JARVICE identity (UID/GID) from Keycloak attributes
+
 ## 3.25.5-202509221354
 
 * (JAR-8831) Allow multiple zones for one admin
