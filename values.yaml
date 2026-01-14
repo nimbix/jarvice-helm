@@ -261,7 +261,7 @@ jarvice:
       tolerations: # '[{"key": "node-role.jarvice.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "node-role.kubernetes.io/jarvice-compute", "effect": "NoSchedule", "operator": "Exists"}, {"key": "CriticalAddonsOnly", "operator": "Exists"}]'
       nodeAffinity: # '{"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.jarvice.io/jarvice-compute", "operator": "Exists"}]}, {"matchExpressions": [{"key": "node-role.kubernetes.io/jarvice-compute", "operator": "Exists"}]}] }}'
       nodeSelector: # '{"node-role.jarvice.io/jarvice-compute": "true"}'
-      image: us-docker.pkg.dev/jarvice-system/images/jarvice-lxcfs:6.0.4
+      image: us-docker.pkg.dev/jarvice/images/jarvice-lxcfs:6.0.4
       imagePullPolicy: IfNotPresent
       env:
         HOST_LXCFS_DIR: /var/lib/lxcfs
@@ -493,9 +493,19 @@ jarvice_idmapper: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
   image: us-docker.pkg.dev/jarvice/images/idmapper:20201116
+  initImage: us-docker.pkg.dev/jarvice/images/idmapper-create-dirs:20250711
   imagePullPolicy: IfNotPresent
   # Shared filesystem settings.  Defaults to hostPath if NFS server is not set
   filesystem:
+    mapping: {} # Optional, used to update directory permissions to uid/gid - ONLY USE WITH EMPTYDIR.
+    #   foo: # Optional, used to map username "foo" to uid/gid
+    #     uid: 1000
+    #     gid: 1000
+    #   bar: # Optional, used to map username "bar" to uid/gid
+    #     uid: 1001
+    #     gid: 1001
+    # If mapping is not set, then uid/gid will be derived from the username
+    configMap: users-config
     path: /home
     server: # nfs.my-domain.com
   # Visit https://github.com/nimbix/idmapper for environment variable details
@@ -595,8 +605,9 @@ jarvice_registry_proxy_gc: # N/A if jarvice_registry_proxy.enabled is false
 
 jarvice_dal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
-  replicaCount: 1
-  replicaCountMax: 2
+  image: # Overwrites image from global value
+  replicaCount: 2
+  replicaCountMax: 6
   # HorizontalPodAutoscaler is enabled when replicaCountMax > replicaCount
   autoscaling:
     metrics:
@@ -679,7 +690,8 @@ jarvice_dal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 
 jarvice_scheduler: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
-  replicaCount: 1
+  image: # Overwrites image from global value
+  replicaCount: 2
   # PodDisruptionBudget default requires 25% minimum of pods must be running
   pdb:
     minAvailable: "25%"
@@ -718,6 +730,7 @@ jarvice_scheduler: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 
 jarvice_sched_pass: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
+  image: # Overwrites image from global value
   # PodDisruptionBudget default requires 25% minimum of pods must be running
   pdb:
     minAvailable: "25%"
@@ -752,7 +765,8 @@ jarvice_sched_pass: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 
 jarvice_k8s_scheduler:
   enabled: true
-  replicaCount: 1
+  image: # Overwrites image from global value
+  replicaCount: 2
   # PodDisruptionBudget default requires 25% minimum of pods must be running
   pdb:
     minAvailable: "25%"
@@ -800,6 +814,7 @@ jarvice_k8s_scheduler:
 
 jarvice_slurm_scheduler:
   enabled: false
+  image: # Overwrites image from global value
   networkPolicy:
     enabled: false
   replicaCount: 1
@@ -903,7 +918,8 @@ jarvice_slurm_scheduler:
   #     secret:
 
 jarvice_kns_scheduler:
-  enabled: true
+  enabled: false
+  image: # Overwrites image from global value
   networkPolicy:
     enabled: false
   replicaCount: 1
@@ -967,6 +983,7 @@ jarvice_kns_scheduler:
 
 jarvice_pod_scheduler:
   enabled: true
+  image: # Overwrites image from global value
   resources:
     requests:
       cpu: 2
@@ -998,6 +1015,7 @@ jarvice_pod_scheduler:
 # Uses "user:password" pair set in jarvice.JARVICE_LICENSE_MANAGER_KEY
 jarvice_license_manager: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: false
+  image: # Overwrites image from global value
   loadBalancerIP:
   ingressHost: # jarvice-license-manager.my-domain.com
   resources:
@@ -1031,8 +1049,10 @@ jarvice_license_manager: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 
 jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
-  replicaCount: 1
-  replicaCountMax: 1
+  image: # Overwrites image from global value
+  imagev1: # Overwrites image for v1 api from global value
+  replicaCount: 2
+  replicaCountMax: 6
   # HorizontalPodAutoscaler is enabled when replicaCountMax > replicaCount
   autoscaling:
     metrics:
@@ -1149,6 +1169,7 @@ jarvice_images_pull:
 
 jarvice_appsync: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
+  image: # Overwrites image from global value
   replicaCount: 1
   resources:
     limits:
@@ -1178,8 +1199,9 @@ jarvice_appsync: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 
 jarvice_mc_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
-  replicaCount: 1
-  replicaCountMax: 1
+  image: # Overwrites image from global value
+  replicaCount: 2
+  replicaCountMax: 6
   # HorizontalPodAutoscaler is enabled when replicaCountMax > replicaCount
   autoscaling:
     metrics:
@@ -1253,6 +1275,9 @@ jarvice_mc_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 
 jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: false
+  image: # Overwrites image from global value
+  imageserver: # Overwrites image for bird-server from global value
+  imageportal: # Overwrites image for bird-portal from global value
   create_client: false
   replicaCount: 1
   replicaCountMax: 1
@@ -1383,6 +1408,7 @@ jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 
 jarvice_hyperhub: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: false
+  image: # Overwrites image from global value
   replicaCount: 1
   autoscaling:
     metrics:

@@ -87,7 +87,7 @@ spec:
     solvers:
     - http01:
         ingress:
-          class: {{ .Values.jarvice.ingress.tls.class }}
+          class: {{ .Values.jarvice.ingress.class }}
 ---
 apiVersion: cert-manager.io/v1
 kind: Issuer
@@ -115,7 +115,7 @@ spec:
     solvers:
     - http01:
         ingress:
-          class: {{ .Values.jarvice.ingress.tls.class }}
+          class: {{ .Values.jarvice.ingress.class }}
 ---
 {{- end }}
 {{- else if (eq "selfsigned" .Values.jarvice.ingress.tls.cluster_issuer.name) }}

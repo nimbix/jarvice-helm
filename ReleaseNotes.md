@@ -125,6 +125,111 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.25.6-202512101626
+
+* (JAR-10533) Create UI for hiding/showing columns on Dashboard Team Jobs
+* (JAR-10670) Optionally use email address for External Projects membership
+* (JAR-10703) Enable limitation of 2 'desktop' jobs per user
+* (JAR-10897) Fix performance issue with team jobs view
+* (JAR-10963) File picker remembers the file Detailed state
+* (JAR-10965) Team Jobs fixed invalid error message on missing job operation
+* (JAR-11026) Improve account variables save
+* (JAR-11075) Fix CUDA support with singularity when using Slurm scheduler 
+* (JAR-11095) Enable DSSR vaults
+* (JAR-11099) Resizable table 'fit' and 'reset' features
+* (JAR-11105) Correct overlay size formatting in Slurm scheduler
+* (JAR-11114) Fix dialog when cloning a job
+* (JAR-11115) Admin Job Terminate dialog
+* (JAR-11141) Correct error omitting Applications from admin
+* (JAR-11144) (JAR-11318) Update proxy settings for Slurm scheduler
+* (JAR-11150) Implement enhanced limits functionality using JSON format
+* (JAR-11159) Remove duplicate CONNECT URL
+* (JAR-11169) Improve Team Actions
+* (JAR-11175) Deprecate Force checkbox under Storage
+* (JAR-11176) Fixed idmapper error with DSSR scheduler
+* (JAR-11186) Update Subscription Manager table
+* (JAR-11191) (JAR-11320) Prevent Connect button on apps from opening twice
+* (JAR-11192) Team Jobs Terminate All checks for jobs that failed to terminate
+* (JAR-11209) Enable ARM64 downstreams images build
+* (JAR-11224) mc_arch missing from Add and Edit Machine page on BIRD UI
+* (JAR-11225) Update arch handling for appEditSave
+* (JAR-11227) Fix CRUD operation with team limits
+* (JAR-11228) Update Ui after Editing a limit under Administration → Limits
+* (JAR-11229) Enhancements for Limits functionality
+* (JAR-11238) K8s pod scheduler needs to ensure oldest pending job is granted license reservation first when using License Manager
+* (JAR-11239) Correct `"publicip": true` flag
+* (JAR-11255) Update resources requested by gke-gcsfuse-sidecar
+* (JAR-11259) Enhancements to KNS scheduler
+* (JAR-11260) Enable search with Machine filter to list all available machine types
+* (JAR-11282) Fix LXCFS start.sh file permissions
+* (JAR-11314) Increased scrollable area when file picker window size changes
+* (JAR-11354) Assign JARVICE machines created by DAL init to the default scheduler
+* (JAR-11355) Create database migration remove NULL values from machines table
+* (JAR-11356) Get JARVICE identity (UID/GID) from Keycloak attributes
+
+## 3.25.5-202509221354
+
+* (JAR-8831) Allow multiple zones for one admin
+* (JAR-9676) Implement queueing for Altair Radioss based on license 
+* (JAR-9825) (JAR-9587)- Create Keycloak realm for payers for KNS
+* (JAR-9905) Added wall time value as a jobenv variable 
+* (JAR-10061) Changed default scaling mode to Remote Resizing for VNC connection
+* (JAR-10256) Improved UI for billing view
+* (JAR-10315) Reduced logs in KNS to only app deployment
+* (JAR-10340) Fixed Adding Deleting license variables to accounts save
+* (JAR-10492)(JAR-10494) Improved UI for File picker 
+* (JAR-10491) Better error message from scheduler  
+* (JAR-10497) Allow am/pm in 24h format for dates on UI
+* (JAR-10498)(JAR-10973) Allow appdef to specify default label with substitution option
+* (JAR-10584) Fixed Docker Registry Status Style
+* (JAR-10602) Fixed Stats page in "administration"
+* (JAR-10618) Fixed Pb with vcluster and resource consumption of the kine process
+* (JAR-10662) Fixed Missing translation for job 
+* (JAR-10646) Added Filter and Sort to the Dashboard Team Jobs table
+* (JAR-10668) Fixed padding in Impersonate Confirmation modal dialogue
+* (JAR-10702) Added a horizontal scroll bar to the output preview
+* (JAR-10762) Fixed Zone Admin list behavior
+* (JAR-10789) Improved User edit confirmation change
+* (JAR-10791) Moved "Allow team members to see team Jobs" checkbox from "Accounts Team Summary" to "Accounts Team" page
+* (JAR-10792) Fixed issue with incorrect team jobs batch terminate message
+* (JAR-10793) Simplified message shown when job is launched 
+* (JAR-10795) Restricted vertical height of cards on Team Jobs view and allow scroll
+* (JAR-10836) Fixed Missing text notification in Dashboard
+* (JAR-10844) Fixed Dashboard Team Jobs showing incorrect data including wall time limit
+* (JAR-10859) Allow Submenu collapse
+* (JAR-10869) Allow setting a default walltime limit in appdef 
+* (JAR-10870) Fixed Admin Machines view selection checkboxes 
+* (JAR-10889) Fixed issue with AppDef parameters description containing special character
+* (JAR-10908) Fixed Default zone not chosen when creating cluster
+* (JAR-10916) Improved License Manager documentation
+* (JAR-10924) Improved network Error handling
+* (JAR-10954) Fixed Team Billing report 
+* (JAR-10960) Fixed Clear filter does not clear text on Team jobs
+* (JAR-10961) Removed writable tmpfs support for Slurm Scheduler
+* (JAR-10966) Fixed missing job info button in Processing state
+* (JAR-10975) Fixed Date display in itemized billing reports
+* (JAR-10976) Fixed Billing filter user field behavior
+* (JAR-11077) Fixed App Whitelist selection* (JAR-10078) Fixed resizeable tables
+* (JAR-11117) Fixed Admin Billing Report shows Error
+
+## 3.25.4-202507171337
+
+* (JAR-10253) idMapper refactoring for downstream environment multi-zone support
+* (JAR-10451) Update lxcfs daemonset
+* (JAR-10493) Add additional fields on itemized billing report csv
+* (JAR-10519) Fix resizeable tables logic
+* (JAR-10520) (JAR-10605) (JAR-10625) Update File Picker in UI
+* (JAR-10529) Add version page to HyperHub
+* (JAR-10571) Update Dashboard reports to exclude jobs not owned by team
+* (JAR-10608) Change "Wall Time Limit" to "Time Limit"
+* (JAR-10645) (JAR-10647) Add additional columns to the Dashboard->Team Jobs table
+* (JAR-10700) Fix Account>External Data page rendering
+* (JAR-10215) (JAR-10707) Add triad support to License Manager
+* (JAR-10763) Update Administration>Users by Zones page
+* (JAR-10765) Allow Zone Admin to create new Clusters
+* (JAR-10781) Fix PushToCompute create application button
+* (JAR-10845) Update Dashboard>Team Jobs page
+
 ## 3.25.3-202505230409
 
 * (JAR-7028) Add REGESTRY and REPO_BASE for mirrored dependency images

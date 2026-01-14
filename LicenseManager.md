@@ -2,15 +2,7 @@
 
 A comprehensive mechanism for queuing jobs based on license token availability.
 
-## Note about Slurm-managed compute clusters
-
-When submitting jobs on a Slurm downstream cluster, JARVICE passes license token requests to Slurm's `sbatch` command using the `-L` flag, exactly as entered by the user at job submission time in the task builder's *OPTIONAL* tab or via the `/jarvice/submit` API's `licenses` key.  License management configuration is the responsibility of the Slurm system administrator.  For information about configuring and operating this feature in Slurm, please see [Licenses Guide](https://slurm.schedmd.com/licenses.html) in the *Slurm workload manager Documentation*.
-
-### Additional notes
-
-1. When combining Slurm and Kubernetes compute clusters with jobs using the same license pools, `jarvice-license-manager` for Kubernetes will automatically take into account any token checkouts that take place outside of JARVICE jobs run on Kubernetes.  Slurm's respective mechanism requires [Remote Licenses](https://slurm.schedmd.com/licenses.html#remote_licenses) to be set up for this!
-2. When jobs queue for licenses on Slurm, this reason will not be apparent to end users in the portal's *Dashboard*.  Jobs will simply appear as queued with no further explanation.  Using the `squeue` command on Slurm login nodes will reveal the `(Licenses)` reason if jobs are waiting for license availability.
-3. The [Automatic License Feature Computation](#advanced-automatic-license-feature-computation) feature can still be used even if one or more downstream clusters are Slurm-based.  Other advanced features, however, require Kubernetes clusters.
+The license manager operates in different ways depending on the job scheduler’s architecture and use cases: Kubernetes compute clusters and Slurm-based compute clusters. For more information on Slurm-based compute clusters, click [here](#note-about-slurm-managed-compute-clusters).
 
 ---
 
@@ -40,18 +32,20 @@ When submitting jobs on a Slurm downstream cluster, JARVICE passes license token
 
 The `jarvice-license-manager` component is an optional service in the JARVICE control plane (upstream) to provide support for queuing jobs based on license token availability on external license servers.  It is a cluster-wide feature intended to be used with batch, rather than interactive, jobs.
 
+It automates the process of managing and allocating the required licenses to the jobs after the job submission. Depending on the availability of the required licenses and priority of the jobs, the License manger either runs the application jobs or queues them. The queued jobs are scheduled to run after the license is available.
+
 ### Use Cases
 
 Typical use cases include, but are not limited to:
 
-* *"submit and forget"* for batch simulations - jobs will queue (rather than fail) until both infrastructure and license tokens are available
-* ensuring important projects get priority for license tokens versus other projects
-* maximizing cost efficiency on auto-scaling infrastructure to ensure scale-up only happens if licenses are available to run the respective jobs
+* *"Submit and forget"* for batch simulations - submitted jobs will run if the compute resources and licenses are available. Otherwise, the jobs will be queued (rather than fail) until both infrastructure and license tokens are available.
+* Prioritisation - ensures important projects get priority for license tokens versus other projects.
+* License-based provisioning - maximizes cost efficiency on auto-scaling infrastructure to ensure scale-up happens only if the required licenses are available to run the jobs.
 
 ### Notable Features
 
 * Multi-cloud/multi-cluster support
-* Multiple vendor/application support; allows configuration of multiple license servers to manage
+* Multiple vendor/application support; allows configuration of multiple license servers to manage licenses
 * Project-based limits and overrides for tokens
 * Optional feature groups and "pseudo-features" to simplify job submission
 * Web-based management [API](#api)
@@ -60,25 +54,25 @@ Typical use cases include, but are not limited to:
 
 ![General Component Architecture](jarvice-license-manager.svg)
 
-The `jarvice-license-manager` web service communicates with one or more FlexNet license server(s), maintains a token cache and reservation system, and provides guidance to downstream schedulers about license availability so they can queue jobs as needed.  It is intended to be used with batch, rather than interactive jobs.
+ The `jarvice-license-manager` web service communicates with one or more FlexNet license server(s), maintains a token cache and reservation system, and provides guidance to downstream schedulers about license availability so they can queue jobs as needed.  It is intended to be used with batch, rather than interactive jobs.
 
-To avoid overwhelming license server(s) with traffic during periods of frequent job submission, `jarvice-license-manager` keeps a cache of available tokens and updates it periodically for all configured license server(s).  A reservation system fronts the cache, so that job submissions can "reserve" feature tokens until the respective solver checks them out from the license server.
+To prevent excessive traffic to the license server(s) during periods of frequent job submission, `jarvice-license-manager` maintains a cache of available tokens and updates it periodically for all configured license server(s).  A reservation system operates on top of the cache, so that job submissions can temporarily "reserve" feature tokens until the corresponding solver checks them out from the license server.
 
-Users (or scripts/applications via API) must specify token reservation information at the time of job submission.  This should reflect the expected license use of the solver itself once it starts.
+To reserve feature tokens for a job, users (or scripts/applications via API) must specify token reservation information at the time of job submission.  This should reflect the expected license usage of the solver once it starts.
 
 #### Reservation Life Cycle
 
-* If tokens are available, a reservation is created which does not expire and counts against future reservation attempts; if not enough tokens are available, the reservation fails and the requesting job queues.
-* Once the job starts (e.g. infrastructure queuing and container pulling for all parallel nodes in the job is complete), expiration is update to give the solver time to perform the actual checkout; typically, this is a 60 second period but can be increased or specified by the end user during job submission.  The expectation is that the solver will perform the actual checkout within this time period, which starts the moment the application environment is ready.  Most solvers attempt license checkouts immediately upon invocation, which fits this model.
+* If the required tokens are available, a reservation is created which does not expire and counts against future reservation attempts. Otherwise, the reservation fails and the requesting job queues.
+* Once the job starts running (e.g. infrastructure queuing and container pulling for all parallel nodes in the job is complete), expiration is updated to give the solver time to perform the actual checkout. Typically, this is a 60 second period but can be increased or specified by the end user during job submission.  It is expected that the solver will perform the actual checkout within this time period, starting from the moment the application environment is ready.  Most solvers attempt license checkouts immediately upon invocation, which fits this model.
 * Expiring reservations are automatically deleted on the next license server update period.
 * If the job is canceled, terminated, or ends before the expiration time of the reservation, the reservation is automatically deleted since the job is no longer active.
 
-The reservation life cycle is intended to achieve 2 goals:
+The reservation life cycle is intended to achieve the following goals:
 
-1. Favor queuing rather than failure, even at the slight expense of license utilization for short periods of time during high frequency job submission.
+1. Favor job queuing rather than failure, even at the slight expense of license utilization for short periods of time during high frequency job submission.
 2. Facilitate consuming license tokens from outside of JARVICE concurrently, although this is not recommended.
 
-Generally speaking, reducing the update interval period increases license token utilization under high load at the expense of putting additional pressure on the license server(s) themselves.
+Generally, reducing the update interval period increases license token utilization under high load at the expense of putting additional pressure on the license server(s) themselves.
 
 #### Fault Tolerance
 
@@ -86,7 +80,7 @@ While the `jarvice-license-manager` component itself is stateless and can be res
 
 #### Additional Information
 
-* JARVICE cannot anticipate what actual license tokens will be checked out by a given solver with a given set of parameters.  This is why the reservation requests are user-initiated, and it's expected that end users understand what tokens their jobs will require.  If users do not specify any license reservation tokens at submission time, JARVICE does not attempt to apply queuing rules to those jobs.
+* JARVICE cannot anticipate which license tokens will be checked out by a given solver with a given set of parameters.  Therefore, the reservation requests are user-initiated, and it's expected that end users understand what tokens their jobs will require.  If users do not specify any license reservation tokens at submission time, JARVICE does not attempt to apply queuing rules to those jobs.
 * The `jarvice-license-manager` component has an [API](#api) that can be used to inspect internal configuration as well as license token availability as reported by configured FlexNet servers.  Note that the API requires *Ingress* to be enabled so it can be accessed from outside the control plane.
 
 [Back to Contents](#contents)
@@ -588,3 +582,12 @@ Note that in all cases, numbers refer to tokens and not jobs - e.g. it's possibl
 
 [Back to Contents](#contents)
 
+## Note about Slurm-managed compute clusters
+
+When submitting jobs on a Slurm downstream cluster, JARVICE passes license token requests to Slurm's `sbatch` command using the `-L` flag, exactly as entered by the user at job submission time in the task builder's *OPTIONAL* tab or via the `/jarvice/submit` API's `licenses` key.  License management configuration is the responsibility of the Slurm system administrator.  For information about configuring and operating this feature in Slurm, please see [Licenses Guide](https://slurm.schedmd.com/licenses.html) in the *Slurm workload manager Documentation*.
+
+### Additional notes
+
+1. When combining Slurm and Kubernetes compute clusters with jobs using the same license pools, `jarvice-license-manager` for Kubernetes will automatically take into account any token checkouts that take place outside of JARVICE jobs run on Kubernetes.  Slurm's respective mechanism requires [Remote Licenses](https://slurm.schedmd.com/licenses.html#remote_licenses) to be set up for this!
+2. When jobs queue for licenses on Slurm, this reason will not be apparent to end users in the portal's *Dashboard*.  Jobs will simply appear as queued with no further explanation.  Using the `squeue` command on Slurm login nodes will reveal the `(Licenses)` reason if jobs are waiting for license availability.
+3. The [Automatic License Feature Computation](#advanced-automatic-license-feature-computation) feature can still be used even if one or more downstream clusters are Slurm-based.  Other advanced features, however, require Kubernetes clusters.
