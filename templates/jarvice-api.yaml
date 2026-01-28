@@ -373,8 +373,10 @@ spec:
         {{- include "jarvice.rootCertVolumeMount" . | indent 8 }}
         resources:
 {{ toYaml .Values.jarvice_api.resources | indent 10 }}
-      - name: jarvice-api-external
-{{- if (eq ".Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE" "true") }}
+      - name: jarvice-api-v1
+{{- if (not (empty .Values.jarvice_api.imagev1)) }}
+        image: {{ .Values.jarvice_api.imagev1 }}
+{{- else if eq .Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE "true" }}
         image: {{ include "jarvice.registry" . }}/jarvice-api-external:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
 {{- else }}
         image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-api-external:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}

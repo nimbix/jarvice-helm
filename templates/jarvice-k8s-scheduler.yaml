@@ -117,6 +117,8 @@ spec:
           successThreshold: {{ .Values.jarvice_k8s_scheduler.livenessProbe.successThreshold }}
           failureThreshold: {{ .Values.jarvice_k8s_scheduler.livenessProbe.failureThreshold }}
         env:
+          - name: JARVICE_JOBS_GRACE_PERIOD
+            value: "{{ .Values.jarvice_k8s_scheduler.env.JARVICE_JOBS_GRACE_PERIOD }}"
 {{- if .Values.jarvice_idmapper.enabled }}
           - name: JARVICE_IDMAPPER_URL
             value: "http://jarvice-idmapper:8080"
