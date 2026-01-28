@@ -808,6 +808,7 @@ jarvice_k8s_scheduler:
     JARVICE_UNFS_NODE_SELECTOR: # '{"node-role.jarvice.io/jarvice-storage": "true"}' # '{"node-role.kubernetes.io/jarvice-storage": "true"}'
     JARVICE_UNFS3_IMAGE: us-docker.pkg.dev/jarvice/images/unfs3:20231221-1 # change if mirroring locally
     JARVICE_PVCLS_IMAGE: us-docker.pkg.dev/jarvice/images/alpine:3.18 # change if mirroring locally
+    JARVICE_JOBS_GRACE_PERIOD: 3 # job grace period during shutdown
     JARVICE_SCHED_JOB_UID:  # set to numeric value to override UID for jobs
     JARVICE_SCHED_JOB_GID:  # set to numeric value to override GID for jobs
     JARVICE_GCSFUSE_SIDECAR_IMAGE: # set to GCS FUSE sidecar image
