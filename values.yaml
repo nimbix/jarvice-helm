@@ -136,6 +136,8 @@ jarvice:
   # downstream pod scheduler maximum number of parallel worker threads
   JARVICE_POD_SCHED_WORKERS:  # defaults to 8
 
+  JARVICE_INGRESS_SVC_NAME: # ingress-nginx-controller
+
   externalHosts:
     #- ip: 192.0.2.1
     #  hostnames:

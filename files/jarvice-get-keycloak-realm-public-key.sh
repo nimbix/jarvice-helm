@@ -1,4 +1,6 @@
 set -e
+
+kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name="keycloakx" --timeout=600s --namespace="$JARVICE_SYSTEM_NAMESPACE"
 # get Keycloak realm certificate
 while [[ "$(curl -s -o /dev/null -m 3 -L -w ''%{http_code}'' ${KEYCLOAK_URL}/realms/master)" != "200" ]]; do
     echo "Waiting for keycloak" && sleep 30
