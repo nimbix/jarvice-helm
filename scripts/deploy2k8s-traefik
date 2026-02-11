@@ -135,7 +135,7 @@ echo "* Creating namespace: $namespace"
 
 echo
 if [ -n "$node_port" ]; then
-    ip_args="--set service.type=NodePort --set ports.traefik.expose=true --set ports.traefik.nodePort=$node_port"
+    ip_args="--set service.type=NodePort --set ports.traefik.expose=true --set ports.websecure.nodePort=$node_port"
 elif [ -n "$load_balancer_external_ip" ]; then
     ip_args="--set service.type=LoadBalancer --set service.spec.externalIPs[0]=$load_balancer_external_ip"
 else
