@@ -6,8 +6,11 @@ metadata:
 spec:
   sources:
   - useDefaultCAs: true
-{{- if or (eq "letsencrypt-staging" .Values.jarvice.ingress.tls.issuer.name) (not (empty .Values.jarvice.trust_manager.inLine)) }}
+{{- if or (eq "letsencrypt-staging" .Values.jarvice.ingress.tls.issuer.name) (not (empty .Values.jarvice.trust_manager.inLine)) (not (empty .Values.jarvice.ingress.tls.ca)) }}
   - inLine: |
+{{- if (not (empty .Values.jarvice.ingress.tls.ca)) }}
+{{ .Values.jarvice.ingress.tls.ca | b64dec | indent 6 }}
+{{- end }}
 {{- if (eq "letsencrypt-staging" .Values.jarvice.ingress.tls.issuer.name) }}
 {{- $files := .Files }}
 {{ $files.Get "files/lets-encrypt-staging.pem" | indent 6 }}
