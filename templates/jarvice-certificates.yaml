@@ -40,7 +40,9 @@ metadata:
     component: jarvice-system
 type: kubernetes.io/tls
 data:
+  {{- if (not (empty .Values.jarvice.ingress.tls.ca)) }}
   ca.crt: {{ .Values.jarvice.ingress.tls.ca }}
+  {{- end }}
   tls.crt: {{ .Values.jarvice.ingress.tls.crt }}
   tls.key: {{ .Values.jarvice.ingress.tls.key }}
 ---
@@ -58,7 +60,9 @@ metadata:
     component: jarvice-system
 type: kubernetes.io/tls
 data:
+  {{- if (not (empty .Values.jarvice.ingress.tls.ca)) }}
   ca.crt: {{ .Values.jarvice.ingress.tls.ca }}
+  {{- end }}
   tls.crt: {{ .Values.jarvice.ingress.tls.crt }}
   tls.key: {{ .Values.jarvice.ingress.tls.key }}
 ---
