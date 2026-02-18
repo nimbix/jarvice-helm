@@ -157,6 +157,7 @@ jarvice:
         # JARVICE_MAIL_ADMINS email will be used if issuer.email is not set.
         email: # "admin@my-domain.com"
       # If crt and key values are provided, issuer settings will be ignored
+      ca:  # base64 encoded.  e.g. Execute: base64 -w 0 <site-ca>.pem
       crt: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.pem
       key: # base64 encoded.  e.g. Execute: base64 -w 0 <site-domain>.key
 
