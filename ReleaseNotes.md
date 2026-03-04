@@ -17,14 +17,14 @@ The following assumes the latest version of JARVICE is in use; this version will
 
 #### Latest Version Supported
 
-Kubernetes **1.28**; newer versions are not explicitly supported.  Using the latest patch release of each version is recommended but not required.
+Kubernetes **1.34**; newer versions are not explicitly supported.  Using the latest patch release of each version is recommended but not required.
 
 #### Previous Version(s) Supported
 
 Up to 2 previous minor revisions (from the one indicated in [Latest Version Supported](#latest-version-supported)) will be supported at any given time, unless otherwise noted.  Currently this list is limited to:
 
-* Kubernetes **1.27**
-* Kubernetes **1.26**
+* Kubernetes **1.33**
+* Kubernetes **1.32**
 
 ### External S3-compatible Object Storage Service Compatibility
 
@@ -124,6 +124,41 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 
 # Changelog
+
+## 3.26.0-202602250002
+
+* (JAR-8215)  Fixed V2 app Webshell crash on non jarvice-desktop images
+* (JAR-10319) Add OCI image support to App Sync
+* (JAR-10884) Enable graceful shutdown for k8s-scheduler jobs
+* (JAR-10887) Enhance the Pull History dialog
+* (JAR-10987) Use the same time format on all UI pages
+* (JAR-11235) Suppress error notifications shown after job is completed
+* (JAR-11236) Allow setting job label from AppDef parameter
+* (JAR-11237) Modifications on additional fields on itemized billing report csv
+* (JAR-11256) Update pod scheduler to consider resources requested by all containers within a pod
+* (JAR-11257) Allow Job Project Field to be Searchable 
+* (JAR-11262) Fixed error when requesting CSV from External Project Billing 
+* (JAR-11350) Allow AppDef to override publicip flag using AppDef Command
+* (JAR-11357) Fixed Linux GID set for v2 JARVICE applications
+* (JAR-11374) Enhance responsiveness of Dashboard and History pages
+* (JAR-11405) Add support for multiple GCS FUSE buckets using JARVICE External Data provider
+* (JAR-11443) Fixed duplicate notification popup for job walltime
+* (JAR-11444) Fixed missing owner column on Team Jobs page
+* (JAR-11446) Add Persistent Volume permissions to JARVICE ClusterRole
+* (JAR-11447) Update lxcfs daemonset to use public container image 
+* (JAR-11448) Update jarvice-lxcfs start.sh script to copy required files to host machine
+* (JAR-11450) Update JARVICE base containers to Alpine 3.23 and Ubuntu Noble
+* (JAR-11492) Fixed issue with sorting Team Jobs
+* (JAR-11493) Use JARVICE init signal with k8s-scheduler to allow graceful shutdown
+* (JAR-11500) Fixed issue with Job History output not showing
+* (JAR-11504) Fixed duplications when creating new payer limit
+* (JAR-11517) Automatically refresh time limit on Dashboard page
+* (JAR-11578) Use ClusterIPs for hostAliases used by helm templates
+* (JAR-11579) Optionally add CA to jarvice.ingress.tls for externally provided certificate
+* (JAR-11588) Update traefik deploy script nodePort option
+* (JAR-11589) Fixed missing password secret from Slurm scheduler runtime
+* (JAR-11602) Add JARVICE machine to Kubernetes pod label
+* (JAR-11613) Add Kueue queueing support to JARVICE
 
 ## 3.25.6-202512101626
 
