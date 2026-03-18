@@ -407,6 +407,14 @@ spec:
           - name: JARVICE_GCSFUSE_SIDECAR_IMAGE
             value: "{{ .Values.jarvice_k8s_scheduler.env.JARVICE_GCSFUSE_SIDECAR_IMAGE }}"
 {{- end }}
+{{- if (not (empty .Values.jarvice_k8s_scheduler.env.JARVICE_POWER_PLUGIN)) }}
+          - name: JARVICE_POWER_PLUGIN
+            value: '{{ .Values.jarvice_k8s_scheduler.env.JARVICE_POWER_PLUGIN }}'
+{{- end }}
+{{- if (not (empty .Values.jarvice_k8s_scheduler.env.JARVICE_POWER_PLUGIN_PARAMETERS)) }}
+          - name: JARVICE_POWER_PLUGIN_PARAMETERS
+            value: '{{ .Values.jarvice_k8s_scheduler.env.JARVICE_POWER_PLUGIN_PARAMETERS }}'
+{{- end }}
         volumeMounts:
         {{- include "jarvice.rootCertVolumeMount" . | indent 8 }}
         resources:
