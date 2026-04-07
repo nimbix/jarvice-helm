@@ -1,4 +1,34 @@
 {{- if .Values.jarvice_k8s_scheduler.enabled }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: jarvice-k8s-scheduler
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jarvice-system
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-system
+  namespace: jarvice-k8s-scheduler
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: jarvice-system:jarvice-k8s-scheduler
+  labels:
+    {{- include "jarvice.release_labels" . | indent 4 }}
+    component: jarvice-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: jarvice-system:jarvice-k8s-scheduler
+subjects:
+- kind: ServiceAccount
+  name: jarvice-system
+  namespace: jarvice-k8s-scheduler
+---
 {{- if gt (.Values.jarvice_k8s_scheduler.replicaCount | int) 1 }}
 {{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
 apiVersion: policy/v1
@@ -121,7 +151,7 @@ spec:
             value: "{{ .Values.jarvice_k8s_scheduler.env.JARVICE_JOBS_GRACE_PERIOD }}"
 {{- if .Values.jarvice_idmapper.enabled }}
           - name: JARVICE_IDMAPPER_URL
-            value: "http://jarvice-idmapper:8080"
+            value: "http://jarvice-idmapper.jarvice-system.svc.cluster.local:8080"
 {{- end }}
 {{- if .Values.jarvice_bird.enabled }}
           - name: JARVICE_BIRD_API_URL
@@ -175,9 +205,9 @@ spec:
 {{- end }}
 {{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
           - name: JARVICE_DAL_URL
-            value: "http://jarvice-dal:8080"
+            value: "http://jarvice-dal.jarvice-system.svc.cluster.local:8080"
           - name: JARVICE_SCHED_URL
-            value: "https://jarvice-scheduler:9443"
+            value: "https://jarvice-scheduler.jarvice-system.svc.cluster.local:9443"
 {{- end }}
           - name: JARVICE_SCHED_SERVER_KEY
             valueFrom:
@@ -382,6 +412,7 @@ spec:
               secretKeyRef:
                 name: jarvice-license-manager
                 key: JARVICE_LICENSE_MANAGER_KEY
+                optional: true
 {{- end }}
 {{- if and (not (empty .Values.jarvice.JARVICE_S3_SECRETKEY)) (not (empty .Values.jarvice.JARVICE_S3_ACCESSKEY)) (not (empty .Values.jarvice.JARVICE_S3_BUCKET)) }}
           - name: JARVICE_S3_BUCKET
