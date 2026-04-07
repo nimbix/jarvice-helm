@@ -812,7 +812,7 @@ jarvice_k8s_scheduler:
     JARVICE_SCHED_JOB_UID:  # set to numeric value to override UID for jobs
     JARVICE_SCHED_JOB_GID:  # set to numeric value to override GID for jobs
     JARVICE_GCSFUSE_SIDECAR_IMAGE: # set to GCS FUSE sidecar image
-    JARVICE_POWER_PLUGIN:  # Power plugin to use. None deactivate the feature and will only return empty list
+    JARVICE_POWER_PLUGIN: "dummy" # Power plugin to use. None deactivate the feature and will only return empty list
     JARVICE_POWER_PLUGIN_PARAMETERS: '{}'  # Power plugin parameters (plugin dependant)
 
 jarvice_slurm_scheduler:
