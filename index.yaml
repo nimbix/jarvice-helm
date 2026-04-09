@@ -3,40 +3,6 @@ entries:
   jarvice:
   - annotations:
       tag: jarvice-master
-      version: 3.26.0-202603041717
-    apiVersion: v2
-    appVersion: 3.26.0-202603041717
-    created: "2026-03-04T20:19:31.799035784Z"
-    dependencies:
-    - condition: keycloakx.enabled
-      name: keycloakx
-      repository: https://codecentric.github.io/helm-charts/
-      version: 2.1.0
-    - condition: postgresql.enabled
-      name: postgresql
-      repository: https://charts.bitnami.com/bitnami
-      version: 12.2.7
-    description: JARVICE cloud platform
-    digest: 0c145b6f662ddb256f5c83cb625975053e606defcbfa34b156d40a1ec5887bd5
-    home: http://www.nimbix.net/
-    icon: https://github.com/nimbix/jarvice-helm/raw/master/skin-default/favicon.png
-    keywords:
-    - JARVICE
-    - HPC
-    - cloud
-    kubeVersion: '>=1.14.0-0'
-    maintainers:
-    - email: support@nimbix.net
-      name: Nimbix, Inc.
-      url: http://www.nimbix.net/
-    name: jarvice
-    sources:
-    - https://github.com/nimbix/jarvice-helm
-    urls:
-    - https://nimbix.github.io/jarvice-helm/jarvice-3.26.0.tgz
-    version: 3.26.0
-  - annotations:
-      tag: jarvice-master
       version: 3.26.0-202602250002
     apiVersion: v2
     appVersion: 3.26.0-202602250002
@@ -68,7 +34,7 @@ entries:
     - https://github.com/nimbix/jarvice-helm
     urls:
     - https://nimbix.github.io/jarvice-helm/jarvice-3.26.0-202602250002.tgz
-    version: 3.26.0-202602250002
+    version: 3.26.0
   - annotations:
       tag: jarvice-master
       version: 3.25.6-202512101626
