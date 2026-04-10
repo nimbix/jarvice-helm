@@ -1,4 +1,23 @@
 {{- if .Values.jarvice_k8s_scheduler.enabled }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jarvice-k8s-scheduler-sa
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: jarvice-k8s-scheduler-crb
+subjects:
+- kind: ServiceAccount
+  name: jarvice-k8s-scheduler-sa
+  namespace: "{{ .Release.Namespace }}"
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+---
 {{- if gt (.Values.jarvice_k8s_scheduler.replicaCount | int) 1 }}
 {{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
 apiVersion: policy/v1
@@ -39,7 +58,7 @@ spec:
       annotations:
         deployment-date: {{ now | quote }}
     spec:
-      serviceAccountName: jarvice-system
+      serviceAccountName: jarvice-k8s-scheduler-sa
 {{- if (not (empty .Values.jarvice_k8s_scheduler.tolerations)) }}
       tolerations: {{ .Values.jarvice_k8s_scheduler.tolerations }}
 {{- else if (not (empty .Values.jarvice.tolerations)) }}
