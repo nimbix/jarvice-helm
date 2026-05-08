@@ -125,6 +125,36 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.26.1-202604291400
+
+* (JAR-9953)  Add missing Project column on CSV report
+* (JAR-10951) Reset impersonation if login fails 
+* (JAR-11103) Update /v1/billing parameter names  
+* (JAR-11136) Use chronological ordering for Recent apps list
+* (JAR-11350) Allow AppDef to override publicip flag in command object
+* (JAR-11381) Update Job history and Active job views 
+* (JAR-11490) Create JARVICE machine types based on SMC nodes
+* (JAR-11516) Allow user identity with Slurm job submission
+* (JAR-11520) Enable searchable Machines from Submit
+* (JAR-11603) Ensure Submit button does not send duplicate submissions
+* (JAR-11604) Update Submit layout to render projects input with other fields
+* (JAR-11631) Update job end time recorded by SchedPass
+* (JAR-11637) Use BULL branding
+* (JAR-11645) Update PushToCompute history dialog to support Build messages
+* (JAR-11662) Allow users missing apps/vaults to still login
+* (JAR-11666) Fix bug with Submit dialog spinner not closing 
+* (JAR-11685) Support Keycloak bearer token with external API
+* (JAR-11686) PushToCompute Apps screen no longer overlaps with background
+* (JAR-11694) Support JARVICE user vault on SMC
+* (JAR-11702) Add missing Job labels to History
+* (JAR-11703) Ensure impersonated sessions can logout
+* (JAR-11704) Change paginator background color in dark mode
+* (JAR-11707) Suppress error notification when job is missing output
+* (JAR-11735) Update SchedPass job output handling
+* (JAR-11738) Fix bug preventing job shutdown request from Dashboard
+* (JAR-11747) Remove "Enable Support Helper" function 
+* (JAR-11821) Update background color on Account->Profile page in dark mode
+
 ## 3.26.0-202602250002
 
 * (JAR-8215)  Fixed V2 app Webshell crash on non jarvice-desktop images
