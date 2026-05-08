@@ -155,6 +155,8 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 * (JAR-11747) Remove "Enable Support Helper" function 
 * (JAR-11821) Update background color on Account->Profile page in dark mode
 
+**NOTE** `jarvice-mc-portal` is deprecated and will be removed in the next release
+
 ## 3.26.0-202602250002
 
 * (JAR-8215)  Fixed V2 app Webshell crash on non jarvice-desktop images
