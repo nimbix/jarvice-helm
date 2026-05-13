@@ -3,9 +3,9 @@ Hash: SHA512
 
 annotations:
   tag: jarvice-master
-  version: 3.26.1-202604291400
+  version: 3.26.1-202604281426
 apiVersion: v2
-appVersion: 3.26.1-202604291400
+appVersion: 3.26.1-202604281426
 dependencies:
 - - condition: keycloakx.enabled
   name: keycloakx
@@ -34,14 +34,14 @@ version: 3.26.1
 
 ...
 files:
-  jarvice-3.26.1.tgz: sha256:d3219a27a6c98fb4503fd8e89926d9af8c04d3d7b0fd719f19dcad0ca84ffd6f
+  jarvice-3.26.1.tgz: sha256:f9b95956ac398cc57eae0c5ee018088ad4da19fb01d4859980b99de92a5d2d9d
 -----BEGIN PGP SIGNATURE-----
 
-wsBcBAEBCgAQBQJp8hCeCRANj/zL34E/zwAAmJEIAC7Bny4DnDpe9tpzVlvhkZX+
-/SQb0fvwiqgUC5nxvOBtnoRELwAqRAu+rKP0qb5S9Z6h3c7WJKrUgfcyTe0r/LK/
-N0wJkeRw/6iQBPZaVVZKqL7X6eslAlgRIcKGY0XIIHa6/GIKYtWr9y2VwfvuC7Sw
-MvWB9QXdep7EGOQ4LsnAZcjmU1uP47tHqHKRn2uJ7JJXiAP5UeTzpOVgKoCznbOx
-6d2+0ovygsVcWRtF4X+NeyZTS5b1ML7p0Z7tHWqW/fs1sV7Sn73hS0obN+J5sah+
-KcSxVxweYILg2IPH/f9MEP1TmNFS31ZeUUrAspN/qVVl8xMxTHVYDHiZ3LIPuXg=
-=F3aK
+wsBcBAEBCgAQBQJqA8rGCRANj/zL34E/zwAA8KoIAIiFBnoJFhqDdvry7wFuoVnQ
+MwsKeIxG0EhdVe2acLhJ9Z8U1dW5DyvCleuaXjAJFDoVBFJIUGEQoH3dB3NP3hL4
+ThIOgFaTvubaBCNnAMUGMpo+z3Tm7SWidRJSaq31raACi3uE5BF+uBACe55wA1y+
+jBR7LOQiHV7zWHv5evmhEstKKFpHZZ/3KR50snihPuH/mF6XYHZPiCEqFF8kAfiP
+p8TlL2xl3EWHtIUIygYn3UbajTXZ4784XnEWL/NO8iEMwLupGn+cKmToX1SG+ffh
+2jLMA0PYdf/zOo6bPhb2FYRVwNKush3Qh6kBVI6KcR+oBdsgpsSN5dzlWNpi55I=
+=7d9r
 -----END PGP SIGNATURE-----
