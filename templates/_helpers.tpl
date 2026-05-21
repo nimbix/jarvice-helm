@@ -147,6 +147,9 @@ Create hostAlias for JARVICE
   {{- if eq .Values.jarvice.ingress.class "nginx" }}
     {{- $svc_name = "nginx-ingress-nginx-controller" }}
   {{- end }}
+  {{- if (not (empty .Values.jarvice.JARVICE_INGRESS_SVC_NAME)) }}
+    {{- $svc_name = .Values.jarvice.JARVICE_INGRESS_SVC_NAME }}
+  {{- end }}
   {{- $service := (lookup "v1" "Service" "kube-system" $svc_name) }}
   {{- if $service }}
     {{- range $index, $ingress := $service.spec.clusterIPs }}
