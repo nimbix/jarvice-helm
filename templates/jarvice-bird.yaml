@@ -648,6 +648,8 @@ spec:
           successThreshold: {{ .Values.jarvice_bird.server.livenessProbe.successThreshold }}
           failureThreshold: {{ .Values.jarvice_bird.server.livenessProbe.failureThreshold }}
         env:
+          - name: CONTEXT_PATH
+            value: "/server"
           - name: TOKEN_INFO_URI
             value: "{{ .Values.jarvice_bird.env.KEYCLOAK_URL }}/realm/{{ .Values.jarvice_bird.env.KEYCLOAK_REALM }}/protocol/openid-connect/token/introspect"
           - name: KEYCLOAK_URI
@@ -805,7 +807,6 @@ spec:
   rules:
   - http:
       paths:
-{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
 {{- if (ne "/" .Values.jarvice_bird.ingressPath) }}
       - backend:
           service:
@@ -823,19 +824,20 @@ spec:
         pathType: Prefix
         path: /
 {{- end }}
-{{- else }}
-{{- if (ne "/" .Values.jarvice_bird.ingressPath) }}
       - backend:
-          serviceName: jarvice-bird
-          servicePort: http
-        path: "{{ .Values.jarvice_bird.ingressPath }}"
-{{- else }}
+          service:
+            name: jarvice-bird
+            port:
+              number: 8080
+        path: /portal
+        pathType: Prefix
       - backend:
-          serviceName: jarvice-bird
-          servicePort: http
-        path: /
-{{- end }}
-{{- end }}
+          service:
+            name: jarvice-bird-server
+            port:
+              number: 9090
+        path: /server
+        pathType: Prefix
 {{- if ne "-" .Values.jarvice_bird.ingressHost }}
     host: '{{- .Values.jarvice_bird.ingressHost -}}'
 {{- if or (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}
