@@ -1,0 +1,77 @@
+#!/bin/bash
+
+version_tag="4.0.0"
+namespace="kube-system"
+
+function usage {
+    cat <<EOF
+Usage:
+    $0 [options]
+
+Options:
+    --version-tag <tag>             csi-driver-nfs version (optional)
+    --namespace <kube_namespace>    Kubernetes namespace to deploy to
+                                    (Default: $namespace)
+
+Example:
+    $0 --version-tag 4.0.0
+EOF
+}
+
+HELM=$(type -p helm)
+if [ -z "$HELM" ]; then
+    cat <<EOF
+Could not find 'helm' in PATH.  It may not be installed.
+Run 'install-helm' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+KUBECTL=$(type -p kubectl)
+if [ -z "$KUBECTL" ]; then
+    cat <<EOF
+Could not find 'kubectl' in PATH.  It may not be installed.
+Run 'install-kubectl' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        --help)
+            usage
+            exit 0
+            ;;
+        --version-tag)
+            version_tag=$2
+            shift; shift
+            ;;
+        --namespace)
+            namespace=$2
+            shift; shift
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+set -e
+
+echo
+echo "* Creating namespace: $namespace"
+"$KUBECTL" create namespace $namespace 2>/dev/null || /bin/true
+
+echo
+echo "* Deploying..."
+
+repo="https://raw.githubusercontent.com/kubernetes-csi/csi-driver-nfs/master/charts"
+"$HELM" repo add csi-driver-nfs $repo
+"$HELM" install csi-driver-nfs csi-driver-nfs/csi-driver-nfs --namespace $namespace --version $version_tag
+
+echo
+echo "* Deployment successful..."
+
+echo
+echo "For advanced setup details, visit https://github.com/kubernetes-csi/csi-driver-nfs/tree/master/charts"
