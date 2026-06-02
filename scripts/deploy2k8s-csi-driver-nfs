@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version_tag="4.0.0"
+version_tag="4.13.2"
 namespace="kube-system"
 
 function usage {
@@ -14,7 +14,7 @@ Options:
                                     (Default: $namespace)
 
 Example:
-    $0 --version-tag 4.0.0
+    $0 --version-tag $version_tag
 EOF
 }
 
