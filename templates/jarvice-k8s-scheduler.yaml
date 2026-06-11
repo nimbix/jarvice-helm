@@ -34,6 +34,16 @@ spec:
   minAvailable: {{ .Values.jarvice_k8s_scheduler.pdb.minAvailable }}
 ---
 {{- end }}
+{{- if (not (empty .Values.jarvice_k8s_scheduler.subhook)) }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jarvice-k8s-scheduler-subhook
+data:
+  subhook: |
+    {{- .Values.jarvice_k8s_scheduler.subhook | nindent 4 }}
+---
+{{- end }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -95,6 +105,13 @@ spec:
       - name: jarvice-docker
       volumes:
       {{- include "jarvice.rootCertVolume" . | indent 6 }}
+      {{- if (not (empty .Values.jarvice_k8s_scheduler.subhook)) }}
+      - configMap:
+          defaultMode: 0755
+          name: jarvice-k8s-scheduler-subhook
+          optional: false
+        name: jarvice-k8s-scheduler-subhook
+      {{- end }}
       hostAliases:
       {{- include "jarvice.hostAliases" . | nindent 8 }}
       containers:
@@ -436,6 +453,12 @@ spec:
 {{- end }}
         volumeMounts:
         {{- include "jarvice.rootCertVolumeMount" . | indent 8 }}
+        {{- if (not (empty .Values.jarvice_k8s_scheduler.subhook)) }}
+        - mountPath: /etc/jarvice/settings/subhook
+          subPath: subhook
+          name: jarvice-k8s-scheduler-subhook
+          readOnly: false
+        {{- end }}
         resources:
 {{- if .Values.jarvice_k8s_scheduler.resources }}
 {{ toYaml .Values.jarvice_k8s_scheduler.resources | indent 10 }}
