@@ -91,9 +91,9 @@ spec:
 {{- if (not (empty .Values.jarvice_scheduler.image)) }}
         image: {{ .Values.jarvice_scheduler.image }}
 {{- else if eq .Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE "true" }}
-        image: {{ include "jarvice.registry" . }}/jarvice-sched-api:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+        image: {{ include "jarvice.registry" . }}/jarvice-api-sched:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
 {{- else }}
-        image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-sched-api:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+        image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-api-sched:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
 {{- end }}
 {{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
         imagePullPolicy: Always
