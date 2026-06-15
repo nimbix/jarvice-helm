@@ -153,6 +153,7 @@ jarvice:
       # issuer.name takes precedence over cluster_issuer.name, do not set both
       cluster_issuer:
         name: # "my-cluster-issuer"
+        secretName: # "jarvice-root-secret"
       issuer:
         name: # "letsencrypt-prod" # "letsencrypt-staging" # "selfsigned"
         # An admin email is required when letsencrypt issuer is set. The first
