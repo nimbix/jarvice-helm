@@ -823,6 +823,8 @@ jarvice_k8s_scheduler:
     JARVICE_GCSFUSE_SIDECAR_IMAGE: # set to GCS FUSE sidecar image
     JARVICE_POWER_PLUGIN:  # Power plugin to use. None deactivate the feature and will only return empty list
     JARVICE_POWER_PLUGIN_PARAMETERS: '{}'  # Power plugin parameters (plugin dependant)
+    JARVICE_JOBS_GATEWAY: # Gateway API gateway to use for jobs
+    JARVICE_JOBS_GATEWAY_NAMESPACE: # Gateway API gateway namespace
 
 jarvice_slurm_scheduler:
   enabled: false
