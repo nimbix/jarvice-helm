@@ -1,11 +1,7 @@
 {{- if (not (eq "downstream" .Values.jarvice.JARVICE_CLUSTER_TYPE)) }}
 {{- if .Values.jarvice_bird.enabled }}
 {{- if gt (.Values.jarvice_bird.replicaCount | int) 1 }}
-{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
 apiVersion: policy/v1
-{{- else }}
-apiVersion: policy/v1beta1
-{{- end }}
 kind: PodDisruptionBudget
 metadata:
   name: jarvice-bird
@@ -769,11 +765,40 @@ spec:
     deployment: jarvice-bird
 ---
 {{- else }}
-{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
-apiVersion: networking.k8s.io/v1
+{{- if and (not (empty .Values.jarvice_bird.gateway.name)) (not (empty .Values.jarvice_bird.gateway.namespace)) (not (empty .Values.jarvice_bird.ingressHost)) }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: jarvice-bird-route
+spec:
+  parentRefs:
+  - name: "{{ .Values.jarvice_bird.gateway.name }}"
+    namespace: "{{ .Values.jarvice_bird.gateway.namespace }}"
+  hostnames: ["{{- .Values.jarvice_bird.ingressHost -}}"]
+  rules:
+  - backendRefs:
+    - group: ""
+      kind: Service
+      name: jarvice-bird-server
+      port: 9090
+      weight: 1
+    matches:
+    - path:
+        type: PathPrefix
+        value: /server
+  - backendRefs:
+    - group: ""
+      kind: Service
+      name: jarvice-bird
+      port: 8000
+      weight: 1
+    matches:
+    - path:
+        type: PathPrefix
+        value: /
+---
 {{- else }}
-apiVersion: networking.k8s.io/v1beta1
-{{- end }}
+apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: jarvice-bird
@@ -781,11 +806,6 @@ metadata:
     {{- include "jarvice.release_labels" . | indent 4 }}
     component: jarvice-bird
   annotations:
-{{- if (not (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion)) }}
-{{- if (not (empty .Values.jarvice.ingress.class)) }}
-    kubernetes.io/ingress.class: {{ .Values.jarvice.ingress.class }}
-{{- end }}
-{{- end }}
 {{- if and (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (empty .Values.jarvice.ingress.tls.crt) (empty .Values.jarvice.ingress.tls.key)) }}
     cert-manager.io/issuer: {{ .Values.jarvice.ingress.tls.issuer.name }}
 {{- else if and (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) (and (empty .Values.jarvice.ingress.tls.crt) (empty .Values.jarvice.ingress.tls.key)) }}
@@ -799,10 +819,8 @@ metadata:
 {{- end }}
 {{- end }}
 spec:
-{{- if (semverCompare ">=1.21-0" .Capabilities.KubeVersion.GitVersion) }}
 {{- if (not (empty .Values.jarvice.ingress.class)) }}
   ingressClassName: {{ .Values.jarvice.ingress.class }}
-{{- end }}
 {{- end }}
   rules:
   - http:
@@ -852,6 +870,7 @@ spec:
 {{- end }}
 {{- end }}
 ---
+{{- end }}
 {{- end }}
 {{- if empty .Values.jarvice_bird.conf.configMap }}
 {{ $config := "files/jarvice-bird-config.json" }}
