@@ -141,6 +141,94 @@ spec:
 {{- end }}
       serviceAccountName: jarvice-system
 {{- end }}
+{{- if .Values.jarvice_slurm_scheduler.create_keycloak_client }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jarvice-slurm-keycloak-client
+  namespace: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+  annotations:
+    "helm.sh/hook": post-upgrade,post-install
+    "helm.sh/hook-weight": "3"
+    "helm.sh/resource-policy": keep
+  labels:
+    app: jarvice
+data:
+  jarvice_client.json: |-
+{{ .Files.Get "files/nimbix-slurm-sched-client.json" | indent 4 }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: jarvice-create-slurm-keycloak-client
+  namespace: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+  annotations:
+    "helm.sh/hook": post-upgrade,post-install
+    "helm.sh/hook-weight": "4"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+  labels:
+    app: jarvice
+spec:
+  template:
+    metadata:
+      name: jarvice-create-slurm-keycloak-client
+      labels:
+        app: jarvice
+    spec:
+      volumes:
+      {{- include "jarvice.rootCertVolume" . | indent 6 }}
+      - name: jarvice-slurm-keycloak-client
+        configMap:
+          name: jarvice-slurm-keycloak-client
+          optional: false
+          defaultMode: 444
+      hostAliases:
+      {{- include "jarvice.hostAliases" . | nindent 8 }}
+      containers:
+        - name: jarvice-create-slurm-keycloak-client
+          volumeMounts:
+          {{- include "jarvice.rootCertVolumeMount" . | indent 10 }}
+          - name: jarvice-slurm-keycloak-client
+            mountPath: /etc/jarvice/jarvice_client.json
+            subPath: jarvice_client.json
+            readOnly: true
+          - name: jarvice-slurm-keycloak-client
+            mountPath: /etc/jarvice/jarvice_user_role.json
+            subPath: jarvice_user_role.json
+            readOnly: true
+          - name: jarvice-slurm-keycloak-client
+            mountPath: /etc/jarvice/jarvice_sysadmin_role.json
+            subPath: jarvice_sysadmin_role.json
+            readOnly: true
+          - name: jarvice-slurm-keycloak-client
+            mountPath: /etc/jarvice/jarvice_kcadmin_role.json
+            subPath: jarvice_kcadmin_role.json
+            readOnly: true
+          env:
+          - name: KEYCLOAK_URL
+            value: "{{ .Values.jarvice_bird.env.KEYCLOAK_URL }}"
+          - name: KEYCLOAK_REALM
+            value: "{{ .Values.jarvice_bird.env.KEYCLOAK_REALM }}"
+          - name: JARVICE_KEYCLOAK_USER
+            value: "{{ .Values.jarvice_bird.env.JARVICE_KEYCLOAK_ADMIN_USER }}"
+          - name: JARVICE_KEYCLOAK_PASSWD
+            value: "{{ .Values.jarvice_bird.env.JARVICE_KEYCLOAK_ADMIN_PASS }}"
+          image: "{{ .Values.jarvice_helm_hook.image }}"
+          imagePullPolicy: IfNotPresent
+          command:
+          - /bin/sh
+          - -c
+          - |
+          {{- range $line := splitList "\n" (.Files.Get "files/jarvice-create-keycloak-client.sh") }}
+          {{ . | indent 4 }}
+          {{- end }}
+      restartPolicy: OnFailure
+{{- if (not (empty .Values.jarvice.tolerations)) }}
+      tolerations: {{ .Values.jarvice.tolerations }}
+{{- end }}
+      serviceAccountName: jarvice-system
+{{- end }}
 ---
 apiVersion: v1
 kind: ServiceAccount
