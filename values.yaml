@@ -829,6 +829,9 @@ jarvice_slurm_scheduler:
   image: # Overwrites image from global value
   networkPolicy:
     enabled: false
+  # Set to true to create the nimbix-slurm-sched-client in Keycloak
+  # Requires jarvice_bird.env.KEYCLOAK_URL, KEYCLOAK_REALM, JARVICE_KEYCLOAK_ADMIN_USER/PASS to be set.
+  create_keycloak_client: false
   replicaCount: 2
   # PodDisruptionBudget default requires 25% minimum of pods must be running
   pdb:
@@ -867,6 +870,14 @@ jarvice_slurm_scheduler:
     JARVICE_SLURM_NO_PROXY: ""
     JARVICE_SINGULARITY_VERBOSE: false
     JARVICE_SINGULARITY_TMPDIR: ""
+    JARVICE_SLURM_CLIENT: "ssh_client"  # set to slurmrestd_client to use the REST API (default: ssh_client)
+    JARVICE_SLURMRESTD_URL: ""          # base URL of slurmrestd daemon (required when using slurmrestd_client)
+    JARVICE_SLURM_SA_TOKEN: ""
+    JARVICE_KEYCLOAK_TOKEN_URL: ""                        # Keycloak token URL; auto-derived from jarvice_bird.env.KEYCLOAK_URL when empty
+    JARVICE_KEYCLOAK_CLIENT_ID: "nimbix-slurm-sched-client"  # Keycloak client ID for SA token refresh
+    JARVICE_KEYCLOAK_CLIENT_SECRET: "VK42A1FxLH4lYHn406xCEN0Vmr5oKbrL"  # Keycloak client secret for SA token refresh
+    JARVICE_SLURM_USERNAME_CLAIM: "preferred_username"    # JWT claim for end-user username extraction (default: preferred_username)
+    JARVICE_CHOWN_WRAPPER: ""           # custom chown command/path wrapper
   # define each slurm scheduler
   schedulers:
   - name: default
