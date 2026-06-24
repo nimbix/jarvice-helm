@@ -9,7 +9,7 @@
   "enabled": true,
   "alwaysDisplayInConsole": false,
   "clientAuthenticatorType": "client-secret",
-  "secret": "VK42A1FxLH4lYHn406xCEN0Vmr5oKbrL",
+  "secret": "{{ .kcSlurmClientSecret }}",
   "redirectUris": [
     "/*"
   ],

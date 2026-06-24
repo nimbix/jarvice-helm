@@ -142,9 +142,19 @@ spec:
       serviceAccountName: jarvice-system
 {{- end }}
 {{- if .Values.jarvice_slurm_scheduler.create_keycloak_client }}
+{{- $ns := (.Values.jarvice.JARVICE_SYSTEM_NAMESPACE | default .Release.Namespace) }}
+{{- $kcSlurmClientSecret := (.Values.jarvice_slurm_scheduler.env.JARVICE_KEYCLOAK_CLIENT_SECRET | default "") }}
+{{- if empty $kcSlurmClientSecret }}
+{{- $existingSecret := (lookup "v1" "Secret" $ns "jarvice-slurm-keycloak-client") }}
+{{- if and $existingSecret (index $existingSecret.data "clientSecret") }}
+{{- $kcSlurmClientSecret = index $existingSecret.data "clientSecret" | b64dec }}
+{{- else }}
+{{- $kcSlurmClientSecret = randAlphaNum 32 }}
+{{- end }}
+{{- end }}
 ---
 apiVersion: v1
-kind: ConfigMap
+kind: Secret
 metadata:
   name: jarvice-slurm-keycloak-client
   namespace: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
@@ -154,9 +164,24 @@ metadata:
     "helm.sh/resource-policy": keep
   labels:
     app: jarvice
+type: Opaque
+data:
+  clientSecret: {{ $kcSlurmClientSecret | b64enc }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jarvice-slurm-keycloak-client
+  namespace: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+  annotations:
+    "helm.sh/hook": post-upgrade,post-install
+    "helm.sh/hook-weight": "3"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+  labels:
+    app: jarvice
 data:
   jarvice_client.json: |-
-{{ .Files.Get "files/nimbix-slurm-sched-client.json" | indent 4 }}
+{{ tpl (.Files.Get "files/nimbix-slurm-sched-client.json") (dict "kcSlurmClientSecret" $kcSlurmClientSecret) | indent 4 }}
 ---
 apiVersion: batch/v1
 kind: Job
@@ -181,7 +206,6 @@ spec:
       - name: jarvice-slurm-keycloak-client
         configMap:
           name: jarvice-slurm-keycloak-client
-          optional: false
           defaultMode: 444
       hostAliases:
       {{- include "jarvice.hostAliases" . | nindent 8 }}
