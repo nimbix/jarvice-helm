@@ -875,7 +875,7 @@ jarvice_slurm_scheduler:
     JARVICE_SLURM_SA_TOKEN: ""
     JARVICE_KEYCLOAK_TOKEN_URL: ""                        # Keycloak token URL; auto-derived from jarvice_bird.env.KEYCLOAK_URL when empty
     JARVICE_KEYCLOAK_CLIENT_ID: "nimbix-slurm-sched-client"  # Keycloak client ID for SA token refresh
-    JARVICE_KEYCLOAK_CLIENT_SECRET: ""                        # Keycloak client secret; auto-generated if empty and create_keycloak_client is true
+    JARVICE_KEYCLOAK_CLIENT_SECRET: ""                        # Keycloak client secret; if set takes precedence over auto-generated value
     JARVICE_SLURM_USERNAME_CLAIM: "preferred_username"    # JWT claim for end-user username extraction (default: preferred_username)
     JARVICE_CHOWN_WRAPPER: ""           # custom chown command/path wrapper
   # define each slurm scheduler

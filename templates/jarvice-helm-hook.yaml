@@ -141,7 +141,7 @@ spec:
 {{- end }}
       serviceAccountName: jarvice-system
 {{- end }}
-{{- if .Values.jarvice_slurm_scheduler.create_keycloak_client }}
+{{- if or .Values.jarvice_slurm_scheduler.create_keycloak_client (eq .Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_CLIENT "slurmrestd_client") }}
 {{- $ns := (.Values.jarvice.JARVICE_SYSTEM_NAMESPACE | default .Release.Namespace) }}
 {{- $kcSlurmClientSecret := (.Values.jarvice_slurm_scheduler.env.JARVICE_KEYCLOAK_CLIENT_SECRET | default "") }}
 {{- if empty $kcSlurmClientSecret }}
@@ -167,6 +167,7 @@ metadata:
 type: Opaque
 data:
   clientSecret: {{ $kcSlurmClientSecret | b64enc }}
+{{- if .Values.jarvice_slurm_scheduler.create_keycloak_client }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -252,6 +253,7 @@ spec:
       tolerations: {{ .Values.jarvice.tolerations }}
 {{- end }}
       serviceAccountName: jarvice-system
+{{- end }}
 {{- end }}
 ---
 apiVersion: v1

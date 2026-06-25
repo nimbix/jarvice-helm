@@ -221,9 +221,13 @@ spec:
           - name: JARVICE_KEYCLOAK_CLIENT_ID
             value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_KEYCLOAK_CLIENT_ID }}"
 {{- end }}
-{{- if (not (empty $.Values.jarvice_slurm_scheduler.env.JARVICE_KEYCLOAK_CLIENT_SECRET)) }}
+{{- if eq $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_CLIENT "slurmrestd_client" }}
           - name: JARVICE_KEYCLOAK_CLIENT_SECRET
-            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_KEYCLOAK_CLIENT_SECRET }}"
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-slurm-keycloak-client
+                key: clientSecret
+                optional: true
 {{- end }}
 {{- if (not (empty $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_USERNAME_CLAIM)) }}
           - name: JARVICE_SLURM_USERNAME_CLAIM
