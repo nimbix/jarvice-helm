@@ -26,6 +26,13 @@ spec:
   - secret:
       name: "jarvice-root-secret"
       key: "tls.crt"
+{{- else if (not (empty .Values.jarvice.ingress.tls.cluster_issuer.secretName)) }}
+  - secret:
+      name: "{{ .Values.jarvice.ingress.tls.cluster_issuer.secretName }}"
+      key: "ca.crt"
+  - secret:
+      name: "{{ .Values.jarvice.ingress.tls.cluster_issuer.secretName }}"
+      key: "tls.crt"
 {{- end }}
   target:
     configMap:
