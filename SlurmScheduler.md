@@ -69,6 +69,70 @@ Environment|Value|Description/Notes
 `JARVICE_SINGULARITY_TMPDIR`|string|Override tmp directory used by singularity (prevent usage of /tmp for diskless compute nodes for example)
 `JARVICE_SLURM_OVERLAY_SIZE`|integer|Overlay size of running singularity images. If set to `0`, singularity will use writable tmpfs instead (with some limitations)
 `JARVICE_SINGULARITY_VERBOSE`|boolean|Verbosity flag of singularity jobs execution
+`JARVICE_SLURM_CLIENT`|string|Slurm client backend to use. `ssh_client` (default) submits jobs via SSH; `slurmrestd_client` uses the Slurm REST API
+`JARVICE_SLURMRESTD_URL`|string|Base URL of the `slurmrestd` daemon (e.g. `http://slurm-login:6820`). Required when `JARVICE_SLURM_CLIENT=slurmrestd_client`
+`JARVICE_SLURM_SA_TOKEN`|string|Static bearer token for `slurmrestd` authentication. Used directly if set; otherwise a Keycloak service account token is obtained automatically
+`JARVICE_KEYCLOAK_TOKEN_URL`|string|Full Keycloak token endpoint URL used to obtain a service account token (e.g. `https://keycloak.example.com/realms/myrealm/protocol/openid-connect/token`). Auto-derived from `jarvice_bird.env.KEYCLOAK_URL` and `KEYCLOAK_REALM` when left empty
+`JARVICE_KEYCLOAK_CLIENT_ID`|string|Keycloak client ID used for service account token requests. Defaults to `nimbix-slurm-sched-client`
+`JARVICE_KEYCLOAK_CLIENT_SECRET`|string|Keycloak client secret. When left empty the secret is read from the `jarvice-slurm-keycloak-client` Kubernetes Secret (auto-managed by the Helm hook when `create_keycloak_client: true`)
+`JARVICE_SLURM_USERNAME_CLAIM`|string|JWT claim from which the end-user's Slurm username is extracted. Defaults to `preferred_username`. This should match with the value of `userclaimfield` set in the SLURM configuration.
+`JARVICE_CHOWN_WRAPPER`|string|Custom command or path to use instead of `chown` on the Slurm nodes (useful to limit `nimbix`'s user `chown` permissions to only inside the `SCRATCH` directory )
+
+### Slurmrestd Client
+
+In addition to the default SSH-based client, the Slurm scheduler supports submitting and managing jobs via the Slurm REST API (`slurmrestd`). Set `JARVICE_SLURM_CLIENT` to `slurmrestd_client` to enable this mode.
+
+#### Jobs ownership
+
+A key difference from the SSH client is how Slurm jobs are owned:
+
+- **SSH client (default)** — all jobs are submitted as the single user `nimbix` regardless of which JARVICE user initiated the job.
+- **Slurmrestd client** — jobs are submitted **on behalf of the actual JARVICE user**. The scheduler extracts the end-user's username from the JWT claim defined by `JARVICE_SLURM_USERNAME_CLAIM` (default: `preferred_username`) and passes it to `slurmrestd` as the job owner.
+
+This means with `slurmrestd_client`, Slurm job accounting, quotas, and fair-share policies apply per real user rather than being aggregated under a single account.
+
+```
+jarvice_slurm_scheduler:
+  env:
+    JARVICE_SLURM_CLIENT: "slurmrestd_client"
+    JARVICE_SLURMRESTD_URL: "http://slurm-login.example.com:6820"
+```
+
+#### Authentication
+
+Two authentication methods are supported for `slurmrestd`:
+
+1. **Static token** — set `JARVICE_SLURM_SA_TOKEN` to a pre-generated bearer token. The scheduler uses it as-is on every request.
+2. **Keycloak service account token** — when `JARVICE_SLURM_SA_TOKEN` is empty, the scheduler automatically fetches and refreshes a short-lived token from Keycloak using the configured client credentials. This requires `JARVICE_KEYCLOAK_TOKEN_URL`, `JARVICE_KEYCLOAK_CLIENT_ID`, and `JARVICE_KEYCLOAK_CLIENT_SECRET` to be set.
+
+#### Keycloak Integration
+
+The Helm chart can automatically create the required Keycloak service account client (`nimbix-slurm-sched-client` by default) via a post-install/post-upgrade hook. To enable it, set `create_keycloak_client: true` and ensure `jarvice_bird.env` contains valid Keycloak admin credentials:
+
+```yaml
+jarvice_slurm_scheduler:
+  create_keycloak_client: true   # run the Keycloak client provisioning Job on install/upgrade
+  env:
+    JARVICE_SLURM_CLIENT: "slurmrestd_client"
+    JARVICE_SLURMRESTD_URL: "http://slurm-login.example.com:6820"
+    JARVICE_KEYCLOAK_CLIENT_ID: "nimbix-slurm-sched-client"  # default, can be omitted
+    # JARVICE_KEYCLOAK_CLIENT_SECRET: ""  # leave empty to auto-generate
+
+jarvice_bird:
+  env:
+    KEYCLOAK_URL: "https://keycloak.example.com"
+    KEYCLOAK_REALM: "jarvice"
+    JARVICE_KEYCLOAK_ADMIN_USER: "admin"
+    JARVICE_KEYCLOAK_ADMIN_PASS: "adminpass"
+```
+
+The hook behaviour:
+
+- The client secret is **auto-generated** on the first install (`randAlphaNum 32`) and stored in the `jarvice-slurm-keycloak-client` Kubernetes Secret.
+- On upgrades the existing secret value is **reused** (looked up from the cluster), so the Keycloak client configuration remains stable.
+- To provide your own secret instead, set `JARVICE_KEYCLOAK_CLIENT_SECRET` in values — it takes priority over both the lookup and the auto-generated value.
+- The Keycloak provisioning Job only runs when `create_keycloak_client: true`. The Kubernetes Secret is created whenever `create_keycloak_client: true` **or** `JARVICE_KEYCLOAK_CLIENT_SECRET` is explicitly set in values.
+- `JARVICE_KEYCLOAK_CLIENT_SECRET` is only injected into the scheduler deployment when `JARVICE_SLURM_CLIENT: slurmrestd_client`.
 
 ### Singularity builds and setuid
 
@@ -265,4 +329,23 @@ jarvice_slurm_scheduler:
     sshConf:
       user: nimbix
       pkey: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
+```
+
+#### Downstream (slurmrestd client with Keycloak)
+
+```yaml
+jarvice_slurm_scheduler:
+  enabled: true
+  create_keycloak_client: true   # create Keycloak client on install/upgrade
+  env:
+    JARVICE_SLURM_CLIENT: "slurmrestd_client"
+    JARVICE_SLURMRESTD_URL: "http://slurm-login.example.com:6820"
+    JARVICE_SLURM_CLUSTER_ADDR: "slurm-login.example.com"
+    JARVICE_SLURM_SCHED_LOGLEVEL: "10"
+    JARVICE_SLURM_USERNAME_CLAIM: "preferred_username"  # claim used by slurm to extract uid
+  schedulers:
+  - name: default
+    sshConf:
+      user: nimbix
+      pkey: # base64 encoded private ssh key
 ```
