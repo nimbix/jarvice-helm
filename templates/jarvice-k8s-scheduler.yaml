@@ -318,6 +318,14 @@ spec:
             value: "{{ .Values.jarvice.JARVICE_JOBS_DOMAIN }}"
 {{- end }}
 {{- end }}
+{{- if (not (empty .Values.jarvice_k8s_scheduler.env.JARVICE_JOBS_GATEWAY)) }}
+          - name: JARVICE_JOBS_GATEWAY
+            value: "{{ .Values.jarvice_k8s_scheduler.env.JARVICE_JOBS_GATEWAY }}"
+{{- if (not (empty .Values.jarvice_k8s_scheduler.env.JARVICE_JOBS_GATEWAY_NAMESPACE)) }}
+          - name: JARVICE_JOBS_GATEWAY_NAMESPACE
+            value: "{{ .Values.jarvice_k8s_scheduler.env.JARVICE_JOBS_GATEWAY_NAMESPACE }}"
+{{- end }}
+{{- end }}
           - name: JARVICE_JOBS_INGRESS_CLASS
             value: "{{ .Values.jarvice.ingress.class }}"
           - name: JARVICE_JOBS_INGRESS_ANNOTATIONS
