@@ -1093,6 +1093,9 @@ jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   ingressHost: # jarvice-api.my-domain.com
   ingressPath: "/"  # Valid values are "/" (default) or "/api"
   ingressAnnotations: # '{"nginx.org/client-max-body-size": "0", "nginx.org/proxy-read-timeout": "3600", "nginx.org/proxy-send-timeout": "3600"}'
+  gateway:
+    name: # Gateway API gateway name
+    namespace: # Gateway API gateway namespace
   resources:
     limits:
       cpu: 1
@@ -1357,6 +1360,9 @@ jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   ingressHost: # jarvice-bird.my-domain.com
   ingressPath: "/"  # Valid values are "/" (default) or "/bird"
   ingressAnnotations: # '{"nginx.org/client-max-body-size": "0", "nginx.org/proxy-read-timeout": "3600", "nginx.org/proxy-send-timeout": "3600"}'
+  gateway:
+    name: # Gateway API gateway name
+    namespace: # Gateway API gateway namespace
   bird:
     resources:
       limits:
