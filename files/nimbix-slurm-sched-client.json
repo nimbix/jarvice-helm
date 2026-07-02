@@ -87,6 +87,23 @@
       }
     },
     {
+      "name": "sun",
+      "protocol": "openid-connect",
+      "protocolMapper": "oidc-hardcoded-claim-mapper",
+      "consentRequired": false,
+      "config": {
+        "introspection.token.claim": "true",
+        "claim.value": "nimbix",
+        "userinfo.token.claim": "true",
+        "id.token.claim": "true",
+        "lightweight.claim": "false",
+        "access.token.claim": "true",
+        "claim.name": "sun",
+        "jsonType.label": "String",
+        "access.tokenResponse.claim": "false"
+      }
+    },
+    {
       "name": "Client Host",
       "protocol": "openid-connect",
       "protocolMapper": "oidc-usersessionmodel-note-mapper",
