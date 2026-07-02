@@ -98,6 +98,29 @@ jarvice_slurm_scheduler:
     JARVICE_SLURMRESTD_URL: "http://slurm-login.example.com:6820"
 ```
 
+##### User Mapping
+
+When `slurmrestd_client` is used, the scheduler submits jobs on behalf of the end user by extracting the username from the JWT token. The claim field used is controlled by `JARVICE_SLURM_USERNAME_CLAIM` (default: `preferred_username`). This value **must** be consistent with what Slurm is configured to look for.
+
+Slurm identifies the job owner via the [`AuthAltParameters=userclaimfield`](https://slurm.schedmd.com/slurm.conf.html#OPT_userclaimfield=) setting in `slurm.conf`. If this is not aligned with `JARVICE_SLURM_USERNAME_CLAIM`, job submissions will fail with an authentication or user resolution error.
+
+**Option 1** — Set `userclaimfield` in Slurm to match the claim used by Keycloak (recommended when using the default Keycloak token configuration):
+
+```
+AuthAltParameters=jwks=/local/path/to/jwks.json,userclaimfield=preferred_username
+```
+
+Then set `JARVICE_SLURM_USERNAME_CLAIM` to the same value:
+
+```yaml
+jarvice_slurm_scheduler:
+  env:
+    JARVICE_SLURM_USERNAME_CLAIM: "preferred_username"
+```
+
+**Option 2** — Configure Keycloak to include the `sun` claim in the token, matching Slurm's default. In Keycloak 25.0, this is done under **Clients → Client details → Dedicated scopes → Mapper details** by adding a mapper that maps the username to the `sun` token claim. Make sure the `JARVICE_SLURM_USERNAME_CLAIM` is set it to `sun`, and omit `userclaimfield` from `AuthAltParameters` in `slurm.conf` since it's the default value.
+
+
 #### Authentication
 
 Two authentication methods are supported for `slurmrestd`:
