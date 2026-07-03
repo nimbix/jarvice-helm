@@ -1,0 +1,18 @@
+{
+  "name": "username",
+  "protocol": "openid-connect",
+  "protocolMapper": "oidc-usermodel-attribute-mapper",
+  "consentRequired": false,
+  "config": {
+    "aggregate.attrs": "false",
+    "introspection.token.claim": "true",
+    "multivalued": "false",
+    "userinfo.token.claim": "true",
+    "user.attribute": "username",
+    "id.token.claim": "true",
+    "lightweight.claim": "false",
+    "access.token.claim": "true",
+    "claim.name": "${JARVICE_SLURM_USERNAME_CLAIM}",
+    "jsonType.label": "String"
+  }
+}
