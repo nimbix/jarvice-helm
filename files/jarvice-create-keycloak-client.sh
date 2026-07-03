@@ -36,7 +36,12 @@ keycloak_put () {
 }
 
 create_client() {
-    keycloak_post "clients" "$(envsubst < /etc/jarvice/jarvice_client.json)" && \
+    client_json="$(envsubst < /etc/jarvice/jarvice_client.json)"
+    if [ "${JARVICE_SLURM_ENABLED}" = "true" ]; then
+        slurm_mapper="$(envsubst < /etc/jarvice/jarvice_slurm_username_mapper.json)"
+        client_json="$(echo "$client_json" | jq --argjson mapper "$slurm_mapper" '.protocolMappers += [$mapper]')"
+    fi
+    keycloak_post "clients" "$client_json" && \
         echo "Creating jarvice client on realm $KEYCLOAK_REALM" || true
 }
 
