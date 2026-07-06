@@ -233,6 +233,10 @@ spec:
           - name: JARVICE_SLURM_USERNAME_CLAIM
             value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_USERNAME_CLAIM }}"
 {{- end }}
+{{- if (not (empty $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_DATA_PARSER_VERSION)) }}
+          - name: JARVICE_SLURM_DATA_PARSER_VERSION
+            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_DATA_PARSER_VERSION }}"
+{{- end }}
           - name: JARVICE_SLURM_SCHED_LOGLEVEL
 {{- if (not (empty .env.JARVICE_SLURM_SCHED_LOGLEVEL)) }}
             value: "{{ .env.JARVICE_SLURM_SCHED_LOGLEVEL }}"

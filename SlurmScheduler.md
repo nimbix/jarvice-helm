@@ -76,6 +76,7 @@ Environment|Value|Description/Notes
 `JARVICE_KEYCLOAK_CLIENT_ID`|string|Keycloak client ID used for service account token requests. Defaults to `nimbix-slurm-sched-client`
 `JARVICE_KEYCLOAK_CLIENT_SECRET`|string|Keycloak client secret. When left empty the secret is read from the `jarvice-slurm-keycloak-client` Kubernetes Secret (auto-managed by the Helm hook when `create_keycloak_client: true`)
 `JARVICE_SLURM_USERNAME_CLAIM`|string|JWT claim from which the end-user's Slurm username is extracted. Defaults to `preferred_username`. This should match with the value of `userclaimfield` set in the SLURM configuration.
+`JARVICE_SLURM_DATA_PARSER_VERSION`|string|slurmrestd data parser version to use for all API calls. Defaults to `auto`. See [Data Parser Version](#data-parser-version) for details.
 `JARVICE_CHOWN_WRAPPER`|string|Custom command or path to use instead of `chown` on the Slurm nodes (useful to limit `nimbix`'s user `chown` permissions to only inside the `SCRATCH` directory )
 
 ### Slurmrestd Client
@@ -156,6 +157,15 @@ The hook behaviour:
 - To provide your own secret instead, set `JARVICE_KEYCLOAK_CLIENT_SECRET` in values — it takes priority over both the lookup and the auto-generated value.
 - The Keycloak provisioning Job only runs when `create_keycloak_client: true`. The Kubernetes Secret is created whenever `create_keycloak_client: true` **or** `JARVICE_KEYCLOAK_CLIENT_SECRET` is explicitly set in values.
 - `JARVICE_KEYCLOAK_CLIENT_SECRET` is only injected into the scheduler deployment when `JARVICE_SLURM_CLIENT: slurmrestd_client`.
+
+#### Data Parser Version
+
+`JARVICE_SLURM_DATA_PARSER_VERSION` controls which slurmrestd data parser version the REST client uses for all API calls. Only applies when `JARVICE_SLURM_CLIENT: slurmrestd_client`.
+
+- **`auto`** (default) — at startup the scheduler queries `JARVICE_SLURMRESTD_URL/openapi.json`, inspects the available data parsers, and selects the most recent version it supports. If no supported version is advertised, it falls back to the most recent version in its built-in support list.
+- **Explicit version** — forces the scheduler to use exactly that parser version.
+
+Currently supported versions: `v0.0.40`, `v0.0.41`, `v0.0.42`, `v0.0.43`, `v0.0.44`.
 
 ### Singularity builds and setuid
 
