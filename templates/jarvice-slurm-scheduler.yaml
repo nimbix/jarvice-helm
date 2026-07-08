@@ -232,7 +232,7 @@ spec:
           - name: JARVICE_DAL_URL
             value: "http://jarvice-dal:8080"
           - name: JARVICE_SCHED_URL
-            value: "https://jarvice-scheduler:9443"
+            value: "http://jarvice-scheduler:9443"
 {{- end }}
 {{- if (not (empty .env.JARVICE_SCHED_SERVER_KEY)) }}
           - name: JARVICE_SCHED_SERVER_KEY

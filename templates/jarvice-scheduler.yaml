@@ -101,12 +101,12 @@ spec:
         imagePullPolicy: IfNotPresent
 {{- end }}
         ports:
-          - name: https
+          - name: http
             containerPort: 9443
         readinessProbe:
           httpGet:
-            scheme: HTTPS
-            port: https
+            scheme: HTTP
+            port: http
             path: /ready
           initialDelaySeconds: {{ .Values.jarvice_scheduler.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.jarvice_scheduler.readinessProbe.periodSeconds }}
@@ -115,8 +115,8 @@ spec:
           failureThreshold: {{ .Values.jarvice_scheduler.readinessProbe.failureThreshold }}
         livenessProbe:
           httpGet:
-            scheme: HTTPS
-            port: https
+            scheme: HTTP
+            port: http
             path: /live
           initialDelaySeconds: {{ .Values.jarvice_scheduler.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.jarvice_scheduler.livenessProbe.periodSeconds }}
@@ -150,7 +150,7 @@ spec:
 {{- if (not (empty .Values.jarvice_scheduler.env.JARVICE_SCHED_URL)) }}
             value: "{{ .Values.jarvice_scheduler.env.JARVICE_SCHED_URL }}"
 {{- else }}
-            value: "https://jarvice-scheduler:9443"
+            value: "http://jarvice-scheduler:9443"
 {{- end }}
           - name: JARVICE_LICENSE_LIC
             valueFrom:
@@ -294,7 +294,7 @@ spec:
   - protocol: TCP
     port: 9443
     targetPort: 9443
-    name: https
+    name: http
   selector:
     deployment: jarvice-scheduler
 ---
@@ -381,13 +381,13 @@ spec:
           service:
             name: jarvice-scheduler
             port:
-              name: https
+              name: http
         pathType: Prefix
         path: /
 {{- else }}
       - backend:
           serviceName: jarvice-scheduler
-          servicePort: https
+          servicePort: http
 {{- end }}
 {{- if or (not (empty .Values.jarvice.ingress.tls.cluster_issuer.name)) (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (not (empty .Values.jarvice.ingress.tls.crt)) (not (empty .Values.jarvice.ingress.tls.key))) }}
   tls:
