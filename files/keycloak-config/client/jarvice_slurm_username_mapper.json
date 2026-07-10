@@ -12,7 +12,7 @@
     "id.token.claim": "true",
     "lightweight.claim": "false",
     "access.token.claim": "true",
-    "claim.name": "${JARVICE_SLURM_USERNAME_CLAIM}",
+    "claim.name": "preferred_username",
     "jsonType.label": "String"
   }
 }

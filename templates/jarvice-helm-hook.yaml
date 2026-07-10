@@ -54,6 +54,7 @@ spec:
 apiVersion: v1
 data:
 {{- $files := .Files }}
+{{- $claim := (.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_USERNAME_CLAIM | default "preferred_username") }}
   jarvice_client.json: |-
 {{ $files.Get "files/keycloak-config/client/jarvice_client.json" | indent 4 }}
   jarvice_user_role.json: |-
@@ -62,8 +63,14 @@ data:
 {{ $files.Get "files/keycloak-config/client/roles/jarvice_sysadmin_role.json" | indent 4 }}
   jarvice_kcadmin_role.json: |-
 {{ $files.Get "files/keycloak-config/client/roles/jarvice_kcadmin_role.json" | indent 4 }}
-  jarvice_slurm_username_mapper.json: |-
-{{ $files.Get "files/keycloak-config/client/jarvice_slurm_username_mapper.json" | indent 4 }}
+{{- if .Values.jarvice_slurm_scheduler.enabled }}
+{{-   $mapper := fromJson ($files.Get "files/keycloak-config/client/jarvice_slurm_username_mapper.json") }}
+{{-   $_ := set (index $mapper "config") "claim.name" $claim }}
+  jarvice_slurm_username_mapper: |-
+    ,{{ $mapper | toJson }}
+{{- else }}
+  jarvice_slurm_username_mapper: ""
+{{- end }}
 kind: ConfigMap
 metadata:
   name: jarvice-keycloak-client
@@ -115,10 +122,6 @@ spec:
             mountPath: /etc/jarvice/jarvice_kcadmin_role.json
             subPath: jarvice_kcadmin_role.json
             readOnly: true
-          - name: jarvice-keycloak-client
-            mountPath: /etc/jarvice/jarvice_slurm_username_mapper.json
-            subPath: jarvice_slurm_username_mapper.json
-            readOnly: true
           env:
           - name: JARVICE_SYSTEM_NAMESPACE
             value: "{{ .Release.Namespace }}"
@@ -132,10 +135,12 @@ spec:
             value: "{{ .Values.jarvice_bird.env.JARVICE_KEYCLOAK_ADMIN_PASS }}"
           - name: JARVICE_BIRD_INGRESSHOST
             value: "{{ .Values.jarvice_bird.ingressHost }}"
-          - name: JARVICE_SLURM_ENABLED
-            value: "{{ .Values.jarvice_slurm_scheduler.enabled }}"
-          - name: JARVICE_SLURM_USERNAME_CLAIM
-            value: "{{ .Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_USERNAME_CLAIM | default "preferred_username" }}"
+          - name: JARVICE_SLURM_USERNAME_MAPPER
+            valueFrom:
+              configMapKeyRef:
+                name: jarvice-keycloak-client
+                key: jarvice_slurm_username_mapper
+                optional: false
           image: "{{ .Values.jarvice_helm_hook.image }}"
           imagePullPolicy: IfNotPresent
           command:

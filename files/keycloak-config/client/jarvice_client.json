@@ -83,7 +83,7 @@
         "access.token.claim": "true",
         "userinfo.token.claim": "false"
       }
-    }
+    }${JARVICE_SLURM_USERNAME_MAPPER}
   ],
   "defaultClientScopes": [
     "acr",
