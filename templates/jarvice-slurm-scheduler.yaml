@@ -253,6 +253,10 @@ spec:
           - name: JARVICE_CHOWN_WRAPPER
             value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_CHOWN_WRAPPER }}"
 {{- end }}
+{{- if (not (empty $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_SCRATCH_DIR)) }}
+          - name: JARVICE_SLURM_SCRATCH_DIR
+            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_SCRATCH_DIR }}"
+{{- end }}
           - name: JARVICE_SYSTEM_K8S
 {{- if empty $.Values.jarvice.JARVICE_SYSTEM_K8S }}
             value: "true"
