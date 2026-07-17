@@ -385,8 +385,10 @@ spec:
 {{- else }}
             value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SINGULARITY_TMPDIR }}"
 {{- end }}
+{{- if include "jarvice.hasRootCert" $ }}
           - name: REQUESTS_CA_BUNDLE
             value: "/etc/ssl/certs/ca-certificates.crt"
+{{- end }}
         volumeMounts:
         {{- include "jarvice.rootCertVolumeMount" $ | indent 8 }}
         resources:
