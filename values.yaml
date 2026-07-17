@@ -879,6 +879,7 @@ jarvice_slurm_scheduler:
     JARVICE_SLURM_USERNAME_CLAIM: "preferred_username"    # JWT claim for end-user username extraction (default: preferred_username)
     JARVICE_SLURM_DATA_PARSER_VERSION: "auto"             # slurmrestd data parser version; "auto" queries /openapi.json and picks the latest supported version
     JARVICE_CHOWN_WRAPPER: ""           # custom chown command/path wrapper
+    JARVICE_SLURM_SCRATCH_DIR: ""       # scratch directory path on the slurm cluster
   # define each slurm scheduler
   schedulers:
   - name: default
