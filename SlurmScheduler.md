@@ -238,6 +238,7 @@ Then check that everything is running fine, and check your environment settings:
       JARVICE_SLURM_CLUSTER_ADDR:        XXX.XXX.XXX.XXX
       JARVICE_SLURM_CLUSTER_PORT:        XXXX
       JARVICE_SLURM_SSH_USER:            <set to the key 'user' in secret 'jarvice-slurm-scheduler'>  Optional: false
+      JARVICE_SLURM_SSH_USER_GROUP:      <set to the key 'group' in secret 'jarvice-slurm-scheduler', defaults to user if unset>  Optional: false
       JARVICE_SLURM_SSH_PKEY:            <set to the key 'pkey' in secret 'jarvice-slurm-scheduler'>  Optional: false
       JARVICE_SLURM_SCHED_LOGLEVEL:      10
       JARVICE_SLURM_OVERLAY_SIZE:        640

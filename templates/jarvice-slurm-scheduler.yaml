@@ -198,6 +198,15 @@ spec:
 {{- else }}
                 name: jarvice-slurm-scheduler-{{ .name }}
 {{- end }}
+          - name: JARVICE_SLURM_SSH_USER_GROUP
+            valueFrom:
+              secretKeyRef:
+                key: group
+{{- if (not (empty .sshConf.secret)) }}
+                name: "{{ .sshConf.secret }}"
+{{- else }}
+                name: jarvice-slurm-scheduler-{{ .name }}
+{{- end }}
 {{- if (not (empty $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURMRESTD_URL)) }}
           - name: JARVICE_SLURMRESTD_URL
             value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURMRESTD_URL }}"

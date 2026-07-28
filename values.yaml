@@ -891,10 +891,12 @@ jarvice_slurm_scheduler:
       # JARVICE_SLURM_OVERLAY_SIZE: 640
     sshConf:
       user: # user to ssh into slurm headnode (e.g. nimbix)
+      group: # group for the slurm SSH user; defaults to user value if unset
       pkey: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
       # Alternatively, define secret
-      # secret.Data["user"]: # user to ssh into slurm headnode (e.g. nimbix)
-      # secret.Data["pkey"]: # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
+      # secret.Data["user"]:  # user to ssh into slurm headnode (e.g. nimbix)
+      # secret.Data["group"]: # group for the slurm SSH user (defaults to user if unset)
+      # secret.Data["pkey"]:  # base64 encoded private ssh key for JXE slurm scheduler service. Add public key to slurm headnode.
       secret:
     # local override values
     # replicaCount: 2
