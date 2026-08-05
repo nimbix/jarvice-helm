@@ -54,6 +54,7 @@ spec:
 apiVersion: v1
 data:
 {{- $files := .Files }}
+{{- $claim := (.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_USERNAME_CLAIM | default "preferred_username") }}
   jarvice_client.json: |-
 {{ $files.Get "files/keycloak-config/client/jarvice_client.json" | indent 4 }}
   jarvice_user_role.json: |-
@@ -62,6 +63,14 @@ data:
 {{ $files.Get "files/keycloak-config/client/roles/jarvice_sysadmin_role.json" | indent 4 }}
   jarvice_kcadmin_role.json: |-
 {{ $files.Get "files/keycloak-config/client/roles/jarvice_kcadmin_role.json" | indent 4 }}
+{{- if .Values.jarvice_slurm_scheduler.enabled }}
+{{-   $mapper := fromJson ($files.Get "files/keycloak-config/client/jarvice_slurm_username_mapper.json") }}
+{{-   $_ := set (index $mapper "config") "claim.name" $claim }}
+  jarvice_slurm_username_mapper: |-
+    ,{{ $mapper | toJson }}
+{{- else }}
+  jarvice_slurm_username_mapper: ""
+{{- end }}
 kind: ConfigMap
 metadata:
   name: jarvice-keycloak-client
@@ -126,6 +135,12 @@ spec:
             value: "{{ .Values.jarvice_bird.env.JARVICE_KEYCLOAK_ADMIN_PASS }}"
           - name: JARVICE_BIRD_INGRESSHOST
             value: "{{ .Values.jarvice_bird.ingressHost }}"
+          - name: JARVICE_SLURM_USERNAME_MAPPER
+            valueFrom:
+              configMapKeyRef:
+                name: jarvice-keycloak-client
+                key: jarvice_slurm_username_mapper
+                optional: false
           image: "{{ .Values.jarvice_helm_hook.image }}"
           imagePullPolicy: IfNotPresent
           command:
@@ -140,6 +155,120 @@ spec:
       tolerations: {{ .Values.jarvice.tolerations }}
 {{- end }}
       serviceAccountName: jarvice-system
+{{- end }}
+{{- if or .Values.jarvice_slurm_scheduler.create_keycloak_client (eq .Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_CLIENT "slurmrestd_client") }}
+{{- $ns := (.Values.jarvice.JARVICE_SYSTEM_NAMESPACE | default .Release.Namespace) }}
+{{- $kcSlurmClientSecret := (.Values.jarvice_slurm_scheduler.env.JARVICE_KEYCLOAK_CLIENT_SECRET | default "") }}
+{{- if empty $kcSlurmClientSecret }}
+{{- $existingSecret := (lookup "v1" "Secret" $ns "jarvice-slurm-keycloak-client") }}
+{{- if and $existingSecret (index $existingSecret.data "clientSecret") }}
+{{- $kcSlurmClientSecret = index $existingSecret.data "clientSecret" | b64dec }}
+{{- else }}
+{{- $kcSlurmClientSecret = randAlphaNum 32 }}
+{{- end }}
+{{- end }}
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: jarvice-slurm-keycloak-client
+  namespace: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+  annotations:
+    "helm.sh/hook": post-upgrade,post-install
+    "helm.sh/hook-weight": "3"
+    "helm.sh/resource-policy": keep
+  labels:
+    app: jarvice
+type: Opaque
+data:
+  clientSecret: {{ $kcSlurmClientSecret | b64enc }}
+{{- if .Values.jarvice_slurm_scheduler.create_keycloak_client }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jarvice-slurm-keycloak-client
+  namespace: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+  annotations:
+    "helm.sh/hook": post-upgrade,post-install
+    "helm.sh/hook-weight": "3"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+  labels:
+    app: jarvice
+data:
+  jarvice_client.json: |-
+{{ tpl (.Files.Get "files/nimbix-slurm-sched-client.json") (dict "kcSlurmClientSecret" $kcSlurmClientSecret) | indent 4 }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: jarvice-create-slurm-keycloak-client
+  namespace: {{ .Values.jarvice.JARVICE_SYSTEM_NAMESPACE }}
+  annotations:
+    "helm.sh/hook": post-upgrade,post-install
+    "helm.sh/hook-weight": "4"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+  labels:
+    app: jarvice
+spec:
+  template:
+    metadata:
+      name: jarvice-create-slurm-keycloak-client
+      labels:
+        app: jarvice
+    spec:
+      volumes:
+      {{- include "jarvice.rootCertVolume" . | indent 6 }}
+      - name: jarvice-slurm-keycloak-client
+        configMap:
+          name: jarvice-slurm-keycloak-client
+          defaultMode: 444
+      hostAliases:
+      {{- include "jarvice.hostAliases" . | nindent 8 }}
+      containers:
+        - name: jarvice-create-slurm-keycloak-client
+          volumeMounts:
+          {{- include "jarvice.rootCertVolumeMount" . | indent 10 }}
+          - name: jarvice-slurm-keycloak-client
+            mountPath: /etc/jarvice/jarvice_client.json
+            subPath: jarvice_client.json
+            readOnly: true
+          - name: jarvice-slurm-keycloak-client
+            mountPath: /etc/jarvice/jarvice_user_role.json
+            subPath: jarvice_user_role.json
+            readOnly: true
+          - name: jarvice-slurm-keycloak-client
+            mountPath: /etc/jarvice/jarvice_sysadmin_role.json
+            subPath: jarvice_sysadmin_role.json
+            readOnly: true
+          - name: jarvice-slurm-keycloak-client
+            mountPath: /etc/jarvice/jarvice_kcadmin_role.json
+            subPath: jarvice_kcadmin_role.json
+            readOnly: true
+          env:
+          - name: KEYCLOAK_URL
+            value: "{{ .Values.jarvice_bird.env.KEYCLOAK_URL }}"
+          - name: KEYCLOAK_REALM
+            value: "{{ .Values.jarvice_bird.env.KEYCLOAK_REALM }}"
+          - name: JARVICE_KEYCLOAK_USER
+            value: "{{ .Values.jarvice_bird.env.JARVICE_KEYCLOAK_ADMIN_USER }}"
+          - name: JARVICE_KEYCLOAK_PASSWD
+            value: "{{ .Values.jarvice_bird.env.JARVICE_KEYCLOAK_ADMIN_PASS }}"
+          image: "{{ .Values.jarvice_helm_hook.image }}"
+          imagePullPolicy: IfNotPresent
+          command:
+          - /bin/sh
+          - -c
+          - |
+          {{- range $line := splitList "\n" (.Files.Get "files/jarvice-create-keycloak-client.sh") }}
+          {{ . | indent 4 }}
+          {{- end }}
+      restartPolicy: OnFailure
+{{- if (not (empty .Values.jarvice.tolerations)) }}
+      tolerations: {{ .Values.jarvice.tolerations }}
+{{- end }}
+      serviceAccountName: jarvice-system
+{{- end }}
 {{- end }}
 ---
 apiVersion: v1

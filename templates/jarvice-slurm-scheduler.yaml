@@ -198,6 +198,54 @@ spec:
 {{- else }}
                 name: jarvice-slurm-scheduler-{{ .name }}
 {{- end }}
+          - name: JARVICE_SLURM_SSH_USER_GROUP
+            valueFrom:
+              secretKeyRef:
+                key: group
+{{- if (not (empty .sshConf.secret)) }}
+                name: "{{ .sshConf.secret }}"
+{{- else }}
+                name: jarvice-slurm-scheduler-{{ .name }}
+{{- end }}
+{{- if (not (empty $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURMRESTD_URL)) }}
+          - name: JARVICE_SLURMRESTD_URL
+            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURMRESTD_URL }}"
+{{- end }}
+{{- if (not (empty $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_CLIENT)) }}
+          - name: JARVICE_SLURM_CLIENT
+            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_CLIENT }}"
+{{- end }}
+{{- if (not (empty $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_SA_TOKEN)) }}
+          - name: JARVICE_SLURM_SA_TOKEN
+            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_SA_TOKEN }}"
+{{- end }}
+{{- if (not (empty $.Values.jarvice_slurm_scheduler.env.JARVICE_KEYCLOAK_TOKEN_URL)) }}
+          - name: JARVICE_KEYCLOAK_TOKEN_URL
+            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_KEYCLOAK_TOKEN_URL }}"
+{{- else if (not (empty $.Values.jarvice_bird.env.KEYCLOAK_URL)) }}
+          - name: JARVICE_KEYCLOAK_TOKEN_URL
+            value: "{{ $.Values.jarvice_bird.env.KEYCLOAK_URL }}/realms/{{ $.Values.jarvice_bird.env.KEYCLOAK_REALM }}/protocol/openid-connect/token"
+{{- end }}
+{{- if (not (empty $.Values.jarvice_slurm_scheduler.env.JARVICE_KEYCLOAK_CLIENT_ID)) }}
+          - name: JARVICE_KEYCLOAK_CLIENT_ID
+            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_KEYCLOAK_CLIENT_ID }}"
+{{- end }}
+{{- if eq $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_CLIENT "slurmrestd_client" }}
+          - name: JARVICE_KEYCLOAK_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: jarvice-slurm-keycloak-client
+                key: clientSecret
+                optional: true
+{{- end }}
+{{- if (not (empty $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_USERNAME_CLAIM)) }}
+          - name: JARVICE_SLURM_USERNAME_CLAIM
+            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_USERNAME_CLAIM }}"
+{{- end }}
+{{- if (not (empty $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_DATA_PARSER_VERSION)) }}
+          - name: JARVICE_SLURM_DATA_PARSER_VERSION
+            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_DATA_PARSER_VERSION }}"
+{{- end }}
           - name: JARVICE_SLURM_SCHED_LOGLEVEL
 {{- if (not (empty .env.JARVICE_SLURM_SCHED_LOGLEVEL)) }}
             value: "{{ .env.JARVICE_SLURM_SCHED_LOGLEVEL }}"
@@ -209,6 +257,14 @@ spec:
             value: "{{ .env.JARVICE_SLURM_OVERLAY_SIZE }}"
 {{- else }}
             value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_OVERLAY_SIZE }}"
+{{- end }}
+{{- if (not (empty $.Values.jarvice_slurm_scheduler.env.JARVICE_CHOWN_WRAPPER)) }}
+          - name: JARVICE_CHOWN_WRAPPER
+            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_CHOWN_WRAPPER }}"
+{{- end }}
+{{- if (not (empty $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_SCRATCH_DIR)) }}
+          - name: JARVICE_SLURM_SCRATCH_DIR
+            value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SLURM_SCRATCH_DIR }}"
 {{- end }}
           - name: JARVICE_SYSTEM_K8S
 {{- if empty $.Values.jarvice.JARVICE_SYSTEM_K8S }}
@@ -337,6 +393,10 @@ spec:
             value: "{{ .env.JARVICE_SINGULARITY_TMPDIR }}"
 {{- else }}
             value: "{{ $.Values.jarvice_slurm_scheduler.env.JARVICE_SINGULARITY_TMPDIR }}"
+{{- end }}
+{{- if include "jarvice.hasRootCert" $ }}
+          - name: REQUESTS_CA_BUNDLE
+            value: "/etc/ssl/certs/ca-certificates.crt"
 {{- end }}
         volumeMounts:
         {{- include "jarvice.rootCertVolumeMount" $ | indent 8 }}
