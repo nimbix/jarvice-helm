@@ -125,6 +125,29 @@ If using tenant (payer) account storage parameters, the best practice is to not 
 
 # Changelog
 
+## 3.26.2-202606241630
+
+* (JAR-11119) Admin Machines page sort applies per page instead of entire list
+* (JAR-11646) (JAR-11863) Remove deprecated FlexVolume from UNFS service
+* (JAR-11746) Add missing notifications to toolbar
+* (JAR-11748) Fixed keyboard navigation causing view cropping requiring refresh
+* (JAR-11802) Ensure Login Zone dropdown is accessible during new sessions
+* (JAR-11810) Prevent Clone dialog from pushing the job tiles down
+* (JAR-11848) Remove “Close Calendar” button when using keyboard navigation
+* (JAR-11849) Dashboard uses the same width in Mobile view
+* (JAR-11855) Update “Recent” Application section
+* (JAR-11861) Add optional validation hook script to downstream k8s scheduler
+* (JAR-11893) Update scrollbar on Push2Compute page
+* (JAR-11894) Move scrollbar away from Log button on Administration->Jobs page
+* (JAR-11896) Update user registration theme to Bull
+* (JAR-11917) Fixed Expand All / Collapse All buttons for recently ended jobs
+* (JAR-11941) Update styles for Job Metrics
+* (JAR-11945) Enable editing AppDef version on Administration->Applications
+* (JAR-11950) Update Payer and Roles dropdown on Administration->Users page
+* (JAR-11966) Add missing Owner column on Team Jobs view when grouping is active
+* (JAR-12012) Fixed Summary section view when optional filters are enabled
+* (JAR-12021) Add read-only support for GCS FUSE buckets
+
 ## 3.26.1-202604281426
 
 * (JAR-9953)  Add missing Project column on CSV report

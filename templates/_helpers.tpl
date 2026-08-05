@@ -250,3 +250,12 @@ Create volume for jarvice root certificates
   readOnly: true
 {{- end }}
 {{- end }}
+
+{{/*
+Returns "true" if a root CA cert volume mount will be included (user configMap or trust-manager).
+*/}}
+{{- define "jarvice.hasRootCert" -}}
+{{- if or (not (empty .Values.jarvice.cacert.user.configMap)) .Values.jarvice.trust_manager.enabled -}}
+true
+{{- end -}}
+{{- end }}
