@@ -91,9 +91,9 @@ spec:
 {{- if (not (empty .Values.jarvice_scheduler.image)) }}
         image: {{ .Values.jarvice_scheduler.image }}
 {{- else if eq .Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE "true" }}
-        image: {{ include "jarvice.registry" . }}/jarvice-scheduler:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+        image: {{ include "jarvice.registry" . }}/jarvice-api-sched:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
 {{- else }}
-        image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-scheduler:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+        image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-api-sched:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
 {{- end }}
 {{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
         imagePullPolicy: Always
@@ -105,7 +105,7 @@ spec:
             containerPort: 9443
         readinessProbe:
           httpGet:
-            scheme: HTTPS
+            scheme: HTTP
             port: https
             path: /ready
           initialDelaySeconds: {{ .Values.jarvice_scheduler.readinessProbe.initialDelaySeconds }}
@@ -115,7 +115,7 @@ spec:
           failureThreshold: {{ .Values.jarvice_scheduler.readinessProbe.failureThreshold }}
         livenessProbe:
           httpGet:
-            scheme: HTTPS
+            scheme: HTTP
             port: https
             path: /live
           initialDelaySeconds: {{ .Values.jarvice_scheduler.livenessProbe.initialDelaySeconds }}
@@ -150,7 +150,7 @@ spec:
 {{- if (not (empty .Values.jarvice_scheduler.env.JARVICE_SCHED_URL)) }}
             value: "{{ .Values.jarvice_scheduler.env.JARVICE_SCHED_URL }}"
 {{- else }}
-            value: "https://jarvice-scheduler:9443"
+            value: "http://jarvice-scheduler:9443"
 {{- end }}
           - name: JARVICE_LICENSE_LIC
             valueFrom:
