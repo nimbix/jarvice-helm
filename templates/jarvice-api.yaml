@@ -118,7 +118,7 @@ spec:
         readinessProbe:
           httpGet:
             scheme: HTTP
-            port: http
+            port: 8080
             path: /jarvice/ready
           initialDelaySeconds: {{ .Values.jarvice_api.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.jarvice_api.readinessProbe.periodSeconds }}
@@ -128,7 +128,7 @@ spec:
         livenessProbe:
           httpGet:
             scheme: HTTP
-            port: http
+            port: 8080
             path: /jarvice/live
           initialDelaySeconds: {{ .Values.jarvice_api.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.jarvice_api.livenessProbe.periodSeconds }}
@@ -212,7 +212,7 @@ spec:
 {{- end }}
 {{- end }}
           - name: JARVICE_SCHED_URL
-            value: "https://jarvice-scheduler:9443"
+            value: "http://jarvice-scheduler:9443"
           - name: JARVICE_JOBS_NAMESPACE
 {{- if empty .Values.jarvice.JARVICE_JOBS_NAMESPACE }}
             value: {{ .Release.Namespace }}-jobs
