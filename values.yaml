@@ -691,6 +691,7 @@ jarvice_dal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
         [fqdns]
         [naelimits]
     JARVICE_NODE_ENV: production
+    JARVICE_DB_SSL_ENABLED: false
 
 jarvice_scheduler: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true

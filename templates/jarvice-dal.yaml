@@ -287,6 +287,8 @@ spec:
             value: '{{ .Values.jarvice_dal.env.JARVICE_MACHINES_ADD }}'
           - name: JARVICE_CFG_NETWORK
             value: {{ toYaml .Values.jarvice_dal.env.JARVICE_CFG_NETWORK | indent 12 }}
+          - name: JARVICE_DB_SSL_ENABLED
+            value: '{{ .Values.jarvice_dal.env.JARVICE_DB_SSL_ENABLED }}'
 {{- if and (not (empty .Values.jarvice.JARVICE_S3_SECRETKEY)) (not (empty .Values.jarvice.JARVICE_S3_ACCESSKEY)) (not (empty .Values.jarvice.JARVICE_S3_BUCKET)) }}
           - name: JARVICE_S3_BUCKET
             value: "{{ .Values.jarvice.JARVICE_S3_BUCKET }}"
