@@ -8,7 +8,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      deployment: jarvice-bird
+      deployment: jarvice-bird-ui
   minAvailable: {{ .Values.jarvice_bird.pdb.minAvailable }}
 ---
 {{- end }}
@@ -20,15 +20,15 @@ apiVersion: autoscaling/v2beta2
 {{- end }}
 kind: HorizontalPodAutoscaler
 metadata:
-  name: jarvice-bird
+  name: jarvice-bird-ui
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-bird
+    component: jarvice-bird-ui
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: jarvice-bird
+    name: jarvice-bird-ui
   minReplicas: {{ .Values.jarvice_bird.replicaCount }}
   maxReplicas: {{ .Values.jarvice_bird.replicaCountMax }}
   metrics:
@@ -38,23 +38,23 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: jarvice-bird
+  name: jarvice-bird-ui
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-bird
-    deployment: jarvice-bird
+    component: jarvice-bird-ui
+    deployment: jarvice-bird-ui
     jarvice-system: core
 spec:
   replicas: {{ .Values.jarvice_bird.replicaCount }}
   selector:
     matchLabels:
-      deployment: jarvice-bird
+      deployment: jarvice-bird-ui
   template:
     metadata:
       labels:
         {{- include "jarvice.release_labels" . | indent 8 }}
-        component: jarvice-bird
-        deployment: jarvice-bird
+        component: jarvice-bird-ui
+        deployment: jarvice-bird-ui
         jarvice-system: core
       annotations:
         deployment-date: {{ now | quote }}
@@ -82,7 +82,7 @@ spec:
           - topologyKey: "kubernetes.io/hostname"
             labelSelector:
               matchLabels:
-                deployment: jarvice-bird
+                deployment: jarvice-bird-ui
         {{- else if eq .Values.jarvice_bird.antiAffinity "soft" }}
           preferredDuringSchedulingIgnoredDuringExecution:
           - weight: 5
@@ -90,7 +90,7 @@ spec:
               topologyKey: "kubernetes.io/hostname"
               labelSelector:
                 matchLabels:
-                  deployment: jarvice-bird
+                  deployment: jarvice-bird-ui
         {{- end }}
       imagePullSecrets:
       - name: jarvice-docker
@@ -154,13 +154,13 @@ spec:
       hostAliases:
       {{- include "jarvice.hostAliases" . | nindent 8 }}
       containers:
-      - name: jarvice-bird
+      - name: jarvice-bird-ui
 {{- if (not (empty .Values.jarvice_bird.image)) }}
         image: {{ .Values.jarvice_bird.image }}
 {{- else if eq .Values.jarvice.JARVICE_SYSTEM_OMIT_REPO_BASE "true" }}
-        image: {{ include "jarvice.registry" . }}/jarvice-bird:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+        image: {{ include "jarvice.registry" . }}/jarvice-bird-ui:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
 {{- else }}
-        image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-bird:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
+        image: {{ include "jarvice.registry" . }}/{{ .Values.jarvice.JARVICE_SYSTEM_REPO_BASE }}/jarvice-bird-ui:{{ default .Values.jarvice.JARVICE_IMAGES_TAG .Chart.Annotations.tag }}{{- include "jarvice.version" . }}
 {{- end }}
 {{- if and (empty .Values.jarvice.JARVICE_IMAGES_VERSION) (empty .Chart.Annotations.tag) }}
         imagePullPolicy: Always
@@ -682,10 +682,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: jarvice-bird
+  name: jarvice-bird-ui
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-bird
+    component: jarvice-bird-ui
 spec:
   type: ClusterIP
   ports:
@@ -698,7 +698,7 @@ spec:
     targetPort: http-portal
     name: http-portal
   selector:
-    deployment: jarvice-bird
+    deployment: jarvice-bird-ui
 ---
 apiVersion: v1
 kind: Service
@@ -721,11 +721,11 @@ spec:
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: jarvice-bird
+  name: jarvice-bird-ui
 spec:
   podSelector:
     matchLabels:
-      deployment: jarvice-bird
+      deployment: jarvice-bird-ui
   policyTypes:
   - Ingress
   ingress:
@@ -752,7 +752,7 @@ metadata:
   name: jarvice-bird-lb
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-bird
+    component: jarvice-bird-ui
 spec:
   type: LoadBalancer
   loadBalancerIP: {{ .Values.jarvice_bird.loadBalancerIP }}
@@ -762,7 +762,7 @@ spec:
     targetPort: 8080
     name: http
   selector:
-    deployment: jarvice-bird
+    deployment: jarvice-bird-ui
 ---
 {{- else }}
 {{- if and (not (empty .Values.jarvice_bird.gateway.name)) (not (empty .Values.jarvice_bird.gateway.namespace)) (not (empty .Values.jarvice_bird.ingressHost)) }}
@@ -789,7 +789,7 @@ spec:
   - backendRefs:
     - group: ""
       kind: Service
-      name: jarvice-bird
+      name: jarvice-bird-ui
       port: 8000
       weight: 1
     matches:
@@ -804,7 +804,7 @@ metadata:
   name: jarvice-bird
   labels:
     {{- include "jarvice.release_labels" . | indent 4 }}
-    component: jarvice-bird
+    component: jarvice-bird-ui
   annotations:
 {{- if and (not (empty .Values.jarvice.ingress.tls.issuer.name)) (and (empty .Values.jarvice.ingress.tls.crt) (empty .Values.jarvice.ingress.tls.key)) }}
     cert-manager.io/issuer: {{ .Values.jarvice.ingress.tls.issuer.name }}
@@ -828,7 +828,7 @@ spec:
 {{- if (ne "/" .Values.jarvice_bird.ingressPath) }}
       - backend:
           service:
-            name: jarvice-bird
+            name: jarvice-bird-ui
             port:
               name: http
         pathType: Prefix
@@ -836,7 +836,7 @@ spec:
 {{- else }}
       - backend:
           service:
-            name: jarvice-bird
+            name: jarvice-bird-ui
             port:
               name: http
         pathType: Prefix
@@ -844,7 +844,7 @@ spec:
 {{- end }}
       - backend:
           service:
-            name: jarvice-bird
+            name: jarvice-bird-ui
             port:
               number: 8080
         path: /portal
