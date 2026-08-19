@@ -610,7 +610,7 @@ jarvice_registry_proxy_gc: # N/A if jarvice_registry_proxy.enabled is false
 jarvice_dal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
   image: # Overwrites image from global value
-  replicaCount: 2
+  replicaCount: 1
   replicaCountMax: 6
   # HorizontalPodAutoscaler is enabled when replicaCountMax > replicaCount
   autoscaling:
@@ -695,7 +695,7 @@ jarvice_dal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 jarvice_scheduler: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
   image: # Overwrites image from global value
-  replicaCount: 2
+  replicaCount: 1
   # PodDisruptionBudget default requires 25% minimum of pods must be running
   pdb:
     minAvailable: "25%"
@@ -776,7 +776,7 @@ jarvice_k8s_scheduler:
   #   echo "-- entered validation script --" >&2
   #   echo "TRUE"
   #   exit 0
-  replicaCount: 2
+  replicaCount: 1
   # PodDisruptionBudget default requires 25% minimum of pods must be running
   pdb:
     minAvailable: "25%"
@@ -818,7 +818,7 @@ jarvice_k8s_scheduler:
     JARVICE_UNFS_NODE_SELECTOR: # '{"node-role.jarvice.io/jarvice-storage": "true"}' # '{"node-role.kubernetes.io/jarvice-storage": "true"}'
     JARVICE_UNFS3_IMAGE: us-docker.pkg.dev/jarvice/images/unfs3:20231221-1 # change if mirroring locally
     JARVICE_PVCLS_IMAGE: us-docker.pkg.dev/jarvice/images/alpine:3.18 # change if mirroring locally
-    JARVICE_JOBS_GRACE_PERIOD: 90 # job grace period during shutdown
+    JARVICE_JOBS_GRACE_PERIOD: 3 # job grace period during shutdown
     JARVICE_SCHED_JOB_UID:  # set to numeric value to override UID for jobs
     JARVICE_SCHED_JOB_GID:  # set to numeric value to override GID for jobs
     JARVICE_GCSFUSE_SIDECAR_IMAGE: # set to GCS FUSE sidecar image
@@ -835,7 +835,7 @@ jarvice_slurm_scheduler:
   # Set to true to create the nimbix-slurm-sched-client in Keycloak
   # Requires jarvice_bird.env.KEYCLOAK_URL, KEYCLOAK_REALM, JARVICE_KEYCLOAK_ADMIN_USER/PASS to be set.
   create_keycloak_client: false
-  replicaCount: 2
+  replicaCount: 1
   # PodDisruptionBudget default requires 25% minimum of pods must be running
   pdb:
     minAvailable: "25%"
@@ -1081,7 +1081,7 @@ jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
   image: # Overwrites image from global value
   imagev1: # Overwrites image for v1 api from global value
-  replicaCount: 2
+  replicaCount: 1
   replicaCountMax: 6
   # HorizontalPodAutoscaler is enabled when replicaCountMax > replicaCount
   autoscaling:
@@ -1233,7 +1233,7 @@ jarvice_appsync: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 jarvice_mc_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
   image: # Overwrites image from global value
-  replicaCount: 2
+  replicaCount: 0
   replicaCountMax: 6
   # HorizontalPodAutoscaler is enabled when replicaCountMax > replicaCount
   autoscaling:
