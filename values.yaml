@@ -379,7 +379,7 @@ jarvice_db: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   nodeSelector: # '{"node-role.jarvice.io/jarvice-db": "true"}'
   networkPolicy:
     enabled: # Inherits from jarvice.networkPolicy.enabled if unset
-  image: us-docker.pkg.dev/jarvice/images/mariadb:10.5
+  image: us-docker.pkg.dev/jarvice/images/mariadb:12.3.3
   imagePullPolicy: IfNotPresent
   persistence:
     enabled: false
@@ -1522,7 +1522,7 @@ keycloakx:
     JARVICE_REALM_ADMIN_PASSWD: abc1234!
   image:
     repository: us-docker.pkg.dev/jarvice-system/images/jarvice-keycloak
-    tag: jarvice-master
+    tag: jarvice-master-bull
   imagePullSecrets:
   - name: jarvice-docker
   tolerations:
@@ -1540,7 +1540,6 @@ keycloakx:
     - "--http-enabled=true"
     - "--http-port=8080"
     - "--hostname-strict=false"
-    - "--hostname-strict-https=false"
     - "--spi-events-listener-jboss-logging-success-level=info"
     - "--spi-events-listener-jboss-logging-error-level=warn"
     - "--spi-login-protocol-openid-connect-legacy-logout-redirect-uri=true"
@@ -1638,6 +1637,8 @@ keycloakx:
     username: root
     password: Pass1234
     database: keycloak
+  proxy:
+    mode: xforwarded
   secrets:
     admin-creds:
       annotations:
