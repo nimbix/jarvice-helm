@@ -497,7 +497,61 @@
       ]
     }
   },
-  "groups": [],
+  "groups": [
+    {
+      "id": "8a10d616-d355-4e3b-9c72-cf44a4ab1992",
+      "name": "jarvice",
+      "description": "",
+      "path": "/jarvice",
+      "subGroups": [
+        {
+          "id": "b23aa3a8-c098-4588-aeed-1eda01a8e9cb",
+          "name": "admins",
+          "description": "",
+          "path": "/jarvice/admins",
+          "parentId": "8a10d616-d355-4e3b-9c72-cf44a4ab1992",
+          "subGroups": [],
+          "attributes": {},
+          "realmRoles": [],
+          "clientRoles": {
+            "jarvice": [
+              "jarvice-sysadmin"
+            ]
+          }
+        },
+        {
+          "id": "b173f4f3-1de7-4345-8c13-98a6d8edd89d",
+          "name": "users",
+          "description": "",
+          "path": "/jarvice/users",
+          "parentId": "8a10d616-d355-4e3b-9c72-cf44a4ab1992",
+          "subGroups": [
+            {
+              "id": "badde04e-3505-43a0-a397-d510e195e870",
+              "name": "teams",
+              "description": "",
+              "path": "/jarvice/users/teams",
+              "parentId": "b173f4f3-1de7-4345-8c13-98a6d8edd89d",
+              "subGroups": [],
+              "attributes": {},
+              "realmRoles": [],
+              "clientRoles": {}
+            }
+          ],
+          "attributes": {},
+          "realmRoles": [],
+          "clientRoles": {
+            "jarvice": [
+              "jarvice-user"
+            ]
+          }
+        }
+      ],
+      "attributes": {},
+      "realmRoles": [],
+      "clientRoles": {}
+    }
+  ],
   "defaultRole": {
     "id": "00cb9f80-9f8f-4d77-84f9-49a6d7aa679f",
     "name": "default-roles-${JARVICE_REALM}",
@@ -1531,7 +1585,7 @@
     "from": "${JARVICE_KEYCLOAK_SMTP_FROM}",
     "user": "${JARVICE_KEYCLOAK_SMTP_USER}"
   },
-  "loginTheme": "eviden",
+  "loginTheme": "bull",
   "eventsEnabled": false,
   "eventsListeners": [
     "jboss-logging"
