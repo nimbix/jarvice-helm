@@ -770,6 +770,7 @@ jarvice_sched_pass: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
     PROMETHEUS_SERVICE_ENABLED: False  # set to true if prometheus is installed and you want job metrics for billing
     PROMETHEUS_SERVICE_URL: "http://prometheus-operated.monitoring.svc.my-domain.com:9090"  # edit domain to match your cluster domain
     PROMETHEUS_METRIC_WINDOW: "5m"
+    PROMETHEUS_QUERYRANGE_STEP: "2m"
     PROMETHEUS_USERNAME: ""  # if needed, can be found in prometheus.yml config
     PROMETHEUS_PASSWORD: ""  # ditto
 
