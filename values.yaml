@@ -468,7 +468,7 @@ jarvice_smtpd: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 # filesystem settings under jarvice_idmapper.filesystem and jarvice_idmapper.env
 jarvice_idmapper: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: false
-  replicaCount: 2
+  replicaCount: 1
   # PodDisruptionBudget default requires 25% minimum of pods must be running
   pdb:
     minAvailable: "25%"
@@ -521,7 +521,7 @@ jarvice_idmapper: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 # Then, set JARVICE_PORTAL_MEMCACHED_LOCATIONS below in jarvice_mc_portal env.
 jarvice_memcached: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
-  replicaCount: 3
+  replicaCount: 1
   # PodDisruptionBudget default requires 2 minimum pods must be running
   pdb:
     minAvailable: 2
@@ -610,8 +610,8 @@ jarvice_registry_proxy_gc: # N/A if jarvice_registry_proxy.enabled is false
 jarvice_dal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
   image: # Overwrites image from global value
-  replicaCount: 2
-  replicaCountMax: 6
+  replicaCount: 1
+  replicaCountMax: 2
   # HorizontalPodAutoscaler is enabled when replicaCountMax > replicaCount
   autoscaling:
     metrics:
@@ -696,7 +696,7 @@ jarvice_dal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 jarvice_scheduler: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
   image: # Overwrites image from global value
-  replicaCount: 2
+  replicaCount: 1
   # PodDisruptionBudget default requires 25% minimum of pods must be running
   pdb:
     minAvailable: "25%"
@@ -777,7 +777,7 @@ jarvice_k8s_scheduler:
   #   echo "-- entered validation script --" >&2
   #   echo "TRUE"
   #   exit 0
-  replicaCount: 2
+  replicaCount: 1
   # PodDisruptionBudget default requires 25% minimum of pods must be running
   pdb:
     minAvailable: "25%"
@@ -842,7 +842,7 @@ jarvice_slurm_scheduler:
   # Set to true to create the nimbix-slurm-sched-client in Keycloak
   # Requires jarvice_bird.env.KEYCLOAK_URL, KEYCLOAK_REALM, JARVICE_KEYCLOAK_ADMIN_USER/PASS to be set.
   create_keycloak_client: false
-  replicaCount: 2
+  replicaCount: 1
   # PodDisruptionBudget default requires 25% minimum of pods must be running
   pdb:
     minAvailable: "25%"
@@ -959,7 +959,7 @@ jarvice_kns_scheduler:
   image: # Overwrites image from global value
   networkPolicy:
     enabled: false
-  replicaCount: 2
+  replicaCount: 0
   # PodDisruptionBudget default requires 25% minimum of pods must be running
   pdb:
     minAvailable: "25%"
@@ -1088,8 +1088,8 @@ jarvice_api: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
   image: # Overwrites image from global value
   imagev1: # Overwrites image for v1 api from global value
-  replicaCount: 2
-  replicaCountMax: 6
+  replicaCount: 1
+  replicaCountMax: 2
   # HorizontalPodAutoscaler is enabled when replicaCountMax > replicaCount
   autoscaling:
     metrics:
@@ -1240,7 +1240,7 @@ jarvice_appsync: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 jarvice_mc_portal: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: true
   image: # Overwrites image from global value
-  replicaCount: 2
+  replicaCount: 1
   replicaCountMax: 6
   # HorizontalPodAutoscaler is enabled when replicaCountMax > replicaCount
   autoscaling:
@@ -1452,7 +1452,7 @@ jarvice_bird: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
 jarvice_hyperhub: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   enabled: false
   image: # Overwrites image from global value
-  replicaCount: 1
+  replicaCount: 0
   autoscaling:
     metrics:
       - type: Resource
