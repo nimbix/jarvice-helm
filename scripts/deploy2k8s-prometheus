@@ -1,0 +1,78 @@
+#!/bin/bash
+
+# prometheus versions can be searched:
+# helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+# helm search repo prometheus-community/kube-prometheus-stack  --versions
+
+chart_version="91.4.0"
+namespace=monitoring
+
+function usage {
+    cat <<EOF
+Usage:
+    $0 [options]
+
+Options:
+    --namespace <kube_namespace>    Kubernetes namespace to deploy to
+                                    (Default: $namespace)
+    --chart-version <version>        prometheus Helm chart version
+                                    (Default: $chart_version)
+
+Example:
+    $0 --chart-version v0.94.0
+EOF
+}
+
+HELM=$(type -p helm)
+if [ -z "$HELM" ]; then
+    cat <<EOF
+Could not find 'helm' in PATH.  It may not be installed.
+Run 'install-helm' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+KUBECTL=$(type -p kubectl)
+if [ -z "$KUBECTL" ]; then
+    cat <<EOF
+Could not find 'kubectl' in PATH.  It may not be installed.
+Run 'install-kubectl' from the 'jarvice-helm/scripts' directory to install it.
+EOF
+    exit 1
+fi
+
+while [ $# -gt 0 ]; do
+    case $1 in
+        --help)
+            usage
+            exit 0
+            ;;
+        --chart-version)
+            chart_version=$2
+            shift; shift
+            ;;
+        --namespace)
+            namespace=$2
+            shift; shift
+            ;;
+        *)
+            usage
+            exit 1
+            ;;
+    esac
+done
+
+set -e
+
+echo
+echo "* Creating namespace: $namespace"
+"$KUBECTL" create namespace $namespace 2>/dev/null || /bin/true
+
+echo
+echo "* Deploying..."
+repo=https://prometheus-community.github.io/helm-charts
+"$HELM" upgrade kube-prometheus-stack kube-prometheus-stack --repo $repo --version $chart_version \
+    --namespace $namespace  --install --set extraArgs="--metric-labels-allowlist=pods=[*],jobs=[*]" --wait
+
+echo
+echo "* Deployment successful..."
