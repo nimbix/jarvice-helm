@@ -767,8 +767,8 @@ jarvice_sched_pass: # N/A if jarvice.JARVICE_CLUSTER_TYPE: "downstream"
   env:
     JARVICE_SCHED_PASS_INTERVAL: 5
     JARVICE_SCHED_CLUSTERS_TIMEOUT: 20
-    PROMETHEUS_SERVICE_ENABLED: False  # set to true if prometheus is installed and you want job metrics for billing
-    PROMETHEUS_SERVICE_URL: "http://prometheus-operated.monitoring.svc.my-domain.com:9090"  # edit domain to match your cluster domain
+    PROMETHEUS_SERVICE_ENABLED: True  # set to true if prometheus is installed and you want job metrics for billing
+    PROMETHEUS_SERVICE_URL: "http://prometheus-operated.jarvice-system.svc.cluster.local:9090"  # Prometheus service installed in jarvice-system
     PROMETHEUS_METRIC_WINDOW: "5m"
     PROMETHEUS_QUERYRANGE_STEP: "2m"
     PROMETHEUS_USERNAME: ""  # if needed, can be found in prometheus.yml config
@@ -834,7 +834,7 @@ jarvice_k8s_scheduler:
     JARVICE_JOBS_GATEWAY: # Gateway API gateway to use for jobs
     JARVICE_JOBS_GATEWAY_NAMESPACE: # Gateway API gateway namespace
     PROMETHEUS_SERVICE_ENABLED: False  # set to true if prometheus is installed and you want job metrics for billing
-    PROMETHEUS_SERVICE_URL: "http://prometheus-operated.monitoring.svc.my-domain.com:9090"  # edit domain to match your cluster domain
+    PROMETHEUS_SERVICE_URL: "http://prometheus-operated.jarvice-system.svc.cluster.local:9090"  # Prometheus service installed in jarvice-system
     PROMETHEUS_METRIC_WINDOW: "5m"
     PROMETHEUS_QUERYRANGE_STEP: "2m"
     PROMETHEUS_USERNAME: ""  # if needed, can be found in prometheus.yml config
