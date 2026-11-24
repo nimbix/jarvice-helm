@@ -148,7 +148,7 @@ spec:
 {{- if (not (empty .Values.jarvice_sched_pass.env.JARVICE_SCHED_URL)) }}
             value: "{{ .Values.jarvice_sched_pass.env.JARVICE_SCHED_URL }}"
 {{- else }}
-            value: "https://jarvice-scheduler:9443"
+            value: "http://jarvice-scheduler:9443"
 {{- end }}
           - name: JARVICE_LICENSE_LIC
             valueFrom:
