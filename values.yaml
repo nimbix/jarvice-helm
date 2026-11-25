@@ -1514,6 +1514,10 @@ jarvice_helm_hook:
 
 keycloakx:
   enabled: false
+  # Do not let the bundled chart select the unavailable jdbc-ping stack.
+  # The deployment workflow supplies the cache behavior explicitly.
+  cache:
+    stack: custom
   helm_hook:
     image: us-docker.pkg.dev/jarvice/images/alpine-k8s:1.21.13
   login:
@@ -1548,7 +1552,6 @@ keycloakx:
     - "/opt/keycloak/bin/kc.sh"
     - "--verbose"
     - "start"
-    - "--import-realm"
     - "--http-enabled=true"
     - "--http-port=8080"
     - "--hostname-strict=false"
