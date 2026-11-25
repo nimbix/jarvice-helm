@@ -5,8 +5,11 @@ kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name="keycloakx" --t
 while [[ "$(curl -s -o /dev/null -m 3 -L -w ''%{http_code}'' ${KEYCLOAK_URL}/realms/master)" != "200" ]]; do
     echo "Waiting for keycloak" && sleep 30
 done
-cert_url=$(curl --fail "${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/.well-known/openid-configuration" 2>/dev/null | jq -r '.jwks_uri')
-cert=$(curl --fail $cert_url 2>/dev/null | jq -r '.keys[] | select(.alg == "RS256") | .x5c[0]' )
+openid_config=$(curl --fail --silent --show-error \
+    "${KEYCLOAK_URL}/realms/${KEYCLOAK_REALM}/.well-known/openid-configuration")
+cert_url=$(printf '%s' "$openid_config" | jq --exit-status --raw-output '.jwks_uri')
+certs=$(curl --fail --silent --show-error "$cert_url")
+cert=$(printf '%s' "$certs" | jq --exit-status --raw-output '.keys[] | select(.alg == "RS256") | .x5c[0]' | head -n 1)
 header="-----BEGIN CERTIFICATE-----"
 footer="-----END CERTIFICATE-----"
 # extract public key
