@@ -30,7 +30,7 @@ spec:
           - name: JARVICE_SYSTEM_NAMESPACE
             value: "{{ .Release.Namespace }}"
           - name: KEYCLOAK_URL
-            value: "http://{{ include "keycloak.fullname" . }}-http.{{ .Release.Namespace }}.svc.{{ .Values.jarvice.JARVICE_K8S_CLUSTER_DOMAIN }}/auth"
+            value: "{{ .Values.jarvice_bird.env.KEYCLOAK_URL }}"
           - name: KEYCLOAK_REALM
             value: "{{ .Values.jarvice_bird.env.KEYCLOAK_REALM }}"
           image: "{{ .Values.jarvice_helm_hook.image }}"
