@@ -1554,6 +1554,7 @@ keycloakx:
     - "start"
     - "--http-enabled=true"
     - "--http-port=8080"
+    - "--proxy=edge"
     - "--hostname-strict=false"
     - "--spi-events-listener-jboss-logging-success-level=info"
     - "--spi-events-listener-jboss-logging-error-level=warn"
@@ -1653,6 +1654,7 @@ keycloakx:
     password: Pass1234
     database: keycloak
   proxy:
+    enabled: false
     mode: xforwarded
   secrets:
     admin-creds:
